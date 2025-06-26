@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="MovementComponent" load_steps=2 format=3 uid="uid://bbi60g327q2dg"]
+
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_universal_res.gd" id="1_cp2xo"]
+
+[resource]
+script = ExtResource("1_cp2xo")
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
