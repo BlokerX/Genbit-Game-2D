@@ -2,7 +2,7 @@ extends Node
 
 func _ready() -> void:
 	# Loading scene
-	var scene:PackedScene = load("res://Assets/Scenes/main_menu.tscn")
+	var scene:PackedScene = load("res://assets/scenes/main_menu.tscn")
 	# Instancing of the scene
 	var scene_instance = scene.instantiate()
 	# Adds main_menu as child of the Main node
