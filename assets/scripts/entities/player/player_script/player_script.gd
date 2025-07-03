@@ -19,22 +19,21 @@ extends CharacterBody2D
 
 #region Stats variables
 
-@export var health : int = 100
-@export var max_health : int = 100
-
+# GUI elements:
 @export var health_points_bar : ProgressBar
+@export var health_points_label : Label
 
-@export var stats_script : StatsComponent = preload("res://assets/scripts/entities/player/player_stats/stats_component.tres")
+@export var stats_script : PlayerStatsComponent = preload("res://assets/scripts/entities/player/player_stats/player_stats_component.tres")
 
 #endregion
 
 func _ready():
-	pass
+	stats_script.health_points_bar = health_points_bar
+	stats_script.health_points_label = health_points_label
 
 func _process(_delta):
 	#region Stats GUI Procedure
-	# Show HP in GUI
-	health_points_bar.value = health
+	stats_script.update_helath_points_bar()
 	#endregion
 
 func _physics_process(delta):
@@ -49,6 +48,6 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	# D_E_B_U_G
-	print("Monitor prędkości gracza: ", velocity)
+	#print("Monitor prędkości gracza: ", velocity)
 	
 	#endregion

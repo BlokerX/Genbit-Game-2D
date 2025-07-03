@@ -1,15 +1,35 @@
-extends Resource
+extends "res://assets/scripts/entities/stats/stats_res.gd"
 
-class_name StatsComponent
-	
-func get_damage(_damage : int, _health : int, _max_health : int) -> int :
-	_health -= _damage
-	if _health < 0 :
-		_health = 0
-	return _health
+class_name PlayerStatsComponent
 
-func heal(_healing : int, _health : int, _max_health : int) -> int :
-	_health += _healing
-	if _health > _max_health :
-		_health = _max_health
-	return _health
+var health_points_bar : ProgressBar
+var health_points_label : Label
+
+func monitor() -> void :
+	print("Monitor zdrowia gracza: ", health, " / ", max_health)
+
+func update_helath_points_bar() -> void :
+	# Show HP in GUI
+	# percents:
+	# health_points_bar.value = health * 100 / max_health
+	# points:
+	health_points_bar.value = health
+	health_points_label.text = str(health) + " / " + str(max_health)
+	monitor()
+
+func change_health_points_bar_max_value() :
+	health_points_bar.max_value = max_health
+
+#override
+func boost_max_health(boost : int) -> void :
+	super.boost_max_health(boost)
+	change_health_points_bar_max_value()
+
+#override
+func reduce_max_health(reduction : int) -> void :
+	super.reduce_max_health(reduction)
+	change_health_points_bar_max_value()
+
+func reset_stats() :
+	super.reset_stats()
+	change_health_points_bar_max_value()

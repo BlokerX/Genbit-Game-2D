@@ -1,8 +1,8 @@
 [gd_scene load_steps=23 format=3 uid="uid://daetexya25b0v"]
 
-[ext_resource type="Script" uid="uid://bpalvm4aaiwe5" path="res://assets/scripts/main_menu/main_menu.gd" id="1_4qj7h"]
-[ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/main_menu/credits_button.gd" id="2_6r5fw"]
-[ext_resource type="Script" uid="uid://d1u13mv3i3t0n" path="res://assets/scripts/main_menu/quit_button.gd" id="3_6x8q2"]
+[ext_resource type="Script" uid="uid://bpalvm4aaiwe5" path="res://assets/scripts/environment/main_menu/main_menu.gd" id="1_4qj7h"]
+[ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/environment/main_menu/credits_button.gd" id="2_6r5fw"]
+[ext_resource type="Script" uid="uid://d1u13mv3i3t0n" path="res://assets/scripts/environment/main_menu/quit_button.gd" id="3_6x8q2"]
 [ext_resource type="AudioStream" uid="uid://giwx4maycjpr" path="res://assets/audio/main_menu/rougelike_main_menu_ambience.wav" id="4_h8d3m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_77rv3"]
