@@ -3,13 +3,13 @@ extends CharacterBody2D
 #region Movement variables
 
 # Wartość prędkości:
-@export var moveSpeed : float = 150
+@export var moveSpeed : float = 250
 @export var accelerationMultiplayer : float = 5.0
 @export var decelerationMultiplayer : float = 0.825
 @export var rotationSpeed : float = 5.0
 
 # --- DODANO: Zmienna dystansu wykrywania ---
-@export var detectionDistance : float = 500.0
+@export var detectionDistance : float = 600.0
 
 @export var respawnVector := Vector2(1080, 720)
 
@@ -20,8 +20,11 @@ extends CharacterBody2D
 
 #region Stats variables
 
-# Defaultowy stats component, póki co
-@export var stats_script : StatsComponent = preload("res://assets/scripts/entities/stats/stats_component.tres")
+# GUI elements:
+@export var health_points_bar : ProgressBar
+@export var health_points_label : Label
+
+@export var stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/enemy_monitored_stats_component.tres")
 
 #endregion
 
@@ -30,10 +33,20 @@ extends CharacterBody2D
 var target: Node2D
 
 func _ready():
+	# Set health parameters
 	stats_script.health = 50
 	stats_script.max_health = 50
+	
+	# Health points bar initialization
+	stats_script.health_points_bar = health_points_bar
+	stats_script.health_points_label = health_points_label
+	stats_script.change_health_points_bar_max_value()
+	
 	target = %Player
 	#actor_setup.call_deferred()
+	
+	
+	
 
 
 func actor_setup():
@@ -44,7 +57,27 @@ func actor_setup():
 func set_movement_target(movement_target: Vector2):
 	navigation_agent.target_position = movement_target
 
+func _process(_delta):
+	#region Stats GUI Procedure
+	stats_script.update_helath_points_bar()
+	#endregion
+
 func _physics_process(delta):
+	# Sprawdzanie wszystkich kolizji w danej klatce
+	#var is_collision_with_mob_detected = false
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if collider.is_in_group("Player"):
+			print("Przeciwnik wpadł na gracza!")
+			collider.stats_script.take_damage(1)
+			#is_collision_with_mob_detected = true
+	
+	# todo trzeba zatrzymać ruch kiedy już się ociera o cel żeby sie nie przylepiał do niego
+	#if is_collision_with_mob_detected:
+		#return
+	
 	#region Move Procedure
 	
 	# --- DODANO: Sprawdzanie czy cel jest w zasięgu ---
@@ -85,3 +118,14 @@ func _physics_process(delta):
 	# Move the character
 	move_and_slide()
 	#endregion
+	
+	# Respawn in case of death
+	if !stats_script.is_alive() :
+		print("Enemy has killed successfull")
+		stats_script.heal_completely()
+		Respawn()
+
+func Respawn():
+		position = respawnVector
+		velocity.x = 0
+		velocity.y = 0

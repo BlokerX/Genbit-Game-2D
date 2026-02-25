@@ -5,7 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/player/player_script/player_script.gd" id="3_vlfoo"]
 [ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="4_ej7ba"]
-[ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/styles/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/enemies/enemy_template.gd" id="6_8hvnv"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 
@@ -109,25 +108,20 @@ offset_top = 16.0
 offset_right = 266.0
 offset_bottom = 43.0
 scale = Vector2(1, 0.88)
-theme_override_styles/fill = ExtResource("6_6uf7s")
 show_percentage = false
 
 [node name="Label" type="Label" parent="HealthPointsBar" unique_id=1386517132]
 layout_mode = 0
 offset_right = 248.0
 offset_bottom = 27.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EnemySprite" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label") groups=["Enemy", "NPC"]]
+[node name="EnemySprite" type="CharacterBody2D" parent="." unique_id=634546861 groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
-collision_layer = 2
 script = ExtResource("6_8hvnv")
-health_points_bar = NodePath("ProgressBar")
-health_points_label = NodePath("ProgressBar/Label2")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="EnemySprite" unique_id=1995051797]
 texture_filter = 1
@@ -147,18 +141,6 @@ offset_top = -48.0
 offset_right = 32.0
 offset_bottom = -32.0
 theme_override_font_sizes/font_size = 8
-theme_override_styles/background = ExtResource("6_6uf7s")
-show_percentage = false
-
-[node name="Label2" type="Label" parent="EnemySprite/ProgressBar" unique_id=271877439]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
 navigation_polygon = SubResource("NavigationPolygon_hx11q")

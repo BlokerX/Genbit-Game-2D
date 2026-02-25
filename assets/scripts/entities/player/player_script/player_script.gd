@@ -23,13 +23,14 @@ extends CharacterBody2D
 @export var health_points_bar : ProgressBar
 @export var health_points_label : Label
 
-@export var stats_script : PlayerStatsComponent = preload("res://assets/scripts/entities/player/player_stats/player_stats_component.tres")
+@export var stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_stats_component.tres")
 
 @export var character_sprite : Sprite2D
 
 #endregion
 
 func _ready():
+	# Health points bar initialization
 	stats_script.health_points_bar = health_points_bar
 	stats_script.health_points_label = health_points_label
 
@@ -67,7 +68,25 @@ func _physics_process(delta):
 	# Respawn
 	if Input.is_action_just_pressed("RespawnButton") :
 		Respawn()
-
+	
+	# Throw damage // test version
+	# todo -> ujednolicić wzór na detekcję kolizji
+	#Sprawdzanie wszystkich kolizji w danej klatce
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if collider.is_in_group("Enemy"):
+			print("Gracz wpadł na przeciwnika!")
+			if Input.is_action_pressed("Attack"):
+				collider.stats_script.take_damage(1)
+	
+	# Respawn in case of death
+	if !stats_script.is_alive() :
+		print("Player has killed successfull")
+		stats_script.heal_completely()
+		Respawn()
+	
 func Respawn():
 		position = respawnVector
 		velocity.x = 0

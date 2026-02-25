@@ -1,12 +1,14 @@
 extends "res://assets/scripts/entities/stats/stats_res.gd"
 
-class_name PlayerStatsComponent
+class_name MonitoredStatsComponent
 
 var health_points_bar : ProgressBar
 var health_points_label : Label
 
+# D_E_B_U_G
 func monitor() -> void :
-	print("Monitor zdrowia gracza: ", health, " / ", max_health)
+	#print("Monitor zdrowia gracza: ", health, " / ", max_health)
+	return
 
 func update_helath_points_bar() -> void :
 	# Show HP in GUI
