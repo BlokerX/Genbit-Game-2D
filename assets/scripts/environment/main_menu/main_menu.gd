@@ -11,6 +11,10 @@ func _ready() -> void:
 	
 	button_credits.main_scene_node = canvaslayer_menus
 	ambience.play()
+	button_start.grab_focus()
 
 func button_start_pressed() -> void:
 	main_scene.start_game(self)
+
+func back_from_credits() -> void:
+	button_start.grab_focus()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://daetexya25b0v"]
+[gd_scene format=3 uid="uid://daetexya25b0v"]
 
 [ext_resource type="Script" uid="uid://bpalvm4aaiwe5" path="res://assets/scripts/environment/main_menu/main_menu.gd" id="1_4qj7h"]
 [ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/environment/main_menu/credits_button.gd" id="2_6r5fw"]
@@ -36,31 +36,13 @@ font_names = PackedStringArray("Sans-Serif")
 font_italic = true
 font_weight = 825
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fsbqx"]
-draw_center = false
-border_width_left = 8
-border_width_top = 8
-border_width_right = 8
-border_width_bottom = 8
-border_color = Color(0, 0, 0, 0.25098)
-border_blend = true
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbhea"]
-bg_color = Color(0.38, 0.28386, 0.1292, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fadmi"]
+bg_color = Color(0.76, 0.56772, 0.2584, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0, 0, 0, 1)
-border_blend = true
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tanm1"]
-bg_color = Color(0.7, 0.5229, 0.238, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.76, 0.56772, 0.2584, 1)
+border_color = Color(0.89, 0.66483, 0.3026, 1)
 border_blend = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qsvb"]
@@ -72,13 +54,31 @@ border_width_bottom = 4
 border_color = Color(0.49, 0.36603, 0.1666, 1)
 border_blend = true
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fadmi"]
-bg_color = Color(0.76, 0.56772, 0.2584, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tanm1"]
+bg_color = Color(0.7, 0.5229, 0.238, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.89, 0.66483, 0.3026, 1)
+border_color = Color(0.76, 0.56772, 0.2584, 1)
+border_blend = true
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbhea"]
+bg_color = Color(0.38, 0.28386, 0.1292, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+border_blend = true
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fsbqx"]
+draw_center = false
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0, 0, 0, 0.25098)
 border_blend = true
 
 [sub_resource type="Gradient" id="Gradient_77rv3"]
@@ -126,7 +126,7 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.2, 0.9)
 metadata/_snap_enabled = true
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=592601423]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -136,7 +136,7 @@ grow_vertical = 2
 script = ExtResource("1_4qj7h")
 metadata/_edit_lock_ = true
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1477678357]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -146,7 +146,7 @@ grow_vertical = 2
 color = Color(0.118581, 0.118581, 0.118581, 1)
 metadata/_edit_lock_ = true
 
-[node name="Menu Panel" type="PanelContainer" parent="."]
+[node name="Menu Panel" type="PanelContainer" parent="." unique_id=1594227860]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -162,12 +162,12 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_77rv3")
 metadata/_edit_lock_ = true
 
-[node name="Menu Options" type="VBoxContainer" parent="Menu Panel"]
+[node name="Menu Options" type="VBoxContainer" parent="Menu Panel" unique_id=293869987]
 layout_mode = 2
 theme_override_constants/separation = 2
 metadata/_edit_lock_ = true
 
-[node name="Game Title" type="Label" parent="Menu Panel/Menu Options"]
+[node name="Game Title" type="Label" parent="Menu Panel/Menu Options" unique_id=531227997]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_x6jn2")
 text = "ROUGELIKE"
@@ -176,7 +176,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="Menu Buttons" type="GridContainer" parent="Menu Panel/Menu Options"]
+[node name="Menu Buttons" type="GridContainer" parent="Menu Panel/Menu Options" unique_id=1789110980]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/h_separation = 2
@@ -184,90 +184,108 @@ theme_override_constants/v_separation = 2
 columns = 2
 metadata/_edit_lock_ = true
 
-[node name="PlayButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons"]
+[node name="PlayButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=2004125674]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
-theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+focus_neighbor_left = NodePath("../SettingsButton")
+focus_neighbor_top = NodePath("../CreditsButton")
+focus_neighbor_right = NodePath("../SettingsButton")
+focus_neighbor_bottom = NodePath("../CreditsButton")
+focus_next = NodePath("../SettingsButton")
+focus_previous = NodePath("../QuitButton")
 theme_override_colors/font_color = Color(0.38, 0.28386, 0.1292, 1)
 theme_override_colors/font_focus_color = Color(0.33, 0.24651, 0.1122, 1)
 theme_override_colors/font_pressed_color = Color(0.3, 0.2241, 0.102, 1)
+theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
 theme_override_fonts/font = SubResource("SystemFont_77rv3")
 theme_override_font_sizes/font_size = 32
-theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
-theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/normal = SubResource("StyleBoxFlat_fadmi")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
+theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 text = "Play"
 metadata/_edit_lock_ = true
 
-[node name="SettingsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons"]
+[node name="SettingsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=453230634]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
-theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+focus_neighbor_left = NodePath("../PlayButton")
+focus_neighbor_top = NodePath("../QuitButton")
+focus_neighbor_right = NodePath("../PlayButton")
+focus_neighbor_bottom = NodePath("../QuitButton")
+focus_next = NodePath("../CreditsButton")
+focus_previous = NodePath("../PlayButton")
 theme_override_colors/font_color = Color(0.38, 0.28386, 0.1292, 1)
 theme_override_colors/font_focus_color = Color(0.33, 0.24651, 0.1122, 1)
 theme_override_colors/font_pressed_color = Color(0.3, 0.2241, 0.102, 1)
+theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
 theme_override_fonts/font = SubResource("SystemFont_77rv3")
 theme_override_font_sizes/font_size = 32
-theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
-theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/normal = SubResource("StyleBoxFlat_fadmi")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
+theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 disabled = true
 text = "Settings"
 metadata/_edit_lock_ = true
 
-[node name="CreditsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons"]
+[node name="CreditsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=418561509]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
-theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+focus_neighbor_left = NodePath("../QuitButton")
+focus_neighbor_top = NodePath("../PlayButton")
+focus_neighbor_right = NodePath("../QuitButton")
+focus_neighbor_bottom = NodePath("../PlayButton")
+focus_next = NodePath("../QuitButton")
+focus_previous = NodePath("../SettingsButton")
 theme_override_colors/font_color = Color(0.38, 0.28386, 0.1292, 1)
 theme_override_colors/font_focus_color = Color(0.33, 0.24651, 0.1122, 1)
 theme_override_colors/font_pressed_color = Color(0.3, 0.2241, 0.102, 1)
+theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
 theme_override_fonts/font = SubResource("SystemFont_77rv3")
 theme_override_font_sizes/font_size = 32
-theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
-theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/normal = SubResource("StyleBoxFlat_fadmi")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
+theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 text = "Credits"
 script = ExtResource("2_6r5fw")
 metadata/_edit_lock_ = true
 
-[node name="QuitButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons"]
+[node name="QuitButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=2115213143]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
-theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
 theme_override_colors/font_color = Color(0.38, 0.28386, 0.1292, 1)
 theme_override_colors/font_focus_color = Color(0.33, 0.24651, 0.1122, 1)
 theme_override_colors/font_pressed_color = Color(0.3, 0.2241, 0.102, 1)
+theme_override_colors/font_hover_color = Color(0.35, 0.26145, 0.119, 1)
+theme_override_colors/font_disabled_color = Color(0.19, 0.14193, 0.0646, 1)
 theme_override_fonts/font = SubResource("SystemFont_77rv3")
 theme_override_font_sizes/font_size = 32
-theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
-theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/normal = SubResource("StyleBoxFlat_fadmi")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
+theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 text = "Quit"
 script = ExtResource("3_6x8q2")
 metadata/_edit_lock_ = true
 
-[node name="CanvasModulate" type="CanvasModulate" parent="."]
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=442879831]
 color = Color(0.08, 0.08, 0.08, 1)
 metadata/_edit_lock_ = true
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=2140383951]
 position = Vector2(960, 540)
 amount = 200
 texture = SubResource("GradientTexture2D_x6jn2")
@@ -276,11 +294,11 @@ fixed_fps = 60
 process_material = SubResource("ParticleProcessMaterial_fsbqx")
 metadata/_edit_lock_ = true
 
-[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+[node name="LightOccluder2D" type="LightOccluder2D" parent="." unique_id=1732881152]
 occluder = SubResource("OccluderPolygon2D_77rv3")
 metadata/_edit_lock_ = true
 
-[node name="PointLight2D" type="PointLight2D" parent="."]
+[node name="PointLight2D" type="PointLight2D" parent="." unique_id=85762600]
 position = Vector2(961, -512)
 energy = 1.5
 shadow_enabled = true
@@ -288,9 +306,9 @@ texture = SubResource("GradientTexture2D_fsbqx")
 texture_scale = 50.0
 metadata/_edit_lock_ = true
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1744901871]
 
-[node name="Ambience" type="AudioStreamPlayer" parent="."]
+[node name="Ambience" type="AudioStreamPlayer" parent="." unique_id=1180077537]
 stream = ExtResource("4_h8d3m")
 volume_db = -6.0
 pitch_scale = 0.5

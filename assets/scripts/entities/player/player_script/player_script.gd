@@ -25,6 +25,8 @@ extends CharacterBody2D
 
 @export var stats_script : PlayerStatsComponent = preload("res://assets/scripts/entities/player/player_stats/player_stats_component.tres")
 
+@export var character_sprite : Sprite2D
+
 #endregion
 
 func _ready():
@@ -45,9 +47,28 @@ func _physics_process(delta):
 	
 	# Movement procedure
 	velocity = movement_universal_scirpt.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2(horizontal, vertical))
+	
+	# Set sprite orientation
+	if horizontal < 0:
+		if character_sprite.flip_h != false:
+			character_sprite.flip_h = false
+	elif horizontal > 0 :
+		if character_sprite.flip_h != true:
+			character_sprite.flip_h = true
+	
+	
 	move_and_slide()
 	
 	# D_E_B_U_G
 	#print("Monitor prędkości gracza: ", velocity)
 	
 	#endregion
+	
+	# Respawn
+	if Input.is_action_just_pressed("RespawnButton") :
+		Respawn()
+
+func Respawn():
+		position = respawnVector
+		velocity.x = 0
+		velocity.y = 0
