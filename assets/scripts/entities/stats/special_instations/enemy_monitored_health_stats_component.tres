@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MonitoredStatsComponent" format=3 uid="uid://t5ji7tccoyrb"]
 
-[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_stats_res.gd" id="1_7fnyk"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_stats_res.gd" id="1_csuig"]
 
 [resource]
-script = ExtResource("1_7fnyk")
+script = ExtResource("1_csuig")

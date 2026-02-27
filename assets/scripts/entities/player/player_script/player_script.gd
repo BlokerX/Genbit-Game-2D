@@ -13,7 +13,7 @@ extends CharacterBody2D
 @export var respawnVector := Vector2(512, 360)
 
 # Komponent ruchu:
-@export var movement_universal_scirpt : MovementComponent = preload("res://assets/scripts/entities/movement/movement_component.tres")
+@export var movement_universal_script : MovementComponent = preload("res://assets/scripts/entities/movement/movement_component.tres")
 
 #endregion
 
@@ -25,7 +25,7 @@ extends CharacterBody2D
 
 @export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_health_stats_component.tres")
 
-@export var attack_stats_scirpt : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
+@export var attack_stats_script : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
 
 @export var character_sprite : Sprite2D
 
@@ -33,8 +33,8 @@ extends CharacterBody2D
 
 func _ready():
 	# Set attack parameters
-	attack_stats_scirpt.attack_damage = 10
-	attack_stats_scirpt.attack_cooldown = 1.0
+	attack_stats_script.attack_damage = 10
+	attack_stats_script.attack_cooldown = 1.0
 	
 	# Health points bar initialization
 	health_stats_script.health_points_bar = health_points_bar
@@ -46,16 +46,16 @@ func _process(_delta):
 	#endregion
 
 func _physics_process(delta):
-	attack_stats_scirpt.attack_cooldown_process(delta)
+	attack_stats_script.attack_cooldown_process(delta)
 	
 	#Sprawdzanie wszystkich kolizji w danej klatce
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
-		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_scirpt.can_attack():
+		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_script.can_attack():
 			print("Gracz atakuje przeciwnika!")
-			attack_stats_scirpt.attack(collider)
+			attack_stats_script.attack(collider)
 	
 	#region Move Procedure
 	
@@ -64,7 +64,7 @@ func _physics_process(delta):
 	var vertical := Input.get_axis("Up","Down")
 	
 	# Movement procedure
-	velocity = movement_universal_scirpt.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2(horizontal, vertical))
+	velocity = movement_universal_script.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2(horizontal, vertical))
 	
 	# Set sprite orientation
 	if horizontal < 0:
