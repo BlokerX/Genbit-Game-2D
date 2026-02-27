@@ -23,7 +23,7 @@ extends CharacterBody2D
 @export var health_points_bar : ProgressBar
 @export var health_points_label : Label
 
-@export var stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_stats_component.tres")
+@export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_health_stats_component.tres")
 
 @export var attack_stats_scirpt : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
 
@@ -37,12 +37,12 @@ func _ready():
 	attack_stats_scirpt.attack_cooldown = 1.0
 	
 	# Health points bar initialization
-	stats_script.health_points_bar = health_points_bar
-	stats_script.health_points_label = health_points_label
+	health_stats_script.health_points_bar = health_points_bar
+	health_stats_script.health_points_label = health_points_label
 
 func _process(_delta):
 	#region Stats GUI Procedure
-	stats_script.update_helath_points_bar()
+	health_stats_script.update_helath_points_bar()
 	#endregion
 
 func _physics_process(delta):
@@ -55,7 +55,6 @@ func _physics_process(delta):
 		
 		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_scirpt.can_attack():
 			print("Gracz atakuje przeciwnika!")
-			#collider.stats_script.take_damage(attack_damage)
 			attack_stats_scirpt.attack(collider)
 	
 	#region Move Procedure
@@ -84,9 +83,9 @@ func _physics_process(delta):
 	#endregion
 	
 	# Respawn in case of death
-	if !stats_script.is_alive() :
+	if !health_stats_script.is_alive() :
 		print("Player has killed successfull")
-		stats_script.heal_completely()
+		health_stats_script.heal_completely()
 		Respawn()
 		return
 	
@@ -98,7 +97,7 @@ func _physics_process(delta):
 	
 	# Heal button
 	if Input.is_action_just_pressed("HealButton") :
-		stats_script.heal_completely()
+		health_stats_script.heal_completely()
 		print("Gracz się uleczył!")
 	
 func Respawn():

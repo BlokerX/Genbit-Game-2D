@@ -14,7 +14,7 @@ func can_attack() -> bool :
 	return true
 
 func attack(target : CharacterBody2D) -> void :
-	target.stats_script.take_damage(attack_damage)
+	target.health_stats_script.take_damage(attack_damage)
 	attack_cooldown_timer = attack_cooldown
 
 func attack_cooldown_process(delta : float) -> void :
