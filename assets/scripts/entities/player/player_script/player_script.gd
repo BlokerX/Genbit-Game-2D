@@ -25,11 +25,17 @@ extends CharacterBody2D
 
 @export var stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_stats_component.tres")
 
+@export var attack_stats_scirpt : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
+
 @export var character_sprite : Sprite2D
 
 #endregion
 
 func _ready():
+	# Set attack parameters
+	attack_stats_scirpt.attack_damage = 10
+	attack_stats_scirpt.attack_cooldown = 1.0
+	
 	# Health points bar initialization
 	stats_script.health_points_bar = health_points_bar
 	stats_script.health_points_label = health_points_label
@@ -40,6 +46,18 @@ func _process(_delta):
 	#endregion
 
 func _physics_process(delta):
+	attack_stats_scirpt.attack_cooldown_process(delta)
+	
+	#Sprawdzanie wszystkich kolizji w danej klatce
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_scirpt.can_attack():
+			print("Gracz atakuje przeciwnika!")
+			#collider.stats_script.take_damage(attack_damage)
+			attack_stats_scirpt.attack(collider)
+	
 	#region Move Procedure
 	
 	# Movement inputs
@@ -65,27 +83,23 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Respawn
-	if Input.is_action_just_pressed("RespawnButton") :
-		Respawn()
-	
-	# Throw damage // test version
-	# todo -> ujednolicić wzór na detekcję kolizji
-	#Sprawdzanie wszystkich kolizji w danej klatce
-	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
-		var collider = collision.get_collider()
-		
-		if collider.is_in_group("Enemy"):
-			print("Gracz wpadł na przeciwnika!")
-			if Input.is_action_pressed("Attack"):
-				collider.stats_script.take_damage(1)
-	
 	# Respawn in case of death
 	if !stats_script.is_alive() :
 		print("Player has killed successfull")
 		stats_script.heal_completely()
 		Respawn()
+		return
+	
+	# Respawn
+	if Input.is_action_just_pressed("RespawnButton") :
+		Respawn()
+		print("Gracz się odrodził!")
+		return
+	
+	# Heal button
+	if Input.is_action_just_pressed("HealButton") :
+		stats_script.heal_completely()
+		print("Gracz się uleczył!")
 	
 func Respawn():
 		position = respawnVector

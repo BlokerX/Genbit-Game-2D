@@ -78,6 +78,8 @@ tile_set = SubResource("TileSet_6uf7s")
 [node name="Player" type="CharacterBody2D" parent="." unique_id=88745612 node_paths=PackedStringArray("health_points_bar", "health_points_label", "character_sprite") groups=["Player"]]
 unique_name_in_owner = true
 position = Vector2(304, 429)
+collision_layer = 2
+collision_mask = 5
 script = ExtResource("3_vlfoo")
 health_points_bar = NodePath("../HealthPointsBar")
 health_points_label = NodePath("../HealthPointsBar/Label")
@@ -124,7 +126,8 @@ vertical_alignment = 1
 
 [node name="EnemySprite" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label") groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
-collision_layer = 2
+collision_layer = 4
+collision_mask = 3
 script = ExtResource("6_8hvnv")
 health_points_bar = NodePath("ProgressBar")
 health_points_label = NodePath("ProgressBar/Label2")

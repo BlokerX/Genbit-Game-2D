@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="StatsComponent" format=3 uid="uid://dbliy2ar7a3k7"]
+
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/attack_stats_res.gd" id="1_rtxb7"]
+
+[resource]
+script = ExtResource("1_rtxb7")

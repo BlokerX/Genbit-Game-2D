@@ -26,6 +26,8 @@ extends CharacterBody2D
 
 @export var stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/enemy_monitored_stats_component.tres")
 
+@export var attack_stats_scirpt : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
+
 #endregion
 
 # Nawigacja (pathfinding)
@@ -36,6 +38,10 @@ func _ready():
 	# Set health parameters
 	stats_script.health = 50
 	stats_script.max_health = 50
+	
+	# Set attack parameters
+	attack_stats_scirpt.attack_damage = 10
+	attack_stats_scirpt.attack_cooldown = 2.0
 	
 	# Health points bar initialization
 	stats_script.health_points_bar = health_points_bar
@@ -63,20 +69,18 @@ func _process(_delta):
 	#endregion
 
 func _physics_process(delta):
+	attack_stats_scirpt.attack_cooldown_process(delta)
+		
 	# Sprawdzanie wszystkich kolizji w danej klatce
 	#var is_collision_with_mob_detected = false
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
-		if collider.is_in_group("Player"):
-			print("Przeciwnik wpadł na gracza!")
-			collider.stats_script.take_damage(1)
-			#is_collision_with_mob_detected = true
-	
-	# todo trzeba zatrzymać ruch kiedy już się ociera o cel żeby sie nie przylepiał do niego
-	#if is_collision_with_mob_detected:
-		#return
+		if collider.is_in_group("Player") and attack_stats_scirpt.can_attack():
+			print("Pająk atakuje gracza!")
+			#collider.stats_script.take_damage(attack_damage)
+			attack_stats_scirpt.attack(collider)
 	
 	#region Move Procedure
 	
