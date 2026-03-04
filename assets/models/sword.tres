@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://dljulb3xefki7"]
+
+[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_yvqkp"]
+
+[resource]
+script = ExtResource("1_yvqkp")
+attack_damage = 15
+weapon_type = "Sword"
+item_name = "Sword"
+item_description = "Sword is an useable item."
