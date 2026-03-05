@@ -1,0 +1,1 @@
+In Export menu add this folder to Resources -> Filters to exclude files/folders from project.

@@ -1,0 +1,2 @@
+The game has following art style rules:
+	1. Uses GUI system, it doesn't run as CLI software.
