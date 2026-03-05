@@ -29,6 +29,8 @@ extends CharacterBody2D
 
 @export var character_sprite : Sprite2D
 
+@export var inventory : Inventory = null
+
 #endregion
 
 func _ready():
@@ -39,10 +41,40 @@ func _ready():
 	# Health points bar initialization
 	health_stats_script.health_points_bar = health_points_bar
 	health_stats_script.health_points_label = health_points_label
+	
+	inventory.inventory_updated.connect(on_inventory_update)
+	
+	on_inventory_update()
 
-func _process(_delta):
+func on_inventory_update() :
+	print("----------------")
+	print("Inventory state:")
+	print("---")
+	print("Items:")
+	for item in inventory.items :
+		if item != null :
+			print(item.item_name)
+	print("---")
+	var __item_name : String = "null"
+	if inventory.get_item() != null :
+		__item_name = inventory.get_item().item_name
+	print("Current item: " + __item_name)
+	print("----------------")
+
+func _process(delta):
 	#region Stats GUI Procedure
 	health_stats_script.update_helath_points_bar()
+	#endregion
+	
+	#region Test Inventory
+	
+	# Pobieramy aktualny przedmiot z ekwipunku
+	var current_item = inventory.get_item()
+	
+	# Jeśli to jest UseableItem, odświeżamy jego cooldown
+	if current_item is UseableItem :
+		current_item.cooldown_process(delta)
+		
 	#endregion
 
 func _physics_process(delta):
@@ -67,11 +99,11 @@ func _physics_process(delta):
 	velocity = movement_universal_script.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2(horizontal, vertical))
 	
 	# Set sprite orientation
-	if horizontal < 0:
-		if character_sprite.flip_h != false:
+	if horizontal < 0 :
+		if character_sprite.flip_h != false :
 			character_sprite.flip_h = false
 	elif horizontal > 0 :
-		if character_sprite.flip_h != true:
+		if character_sprite.flip_h != true :
 			character_sprite.flip_h = true
 	
 	

@@ -32,6 +32,7 @@ folder_colors={
 "res://assets/scripts/entities/items/": "green",
 "res://assets/scripts/entities/movement/": "orange",
 "res://assets/scripts/entities/player/": "blue",
+"res://assets/scripts/entities/player/player_stats/": "gray",
 "res://assets/scripts/entities/stats/": "purple"
 }
 
