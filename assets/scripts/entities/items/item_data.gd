@@ -11,6 +11,7 @@ class_name ItemData
 
 @export var item_is_stackable : bool = false
 @export var item_stack_count : int = 1
+@export var item_max_stack_count : int = 1
 
 # Używamy Texture2D zamiast Sprite2D do przechowywania grafiki w danych
 @export var item_icon : Texture2D 
@@ -41,6 +42,7 @@ func _init(
 	_item_description : String = "",
 	_item_is_stackable : bool = false,
 	_item_stack_count : int = 1,
+	_item_max_stack_count : int = 1,
 	_item_icon : Texture2D = null,
 	_durable : int = -1,
 	_max_durable : int = -1
@@ -51,6 +53,7 @@ func _init(
 	item_description = _item_description
 	item_is_stackable = _item_is_stackable
 	item_stack_count = _item_stack_count
+	item_max_stack_count = _item_max_stack_count
 	item_icon = _item_icon
 	durable = _durable
 	max_durable = _max_durable

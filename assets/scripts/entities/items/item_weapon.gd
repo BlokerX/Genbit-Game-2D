@@ -21,6 +21,7 @@ func _init(
  _item_description : String = "",
  _item_is_stackable : bool = false,
  _item_stack_count : int = 1,
+ _item_max_stack_count : int = 1,
  _item_sprite : Texture2D = null,
  _durable : int = -1,
  _max_durable : int = -1,
@@ -33,7 +34,7 @@ func _init(
  _stun_time : float = 0.0
 ) :
 	# Inicjalizacja dla klasy bazowej
-	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_sprite, _durable, _max_durable, _use_cooldown)
+	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_max_stack_count, _item_sprite, _durable, _max_durable, _use_cooldown)
 	
 	# Inicjalizacja dla aktualnej klasy
 	attack_range = _attack_range

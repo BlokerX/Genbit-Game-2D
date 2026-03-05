@@ -47,19 +47,19 @@ func _ready():
 	on_inventory_update()
 
 func on_inventory_update() :
-	print("----------------")
+	print("================")
 	print("Inventory state:")
+	print("---")
+	var __item_name : String = "null"
+	if inventory.get_current_item() != null :
+		__item_name = inventory.get_current_item().item_name
+	print("Current item (slot number = " + str(inventory.current_item_index + 1) + " / " + str(inventory.max_items) + "): " + __item_name)
 	print("---")
 	print("Items:")
 	for item in inventory.items :
 		if item != null :
 			print(item.item_name)
-	print("---")
-	var __item_name : String = "null"
-	if inventory.get_item() != null :
-		__item_name = inventory.get_item().item_name
-	print("Current item (slot number = " + str(inventory.current_item_index) + "): " + __item_name)
-	print("----------------")
+	print("================")
 
 func _process(delta):
 	#region Stats GUI Procedure
@@ -69,7 +69,7 @@ func _process(delta):
 	#region Test Inventory
 	
 	# Pobieramy aktualny przedmiot z ekwipunku
-	var current_item = inventory.get_item()
+	var current_item = inventory.get_current_item()
 	
 	# Jeśli to jest UseableItem, odświeżamy jego cooldown
 	if current_item is UseableItem :
@@ -132,6 +132,12 @@ func _physics_process(delta):
 		health_stats_script.heal_completely()
 		print("Gracz się uleczył!")
 	
+	if Input.is_action_just_pressed("UseItemButton") :
+		var _item = inventory.get_current_item()
+		if _item is UseableItem :
+			if _item is HealingItem :
+				_item.heal_target(self)
+
 func Respawn():
 		position = respawnVector
 		velocity.x = 0

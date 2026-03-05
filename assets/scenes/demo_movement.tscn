@@ -9,6 +9,8 @@
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/styles/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/enemies/enemy_template.gd" id="6_8hvnv"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/item_data.gd" id="7_tme40"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/models/healing_item.tres" id="8_d7uxj"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
 texture = ExtResource("1_r5tdj")
@@ -109,6 +111,7 @@ debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
 [node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
 script = ExtResource("4_w0vak")
+items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj")])
 metadata/_custom_type_script = "uid://t84hjcd18438"
 
 [node name="HealthPointsBar" type="ProgressBar" parent="." unique_id=1547176443]

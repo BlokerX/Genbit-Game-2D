@@ -28,8 +28,14 @@ func remove_item(index: int) -> void:
 		items.remove_at(index)
 		inventory_updated.emit()
 
-func get_item() -> ItemData :
-	return items[current_item_index]
+func get_current_item() -> ItemData :
+	# Sprawdzamy, czy indeks jest bezpieczny (nie jest na minusie i jest mniejszy niż rozmiar tablicy)
+	if current_item_index >= 0 and current_item_index < items.size():
+		return items[current_item_index]
+	
+	# Jeśli indeks jest zły, zwracamy null (brak przedmiotu), zamiast crashować grę
+	#print("Błąd: Próba pobrania przedmiotu spoza zakresu ekwipunku!")
+	return null
 
 func select_item(index) -> void :
 	current_item_index = index
