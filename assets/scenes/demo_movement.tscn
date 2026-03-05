@@ -10,8 +10,11 @@
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/enemies/enemy_template.gd" id="6_8hvnv"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/item_data.gd" id="7_tme40"]
-[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/models/healing_item.tres" id="8_d7uxj"]
-[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/models/wepon_item.tres" id="9_d7uxj"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/models/items/healing_potion.tres" id="8_d7uxj"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/models/items/sword.tres" id="9_d7uxj"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/models/items/big_sword.tres" id="10_3gvrm"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/models/items/knife.tres" id="11_xscv4"]
+[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/models/items/chocolate_cookie.tres" id="12_d23um"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
 texture = ExtResource("1_r5tdj")
@@ -112,7 +115,7 @@ debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
 [node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
 script = ExtResource("4_w0vak")
-items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), null, null, null, null, null, null, null])
+items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
 metadata/_custom_type_script = "uid://t84hjcd18438"
 
 [node name="HealthPointsBar" type="ProgressBar" parent="." unique_id=1547176443]

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dgvi1351teqg1"]
+
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/item_data.gd" id="1_tdj3y"]
+
+[resource]
+script = ExtResource("1_tdj3y")
+item_id = 4
+item_name = "Nothing"
+item_description = "All is nothing."

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://cyotjd6nl8omu"]
+
+[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_1d7vr"]
+
+[resource]
+script = ExtResource("1_1d7vr")
+heal_amount = 49
+cures_poison = true
+use_cooldown = 6.0
+item_id = 2
+item_name = "Choco Cookie"
+item_type = "Consumable"
+item_description = "The delicious cookie! It revials 49 hp but it is hard."
+item_is_stackable = true
+item_stack_count = 10
+item_max_stack_count = 10

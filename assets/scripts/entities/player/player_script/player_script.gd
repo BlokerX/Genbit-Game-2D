@@ -129,6 +129,7 @@ func _physics_process(delta):
 		print("Gracz się odrodził!")
 		return
 	
+	# Use item
 	if Input.is_action_just_pressed("UseItemButton") :
 		var _item = inventory.get_current_item()
 		if _item is UseableItem :

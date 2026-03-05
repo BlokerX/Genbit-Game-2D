@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://lo35uipqgqmm"]
+
+[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_ijom4"]
+
+[resource]
+script = ExtResource("1_ijom4")
+attack_range = 0.5
+attack_damage = 5
+weapon_type = "Knife"
+stun_time = 0.2
+use_cooldown = 0.1
+item_id = 5
+item_name = "Knife"
+item_type = "Weapon"
+item_description = "Blooding! It has 5 hp damage."
+item_is_stackable = true
+item_stack_count = 25
+durable = 1
+max_durable = 1

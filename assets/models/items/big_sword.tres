@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://bownsdq2b671r"]
+
+[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_r625p"]
+
+[resource]
+script = ExtResource("1_r625p")
+attack_damage = 25
+stun_time = 1.4
+use_cooldown = 2.5
+item_name = "Big sword"
+item_type = "Weapon"
+item_description = "It has 30 hp damage and new one's durable is 40."
+durable = 40
+max_durable = 40

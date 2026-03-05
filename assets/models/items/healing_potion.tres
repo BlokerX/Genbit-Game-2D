@@ -4,10 +4,12 @@
 
 [resource]
 script = ExtResource("1_cboiq")
-use_cooldown = 0.5
+heal_amount = 15
+use_cooldown = 0.25
+item_id = 3
 item_name = "Health Potioon"
 item_type = "Consumable"
-item_description = "It revials 20 hp."
+item_description = "It revials 15 hp instantly by bootle."
 item_is_stackable = true
-item_stack_count = 16
-item_max_stack_count = 16
+item_stack_count = 12
+item_max_stack_count = 12
