@@ -58,7 +58,7 @@ func on_inventory_update() :
 	var __item_name : String = "null"
 	if inventory.get_item() != null :
 		__item_name = inventory.get_item().item_name
-	print("Current item: " + __item_name)
+	print("Current item (slot number = " + str(inventory.current_item_index) + "): " + __item_name)
 	print("----------------")
 
 func _process(delta):

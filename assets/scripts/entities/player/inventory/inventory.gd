@@ -34,3 +34,23 @@ func get_item() -> ItemData :
 func select_item(index) -> void :
 	current_item_index = index
 	inventory_updated.emit()
+
+func _physics_process(delta) :
+	if Input.is_action_just_pressed("InventorySlot1") :
+		select_item(0)
+	elif Input.is_action_just_pressed("InventorySlot2") :
+		select_item(1)
+	elif Input.is_action_just_pressed("InventorySlot3") :
+		select_item(2)
+	elif Input.is_action_just_pressed("InventorySlot4") :
+		select_item(3)
+	elif Input.is_action_just_pressed("InventorySlot5") :
+		select_item(4)
+	elif Input.is_action_just_pressed("InventorySlot6") :
+		select_item(5)
+	elif Input.is_action_just_pressed("InventorySlot7") :
+		select_item(6)
+	elif Input.is_action_just_pressed("InventorySlot8") :
+		select_item(7)
+	elif Input.is_action_just_pressed("InventorySlot9") :
+		select_item(8)
