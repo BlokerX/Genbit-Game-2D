@@ -30,10 +30,10 @@ func _init(
 	heal_amount = _heal_amount
 	cures_poison = _cures_poison
 
-func heal_target(target : CharacterBody2D) -> void :
+func heal_target(target : CharacterBody2D) -> bool :
 	# Sprawdzenie cooldownu z klasy UseableItem
 	if !super.use() :
-		return
+		return false
 	
 	# Zakładam, że w health_stats_script masz funkcję odwrotną do 'take_damage'
 	# np. 'heal(amount)' lub 'restore_health(amount)'
@@ -43,3 +43,4 @@ func heal_target(target : CharacterBody2D) -> void :
 	# Opcjonalne: logika leczenia ze statusów
 	#if cures_poison and target.get("status_stats_script") != null:
 		#target.status_stats_script.remove_poison()
+	return true

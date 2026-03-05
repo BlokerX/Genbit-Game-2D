@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://cb8cn5vk3trmf"]
+
+[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_w0gi6"]
+
+[resource]
+script = ExtResource("1_w0gi6")
+attack_damage = 20
+stun_time = 1.2
+item_id = 2
+item_name = "Sword"
+item_type = "Weapon"
+item_description = "It has 20 hp damage and new one's durable is 25."
+durable = 25
+max_durable = 25

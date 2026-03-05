@@ -10,3 +10,4 @@ item_type = "Consumable"
 item_description = "It revials 20 hp."
 item_is_stackable = true
 item_stack_count = 16
+item_max_stack_count = 16

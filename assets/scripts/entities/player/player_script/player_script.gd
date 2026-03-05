@@ -51,9 +51,22 @@ func on_inventory_update() :
 	print("Inventory state:")
 	print("---")
 	var __item_name : String = "null"
+	var __item_durable : String = "null"
+	var __item_max_durable : String = "null"
+	var __item_stack_count : String = "null"
+	var __item_max_stack_count : String = "null"
+	var __item_is_stackable : String = "null"
 	if inventory.get_current_item() != null :
 		__item_name = inventory.get_current_item().item_name
+		__item_durable = str(inventory.get_current_item().durable)
+		__item_max_durable = str(inventory.get_current_item().max_durable)
+		__item_stack_count = str(inventory.get_current_item().item_stack_count)
+		__item_max_stack_count = str(inventory.get_current_item().item_max_stack_count)
+		__item_is_stackable = str(inventory.get_current_item().item_is_stackable)
 	print("Current item (slot number = " + str(inventory.current_item_index + 1) + " / " + str(inventory.max_items) + "): " + __item_name)
+	print("Durability of the item = " + __item_durable + " / " + __item_max_durable)
+	print("Is item stackable = " + __item_is_stackable)
+	print("Stack of the item = " + __item_stack_count + " / " + __item_max_stack_count)
 	print("---")
 	print("Items:")
 	for item in inventory.items :
@@ -78,17 +91,6 @@ func _process(delta):
 	#endregion
 
 func _physics_process(delta):
-	attack_stats_script.attack_cooldown_process(delta)
-	
-	#Sprawdzanie wszystkich kolizji w danej klatce
-	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
-		var collider = collision.get_collider()
-		
-		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_script.can_attack():
-			print("Gracz atakuje przeciwnika!")
-			attack_stats_script.attack(collider)
-	
 	#region Move Procedure
 	
 	# Movement inputs
@@ -127,16 +129,36 @@ func _physics_process(delta):
 		print("Gracz się odrodził!")
 		return
 	
-	# Heal button
-	if Input.is_action_just_pressed("HealButton") :
-		health_stats_script.heal_completely()
-		print("Gracz się uleczył!")
-	
 	if Input.is_action_just_pressed("UseItemButton") :
 		var _item = inventory.get_current_item()
 		if _item is UseableItem :
 			if _item is HealingItem :
-				_item.heal_target(self)
+				if _item.heal_target(self) :
+					inventory.consume_current_item()
+			elif _item is ItemWeapon :
+				#region todo śmieciowy kod testowy
+				for i in get_slide_collision_count() :
+					var collision = get_slide_collision(i)
+					var collider = collision.get_collider()
+				
+					if collider.is_in_group("Enemy") and _item.is_ready_to_use():
+						_item.attack(collider)
+						inventory.consume_durability_of_the_item()
+				#endregion
+	
+	
+	#region Attack test script:
+	attack_stats_script.attack_cooldown_process(delta)
+	
+	#Sprawdzanie wszystkich kolizji w danej klatce
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_script.can_attack():
+			print("Gracz atakuje przeciwnika!")
+			attack_stats_script.attack(collider)
+	#endregion
 
 func Respawn():
 		position = respawnVector

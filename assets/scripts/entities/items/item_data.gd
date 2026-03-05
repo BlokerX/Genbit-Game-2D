@@ -22,14 +22,23 @@ class_name ItemData
 @export var max_durable : int = -1
 
 func reduce_durability(points : int = 1) -> void:
-	if durable > 0:
-		durable -= points
+	if max_durable <= 0:
+		return # Przedmiot nie ma wytrzymałości
 		
-# Funkcja nie usuwa już sama siebie, tylko informuje o swoim stanie
+	durable -= points
+	
+	## Jeśli obecny miecz się zepsuł, ale mamy jeszcze inne w stacku
+	#if durable <= 0 and item_stack_count > 1:
+		#item_stack_count -= 1
+		#durable = max_durable # Wyciągamy nowy, świeży miecz!
+		#print("Jeden miecz się zepsuł! Zostało: ", item_stack_count)
+
 func is_broken() -> bool:
-	if max_durable > 0 and durable <= 0:
+	# Zwracamy true TYLKO wtedy, gdy zepsuł się OSTATNI miecz w stacku
+	if max_durable > 0 and durable <= 0 and item_stack_count <= 1:
 		return true
 	return false
+	
 #endregion
 
 # Constructor

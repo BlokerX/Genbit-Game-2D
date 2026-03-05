@@ -48,6 +48,7 @@ func attack(target : CharacterBody2D) -> void :
 		print("Atak ma cooldowna!")
 		return
 	
+	print("Gracz atakuje przeciwnika bronią!")
 	# Wywołanie metod na targecie pozostaje bez zmian
 	target.health_stats_script.take_damage(attack_damage)
 	target.attack_stats_script.apply_stun(stun_time)

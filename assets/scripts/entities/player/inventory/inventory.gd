@@ -17,11 +17,45 @@ func _init() -> void :
 	items.resize(max_items)
 
 func add_item(item: ItemData) -> bool:
-	# Proste dodawanie do pierwszego wolnego slotu (jeśli zrobisz tablicę o stałym rozmiarze)
-	# W tym przykładzie po prostu dodajemy na koniec listy
-	items.append(item)
-	inventory_updated.emit()
-	return true
+	# Przeszukujemy ekwipunek w poszukiwaniu pierwszego wolnego miejsca (null)
+	for i in range(items.size()):
+		if items[i] == null:
+			# Klonujemy zasób, by przedmioty (np. ich wytrzymałość) działały niezależnie
+			items[i] = item.duplicate() 
+			inventory_updated.emit()
+			return true
+			
+	print("Ekwipunek jest pełny!")
+	return false
+
+func consume_current_item() -> void:
+	var item = get_current_item()
+	
+	if item != null:
+		# Zmniejszamy ilość przedmiotów w stacku o 1
+		item.item_stack_count -= 1
+		
+		# Jeśli to był ostatni przedmiot w tym slocie, czyścimy slot
+		if item.item_stack_count <= 0:
+			items[current_item_index] = null
+			
+		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
+		inventory_updated.emit()
+
+func consume_durability_of_the_item() -> void:
+	var item = get_current_item()
+	
+	if item != null:
+		# Zmniejszamy wytrzymałość o 1 użycie
+		item.reduce_durability()
+		
+		# Jeśli to był ostatni użytek, konsumujemy sztukę
+		if item.durable <= 0:
+			consume_current_item()
+			return
+			
+		# Informujemy UI o zmianie (żeby odświeżyło pasek durability)
+		inventory_updated.emit()
 
 func remove_item(index: int) -> void:
 	if index >= 0 and index < items.size():
@@ -40,6 +74,18 @@ func get_current_item() -> ItemData :
 func select_item(index) -> void :
 	current_item_index = index
 	inventory_updated.emit()
+
+func scroll_inventory(direction: int) -> void:
+	var new_index = current_item_index + direction
+	
+	# Jeśli wyjdziemy poza prawo, wracamy na początek (0)
+	if new_index >= items.size():
+		new_index = 0
+	# Jeśli wyjdziemy poza lewo, idziemy na koniec
+	elif new_index < 0:
+		new_index = items.size() - 1
+		
+	select_item(new_index)
 
 func _physics_process(delta) :
 	if Input.is_action_just_pressed("InventorySlot1") :
@@ -60,3 +106,8 @@ func _physics_process(delta) :
 		select_item(7)
 	elif Input.is_action_just_pressed("InventorySlot9") :
 		select_item(8)
+		
+	elif Input.is_action_just_pressed("InventoryScrollDown"):
+		scroll_inventory(1)
+	elif Input.is_action_just_pressed("InventoryScrollUp"):
+		scroll_inventory(-1)
