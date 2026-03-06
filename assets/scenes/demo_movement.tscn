@@ -75,7 +75,7 @@ vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(65, 63, 65, 1023, 1854, 1026, 1858, 63)])
 
-[node name="Node2D (Scena)" type="Node2D" unique_id=451291155]
+[node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
 
 [node name="TileMap" type="TileMapLayer" parent="." unique_id=363819282]
@@ -142,8 +142,8 @@ position = Vector2(850, 820)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("6_8hvnv")
-health_points_bar = NodePath("ProgressBar")
-health_points_label = NodePath("ProgressBar/Label2")
+health_points_bar = NodePath("HealthProgressBar")
+health_points_label = NodePath("HealthProgressBar/Label2")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="EnemySprite" unique_id=1995051797]
 texture_filter = 1
@@ -157,7 +157,7 @@ debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="EnemySprite" unique_id=1292834181]
 
-[node name="ProgressBar" type="ProgressBar" parent="EnemySprite" unique_id=102391968]
+[node name="HealthProgressBar" type="ProgressBar" parent="EnemySprite" unique_id=102391968]
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
@@ -166,7 +166,7 @@ theme_override_font_sizes/font_size = 8
 theme_override_styles/background = ExtResource("6_6uf7s")
 show_percentage = false
 
-[node name="Label2" type="Label" parent="EnemySprite/ProgressBar" unique_id=271877439]
+[node name="Label2" type="Label" parent="EnemySprite/HealthProgressBar" unique_id=271877439]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 16.0
