@@ -4,16 +4,16 @@ extends CharacterBody2D
 
 #region Movement variables
 
-# Wartość prędkości:
-@export var moveSpeed : float = 450
-@export var accelerationMultiplayer : float = 5.0
-@export var decelerationMultiplayer : float = 0.825
+## Wartość prędkości:
+#@export var moveSpeed : float = 450
+#@export var accelerationMultiplayer : float = 5.0
+#@export var decelerationMultiplayer : float = 0.825
 
 # Zmienne respawnu:
 @export var respawnVector := Vector2(512, 360)
 
 # Komponent ruchu:
-@export var movement_universal_script : MovementComponent = preload("res://assets/scripts/entities/movement/movement_component.tres")
+@export var movement_universal_script : MovementComponent = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
 
 #endregion
 
@@ -98,7 +98,7 @@ func _physics_process(delta):
 	var vertical := Input.get_axis("Up","Down")
 	
 	# Movement procedure
-	velocity = movement_universal_script.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2(horizontal, vertical))
+	velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
 	
 	# Set sprite orientation
 	if horizontal < 0 :

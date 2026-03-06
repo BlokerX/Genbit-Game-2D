@@ -3,9 +3,9 @@ extends CharacterBody2D
 #region Movement variables
 
 # Wartość prędkości:
-@export var moveSpeed : float = 250
-@export var accelerationMultiplayer : float = 5.0
-@export var decelerationMultiplayer : float = 0.825
+#@export var moveSpeed : float = 250
+#@export var accelerationMultiplayer : float = 5.0
+#@export var decelerationMultiplayer : float = 0.825
 @export var rotationSpeed : float = 5.0
 
 # --- DODANO: Zmienna dystansu wykrywania ---
@@ -14,7 +14,7 @@ extends CharacterBody2D
 @export var respawnVector := Vector2(1080, 720)
 
 # Komponent ruchu:
-@export var movement_universal_scirpt : MovementComponent = preload("res://assets/scripts/entities/movement/movement_component.tres")
+@export var movement_universal_scirpt : MovementComponent = preload("res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres")
 
 #endregion
 
@@ -104,7 +104,7 @@ func _physics_process(delta):
 		
 		# Apply deceleration when stopping
 		# old # velocity = velocity * decelerationMultiplayer
-		velocity = movement_universal_scirpt.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, Vector2.ZERO)
+		velocity = movement_universal_scirpt.movement_procedure(delta, velocity, Vector2.ZERO)
 		
 		move_and_slide()
 		return
@@ -116,7 +116,7 @@ func _physics_process(delta):
 	var direction = global_position.direction_to(next_path_position)
 	
 	# --- ZMIENIONO: Użycie komponentu z obliczonym wektorem kierunku do ruchu ---
-	velocity = movement_universal_scirpt.movement_procedure(delta, velocity, moveSpeed, accelerationMultiplayer, decelerationMultiplayer, direction)
+	velocity = movement_universal_scirpt.movement_procedure(delta, velocity, direction)
 	
 	# Move the character
 	move_and_slide()

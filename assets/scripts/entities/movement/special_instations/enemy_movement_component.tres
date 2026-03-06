@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MovementComponent" format=3 uid="uid://bt5qjbpslnluv"]
+
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_universal_res.gd" id="1_1k6hv"]
+
+[resource]
+script = ExtResource("1_1k6hv")
+moveSpeed = 250.0
+accelerationMultiplayer = 5.0
+decelerationMultiplayer = 0.825
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
