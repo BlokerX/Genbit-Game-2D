@@ -19,6 +19,10 @@ run/main_scene="uid://8ut7xkjehk1b"
 config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/show_image=false
 
+[autoload]
+
+SceneCollectionManager="*uid://6ewiy3em0bmv"
+
 [display]
 
 window/size/viewport_width=1920
