@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/player/player_script/player_script.gd" id="3_vlfoo"]
 [ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="4_ej7ba"]
-[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/player/inventory/inventory.gd" id="4_w0vak"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="4_w0vak"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/enemies/enemy_template.gd" id="6_8hvnv"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
@@ -116,7 +116,6 @@ debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 [node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
 script = ExtResource("4_w0vak")
 items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
-metadata/_custom_type_script = "uid://t84hjcd18438"
 
 [node name="HealthPointsBar" type="ProgressBar" parent="." unique_id=1547176443]
 offset_left = 16.0
