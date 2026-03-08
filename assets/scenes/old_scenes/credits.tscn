@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://uuss2dodm1na"]
 
 [ext_resource type="Script" uid="uid://iwhfwtbge6rm" path="res://assets/scripts/scene_scripts/credits/credits.gd" id="1_u8ubb"]
-[ext_resource type="Script" uid="uid://dkuf5f1il8a23" path="res://assets/scenes/rich_text_label.gd" id="2_mrsh3"]
+[ext_resource type="Script" uid="uid://dkuf5f1il8a23" path="res://assets/scenes/old_scenes/rich_text_label.gd" id="2_mrsh3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mn3uw"]
 draw_center = false

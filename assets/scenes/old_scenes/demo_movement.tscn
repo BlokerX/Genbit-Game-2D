@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://wn1dt8xyy57e"]
 
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="1_5oxlb"]
-[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/demo_movement.gd" id="1_hx11q"]
+[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/old_scenes/demo_movement.gd" id="1_hx11q"]
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/player/player_script/player_script.gd" id="3_vlfoo"]
 [ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="4_ej7ba"]

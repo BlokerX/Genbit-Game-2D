@@ -32,12 +32,22 @@ window/stretch/mode="viewport"
 [file_customization]
 
 folder_colors={
+"res://assets/audio/": "red",
+"res://assets/data/": "orange",
+"res://assets/fonts/": "red",
+"res://assets/scenes/": "yellow",
+"res://assets/scenes/old_scenes/": "gray",
+"res://assets/scripts/": "green",
 "res://assets/scripts/entities/enemies/": "red",
 "res://assets/scripts/entities/items/": "green",
 "res://assets/scripts/entities/movement/": "orange",
 "res://assets/scripts/entities/player/": "blue",
 "res://assets/scripts/entities/player/player_stats/": "gray",
-"res://assets/scripts/entities/stats/": "purple"
+"res://assets/scripts/entities/stats/": "purple",
+"res://assets/singletons/": "green",
+"res://assets/textures/": "red",
+"res://assets/themes/": "yellow",
+"res://assets_no_export/": "gray"
 }
 
 [global_group]
