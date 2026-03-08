@@ -1,9 +1,11 @@
-# #region basic info
+#region basic info
 #/# #region class annotations #endregion
 #/# #region class name #endregion
-#/# #region extends from class #endregion
+#region extends from class 
+extends Control
+#endregion
 #/# #region doc description #endregion
-# #endregion
+#endregion
 
 # #region class members
 #/# #region signals #endregion
