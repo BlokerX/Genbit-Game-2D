@@ -1,6 +1,6 @@
 extends Resource
 
-class_name StatsComponent
+class_name LifeStatsComponent
 
 @export var health : int = 100
 @export var max_health : int = 100

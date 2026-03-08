@@ -1,4 +1,4 @@
-extends "res://assets/scripts/entities/stats/stats_res.gd"
+extends LifeStatsComponent
 
 class_name MonitoredStatsComponent
 

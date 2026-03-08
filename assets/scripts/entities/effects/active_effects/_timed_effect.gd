@@ -17,7 +17,7 @@ func apply_effect(target : CharacterBody2D) -> bool:
 
 	# 2. JEŚLI NIE MA TAKIEGO EFEKTU, DODAJEMY NOWY (Twój stary kod)
 	var active_node = Node.new()
-	active_node.set_script(preload("res://assets/scripts/entities/effects/active_effects/active_effect.gd"))
+	active_node.set_script(preload("res://assets/scripts/entities/effects/active_effects/_active_effect.gd"))
 	
 	# Opcjonalnie: możemy zmienić nazwę węzła dla łatwiejszego debugowania w drzewie sceny
 	active_node.name = effect_name.replace(" ", "_") 

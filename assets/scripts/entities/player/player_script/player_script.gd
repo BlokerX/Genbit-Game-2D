@@ -23,7 +23,7 @@ extends CharacterBody2D
 @export var health_points_bar : ProgressBar
 @export var health_points_label : Label
 
-@export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_health_stats_component.tres")
+@export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
 
 @export var attack_stats_script : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
 
