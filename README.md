@@ -7,3 +7,5 @@ It exists for creating multi commit updates that are experimental and possibly t
 - [x] SceneCollectionManager
 - [ ] Current UI overhaul (intro, main menu, settings, credits, loading of scenes)
 - [ ] Stylized game UI, music & sfx
+## Current issues
+- Main Menu and Demo Movement scenes cannot be accesed due to current UI overhaul phase.
