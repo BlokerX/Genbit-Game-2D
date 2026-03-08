@@ -24,9 +24,7 @@ Here is following good practise of code order in GDScript:
 		3.	_ready()
 		4.	_process()
 		5.	_physics_process()
-		6.	remaining virtual methods:
-			1.	public virtual methods
-			2.	private virutal methods
+		6.	remaining virtual methods
 	15.	overriden custom methods:
 		1.	public custom methods
 		2.	private custom methods
