@@ -32,3 +32,24 @@ Here is following good practise of code order in GDScript:
 		1.	remaining public methods
 		2.	remaining private methods
 	17.	inner classes
+
+Example is showcased in node_template.gd
+
+If region is empty, then transform example:
+	#region main_region
+	/code/
+	#region one_layer_region
+	#endregion
+	#region two_layers_region
+	#region second_layer
+	#endregion
+	#endregion
+	#endregion
+to following example:
+	#region main_region
+	/code/
+	# #region one_layer_region #endregion
+	#/# #region second_layer
+	#/# #endregion
+	# #endregion
+	#endregion

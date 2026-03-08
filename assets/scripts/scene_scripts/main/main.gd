@@ -1,24 +1,50 @@
+#region basic info
+# #region class annotations #endregion
+# #region class name #endregion
+#region extends from class
 extends Node
+#endregion
+#region doc description
+## Main [Node] of the game.
+##
+## Main [Node] of the game, which is a parent to all non Autoload [Node]s are children of.
+#endregion
+#endregion
 
-func _ready() -> void:
-	to_main_menu()
+#region class members
+# #region signals #endregion
+# #region enums #endregion
+# #region constants #endregion
+# #region static variables #endregion
+# #region @export variables #endregion
+# #region regular variables #endregion
+# #region @onready variables #endregion
+#endregion
 
-func start_game(scene_to_remove : Node) -> void:
-	# Loading demo game scene
-	var scene:PackedScene = await SceneCollectionManager.get_packed_scene_deferred("uid://wn1dt8xyy57e")
-	# Instancing of the scene
-	var scene_instance = scene.instantiate()
-	# Adds scene_instance as child of the Main node
-	self.add_child(scene_instance)
-	# Remove main_menu from SceneTree if not null
-	if scene_to_remove != null :
-		scene_to_remove.queue_free()
+#region class methods
+# #region _static_init() #endregion
+# #region static methods
+#/# #region public static methods #endregion
+#/# #region private static methods #endregion
+# #endregion
+#region overriden virtual methods
+#/# #region _init() #endregion
+#/# #region _enter_tree() #endregion
+#region _ready() 
+func _ready() -> void: pass
+#endregion
+#/# #region _process() #endregion
+#/# #region _physics_process() #endregion
+#/# #region remaining virtual methods #endregion
+#endregion
+# #region overriden custom methods
+#/# #region overriden public methods #endregion
+#/# #region overriden private methods #endregion
+# #endregion
+# #region other methods
+#/# #region other public methods #endregion
+#/# #region other private methods #endregion
+# #endregion
+#endregion
 
-
-func to_main_menu() -> void:
-	# Loading scene
-	var scene:PackedScene = await SceneCollectionManager.get_packed_scene_deferred("uid://daetexya25b0v")
-	# Instancing of the scene
-	var scene_instance = scene.instantiate()
-	# Adds main_menu as child of the Main node
-	self.add_child(scene_instance)
+# #region inner classes #endregion
