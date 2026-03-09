@@ -1,0 +1,8 @@
+[gd_resource type="LabelSettings" format=3 uid="uid://xrdh07m44hh5"]
+
+[sub_resource type="SystemFont" id="SystemFont_veg7l"]
+font_names = PackedStringArray("Sans-Serif")
+
+[resource]
+font = SubResource("SystemFont_veg7l")
+font_size = 32

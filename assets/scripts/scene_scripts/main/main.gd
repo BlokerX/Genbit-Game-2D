@@ -31,7 +31,9 @@ extends Node
 #/# #region _init() #endregion
 #/# #region _enter_tree() #endregion
 #region _ready() 
-func _ready() -> void: pass
+func _ready() -> void: 
+	fast_add_scene("uid://bvu5h2wtjx3jk")
+	pass
 #endregion
 #/# #region _process() #endregion
 #/# #region _physics_process() #endregion
