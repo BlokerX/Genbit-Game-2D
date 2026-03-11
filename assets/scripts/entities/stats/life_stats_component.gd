@@ -12,7 +12,7 @@ func is_alive() -> bool :
 
 func take_damage(damage : int) -> void :
 	health -= damage
-	if health < 0 :
+	if health <= 0 :
 		kill()
 
 func heal(healing : int) -> void :
