@@ -1,32 +1,12 @@
-extends CharacterBody2D
+# Modularny skrypt dla enemy
+extends CharacterEntity
 
 #region Movement variables
 
-# Wartość prędkości:
-#@export var moveSpeed : float = 250
-#@export var accelerationMultiplayer : float = 5.0
-#@export var decelerationMultiplayer : float = 0.825
 @export var rotationSpeed : float = 5.0
 
-# --- DODANO: Zmienna dystansu wykrywania ---
+## Zmienna dystansu wykrywania
 @export var detectionDistance : float = 600.0
-
-@export var respawnVector := Vector2(1080, 720)
-
-# Komponent ruchu:
-@export var movement_universal_scirpt : MovementComponent = preload("res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres")
-
-#endregion
-
-#region Stats variables
-
-# GUI elements:
-@export var health_points_bar : ProgressBar
-@export var health_points_label : Label
-
-@export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres")
-
-@export var attack_stats_script : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
 
 #endregion
 
@@ -35,24 +15,26 @@ extends CharacterBody2D
 var target: Node2D
 
 func _ready():
-	# Set health parameters
+	#movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres")
+	# moveSpeed = 250
+	# accelerationMultiplayer = 5.0
+	# decelerationMultiplayer = 0.825
+	
+	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres")
 	health_stats_script.health = 50
 	health_stats_script.max_health = 50
 	
-	# Set attack parameters
+	#attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
 	attack_stats_script.attack_damage = 10
 	attack_stats_script.attack_cooldown = 2.0
 	
+	respawnVector = Vector2(1080, 720)
+	
 	# Health points bar initialization
-	health_stats_script.health_points_bar = health_points_bar
-	health_stats_script.health_points_label = health_points_label
-	health_stats_script.change_health_points_bar_max_value()
+	super()
 	
 	target = %Player
 	#actor_setup.call_deferred()
-	
-	
-	
 
 
 func actor_setup():
@@ -63,12 +45,13 @@ func actor_setup():
 func set_movement_target(movement_target: Vector2):
 	navigation_agent.target_position = movement_target
 
-func _process(_delta):
-	#region Stats GUI Procedure
-	health_stats_script.update_helath_points_bar()
-	#endregion
+func _process(delta):
+	# Update health gui data.
+	super(delta)
 
 func _physics_process(delta):
+	super(delta)
+	
 	attack_stats_script.attack_cooldown_process(delta)
 		
 	# Sprawdzanie wszystkich kolizji w danej klatce
@@ -83,7 +66,7 @@ func _physics_process(delta):
 	
 	#region Move Procedure
 	
-	# --- DODANO: Sprawdzanie czy cel jest w zasięgu ---
+	# Sprawdzanie czy cel jest w zasięgu
 	var is_target_in_range = false
 	if target:
 		is_target_in_range = global_position.distance_to(target.global_position) <= detectionDistance
@@ -104,7 +87,7 @@ func _physics_process(delta):
 		
 		# Apply deceleration when stopping
 		# old # velocity = velocity * decelerationMultiplayer
-		velocity = movement_universal_scirpt.movement_procedure(delta, velocity, Vector2.ZERO)
+		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2.ZERO)
 		
 		move_and_slide()
 		return
@@ -116,19 +99,8 @@ func _physics_process(delta):
 	var direction = global_position.direction_to(next_path_position)
 	
 	# --- ZMIENIONO: Użycie komponentu z obliczonym wektorem kierunku do ruchu ---
-	velocity = movement_universal_scirpt.movement_procedure(delta, velocity, direction)
+	velocity = movement_universal_script.movement_procedure(delta, velocity, direction)
 	
 	# Move the character
 	move_and_slide()
 	#endregion
-	
-	# Respawn in case of death
-	if !health_stats_script.is_alive() :
-		print("Enemy has killed successfull")
-		health_stats_script.heal_completely()
-		Respawn()
-
-func Respawn():
-		position = respawnVector
-		velocity.x = 0
-		velocity.y = 0

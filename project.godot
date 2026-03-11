@@ -32,10 +32,10 @@ window/stretch/mode="viewport"
 [file_customization]
 
 folder_colors={
-"res://assets/scripts/entities/enemies/": "red",
+"res://assets/scripts/entities/characters/enemies/": "red",
+"res://assets/scripts/entities/characters/player/": "blue",
 "res://assets/scripts/entities/items/": "green",
 "res://assets/scripts/entities/movement/": "orange",
-"res://assets/scripts/entities/player/": "blue",
 "res://assets/scripts/entities/player/player_stats/": "gray",
 "res://assets/scripts/entities/stats/": "purple"
 }

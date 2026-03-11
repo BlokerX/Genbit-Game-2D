@@ -1,49 +1,28 @@
 ## Połączony modularnie skrypt dla gracza ##
+extends CharacterEntity
 
-extends CharacterBody2D
+class_name PlayerCharacter
 
-#region Movement variables
-
-## Wartość prędkości:
-#@export var moveSpeed : float = 450
-#@export var accelerationMultiplayer : float = 5.0
-#@export var decelerationMultiplayer : float = 0.825
-
-# Zmienne respawnu:
-@export var respawnVector := Vector2(512, 360)
-
-# Komponent ruchu:
-@export var movement_universal_script : MovementComponent = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
-
-#endregion
-
-#region Stats variables
-
-# GUI elements:
-@export var health_points_bar : ProgressBar
-@export var health_points_label : Label
-
-@export var health_stats_script : MonitoredStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-
-@export var attack_stats_script : AttackStatsComponent = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
-
-@export var character_sprite : Sprite2D
-
-@export var inventory : Inventory = null
-
-#endregion
+@export var inventory : Inventory
 
 func _ready():
-	# Set attack parameters
+	movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
+	# moveSpeed = 450
+	# accelerationMultiplayer = 5.0
+	# decelerationMultiplayer = 0.825
+	
+	health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
+	
+	attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
 	attack_stats_script.attack_damage = 10
 	attack_stats_script.attack_cooldown = 1.0
 	
+	respawnVector = Vector2(512, 360)
+	
 	# Health points bar initialization
-	health_stats_script.health_points_bar = health_points_bar
-	health_stats_script.health_points_label = health_points_label
+	super()
 	
 	inventory.inventory_updated.connect(on_inventory_update)
-	
 	on_inventory_update()
 
 func on_inventory_update() :
@@ -75,9 +54,8 @@ func on_inventory_update() :
 	print("================")
 
 func _process(delta):
-	#region Stats GUI Procedure
-	health_stats_script.update_helath_points_bar()
-	#endregion
+	# Update health gui data.
+	super(delta)
 	
 	#region Test Inventory
 	
@@ -91,6 +69,8 @@ func _process(delta):
 	#endregion
 
 func _physics_process(delta):
+	super(delta)
+	
 	#region Move Procedure
 	
 	# Movement inputs
@@ -116,16 +96,9 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Respawn in case of death
-	if !health_stats_script.is_alive() :
-		print("Player has killed successfull")
-		health_stats_script.heal_completely()
-		Respawn()
-		return
-	
 	# Respawn
 	if Input.is_action_just_pressed("RespawnButton") :
-		Respawn()
+		respawn()
 		print("Gracz się odrodził!")
 		return
 	
@@ -169,18 +142,3 @@ func _physics_process(delta):
 			print("Gracz atakuje przeciwnika!")
 			attack_stats_script.attack(collider)
 	#endregion
-
-# Funkcja pozwalająca na nałożenie dowolnego efektu na gracza
-func receive_effect(effect: Effect) -> void:
-	# Przekazujemy 'self' (czyli gracza), ponieważ skrypt rozszerza CharacterBody2D
-	var success = effect.apply_effect(self)
-	if success:
-		print("Gracz otrzymał efekt: ", effect.effect_name)
-	else:
-		print("Nie udało się nałożyć efektu na gracza.")
-
-
-func Respawn():
-		position = respawnVector
-		velocity.x = 0
-		velocity.y = 0
