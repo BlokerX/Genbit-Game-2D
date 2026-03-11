@@ -130,28 +130,37 @@ func _physics_process(delta):
 		return
 	
 	# Use item
-	if Input.is_action_just_pressed("UseItemButton") :
+	if Input.is_action_just_pressed("UseItemButton"):
 		var _item = inventory.get_current_item()
-		if _item is UseableItem :
-			if _item is HealingItem :
-				if _item.heal_target(self) :
+		
+		if _item is UseableItem:
+			
+			# === LOGIKA LECZENIA / KONSUMPCJI ===
+			if _item is HealingItem:
+				# Nakładamy efekty (np. HealEffect, FullRestoreEffect) na samego gracza
+				if _item.affect_target(self):
 					inventory.consume_current_item()
-			elif _item is ItemWeapon :
-				#region todo śmieciowy kod testowy
-				for i in get_slide_collision_count() :
+					
+			# === LOGIKA UŻYCIA BRONI ===
+			elif _item is ItemWeapon:
+				# Sprawdzamy kolizje w poszukiwaniu przeciwnika
+				for i in get_slide_collision_count():
 					var collision = get_slide_collision(i)
 					var collider = collision.get_collider()
-				
+					
 					if collider.is_in_group("Enemy") and _item.is_ready_to_use():
-						_item.attack(collider)
-						inventory.consume_durability_of_the_item()
-				#endregion
+						# Nakładamy efekty broni (np. DamageEffect, StunEffect) na przeciwnika
+						if _item.affect_target(collider):
+							inventory.consume_durability_of_the_item()
+							# Zatrzymujemy pętlę, by jedno użycie broni nie uderzyło wielu wrogów naraz 
+							# (chyba że zależy Ci na obrażeniach obszarowych - wtedy usuń 'break')
+							break
 	
 	
 	#region Attack test script:
 	attack_stats_script.attack_cooldown_process(delta)
 	
-	#Sprawdzanie wszystkich kolizji w danej klatce
+	# Sprawdzanie wszystkich kolizji w danej klatce
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
@@ -160,6 +169,16 @@ func _physics_process(delta):
 			print("Gracz atakuje przeciwnika!")
 			attack_stats_script.attack(collider)
 	#endregion
+
+# Funkcja pozwalająca na nałożenie dowolnego efektu na gracza
+func receive_effect(effect: Effect) -> void:
+	# Przekazujemy 'self' (czyli gracza), ponieważ skrypt rozszerza CharacterBody2D
+	var success = effect.apply_effect(self)
+	if success:
+		print("Gracz otrzymał efekt: ", effect.effect_name)
+	else:
+		print("Nie udało się nałożyć efektu na gracza.")
+
 
 func Respawn():
 		position = respawnVector

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://dryafysswfb8c"]
 
 [ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_cboiq"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sx258"]
 
 [resource]
 script = ExtResource("1_cboiq")
-heal_amount = 15
+allow_overheal = true
 use_cooldown = 0.25
 item_id = 3
 item_name = "Health Potioon"

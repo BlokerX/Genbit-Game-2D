@@ -31,6 +31,9 @@ sources/0 = SubResource("TileSetAtlasSource_8hvnv")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
+size = Vector2(64.5, 64)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
 atlas = ExtResource("7_6uf7s")
 region = Rect2(0, 0, 16, 16)
@@ -67,9 +70,6 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
-size = Vector2(64.5, 64)
-
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_hx11q"]
 vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847.9609, 73)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
@@ -93,6 +93,17 @@ health_points_label = NodePath("../HealthPointsBar/Label")
 character_sprite = NodePath("CharacterSprite")
 inventory = NodePath("Inventory")
 
+[node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
+script = ExtResource("4_w0vak")
+items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="Player" unique_id=2095437257]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=935176687]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
 [node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=1599874831]
 self_modulate = Color(1, 0.866667, 0.235294, 1)
 position = Vector2(-0.100002, 1.38283e-05)
@@ -107,15 +118,6 @@ rotation = 0.96374375
 scale = Vector2(3.8284175, 3.830453)
 skew = 0.0014201403
 texture = ExtResource("4_ej7ba")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=935176687]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
-
-[node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
-script = ExtResource("4_w0vak")
-items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
 
 [node name="HealthPointsBar" type="ProgressBar" parent="." unique_id=1547176443]
 offset_left = 16.0
@@ -144,17 +146,19 @@ script = ExtResource("6_8hvnv")
 health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="EnemySprite" unique_id=1995051797]
-texture_filter = 1
-position = Vector2(-0.5, -0.5)
-scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_ygk25")
+[node name="EffectsCollector" type="Node" parent="EnemySprite" unique_id=473924543]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="EnemySprite" unique_id=1292834181]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemySprite" unique_id=2110018586]
 shape = SubResource("RectangleShape2D_h17bs")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="EnemySprite" unique_id=1292834181]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="EnemySprite" unique_id=1995051797]
+texture_filter = 1
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_ygk25")
 
 [node name="HealthProgressBar" type="ProgressBar" parent="EnemySprite" unique_id=102391968]
 offset_left = -32.0

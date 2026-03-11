@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://cyotjd6nl8omu"]
 
 [ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_1d7vr"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_btncl"]
 
 [resource]
 script = ExtResource("1_1d7vr")

@@ -1,11 +1,12 @@
 [gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://cb8cn5vk3trmf"]
 
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jqv1w"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_w0gi6"]
 
 [resource]
 script = ExtResource("1_w0gi6")
 attack_damage = 20
-stun_time = 1.2
+stun_time = 0.5
 item_id = 6
 item_name = "Sword"
 item_type = "Weapon"

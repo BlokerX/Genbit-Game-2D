@@ -2,6 +2,9 @@ extends ItemData
 
 class_name UseableItem
 
+# Nowa zmienna przechowująca wszystkie efekty przedmiotu
+@export var effects : Array[Effect] = []
+
 #region Cooldown
 
 @export var use_cooldown : float = 1.0
@@ -34,15 +37,16 @@ func _init(
  _durable : int = -1,
  _max_durable : int = -1,
 # Argumenty dla aktualnego obiektu:
+ _effects : Array[Effect] = [], # NOWY ARGUMENT
  _use_cooldown : float = 1.0
 ) :
 	# Inicjalizacja dla klasy bazowej
 	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_max_stack_count, _item_sprite, _durable, _max_durable)
 	
 	# Inicjalizacja dla aktualnej klasy
+	effects = _effects
 	use_cooldown = _use_cooldown
 
-# abstract method
 func use() -> bool:
 	if !is_ready_to_use() :
 		print("Przedmiot nie jest gotowy do użycia!")
@@ -50,3 +54,22 @@ func use() -> bool:
 	start_cooldown_timer()
 	print("Player used " + item_name + "!")
 	return true
+
+func affect_target(target : CharacterBody2D) -> bool:
+	if !is_ready_to_use() :
+		return false
+		
+	return true
+
+# NOWA METODA: Nakłada wszystkie przypisane efekty na cel
+func apply_all_effects(target: CharacterBody2D) -> bool:
+	if !use():
+		return false # Przerywamy, jeśli przedmiot ma cooldown
+		
+	var any_effect_applied = false
+	for effect in effects:
+		if effect != null:
+			if effect.apply_effect(target):
+				any_effect_applied = true
+				
+	return any_effect_applied

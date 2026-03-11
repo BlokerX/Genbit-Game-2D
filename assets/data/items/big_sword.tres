@@ -1,11 +1,13 @@
 [gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://bownsdq2b671r"]
 
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_r625p"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tfixi"]
 
 [resource]
 script = ExtResource("1_r625p")
-attack_damage = 25
-stun_time = 1.4
+attack_range = 1.5
+attack_damage = 30
+stun_time = 1.8
 use_cooldown = 2.5
 item_name = "Big sword"
 item_type = "Weapon"

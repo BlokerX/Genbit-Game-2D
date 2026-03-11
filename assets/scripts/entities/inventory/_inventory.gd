@@ -38,6 +38,8 @@ func consume_current_item() -> void:
 		# Jeśli to był ostatni przedmiot w tym slocie, czyścimy slot
 		if item.item_stack_count <= 0:
 			items[current_item_index] = null
+		else :
+			item.repair_item()
 			
 		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
 		inventory_updated.emit()
