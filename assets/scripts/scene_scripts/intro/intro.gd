@@ -50,11 +50,10 @@ func _ready() -> void:
 #/#/# #region _process() #endregion
 #/#/# #region _physics_process() #endregion
 #region remaining virtual methods 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if Input.is_anything_pressed():
+func _unhandled_input(event: InputEvent) -> void:
+	if Input.is_action_just_pressed("SkipIntro"):
 		if tween.custom_step(5) == true:
 			tween.kill()
-		_end_intro()
 #endregion
 #/# #endregion
 #/# #region overriden custom methods
@@ -95,7 +94,7 @@ func _init_intro() -> void :
 	
 	# "Presents" text
 	presents_label = Label.new()
-	presents_label.text = tr_n("INTRO_PRESENT","INTRO_PRESENTS",2)
+	presents_label.text = tr_n("INTRO_PRESENT_SINGULAR_PERSON","INTRO_PRESENT",2)
 	presents_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	presents_label.label_settings = LABEL_SETTINGS_PRESENTS
 	
@@ -133,6 +132,7 @@ func _start_intro() -> void :
 	tween.tween_property(presents_label,"modulate",Color(1,1,1,1),1)
 	tween.tween_property(game_title_label,"modulate",Color(1,1,1,1),1)
 	await tween.finished
+	print("TEST ",Engine.get_physics_frames())
 	_end_intro()
 
 func _end_intro() -> void:

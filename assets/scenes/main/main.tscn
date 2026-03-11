@@ -4,3 +4,12 @@
 
 [node name="Main" type="Node" unique_id=395075483]
 script = ExtResource("1_iv6rr")
+
+[node name="Background" type="ColorRect" parent="." unique_id=987070414]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+metadata/_edit_lock_ = true
