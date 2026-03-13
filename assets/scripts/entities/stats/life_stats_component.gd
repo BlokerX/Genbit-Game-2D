@@ -5,6 +5,7 @@ class_name LifeStatsComponent
 @export var health : int = 100
 @export var max_health : int = 100
 
+# jeśli < 0 to jest niesmiertelna
 func is_alive() -> bool :
 	if health == 0 :
 		return false
