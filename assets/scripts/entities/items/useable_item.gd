@@ -14,12 +14,15 @@ var use_cooldown_timer : float = 0.0
 func cooldown_process(delta : float) -> void :
 	if use_cooldown_timer > 0 :
 		use_cooldown_timer -= delta
+		if use_cooldown_timer <= 0 :
+			print("Przedmiot ", item_name ," jest znów gotowy do użycia.", )
 
 func is_ready_to_use() -> bool :
 	return use_cooldown_timer <= 0
 
 func start_cooldown_timer() -> void :
 	use_cooldown_timer = use_cooldown
+	print("Nałożono cooldown ", use_cooldown ," sekund na item - ", item_name)
 
 #endregion
 
@@ -55,21 +58,31 @@ func use() -> bool:
 	print("Player used " + item_name + "!")
 	return true
 
-func affect_target(target : CharacterBody2D) -> bool:
+func affect_target(target : CharacterEntity) -> bool:
 	if !is_ready_to_use() :
 		return false
 		
 	return true
 
 # NOWA METODA: Nakłada wszystkie przypisane efekty na cel
-func apply_all_effects(target: CharacterBody2D) -> bool:
-	if !use():
+func apply_all_effects(target: CharacterEntity) -> bool:
+	# Sprawdzamy czy przedmiot jest gotowy, wywołanie use() resetuje też timer
+	if !is_ready_to_use():
 		return false # Przerywamy, jeśli przedmiot ma cooldown
 		
 	var any_effect_applied = false
 	for effect in effects:
 		if effect != null:
-			if effect.apply_effect(target):
+			# Preferujemy wywołanie receive_effect na postaci (centralny punkt obsługi)
+			if target.has_method("receive_effect"):
+				if target.receive_effect(effect):
+					any_effect_applied = true
+			# Fallback, gdyby cel nie był pełnoprawnym CharacterEntity
+			elif effect.apply_effect(target):
 				any_effect_applied = true
+				
+	# Jeśli chociaż jeden efekt został nałożony, wywołujemy użycie (cooldown)
+	if any_effect_applied:
+		use()
 				
 	return any_effect_applied

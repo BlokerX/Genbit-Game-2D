@@ -34,7 +34,7 @@ func _init(
 	cures_poison = _cures_poison
 	allow_overheal = _allow_overheal
 
-func affect_target(target : CharacterBody2D) -> bool :
+func affect_target(target : CharacterEntity) -> bool :
 	# Sprawdzenie cooldownu z klasy UseableItem
 	if !super(target) :
 		print("Leczenie ma cooldowna!")
@@ -43,18 +43,26 @@ func affect_target(target : CharacterBody2D) -> bool :
 	# Tworzymy efekt, przekazując wartość parametru overheal
 	var heal_effect = HealEffect.new(heal_amount, allow_overheal)
 	
-	# Jeśli apply_effect zwróci false (bo HP jest pełne i overheal=false),
-	# to heal_target też zwróci false, a gracz nie zużyje mikstury!
-	if heal_effect.apply_effect(target):
-		print("Gracz używa przedmiotu leczącego! (Leczenie: ", heal_amount, ", Usuwanie efektów trucizny: ", cures_poison, ")")
+	var success = false
+	
+	# Nakładamy bazowy efekt leczenia przez system postaci
+	if target.has_method("receive_effect"):
+		success = target.receive_effect(heal_effect)
+	else:
+		success = heal_effect.apply_effect(target)
+	
+	# Jeśli leczenie się powiodło (HP nie było pełne lub allow_overheal == true)
+	if success:
+		print("Gracz używa przedmiotu leczącego! (Leczenie: ", heal_amount, ", Usuwanie trucizny: ", cures_poison, ")")
 		
-		# 2. Opcjonalnie: w przyszłości możesz tu dodać efekt usuwania trucizny
-		# if cures_poison:
-			# 	var cure_poison_effect = CurePoisonEffect.new()
-			# 	cure_poison_effect.apply_effect(target)
-		
-		# (Opcjonalnie: aplikowanie innych efektów z tablicy 'effects')
-		apply_all_effects(target)
+		# (Opcjonalnie: aplikowanie innych efektów z tablicy 'effects' np. buff do zdrowia lub regeneracja)
+		# Używamy pętli bez sprawdzania cooldownu (bo zrobiliśmy to wyżej)
+		for additional_effect in effects:
+			if additional_effect != null:
+				if target.has_method("receive_effect"):
+					target.receive_effect(additional_effect)
+				else:
+					additional_effect.apply_effect(target)
 		
 		# Rozpocznyna cooldowna
 		use()

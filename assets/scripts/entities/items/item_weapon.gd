@@ -47,7 +47,7 @@ func _init(
 	
 
 # Zaktualizowana funkcja ataku
-func affect_target(target : CharacterBody2D) -> bool :
+func affect_target(target : CharacterEntity) -> bool :
 	# Sprawdzenie cooldownu z klasy UseableItem
 	if !super(target) :
 		print("Atak ma cooldowna!")
@@ -57,12 +57,23 @@ func affect_target(target : CharacterBody2D) -> bool :
 	
 	# 1. Tworzymy i nakładamy efekt obrażeń na żywo, z aktualnymi statystykami
 	var damage_effect = DamageEffect.new(attack_damage)
-	damage_effect.apply_effect(target)
+	
+	# Sprawdzamy, czy cel potrafi przyjmować efekty przez nasz nowy system
+	if target.has_method("receive_effect"):
+		target.receive_effect(damage_effect)
+	else:
+		# Fallback dla obiektów, które nie są pełnoprawnymi CharacterEntity
+		damage_effect.apply_effect(target)
 	
 	# 2. Tworzymy i nakładamy efekt ogłuszenia (tylko jeśli broń faktycznie ma stun)
 	if stun_time > 0.0:
 		var stun_effect = StunEffect.new(stun_time)
-		stun_effect.apply_effect(target)
+		# Sprawdzamy, czy cel potrafi przyjmować efekty przez nasz nowy system
+		if target.has_method("receive_effect"):
+			target.receive_effect(stun_effect)
+		else:
+			# Fallback dla obiektów, które nie są pełnoprawnymi CharacterEntity
+			stun_effect.apply_effect(target)
 		
 	# 3. (Opcjonalnie) Jeśli masz inne efekty dodane ręcznie w Inspektorze do tablicy 'effects',
 	# też możemy je tutaj wywołać:

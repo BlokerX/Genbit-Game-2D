@@ -40,15 +40,31 @@ func _physics_process(_delta):
 		return
 
 ## Funkcja pozwalająca na nałożenie dowolnego efektu na entity character.
-func receive_effect(effect: Effect) -> void:
+func receive_effect(effect: Effect) -> bool:
 	# Przekazujemy 'self' (czyli entity character), ponieważ skrypt rozszerza CharacterBody2D
 	var success = effect.apply_effect(self)
 	if success:
 		print("Entity character otrzymał efekt: ", effect.effect_name)
 	else:
 		print("Nie udało się nałożyć efektu na entity character.")
+	return success
+
+## Funkcja usuwająca wszystkie efekty nałożone na postać
+func clear_all_effects() -> void:
+	if effects_collector != null:
+		for active_effect in effects_collector.get_children():
+			# Prawidłowe wymuszenie zakończenia efektu poprzez skrypt ActiveEffect
+			if active_effect.has_method("end_effect"):
+				active_effect.end_effect()
+			else:
+				active_effect.queue_free()
+		print("Usunięto wszystkie efekty z entity character.")
+		return
+	print("Nie znaleziono kontenera efektów w entity character.")
 
 func respawn():
-		position = respawnVector
-		velocity.x = 0
-		velocity.y = 0
+	position = respawnVector
+	velocity.x = 0
+	velocity.y = 0
+	# Przy odrodzeniu usuwamy z postaci wszystkie nałożone na nią statusy
+	clear_all_effects()
