@@ -25,8 +25,8 @@ func _ready():
 	health_stats_script.max_health = 50
 	
 	#attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
-	attack_stats_script.attack_damage = 10
-	attack_stats_script.attack_cooldown = 2.0
+	attack_stats_script.damage = 10
+	attack_stats_script.hand_cooldown = 2.0
 	
 	respawnVector = Vector2(1080, 720)
 	

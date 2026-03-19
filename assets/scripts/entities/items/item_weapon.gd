@@ -48,11 +48,6 @@ func _init(
 
 # Zaktualizowana funkcja ataku
 func affect_target(target : CharacterEntity) -> bool :
-	# Sprawdzenie cooldownu z klasy UseableItem
-	if !super(target) :
-		print("Atak ma cooldowna!")
-		return false
-	
 	print("Gracz atakuje przeciwnika bronią! (Obrażenia: ", attack_damage, ", Stun: ", stun_time, ")")
 	
 	# 1. Tworzymy i nakładamy efekt obrażeń na żywo, z aktualnymi statystykami
@@ -78,8 +73,5 @@ func affect_target(target : CharacterEntity) -> bool :
 	# 3. (Opcjonalnie) Jeśli masz inne efekty dodane ręcznie w Inspektorze do tablicy 'effects',
 	# też możemy je tutaj wywołać:
 	apply_all_effects(target)
-	
-	# Rozpocznyna cooldowna
-	use()
 	
 	return true

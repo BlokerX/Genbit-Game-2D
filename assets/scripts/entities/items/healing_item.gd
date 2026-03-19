@@ -35,11 +35,6 @@ func _init(
 	allow_overheal = _allow_overheal
 
 func affect_target(target : CharacterEntity) -> bool :
-	# Sprawdzenie cooldownu z klasy UseableItem
-	if !super(target) :
-		print("Leczenie ma cooldowna!")
-		return false
-	
 	# Tworzymy efekt, przekazując wartość parametru overheal
 	var heal_effect = HealEffect.new(heal_amount, allow_overheal)
 	
@@ -63,9 +58,6 @@ func affect_target(target : CharacterEntity) -> bool :
 					target.receive_effect(additional_effect)
 				else:
 					additional_effect.apply_effect(target)
-		
-		# Rozpocznyna cooldowna
-		use()
 		
 		return true
 		

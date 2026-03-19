@@ -14,8 +14,8 @@ func _ready():
 	health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
 	
 	attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
-	attack_stats_script.attack_damage = 10
-	attack_stats_script.attack_cooldown = 1.0
+	attack_stats_script.damage = 10
+	attack_stats_script.hand_cooldown = 1.0
 	
 	respawnVector = Vector2(512, 360)
 	
@@ -52,21 +52,22 @@ func on_inventory_update() :
 		if item != null :
 			print(item.item_name)
 	print("================")
+	
+	# Aktualizacja cooldown po zmianie itemu
+	# Po podniesieniu lub zmianie przedmiotu aktualizujemy limit cooldownu postaci
+	var current_item = inventory.get_current_item()
+	
+	# Teraz sprawdzamy czy to jakikolwiek UseableItem (a nie tylko ItemWeapon)
+	if current_item is UseableItem:
+		# Przekazujemy cooldown przedmiotu do statystyk gracza
+		attack_stats_script.actual_cooldown = current_item.use_cooldown
+	else:
+		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
+		attack_stats_script.actual_cooldown = attack_stats_script.hand_cooldown
 
 func _process(delta):
 	# Update health gui data.
 	super(delta)
-	
-	#region Test Inventory
-	
-	# Pobieramy aktualny przedmiot z ekwipunku
-	var current_item = inventory.get_current_item()
-	
-	# Jeśli to jest UseableItem, odświeżamy jego cooldown
-	if current_item is UseableItem :
-		current_item.cooldown_process(delta)
-		
-	#endregion
 
 func _physics_process(delta):
 	super(delta)
@@ -106,28 +107,38 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("UseItemButton"):
 		var _item = inventory.get_current_item()
 		
-		if _item is UseableItem:
+		# Sprawdzamy czy to przedmiot używalny I CZY postać może go użyć (globalny cooldown)
+		if _item is UseableItem and attack_stats_script.can_attack():
+			
+			var used_successfully = false # Zmienna śledząca, czy faktycznie użyliśmy przedmiotu
 			
 			# === LOGIKA LECZENIA / KONSUMPCJI ===
 			if _item is HealingItem:
 				# Nakładamy efekty (np. HealEffect, FullRestoreEffect) na samego gracza
 				if _item.affect_target(self):
 					inventory.consume_current_item()
-					
+					used_successfully = true
+			
 			# === LOGIKA UŻYCIA BRONI ===
 			elif _item is ItemWeapon:
-				# Sprawdzamy kolizje w poszukiwaniu przeciwnika
 				for i in get_slide_collision_count():
 					var collision = get_slide_collision(i)
 					var collider = collision.get_collider()
-					
-					if collider.is_in_group("Enemy") and _item.is_ready_to_use():
+				
+					if collider.is_in_group("Enemy"):
 						# Nakładamy efekty broni (np. DamageEffect, StunEffect) na przeciwnika
 						if _item.affect_target(collider):
 							inventory.consume_durability_of_the_item()
-							# Zatrzymujemy pętlę, by jedno użycie broni nie uderzyło wielu wrogów naraz 
-							# (chyba że zależy Ci na obrażeniach obszarowych - wtedy usuń 'break')
-							break
+							used_successfully = true
+							break # Uderzyliśmy jednego wroga, przerywamy
+			
+			# === (Opcjonalnie) Inne typy przedmiotów ===
+			# elif _item is MagicScroll:
+			#     ...
+			
+			# Jeśli jakikolwiek przedmiot zadziałał (zaatakowano, wypito potkę), resetujemy globalny czas postaci!
+			if used_successfully:
+				attack_stats_script.reset_cooldown()
 	
 	
 	#region Attack test script:
