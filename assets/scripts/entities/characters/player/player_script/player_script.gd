@@ -13,9 +13,9 @@ func _ready():
 	
 	health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
 	
-	attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres")
-	attack_stats_script.damage = 10
-	attack_stats_script.hand_cooldown = 1.0
+	interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	interaction_and_attack_stats_script.hand_damage = 10
+	interaction_and_attack_stats_script.hand_cooldown = 1.0
 	
 	respawnVector = Vector2(512, 360)
 	
@@ -60,10 +60,10 @@ func on_inventory_update() :
 	# Teraz sprawdzamy czy to jakikolwiek UseableItem (a nie tylko ItemWeapon)
 	if current_item is UseableItem:
 		# Przekazujemy cooldown przedmiotu do statystyk gracza
-		attack_stats_script.actual_cooldown = current_item.use_cooldown
+		interaction_and_attack_stats_script.actual_cooldown = current_item.use_cooldown
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
-		attack_stats_script.actual_cooldown = attack_stats_script.hand_cooldown
+		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_cooldown
 
 func _process(delta):
 	# Update health gui data.
@@ -108,7 +108,7 @@ func _physics_process(delta):
 		var _item = inventory.get_current_item()
 		
 		# Sprawdzamy czy to przedmiot używalny I CZY postać może go użyć (globalny cooldown)
-		if _item is UseableItem and attack_stats_script.can_attack():
+		if _item is UseableItem and interaction_and_attack_stats_script.can_attack():
 			
 			var used_successfully = false # Zmienna śledząca, czy faktycznie użyliśmy przedmiotu
 			
@@ -138,18 +138,18 @@ func _physics_process(delta):
 			
 			# Jeśli jakikolwiek przedmiot zadziałał (zaatakowano, wypito potkę), resetujemy globalny czas postaci!
 			if used_successfully:
-				attack_stats_script.reset_cooldown()
+				interaction_and_attack_stats_script.reset_cooldown()
 	
 	
 	#region Attack test script:
-	attack_stats_script.attack_cooldown_process(delta)
+	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 	
 	# Sprawdzanie wszystkich kolizji w danej klatce
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
-		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and attack_stats_script.can_attack():
+		if Input.is_action_pressed("Attack") and collider.is_in_group("Enemy") and interaction_and_attack_stats_script.can_attack():
 			print("Gracz atakuje przeciwnika!")
-			attack_stats_script.attack(collider)
+			interaction_and_attack_stats_script.hand_attack(collider)
 	#endregion

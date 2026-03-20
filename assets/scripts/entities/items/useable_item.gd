@@ -9,11 +9,6 @@ class_name UseableItem
 
 @export var use_cooldown : float = 1.0
 
-func start_cooldown_timer() -> void :
-	#use_cooldown_timer = use_cooldown
-	#print("Nałożono cooldown ", use_cooldown ," sekund na item - ", item_name)
-	pass
-
 #endregion
 
 # Constructor
@@ -41,7 +36,7 @@ func _init(
 	use_cooldown = _use_cooldown
 
 # Zwykła, pusta wirtualna funkcja (bez żadnego sprawdzania cooldownu czy super())
-func affect_target(target : CharacterEntity) -> bool:
+func affect_target(_target : CharacterEntity) -> bool:
 	# Tu przedmioty (np. HealingItem) będą po prostu nakładać efekty
 	return true
 

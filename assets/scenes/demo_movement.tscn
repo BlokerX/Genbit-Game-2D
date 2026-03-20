@@ -12,7 +12,6 @@
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="6_8hvnv"]
-[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_attack_stats_component.tres" id="6_totju"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
@@ -22,7 +21,7 @@
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres" id="15_b10mb"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres" id="16_eyunf"]
-[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres" id="17_bqg5n"]
+[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_interaction_and_attack_stats_component.tres" id="21_mjw3m"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
 texture = ExtResource("1_r5tdj")
@@ -140,7 +139,6 @@ script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
-attack_stats_script = ExtResource("6_totju")
 health_points_bar = NodePath("../CanvasLayer/HealthPointsBar")
 health_points_label = NodePath("../CanvasLayer/HealthPointsBar/HealthPointsLabel")
 character_sprite = NodePath("CharacterSprite")
@@ -172,33 +170,33 @@ scale = Vector2(3.8284175, 3.830453)
 skew = 0.0014201403
 texture = ExtResource("4_ej7ba")
 
-[node name="EnemySprite" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+[node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("6_8hvnv")
 movement_universal_script = ExtResource("15_b10mb")
 health_stats_script = ExtResource("16_eyunf")
-attack_stats_script = ExtResource("17_bqg5n")
+interaction_and_attack_stats_script = ExtResource("21_mjw3m")
 health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="EffectsCollector" type="Node" parent="EnemySprite" unique_id=473924543]
+[node name="EffectsCollector" type="Node" parent="Enemy" unique_id=473924543]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="EnemySprite" unique_id=1292834181]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Enemy" unique_id=1292834181]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemySprite" unique_id=2110018586]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy" unique_id=2110018586]
 shape = SubResource("RectangleShape2D_h17bs")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="EnemySprite" unique_id=1995051797]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemy" unique_id=1995051797]
 texture_filter = 1
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_ygk25")
 
-[node name="HealthProgressBar" type="ProgressBar" parent="EnemySprite" unique_id=102391968]
+[node name="HealthProgressBar" type="ProgressBar" parent="Enemy" unique_id=102391968]
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
@@ -207,7 +205,7 @@ theme_override_font_sizes/font_size = 8
 theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
 
-[node name="Label2" type="Label" parent="EnemySprite/HealthProgressBar" unique_id=271877439]
+[node name="Label2" type="Label" parent="Enemy/HealthProgressBar" unique_id=271877439]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 16.0

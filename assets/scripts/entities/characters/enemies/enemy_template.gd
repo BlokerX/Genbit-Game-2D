@@ -24,9 +24,9 @@ func _ready():
 	health_stats_script.health = 50
 	health_stats_script.max_health = 50
 	
-	#attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
-	attack_stats_script.damage = 10
-	attack_stats_script.hand_cooldown = 2.0
+	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/enemy_attack_stats_component.tres")
+	interaction_and_attack_stats_script.hand_damage = 10
+	interaction_and_attack_stats_script.hand_cooldown = 2.0
 	
 	respawnVector = Vector2(1080, 720)
 	
@@ -52,7 +52,7 @@ func _process(delta):
 func _physics_process(delta):
 	super(delta)
 	
-	attack_stats_script.attack_cooldown_process(delta)
+	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 		
 	# Sprawdzanie wszystkich kolizji w danej klatce
 	#var is_collision_with_mob_detected = false
@@ -60,9 +60,9 @@ func _physics_process(delta):
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
-		if collider.is_in_group("Player") and attack_stats_script.can_attack():
+		if collider.is_in_group("Player") and interaction_and_attack_stats_script.can_attack():
 			print("Pająk atakuje gracza!")
-			attack_stats_script.attack(collider)
+			interaction_and_attack_stats_script.hand_attack(collider)
 	
 	#region Move Procedure
 	

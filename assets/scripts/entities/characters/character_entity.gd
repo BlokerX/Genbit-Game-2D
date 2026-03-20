@@ -9,7 +9,7 @@ class_name CharacterEntity
 # Komponent ruchu i statystyk:
 @export var movement_universal_script : MovementComponent
 @export var health_stats_script : MonitoredStatsComponent 
-@export var attack_stats_script : AttackStatsComponent
+@export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
 
 # GUI elements:
 @export var health_points_bar : ProgressBar

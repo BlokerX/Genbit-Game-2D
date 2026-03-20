@@ -10,14 +10,14 @@ func _init():
 	tick_interval = 0.0 # Brak tików, to tylko buff statystyk
 
 func on_effect_start(target: CharacterBody2D) -> void:
-	if target.get("attack_stats_script") != null:
-		target.attack_stats_script.attack_damage += bonus_damage
-		target.attack_stats_script.attack_cooldown -= cooldown_reduction
+	if target.get("interaction_and_attack_stats_script") != null:
+		target.interaction_and_attack_stats_script.adder_damage += bonus_damage
+		target.interaction_and_attack_stats_script.adder_cooldown -= cooldown_reduction
 		print("Szał bojowy aktywowany! Więcej obrażeń, szybsze ataki!")
 
 func on_effect_end(target: CharacterBody2D) -> void:
-	if target.get("attack_stats_script") != null:
+	if target.get("interaction_and_attack_stats_script") != null:
 		# Przywracamy statystyki do normy
-		target.attack_stats_script.attack_damage -= bonus_damage
-		target.attack_stats_script.attack_cooldown += cooldown_reduction
+		target.interaction_and_attack_stats_script.adder_damage -= bonus_damage
+		target.interaction_and_attack_stats_script.adder_cooldown += cooldown_reduction
 		print("Szał bojowy minął.")
