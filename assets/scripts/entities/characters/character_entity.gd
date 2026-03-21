@@ -20,24 +20,32 @@ class_name CharacterEntity
 @export var effects_collector : Node
 
 func _ready():
-	# Health points bar initialization
+	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
+	if health_stats_script:
+		health_stats_script.died.connect(_on_character_died)
+		health_stats_script.health_changed.connect(_on_health_changed)
+		
+	# Inicjalizacja UI...
 	health_stats_script.health_points_bar = health_points_bar
 	health_stats_script.health_points_label = health_points_label
 	health_stats_script.change_health_points_bar_max_value()
+	
+	health_stats_script.update_helath_points_bar()
 
 func _process(_delta):
-	#region Stats GUI Procedure
-	health_stats_script.update_helath_points_bar()
-	#endregion
+	pass
 
 func _physics_process(_delta):
-	# TYMCZASOWE ROZWIĄZANIE TESTOWE !!!
-	# Respawn in case of death
-	if !health_stats_script.is_alive() :
-		print("Entity character has killed successfull!")
-		health_stats_script.heal_completely()
-		respawn()
-		return
+	pass
+
+# Funkcja wywoływana TYLKO gdy postać zginie
+func _on_character_died():
+	print("Entity character has been killed successfully!")
+	health_stats_script.heal_completely()
+	respawn()
+
+func _on_health_changed(new_health, max_health):
+	health_stats_script.update_helath_points_bar()
 
 ## Funkcja pozwalająca na nałożenie dowolnego efektu na entity character.
 func receive_effect(effect: Effect) -> bool:
@@ -53,6 +61,7 @@ func receive_effect(effect: Effect) -> bool:
 func clear_all_effects() -> void:
 	if effects_collector != null:
 		for active_effect in effects_collector.get_children():
+			active_effect.set_process(false) # to jest dodane %
 			# Prawidłowe wymuszenie zakończenia efektu poprzez skrypt ActiveEffect
 			if active_effect.has_method("end_effect"):
 				active_effect.end_effect()

@@ -17,8 +17,6 @@ func _ready():
 	interaction_and_attack_stats_script.hand_damage = 10
 	interaction_and_attack_stats_script.hand_cooldown = 1.0
 	
-	respawnVector = Vector2(512, 360)
-	
 	# Health points bar initialization
 	super()
 	
@@ -57,6 +55,14 @@ func on_inventory_update() :
 	# Po podniesieniu lub zmianie przedmiotu aktualizujemy limit cooldownu postaci
 	var current_item = inventory.get_current_item()
 	
+	
+	
+	# Podłączamy sygnał do aktywnego przedmiotu, jeśli to broń
+	if current_item != null and not current_item.item_broken.is_connected(_on_item_broken):
+		current_item.item_broken.connect(_on_item_broken)
+	
+	
+	
 	# Teraz sprawdzamy czy to jakikolwiek UseableItem (a nie tylko ItemWeapon)
 	if current_item is UseableItem:
 		# Przekazujemy cooldown przedmiotu do statystyk gracza
@@ -64,6 +70,10 @@ func on_inventory_update() :
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
 		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_cooldown
+
+func _on_item_broken(broken_item_name: String):
+	print("Twoja broń zniszczyła się: ", broken_item_name)
+	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
 
 func _process(delta):
 	# Update health gui data.

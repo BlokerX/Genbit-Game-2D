@@ -2,6 +2,9 @@ extends Resource
 
 class_name LifeStatsComponent
 
+signal health_changed(new_health, max_health)
+signal died
+
 @export var health : int = 100
 @export var max_health : int = 100
 
@@ -13,6 +16,7 @@ func is_alive() -> bool :
 
 func take_damage(damage : int) -> void :
 	health -= damage
+	health_changed.emit(health, max_health) # Informujemy UI
 	if health <= 0 :
 		kill()
 
@@ -20,12 +24,16 @@ func heal(healing : int) -> void :
 	health += healing
 	if health > max_health :
 		health = max_health
+	health_changed.emit(health, max_health) # Informujemy UI
 
 func heal_completely() -> void :
 	health = max_health
+	health_changed.emit(health, max_health)
 
 func kill() -> void :
 	health = 0
+	health_changed.emit(health, max_health)
+	died.emit() # Odpalamy sygnał śmierci!
 	
 func boost_max_health(boost : int) -> void :
 	if boost > 0 :
