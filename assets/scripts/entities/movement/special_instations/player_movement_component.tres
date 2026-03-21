@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MovementComponent" format=3 uid="uid://bfcl2pbuh2gmw"]
 
-[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_universal_res.gd" id="1_1k42m"]
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="1_1k42m"]
 
 [resource]
 script = ExtResource("1_1k42m")

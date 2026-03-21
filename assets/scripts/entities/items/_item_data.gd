@@ -1,6 +1,8 @@
 extends Resource
 class_name ItemData
 
+signal item_broken(item_name) # Dodajemy sygnał pęknięcia
+
 #region General informations and sprite
 @export var item_id : int = 1
 @export var item_name : String = "Item"
@@ -32,6 +34,9 @@ func reduce_durability(points : int = 1) -> void:
 		#item_stack_count -= 1
 		#durable = max_durable # Wyciągamy nowy, świeży miecz!
 		#print("Jeden miecz się zepsuł! Zostało: ", item_stack_count)
+	
+	if is_broken():
+		item_broken.emit(item_name) # Informujemy, że OSTATNIA sztuka pękła
 
 func repair_item() -> void:
 	durable = max_durable

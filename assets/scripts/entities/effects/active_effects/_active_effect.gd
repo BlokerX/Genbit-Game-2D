@@ -1,6 +1,8 @@
 extends Node
 class_name ActiveEffect
 
+signal effect_ended(effect_resource) # Sygnał zakończenia
+
 var target : CharacterBody2D
 var tick_interval : float
 var duration : float
@@ -20,6 +22,10 @@ func setup(_target: CharacterBody2D, _effect: Resource, _duration: float, _tick_
 	effect_resource.on_effect_start(target)
 
 func _process(delta: float) -> void:
+	if not is_instance_valid(target):
+		queue_free()
+		return
+	
 	# Odliczanie ogólnego czasu trwania efektu
 	duration -= delta
 	if duration <= 0:
@@ -36,4 +42,5 @@ func _process(delta: float) -> void:
 func end_effect() -> void:
 	# Wywołanie akcji końcowej (np. zdjęcie spowolnienia)
 	effect_resource.on_effect_end(target)
+	effect_ended.emit(effect_resource) # Wysyłamy sygnał przed usunięciem
 	queue_free() # Usuń ten węzeł z drzewa sceny

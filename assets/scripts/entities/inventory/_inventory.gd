@@ -61,7 +61,7 @@ func consume_durability_of_the_item() -> void:
 
 func remove_item(index: int) -> void:
 	if index >= 0 and index < items.size():
-		items.remove_at(index)
+		items[index] = null # Zamiast remove_at(index), zostawia slot tylko z null zamiast usuwać go z listy
 		inventory_updated.emit()
 
 func get_current_item() -> ItemData :
@@ -89,7 +89,7 @@ func scroll_inventory(direction: int) -> void:
 		
 	select_item(new_index)
 
-func _physics_process(delta) :
+func _physics_process(_delta) :
 	if Input.is_action_just_pressed("InventorySlot1") :
 		select_item(0)
 	elif Input.is_action_just_pressed("InventorySlot2") :
