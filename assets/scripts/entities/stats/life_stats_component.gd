@@ -42,7 +42,7 @@ func boost_max_health(boost : int) -> void :
 func reduce_max_health(reduction : int) -> void :
 	# validation
 	if reduction <= 0:
-		pass
+		return
 	
 	if max_health - reduction > 0 :
 		max_health -= reduction
