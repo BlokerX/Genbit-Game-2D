@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_1d7vr"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_btncl"]
 [ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="2_p7alj"]
+[ext_resource type="Texture2D" uid="uid://7p5gp34slg45" path="res://assets/textures/samples_examples/cookie.png" id="3_htw1r"]
 
 [sub_resource type="Resource" id="Resource_htw1r"]
 script = ExtResource("2_p7alj")
@@ -21,3 +22,4 @@ item_description = "The delicious cookie! It revials 49 hp but it is hard."
 item_is_stackable = true
 item_stack_count = 10
 item_max_stack_count = 10
+item_icon = ExtResource("3_htw1r")

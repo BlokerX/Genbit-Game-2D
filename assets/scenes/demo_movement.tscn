@@ -12,6 +12,7 @@
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="6_8hvnv"]
+[ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
@@ -29,6 +30,20 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="Gradient" id="Gradient_r7ifn"]
+interpolation_mode = 1
+interpolation_color_space = 1
+colors = PackedColorArray(0.6265752, 0.6265753, 0.6265753, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ndfam"]
+frequency = 0.0001
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_vu7ky"]
+width = 576
+height = 64
+noise = SubResource("FastNoiseLite_ndfam")
+color_ramp = SubResource("Gradient_r7ifn")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
 texture = ExtResource("1_r5tdj")
@@ -94,7 +109,9 @@ script = ExtResource("1_hx11q")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 
-[node name="HealthPointsBar" type="ProgressBar" parent="CanvasLayer" unique_id=1547176443]
+[node name="PlayerUIGroup" type="Node" parent="CanvasLayer" unique_id=748282068]
+
+[node name="HealthPointsBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=1547176443]
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 264.0
@@ -103,7 +120,7 @@ scale = Vector2(1, 0.88)
 theme_override_styles/fill = ExtResource("6_6uf7s")
 show_percentage = false
 
-[node name="HealthPointsLabel" type="Label" parent="CanvasLayer/HealthPointsBar" unique_id=1386517132]
+[node name="HealthPointsLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
 layout_mode = 0
 offset_right = 248.0
 offset_bottom = 36.36364
@@ -113,7 +130,7 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
 offset_left = 16.0
 offset_top = 56.0
 offset_right = 264.0
@@ -121,10 +138,10 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("3_mjw3m")
-player = NodePath("../../Player")
+player = NodePath("../../../Player")
 cooldown_label = NodePath("CooldownLabel")
 
-[node name="CooldownLabel" type="Label" parent="CanvasLayer/CooldownProgressBar" unique_id=886329592]
+[node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
 layout_mode = 0
 offset_top = 1.0
 offset_right = 248.0
@@ -132,7 +149,7 @@ offset_bottom = 24.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CharacterSlotTextureRect" type="TextureRect" parent="CanvasLayer" unique_id=854278161]
+[node name="CharacterSlotTextureRect" type="TextureRect" parent="CanvasLayer/PlayerUIGroup" unique_id=854278161]
 custom_minimum_size = Vector2(7, 7)
 offset_left = 272.0
 offset_top = 16.0
@@ -141,12 +158,188 @@ offset_bottom = 80.0
 texture = SubResource("GradientTexture1D_totju")
 expand_mode = 1
 
-[node name="CharacterTexture" type="TextureRect" parent="CanvasLayer/CharacterSlotTextureRect" unique_id=1088602805]
+[node name="CharacterTexture" type="TextureRect" parent="CanvasLayer/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
 custom_minimum_size = Vector2(7, 7)
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
 texture = ExtResource("1_5oxlb")
+expand_mode = 1
+
+[node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135]
+
+[node name="InventorySlotHandle" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup" unique_id=1624500059]
+position = Vector2(960, 1048)
+texture = SubResource("NoiseTexture2D_vu7ky")
+
+[node name="SlotSprite1" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1159022887]
+position = Vector2(-256, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite1" unique_id=293381994]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite2" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=472586674]
+position = Vector2(-192, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite2" unique_id=46823539]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite3" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1531790061]
+position = Vector2(-128, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite3" unique_id=980838559]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite4" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1243112388]
+position = Vector2(-64, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite4" unique_id=1078965965]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite5" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1652356643]
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite5" unique_id=394105247]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite6" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=836763353]
+position = Vector2(64, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite6" unique_id=769621877]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite7" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=187500232]
+position = Vector2(128, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite7" unique_id=643524503]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite8" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1431118548]
+position = Vector2(191.99994, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite8" unique_id=1598486934]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="SlotSprite9" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1463072125]
+position = Vector2(255.99994, 0)
+scale = Vector2(3, 3)
+texture = ExtResource("6_totju")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite9" unique_id=2047835426]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -15.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 
 [node name="TileMap" type="TileMapLayer" parent="." unique_id=363819282]
@@ -162,8 +355,8 @@ script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
-health_points_bar = NodePath("../CanvasLayer/HealthPointsBar")
-health_points_label = NodePath("../CanvasLayer/HealthPointsBar/HealthPointsLabel")
+health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
+health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
 character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
 
