@@ -12,10 +12,12 @@
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="6_8hvnv"]
+[ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
 [ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
+[ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="9_d7uxj"]
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_3gvrm"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
@@ -30,20 +32,6 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
-
-[sub_resource type="Gradient" id="Gradient_r7ifn"]
-interpolation_mode = 1
-interpolation_color_space = 1
-colors = PackedColorArray(0.6265752, 0.6265753, 0.6265753, 1, 1, 1, 1, 1)
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_ndfam"]
-frequency = 0.0001
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_vu7ky"]
-width = 576
-height = 64
-noise = SubResource("FastNoiseLite_ndfam")
-color_ramp = SubResource("Gradient_r7ifn")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
 texture = ExtResource("1_r5tdj")
@@ -166,181 +154,374 @@ offset_bottom = 64.0
 texture = ExtResource("1_5oxlb")
 expand_mode = 1
 
-[node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135]
+[node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("inventory", "info_label")]
+script = ExtResource("6_r7ifn")
+inventory = NodePath("../../Player/Inventory")
+info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
 
-[node name="InventorySlotHandle" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup" unique_id=1624500059]
-position = Vector2(960, 1048)
-texture = SubResource("NoiseTexture2D_vu7ky")
+[node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+size_flags_horizontal = 8
 
-[node name="SlotSprite1" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1159022887]
-position = Vector2(-256, 0)
+[node name="InfoLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/ItemInfoPanelContainer" unique_id=656463042]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+
+[node name="InventorySlotHandle" type="HBoxContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=682378422]
+offset_left = 696.0
+offset_top = 1029.0
+offset_right = 872.0
+offset_bottom = 1045.0
 scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite1" unique_id=293381994]
+[node name="Slot1" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=221569347]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=293381994]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite2" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=472586674]
-position = Vector2(-192, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=291313283]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 6
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite2" unique_id=46823539]
+[node name="Slot2" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1234115465]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1938205275]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite3" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1531790061]
-position = Vector2(-128, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1730944292]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite3" unique_id=980838559]
+[node name="Slot3" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1486498046]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=482603211]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite4" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1243112388]
-position = Vector2(-64, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=1065583254]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite4" unique_id=1078965965]
+[node name="Slot4" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2078215487]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=129400958]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite5" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1652356643]
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=58705887]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite5" unique_id=394105247]
+[node name="Slot5" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1206195716]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=563496007]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite6" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=836763353]
-position = Vector2(64, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=1448353814]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite6" unique_id=769621877]
+[node name="Slot6" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1296410582]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=363151212]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite7" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=187500232]
-position = Vector2(128, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=1015161894]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite7" unique_id=643524503]
+[node name="Slot7" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=814444252]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=1865407126]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite8" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1431118548]
-position = Vector2(191.99994, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=673553010]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite8" unique_id=1598486934]
+[node name="Slot8" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1524980149]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1953929599]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="SlotSprite9" type="Sprite2D" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1463072125]
-position = Vector2(255.99994, 0)
-scale = Vector2(3, 3)
-texture = ExtResource("6_totju")
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1951674249]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/SlotSprite9" unique_id=2047835426]
+[node name="Slot9" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1335478352]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1409919084]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -15.0
-offset_top = -15.0
-offset_right = -1.0
-offset_bottom = -1.0
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1948234269]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
 
 [node name="TileMap" type="TileMapLayer" parent="." unique_id=363819282]
 tile_map_data = PackedByteArray("AAAAAAAAAAABAAAAAAAAAAEAAAABAAAAAAAAAAIAAAABAAAAAAAAAAMAAAABAAAAAAAAAAQAAAABAAAAAAAAAAUAAAABAAAAAAAAAAYAAAABAAAAAAAAAAcAAAABAAAAAAAAAAgAAAABAAAAAAAAAAkAAAABAAAAAAAAAAoAAAABAAAAAAAAAAsAAAABAAAAAAAAABAAAAABAAAAAAAAAA8AAAABAAAAAAAAAA4AAAABAAAAAAAAAA0AAAABAAAAAAAAAAwAAAABAAAAAAABABAAAAABAAAAAAACABAAAAABAAAAAAADABAAAAABAAAAAAAEABAAAAABAAAAAAAFABAAAAABAAAAAAAGABAAAAABAAAAAAAHABAAAAABAAAAAAAIABAAAAABAAAAAAAJABAAAAABAAAAAAAKABAAAAABAAAAAAALABAAAAABAAAAAAAMABAAAAABAAAAAAARABAAAAABAAAAAAASABAAAAABAAAAAAATABAAAAABAAAAAAAUABAAAAABAAAAAAAVABAAAAABAAAAAAAWABAAAAABAAAAAAAXABAAAAABAAAAAAAdAAAAAAABAAAAAAAdAAEAAAABAAAAAAAdAAIAAAABAAAAAAAdAAMAAAABAAAAAAAdAAQAAAABAAAAAAAdAAUAAAABAAAAAAAdAAYAAAABAAAAAAAdAAcAAAABAAAAAAAdAAgAAAABAAAAAAAdAAkAAAABAAAAAAAdAAoAAAABAAAAAAAdAAwAAAABAAAAAAAdAAsAAAABAAAAAAAdAA0AAAABAAAAAAAdAA4AAAABAAAAAAAdAA8AAAABAAAAAAAdABAAAAABAAAAAAAcABAAAAABAAAAAAAbABAAAAABAAAAAAAaABAAAAABAAAAAAAZABAAAAABAAAAAAAYABAAAAABAAAAAAAcAAAAAAABAAAAAAAbAAAAAAABAAAAAAAaAAAAAAABAAAAAAAZAAAAAAABAAAAAAAYAAAAAAABAAAAAAAXAAAAAAABAAAAAAAWAAAAAAABAAAAAAAVAAAAAAABAAAAAAAUAAAAAAABAAAAAAATAAAAAAABAAAAAAASAAAAAAABAAAAAAARAAAAAAABAAAAAAAQAAAAAAABAAAAAAAPAAAAAAABAAAAAAAOAAAAAAABAAAAAAANAAAAAAABAAAAAAAMAAAAAAABAAAAAAALAAAAAAABAAAAAAAKAAAAAAABAAAAAAAJAAAAAAABAAAAAAAIAAAAAAABAAAAAAAHAAAAAAABAAAAAAAGAAAAAAABAAAAAAAFAAAAAAABAAAAAAAEAAAAAAABAAAAAAADAAAAAAABAAAAAAACAAAAAAABAAAAAAABAAAAAAABAAAAAAARAA8AAAABAAAAAAAMAA8AAAABAAAAAAANABAAAAABAAAAAAAQABAAAAABAAAAAAAOABAAAAABAAAAAAAPABAAAAABAAAAAAAcAAoAAAABAAAAAAAcAAYAAAABAAAAAAAEAAsAAAABAAAAAAAFAAsAAAABAAAAAAAGAAsAAAABAAAAAAAHAAsAAAABAAAAAAAIAAsAAAABAAAAAAAJAAsAAAABAAAAAAAJAAoAAAABAAAAAAAJAAkAAAABAAAAAAAJAAgAAAABAAAAAAARAAoAAAAAAAAAAAARAAkAAAAAAAAAAAARAAgAAAAAAAAAAAARAAcAAAAAAAAAAAARAAYAAAAAAAAAAAARAAUAAAAAAAAAAAARAAQAAAAAAAAAAAARAAMAAAAAAAAAAAARAAIAAAAAAAAAAAARAAEAAAAAAAAAAAAQAAEAAAAAAAAAAAAPAAEAAAAAAAAAAAAOAAEAAAAAAAAAAAANAAEAAAAAAAAAAAAMAAEAAAAAAAAAAAALAAEAAAAAAAAAAAAKAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAFAAEAAAAAAAAAAAAEAAEAAAAAAAAAAAADAAEAAAAAAAAAAAACAAEAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAAAAAAAAAAABAAMAAAAAAAAAAAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAAAAAABAAcAAAAAAAAAAAABAAgAAAAAAAAAAAABAAkAAAAAAAAAAAABAAoAAAAAAAAAAAABAAsAAAAAAAAAAAABAAwAAAAAAAAAAAABAA0AAAAAAAAAAAABAA4AAAAAAAAAAAABAA8AAAAAAAAAAAACAA8AAAAAAAAAAAACAA4AAAAAAAAAAAACAA0AAAAAAAAAAAACAAwAAAAAAAAAAAACAAsAAAAAAAAAAAACAAoAAAAAAAAAAAACAAkAAAAAAAAAAAACAAgAAAAAAAAAAAACAAcAAAAAAAAAAAACAAYAAAAAAAAAAAACAAUAAAAAAAAAAAACAAQAAAAAAAAAAAACAAMAAAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAADAAMAAAAAAAAAAAADAAQAAAAAAAAAAAADAAUAAAAAAAAAAAADAAYAAAAAAAAAAAADAAcAAAAAAAAAAAADAAgAAAAAAAAAAAADAAkAAAAAAAAAAAADAAoAAAAAAAAAAAADAAsAAAAAAAAAAAADAAwAAAAAAAAAAAADAA0AAAAAAAAAAAADAA4AAAAAAAAAAAADAA8AAAAAAAAAAAAEAA8AAAAAAAAAAAAEAA4AAAAAAAAAAAAEAA0AAAAAAAAAAAAEAAwAAAAAAAAAAAAFAAwAAAAAAAAAAAAFAA0AAAAAAAAAAAAFAA4AAAAAAAAAAAAFAA8AAAAAAAAAAAAGAA8AAAAAAAAAAAAGAA4AAAAAAAAAAAAGAA0AAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAAAAAAAAAAHAA0AAAAAAAAAAAAHAA4AAAAAAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAAAAAAAAAAIAA4AAAAAAAAAAAAIAA0AAAAAAAAAAAAIAAwAAAAAAAAAAAAJAAwAAAAAAAAAAAAJAA0AAAAAAAAAAAAJAA4AAAAAAAAAAAAJAA8AAAAAAAAAAAAKAA8AAAAAAAAAAAAKAA4AAAAAAAAAAAAKAA0AAAAAAAAAAAAKAAwAAAAAAAAAAAAKAAsAAAAAAAAAAAAKAAoAAAAAAAAAAAAKAAkAAAAAAAAAAAAKAAgAAAAAAAAAAAAKAAcAAAAAAAAAAAAKAAYAAAAAAAAAAAAKAAUAAAAAAAAAAAAKAAQAAAAAAAAAAAAKAAMAAAAAAAAAAAAKAAIAAAAAAAAAAAAJAAIAAAAAAAAAAAAIAAIAAAAAAAAAAAAHAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAMAAAAAAAAAAAAEAAQAAAAAAAAAAAAEAAUAAAAAAAAAAAAEAAYAAAAAAAAAAAAEAAcAAAAAAAAAAAAEAAgAAAAAAAAAAAAEAAkAAAAAAAAAAAAEAAoAAAAAAAAAAAAFAAoAAAAAAAAAAAAFAAkAAAAAAAAAAAAFAAgAAAAAAAAAAAAFAAcAAAAAAAAAAAAFAAYAAAAAAAAAAAAFAAUAAAAAAAAAAAAFAAQAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAQAAAAAAAAAAAAGAAUAAAAAAAAAAAAGAAYAAAAAAAAAAAAGAAcAAAAAAAAAAAAGAAgAAAAAAAAAAAAGAAkAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAAAAAAAAAAHAAkAAAAAAAAAAAAHAAgAAAAAAAAAAAAHAAcAAAAAAAAAAAAHAAYAAAAAAAAAAAAHAAUAAAAAAAAAAAAHAAQAAAAAAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAIAAQAAAAAAAAAAAAIAAUAAAAAAAAAAAAIAAYAAAAAAAAAAAAIAAcAAAAAAAAAAAAIAAgAAAAAAAAAAAAIAAkAAAAAAAAAAAAIAAoAAAAAAAAAAAAJAAcAAAAAAAAAAAAJAAYAAAAAAAAAAAAJAAUAAAAAAAAAAAAJAAQAAAAAAAAAAAAJAAMAAAAAAAAAAAALAAIAAAAAAAAAAAALAAMAAAAAAAAAAAALAAQAAAAAAAAAAAALAAUAAAAAAAAAAAALAAYAAAAAAAAAAAALAAcAAAAAAAAAAAALAAgAAAAAAAAAAAALAAkAAAAAAAAAAAALAAoAAAAAAAAAAAALAAsAAAAAAAAAAAALAAwAAAAAAAAAAAALAA0AAAAAAAAAAAALAA4AAAAAAAAAAAALAA8AAAAAAAAAAAAMAA4AAAAAAAAAAAAMAA0AAAAAAAAAAAAMAAwAAAAAAAAAAAAMAAsAAAAAAAAAAAAMAAoAAAAAAAAAAAAMAAkAAAAAAAAAAAAMAAgAAAAAAAAAAAAMAAcAAAAAAAAAAAAMAAYAAAAAAAAAAAAMAAUAAAAAAAAAAAAMAAQAAAAAAAAAAAAMAAMAAAAAAAAAAAAMAAIAAAAAAAAAAAANAAIAAAAAAAAAAAANAAMAAAAAAAAAAAANAAQAAAAAAAAAAAANAAUAAAAAAAAAAAANAAYAAAAAAAAAAAANAAcAAAAAAAAAAAANAAgAAAAAAAAAAAANAAkAAAAAAAAAAAANAAoAAAAAAAAAAAANAAsAAAAAAAAAAAANAAwAAAAAAAAAAAANAA0AAAAAAAAAAAANAA4AAAAAAAAAAAANAA8AAAAAAAAAAAAOAA8AAAAAAAAAAAAOAA4AAAAAAAAAAAAOAA0AAAAAAAAAAAAOAAwAAAAAAAAAAAAOAAsAAAAAAAAAAAAOAAoAAAAAAAAAAAAOAAkAAAAAAAAAAAAOAAgAAAAAAAAAAAAOAAcAAAAAAAAAAAAOAAYAAAAAAAAAAAAOAAUAAAAAAAAAAAAOAAQAAAAAAAAAAAAOAAMAAAAAAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAAAAAAAAAAPAAMAAAAAAAAAAAAPAAQAAAAAAAAAAAAPAAUAAAAAAAAAAAAPAAYAAAAAAAAAAAAPAAcAAAAAAAAAAAAPAAgAAAAAAAAAAAAPAAkAAAAAAAAAAAAPAAoAAAAAAAAAAAAPAAsAAAAAAAAAAAAPAAwAAAAAAAAAAAAPAA0AAAAAAAAAAAAPAA4AAAAAAAAAAAAPAA8AAAAAAAAAAAAQAA8AAAAAAAAAAAAQAA4AAAAAAAAAAAAQAA0AAAAAAAAAAAAQAAwAAAAAAAAAAAAQAAsAAAAAAAAAAAAQAAoAAAAAAAAAAAAQAAkAAAAAAAAAAAAQAAgAAAAAAAAAAAAQAAcAAAAAAAAAAAAQAAYAAAAAAAAAAAAQAAUAAAAAAAAAAAAQAAQAAAAAAAAAAAAQAAMAAAAAAAAAAAAQAAIAAAAAAAAAAAARAAsAAAAAAAAAAAARAAwAAAAAAAAAAAARAA0AAAAAAAAAAAARAA4AAAAAAAAAAAASAA4AAAAAAAAAAAASAA0AAAAAAAAAAAASAAwAAAAAAAAAAAASAAsAAAAAAAAAAAASAAoAAAAAAAAAAAASAAkAAAAAAAAAAAASAAgAAAAAAAAAAAASAAcAAAAAAAAAAAASAAYAAAAAAAAAAAASAAUAAAAAAAAAAAASAAQAAAAAAAAAAAASAAMAAAAAAAAAAAASAAIAAAAAAAAAAAASAAEAAAAAAAAAAAATAAEAAAAAAAAAAAATAAIAAAAAAAAAAAATAAMAAAAAAAAAAAATAAQAAAAAAAAAAAATAAUAAAAAAAAAAAATAAYAAAAAAAAAAAATAAcAAAAAAAAAAAATAAgAAAAAAAAAAAATAAkAAAAAAAAAAAATAAoAAAAAAAAAAAATAAsAAAAAAAAAAAATAAwAAAAAAAAAAAATAA0AAAAAAAAAAAATAA4AAAAAAAAAAAATAA8AAAAAAAAAAAASAA8AAAAAAAAAAAAUAA8AAAAAAAAAAAAUAA4AAAAAAAAAAAAUAA0AAAAAAAAAAAAUAAwAAAAAAAAAAAAUAAsAAAAAAAAAAAAUAAoAAAAAAAAAAAAUAAkAAAAAAAAAAAAUAAgAAAAAAAAAAAAUAAcAAAAAAAAAAAAUAAYAAAAAAAAAAAAUAAUAAAAAAAAAAAAUAAQAAAAAAAAAAAAUAAMAAAAAAAAAAAAUAAIAAAAAAAAAAAAUAAEAAAAAAAAAAAAVAAEAAAAAAAAAAAAVAAIAAAAAAAAAAAAVAAMAAAAAAAAAAAAVAAQAAAAAAAAAAAAVAAUAAAAAAAAAAAAVAAYAAAAAAAAAAAAVAAcAAAAAAAAAAAAVAAgAAAAAAAAAAAAVAAkAAAAAAAAAAAAVAAoAAAAAAAAAAAAVAAsAAAAAAAAAAAAVAAwAAAAAAAAAAAAVAA0AAAAAAAAAAAAVAA4AAAAAAAAAAAAVAA8AAAAAAAAAAAAWAA8AAAAAAAAAAAAWAA4AAAAAAAAAAAAWAA0AAAAAAAAAAAAWAAwAAAAAAAAAAAAWAAsAAAAAAAAAAAAWAAoAAAAAAAAAAAAWAAkAAAAAAAAAAAAWAAgAAAAAAAAAAAAWAAcAAAAAAAAAAAAWAAYAAAAAAAAAAAAWAAUAAAAAAAAAAAAWAAQAAAAAAAAAAAAWAAMAAAAAAAAAAAAWAAIAAAAAAAAAAAAWAAEAAAAAAAAAAAAXAAEAAAAAAAAAAAAXAAIAAAAAAAAAAAAXAAMAAAAAAAAAAAAXAAQAAAAAAAAAAAAXAAUAAAAAAAAAAAAXAAYAAAAAAAAAAAAXAAcAAAAAAAAAAAAXAAgAAAAAAAAAAAAXAAkAAAAAAAAAAAAXAAoAAAAAAAAAAAAXAAsAAAAAAAAAAAAXAAwAAAAAAAAAAAAXAA0AAAAAAAAAAAAXAA4AAAAAAAAAAAAXAA8AAAAAAAAAAAAYAA8AAAAAAAAAAAAYAA4AAAAAAAAAAAAYAA0AAAAAAAAAAAAYAAwAAAAAAAAAAAAYAAsAAAAAAAAAAAAYAAoAAAAAAAAAAAAYAAkAAAAAAAAAAAAYAAgAAAAAAAAAAAAYAAcAAAAAAAAAAAAYAAYAAAAAAAAAAAAYAAUAAAAAAAAAAAAYAAQAAAAAAAAAAAAYAAMAAAAAAAAAAAAYAAIAAAAAAAAAAAAYAAEAAAAAAAAAAAAZAAEAAAAAAAAAAAAZAAIAAAAAAAAAAAAZAAMAAAAAAAAAAAAZAAQAAAAAAAAAAAAZAAUAAAAAAAAAAAAZAAYAAAAAAAAAAAAZAAcAAAAAAAAAAAAZAAgAAAAAAAAAAAAZAAkAAAAAAAAAAAAZAAoAAAAAAAAAAAAZAAsAAAAAAAAAAAAZAAwAAAAAAAAAAAAZAA0AAAAAAAAAAAAZAA4AAAAAAAAAAAAZAA8AAAAAAAAAAAAaAA8AAAAAAAAAAAAaAA4AAAAAAAAAAAAaAA0AAAAAAAAAAAAaAAwAAAAAAAAAAAAaAAsAAAAAAAAAAAAaAAoAAAAAAAAAAAAaAAkAAAAAAAAAAAAaAAgAAAAAAAAAAAAaAAcAAAAAAAAAAAAaAAYAAAAAAAAAAAAaAAUAAAAAAAAAAAAaAAQAAAAAAAAAAAAaAAMAAAAAAAAAAAAaAAIAAAAAAAAAAAAaAAEAAAAAAAAAAAAbAAEAAAAAAAAAAAAbAAIAAAAAAAAAAAAbAAMAAAAAAAAAAAAbAAQAAAAAAAAAAAAbAAUAAAAAAAAAAAAbAAYAAAAAAAAAAAAbAAcAAAAAAAAAAAAbAAgAAAAAAAAAAAAbAAkAAAAAAAAAAAAbAAoAAAAAAAAAAAAbAAsAAAAAAAAAAAAbAAwAAAAAAAAAAAAbAA0AAAAAAAAAAAAbAA4AAAAAAAAAAAAbAA8AAAAAAAAAAAAcAA8AAAAAAAAAAAAcAA4AAAAAAAAAAAAcAA0AAAAAAAAAAAAcAAwAAAAAAAAAAAAcAAsAAAAAAAAAAAAcAAkAAAAAAAAAAAAcAAgAAAAAAAAAAAAcAAcAAAAAAAAAAAAcAAUAAAAAAAAAAAAcAAQAAAAAAAAAAAAcAAMAAAAAAAAAAAAcAAIAAAAAAAAAAAAcAAEAAAAAAAAAAAA=")
