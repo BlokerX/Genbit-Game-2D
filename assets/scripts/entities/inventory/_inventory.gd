@@ -2,6 +2,9 @@
 extends Node
 class_name Inventory
 
+# Zmienna, do której przeciągniemy naszą scenę item_pickup.tscn
+@export var item_pickup_scene: PackedScene
+
 @export var max_items: int = 9 # Rozmiar Twojego ekwipunku
 # Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
 @export var items: Array[ItemData] = []
@@ -16,17 +19,41 @@ func _init() -> void :
 	# Wszystkie miejsca będą na start miały wartość 'null' (pusty slot).
 	items.resize(max_items)
 
-func add_item(item: ItemData) -> bool:
-	# Przeszukujemy ekwipunek w poszukiwaniu pierwszego wolnego miejsca (null)
+func add_item(item: ItemData) -> int:
+	if item == null:
+		return 0 # Nic nie dodaliśmy, zwracamy 0
+		
+	var item_to_add = item.duplicate()
+
+	# 1. ETAP: Upchanie do stacków
+	if item_to_add.item_is_stackable:
+		for i in range(items.size()):
+			if items[i] != null and items[i].item_id == item_to_add.item_id:
+				var available_space = items[i].item_max_stack_count - items[i].item_stack_count
+				
+				if available_space > 0:
+					if item_to_add.item_stack_count <= available_space:
+						items[i].item_stack_count += item_to_add.item_stack_count
+						inventory_updated.emit()
+						return 0 # Zmieściło się wszystko, zostaje 0 reszty na ziemi!
+					else:
+						items[i].item_stack_count = items[i].item_max_stack_count
+						item_to_add.item_stack_count -= available_space
+
+	# 2. ETAP: Szukanie pustych slotów dla reszty
 	for i in range(items.size()):
 		if items[i] == null:
-			# Klonujemy zasób, by przedmioty (np. ich wytrzymałość) działały niezależnie
-			items[i] = item.duplicate() 
+			items[i] = item_to_add 
 			inventory_updated.emit()
-			return true
-			
-	print("Ekwipunek jest pełny!")
-	return false
+			return 0 # Wrzuciliśmy całą resztę do nowego slota, zostaje 0!
+
+	# 3. ETAP: Zabrakło miejsca! Ekwipunek pełny.
+	# Ale UWAGA: Mogliśmy dodać część przedmiotów w ETAPIE 1, więc musimy odświeżyć UI!
+	inventory_updated.emit()
+	print("Ekwipunek jest pełny! Na ziemi zostało sztuk: ", item_to_add.item_stack_count)
+	
+	# Zwracamy ile sztuk przedmiotu fizycznie nie zmieściło się do plecaka
+	return item_to_add.item_stack_count
 
 func consume_current_item() -> void:
 	var item = get_current_item()
@@ -113,3 +140,33 @@ func _physics_process(_delta) :
 		scroll_inventory(1)
 	elif Input.is_action_just_pressed("InventoryScrollUp"):
 		scroll_inventory(-1)
+	
+	# NOWE: Wyrzucanie przedmiotu
+	if Input.is_action_just_pressed("DropItem"):
+		drop_current_item()
+
+func drop_current_item() -> void:
+	var item = get_current_item()
+	
+	if item != null and item_pickup_scene != null:
+		# 1. Tworzymy nowy fizyczny obiekt przedmiotu z naszej sceny
+		var drop = item_pickup_scene.instantiate()
+		
+		# 2. Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
+		var dropped_item_data = item.duplicate()
+		dropped_item_data.item_stack_count = 1 # Wyrzucamy tylko 1 sztukę na raz
+		drop.item_data = dropped_item_data
+		
+		# 3. Dodajemy obiekt do głównego świata gry (nie do gracza!)
+		# get_tree().current_scene odnosi się do głównego węzła aktualnej mapy
+		get_tree().current_scene.add_child(drop)
+		
+		# 4. Ustawiamy pozycję przedmiotu na ziemi.
+		# Ponieważ skrypt Inventory jest dzieckiem Gracza, get_parent() to Gracz.
+		# Dodajemy losowe przesunięcie, żeby przedmiot nie pojawił się idealnie 
+		# w graczu (co mogłoby spowodować jego natychmiastowe, ponowne podniesienie!)
+		var random_offset = Vector2(randf_range(-40, 40), randf_range(-40, 40))
+		drop.global_position = get_parent().global_position + random_offset
+		
+		# 5. Skoro przedmiot wyleciał z ekwipunku, zużywamy 1 sztukę ze slota
+		consume_current_item()

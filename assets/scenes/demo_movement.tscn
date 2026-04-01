@@ -7,7 +7,6 @@
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="4_5dhej"]
-[ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="4_ej7ba"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
@@ -25,6 +24,8 @@
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres" id="15_b10mb"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres" id="16_eyunf"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_interaction_and_attack_stats_component.tres" id="21_mjw3m"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -531,7 +532,7 @@ tile_set = SubResource("TileSet_6uf7s")
 unique_name_in_owner = true
 position = Vector2(304, 429)
 collision_layer = 2
-collision_mask = 5
+collision_mask = 13
 script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 movement_universal_script = ExtResource("4_5dhej")
@@ -543,6 +544,7 @@ effects_collector = NodePath("EffectsCollector")
 
 [node name="Inventory" type="Node" parent="Player" unique_id=1514705884]
 script = ExtResource("4_w0vak")
+item_pickup_scene = ExtResource("25_r00hp")
 items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
 
 [node name="EffectsCollector" type="Node" parent="Player" unique_id=2095437257]
@@ -559,18 +561,16 @@ scale = Vector2(0.391406, 0.392)
 texture = ExtResource("1_5oxlb")
 flip_h = true
 
-[node name="Gun" type="Sprite2D" parent="Player/CharacterSprite" unique_id=1121854437]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(69.23761, 112.244995)
-rotation = 0.96374375
-scale = Vector2(3.8284175, 3.830453)
-skew = 0.0014201403
-texture = ExtResource("4_ej7ba")
+[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=1775441149]
+position = Vector2(24, 43.00003)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=411526225]
 
 [node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
 collision_layer = 4
-collision_mask = 3
+collision_mask = 11
 script = ExtResource("6_8hvnv")
 movement_universal_script = ExtResource("15_b10mb")
 health_stats_script = ExtResource("16_eyunf")
@@ -614,3 +614,43 @@ vertical_alignment = 1
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
 navigation_polygon = SubResource("NavigationPolygon_hx11q")
+
+[node name="ItemPickup" parent="." unique_id=1701967078 instance=ExtResource("25_r00hp")]
+position = Vector2(480, 288)
+item_data = ExtResource("8_d7uxj")
+
+[node name="ItemPickup2" parent="." unique_id=889212379 instance=ExtResource("25_r00hp")]
+position = Vector2(484, 288)
+item_data = ExtResource("27_r00hp")
+
+[node name="ItemPickup3" parent="." unique_id=2097510866 instance=ExtResource("25_r00hp")]
+position = Vector2(485, 288)
+item_data = ExtResource("9_d7uxj")
+
+[node name="ItemPickup4" parent="." unique_id=1719168975 instance=ExtResource("25_r00hp")]
+position = Vector2(486, 288)
+item_data = ExtResource("11_xscv4")
+
+[node name="ItemPickup5" parent="." unique_id=97565883 instance=ExtResource("25_r00hp")]
+position = Vector2(487, 288)
+item_data = ExtResource("12_d23um")
+
+[node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("25_r00hp")]
+position = Vector2(488, 288)
+item_data = ExtResource("10_3gvrm")
+
+[node name="ItemPickup7" parent="." unique_id=503515703 instance=ExtResource("25_r00hp")]
+position = Vector2(489, 288)
+item_data = ExtResource("8_d7uxj")
+
+[node name="ItemPickup8" parent="." unique_id=1357467628 instance=ExtResource("25_r00hp")]
+position = Vector2(490, 288)
+item_data = ExtResource("8_d7uxj")
+
+[node name="ItemPickup9" parent="." unique_id=839409498 instance=ExtResource("25_r00hp")]
+position = Vector2(492, 288)
+item_data = ExtResource("8_d7uxj")
+
+[node name="ItemPickup10" parent="." unique_id=1218642857 instance=ExtResource("25_r00hp")]
+position = Vector2(493, 288)
+item_data = ExtResource("8_d7uxj")

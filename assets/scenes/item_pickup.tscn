@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://d1pwrfy72pr74"]
+
+[ext_resource type="Script" uid="uid://cly3qdibifi7w" path="res://assets/scripts/entities/inventory/item_pickup.gd" id="1_wtsmv"]
+[ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/green_potion.png" id="2_wtsmv"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_wtsmv"]
+friction = 0.1
+bounce = 0.6
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ndfam"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wtsmv"]
+
+[node name="ItemPickup" type="RigidBody2D" unique_id=889212379]
+collision_layer = 8
+collision_mask = 15
+mass = 0.3
+physics_material_override = SubResource("PhysicsMaterial_wtsmv")
+gravity_scale = 0.0
+can_sleep = false
+lock_rotation = true
+linear_damp = 0.5
+script = ExtResource("1_wtsmv")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1192154879]
+scale = Vector2(4, 4)
+texture = ExtResource("2_wtsmv")
+
+[node name="PhysicsShape" type="CollisionShape2D" parent="." unique_id=573150768]
+scale = Vector2(3, 3)
+shape = SubResource("CircleShape2D_ndfam")
+debug_color = Color(0.71802, 0.48113406, 0, 0.41960785)
+
+[node name="PickupArea" type="Area2D" parent="." unique_id=1167382185]
+scale = Vector2(2, 2)
+collision_layer = 8
+collision_mask = 11
+
+[node name="PickupShape" type="CollisionShape2D" parent="PickupArea" unique_id=1278937336]
+scale = Vector2(2, 2)
+shape = SubResource("CircleShape2D_wtsmv")

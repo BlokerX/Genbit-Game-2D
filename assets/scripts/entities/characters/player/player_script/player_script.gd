@@ -4,6 +4,7 @@ extends CharacterEntity
 class_name PlayerCharacter
 
 @export var inventory : Inventory
+@onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
 
 func _ready():
 	movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
@@ -24,6 +25,9 @@ func _ready():
 	on_inventory_update()
 
 func on_inventory_update() :
+	
+	#region debug log
+	
 	print("================")
 	print("Inventory state:")
 	print("---")
@@ -51,10 +55,22 @@ func on_inventory_update() :
 			print(item.item_name)
 	print("================")
 	
+	#endregion
+	
 	# Aktualizacja cooldown po zmianie itemu
 	# Po podniesieniu lub zmianie przedmiotu aktualizujemy limit cooldownu postaci
 	var current_item = inventory.get_current_item()
 	
+	
+	if current_item != null:
+		# Jeśli slot nie jest pusty, wkładamy przedmiot do dłoni rycerza.
+		# UWAGA: Twoja zmienna w ItemData nazywa się 'item_icon'.
+		held_item_visual.texture = current_item.item_icon
+		held_item_visual.show() # Pokazujemy dłoń
+	else:
+		# Jeśli slot jest pusty, czyścimy dłoń
+		held_item_visual.texture = null
+		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
 	
 	
 	# Podłączamy sygnał do aktywnego przedmiotu, jeśli to broń
@@ -106,6 +122,23 @@ func _physics_process(delta):
 	#print("Monitor prędkości gracza: ", velocity)
 	
 	#endregion
+	
+	
+	
+	# NOWE: System popychania fizycznych przedmiotów!
+	var push_force = 10.0 # Zmień tę wartość, żeby przedmioty były lżejsze/cięższe
+	
+	# Sprawdzamy wszystkie obiekty, w które gracz właśnie uderzył
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		# Jeśli uderzyliśmy w RigidBody2D (nasz przedmiot)
+		if collider is RigidBody2D:
+			# Uderzamy go (popychamy) w stronę przeciwną do naszego zderzenia
+			collider.apply_central_impulse(-collision.get_normal() * push_force)
+	
+	
 	
 	# Respawn
 	if Input.is_action_just_pressed("RespawnButton") :
