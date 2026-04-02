@@ -21,11 +21,13 @@
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_3gvrm"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="13_r00hp"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres" id="15_b10mb"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres" id="16_eyunf"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_interaction_and_attack_stats_component.tres" id="21_mjw3m"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -45,6 +47,10 @@ texture_region_size = Vector2i(64, 64)
 tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_8hvnv")
+
+[sub_resource type="Resource" id="Resource_r00hp"]
+script = ExtResource("13_r00hp")
+metadata/_custom_type_script = "uid://bhf7u5pstn1te"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
@@ -537,6 +543,7 @@ script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
+interaction_and_attack_stats_script = SubResource("Resource_r00hp")
 health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
 health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
 character_sprite = NodePath("CharacterSprite")
@@ -566,6 +573,12 @@ position = Vector2(24, 43.00003)
 scale = Vector2(2, 2)
 
 [node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=411526225]
+
+[node name="AimScanner" type="RayCast2D" parent="Player" unique_id=2090598535]
+collision_mask = 12
+collide_with_areas = true
+
+[node name="InteractableComponent" parent="Player" unique_id=566081594 instance=ExtResource("27_xiq2x")]
 
 [node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
@@ -612,6 +625,8 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="InteractableComponent" parent="Enemy" unique_id=165657634 instance=ExtResource("27_xiq2x")]
+
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
 navigation_polygon = SubResource("NavigationPolygon_hx11q")
 
@@ -638,19 +653,3 @@ item_data = ExtResource("12_d23um")
 [node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("25_r00hp")]
 position = Vector2(488, 288)
 item_data = ExtResource("10_3gvrm")
-
-[node name="ItemPickup7" parent="." unique_id=503515703 instance=ExtResource("25_r00hp")]
-position = Vector2(489, 288)
-item_data = ExtResource("8_d7uxj")
-
-[node name="ItemPickup8" parent="." unique_id=1357467628 instance=ExtResource("25_r00hp")]
-position = Vector2(490, 288)
-item_data = ExtResource("8_d7uxj")
-
-[node name="ItemPickup9" parent="." unique_id=839409498 instance=ExtResource("25_r00hp")]
-position = Vector2(492, 288)
-item_data = ExtResource("8_d7uxj")
-
-[node name="ItemPickup10" parent="." unique_id=1218642857 instance=ExtResource("25_r00hp")]
-position = Vector2(493, 288)
-item_data = ExtResource("8_d7uxj")

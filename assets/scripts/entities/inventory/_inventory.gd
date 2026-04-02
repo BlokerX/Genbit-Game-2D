@@ -14,6 +14,9 @@ class_name Inventory
 # Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
 
+# Zamiast referencji do item_pickup_scene dodaj sygnał
+signal item_dropped(item_data: ItemData)
+
 # Constructor
 func _init() -> void :
 	# Wszystkie miejsca będą na start miały wartość 'null' (pusty slot).
@@ -41,11 +44,17 @@ func add_item(item: ItemData) -> int:
 						item_to_add.item_stack_count -= available_space
 
 	# 2. ETAP: Szukanie pustych slotów dla reszty
+	if items[current_item_index] == null:
+		items[current_item_index] = item_to_add
+		inventory_updated.emit()
+		return 0 # Przedmiot wskoczył prosto do wolnej ręki!
+
+	# Jeśli slot w ręce był jednak zajęty, szukamy pierwszego wolnego slota w plecaku od lewej (stara logika)
 	for i in range(items.size()):
 		if items[i] == null:
 			items[i] = item_to_add 
 			inventory_updated.emit()
-			return 0 # Wrzuciliśmy całą resztę do nowego slota, zostaje 0!
+			return 0
 
 	# 3. ETAP: Zabrakło miejsca! Ekwipunek pełny.
 	# Ale UWAGA: Mogliśmy dodać część przedmiotów w ETAPIE 1, więc musimy odświeżyć UI!
@@ -170,3 +179,6 @@ func drop_current_item() -> void:
 		
 		# 5. Skoro przedmiot wyleciał z ekwipunku, zużywamy 1 sztukę ze slota
 		consume_current_item()
+		
+		# 6. Informujemy świat, że przedmiot został wyrzucony z tego plecaka
+		item_dropped.emit(dropped_item_data)
