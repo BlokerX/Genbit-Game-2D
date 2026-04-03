@@ -10,7 +10,7 @@ class_name ItemPickup
 var can_pick_up: bool = false
 
 # NOWA ZMIENNA: Pamięta, czy gracz stoi aktualnie w pobliżu przedmiotu
-var player_in_range: Node2D = null 
+var player_in_range: Node2D = null
 
 func _ready() -> void:
 	if item_data != null:

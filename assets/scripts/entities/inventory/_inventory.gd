@@ -2,33 +2,57 @@
 extends Node
 class_name Inventory
 
-# Zmienna, do której przeciągniemy naszą scenę item_pickup.tscn
-@export var item_pickup_scene: PackedScene
+#region Inventory stats
+## Rozmiar ekwipunku
+@export var max_items: int = 9 
 
-@export var max_items: int = 9 # Rozmiar Twojego ekwipunku
-# Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
+## Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
 @export var items: Array[ItemData] = []
 
+## Aktualnie wybrany indeks slotu
 @export var current_item_index : int = 0
 
-# Sygnał, który powiadomi UI o zmianie
+#endregion
+
+
+#region Signals
+
+## Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
 
-# Zamiast referencji do item_pickup_scene dodaj sygnał
 signal item_dropped(item_data: ItemData)
 
-# Constructor
+#endregion
+
+## Constructor
 func _init() -> void :
 	# Wszystkie miejsca będą na start miały wartość 'null' (pusty slot).
 	items.resize(max_items)
 
-func add_item(item: ItemData) -> int:
-	if item == null:
-		return 0 # Nic nie dodaliśmy, zwracamy 0
-		
-	var item_to_add = item.duplicate()
 
-	# 1. ETAP: Upchanie do stacków
+## Zwraca aktualnie wybrany przedmiot
+func get_current_item() -> ItemData :
+	# Sprawdzamy, czy indeks jest bezpieczny (nie jest na minusie i jest mniejszy niż rozmiar tablicy)
+	if current_item_index >= 0 and current_item_index < items.size():
+		return items[current_item_index]
+	
+	# Jeśli indeks jest zły, zwracamy null (brak przedmiotu), zamiast crashować grę
+	#debug
+	print("Błąd: Próba pobrania przedmiotu spoza zakresu ekwipunku!")
+	#endif
+	return null
+
+
+## Pobranie itemu do ekwipunku
+func add_item(item: ItemData) -> int:
+	# Nic nie dodaliśmy, zwracamy 0
+	if item == null:
+		return 0
+	
+	# Duplikacja itemu ponieważ fizyczny egzemplarz będzie niszczony
+	var item_to_add = item.duplicate()
+	
+	# 1. Upchanie do stacków
 	if item_to_add.item_is_stackable:
 		for i in range(items.size()):
 			if items[i] != null and items[i].item_id == item_to_add.item_id:
@@ -42,21 +66,23 @@ func add_item(item: ItemData) -> int:
 					else:
 						items[i].item_stack_count = items[i].item_max_stack_count
 						item_to_add.item_stack_count -= available_space
-
-	# 2. ETAP: Szukanie pustych slotów dla reszty
+	
+	# 2. Szukanie pustych slotów dla reszty
+	
+	# Jeśli wybrana wolna ręka to przedmiot wskoczy prosto do wolnej ręki!
 	if items[current_item_index] == null:
 		items[current_item_index] = item_to_add
 		inventory_updated.emit()
-		return 0 # Przedmiot wskoczył prosto do wolnej ręki!
+		return 0 
 
-	# Jeśli slot w ręce był jednak zajęty, szukamy pierwszego wolnego slota w plecaku od lewej (stara logika)
+	# Jeśli slot w ręce był jednak zajęty, szukamy pierwszego wolnego slota w plecaku od lewej
 	for i in range(items.size()):
 		if items[i] == null:
 			items[i] = item_to_add 
 			inventory_updated.emit()
 			return 0
 
-	# 3. ETAP: Zabrakło miejsca! Ekwipunek pełny.
+	# 3. Zabrakło miejsca! Ekwipunek pełny.
 	# Ale UWAGA: Mogliśmy dodać część przedmiotów w ETAPIE 1, więc musimy odświeżyć UI!
 	inventory_updated.emit()
 	print("Ekwipunek jest pełny! Na ziemi zostało sztuk: ", item_to_add.item_stack_count)
@@ -64,6 +90,30 @@ func add_item(item: ItemData) -> int:
 	# Zwracamy ile sztuk przedmiotu fizycznie nie zmieściło się do plecaka
 	return item_to_add.item_stack_count
 
+## Usuwanie przedmiotu z ekwipunku
+func remove_item(index: int) -> void:
+	if index >= 0 and index < items.size():
+		items[index] = null # Zamiast remove_at(index), zostawia slot tylko z null zamiast usuwać go z listy
+		inventory_updated.emit()
+
+
+## Konsumpcja wytrzymałości itemu (zmniejszenie wytrzymałości)
+func consume_durability_of_the_item() -> void:
+	var item = get_current_item()
+	
+	if item != null:
+		# Zmniejszamy wytrzymałość o 1 użycie
+		item.reduce_durability()
+		
+		# Jeśli to był ostatni użytek, konsumujemy sztukę
+		if item.durable <= 0:
+			consume_current_item()
+			return
+			
+		# Informujemy UI o zmianie (żeby odświeżyło pasek durability)
+		inventory_updated.emit()
+
+## Konsumpcja sztuki itemu (zmniejszenie ilości w staku)
 func consume_current_item() -> void:
 	var item = get_current_item()
 	
@@ -80,39 +130,13 @@ func consume_current_item() -> void:
 		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
 		inventory_updated.emit()
 
-func consume_durability_of_the_item() -> void:
-	var item = get_current_item()
-	
-	if item != null:
-		# Zmniejszamy wytrzymałość o 1 użycie
-		item.reduce_durability()
-		
-		# Jeśli to był ostatni użytek, konsumujemy sztukę
-		if item.durable <= 0:
-			consume_current_item()
-			return
-			
-		# Informujemy UI o zmianie (żeby odświeżyło pasek durability)
-		inventory_updated.emit()
 
-func remove_item(index: int) -> void:
-	if index >= 0 and index < items.size():
-		items[index] = null # Zamiast remove_at(index), zostawia slot tylko z null zamiast usuwać go z listy
-		inventory_updated.emit()
-
-func get_current_item() -> ItemData :
-	# Sprawdzamy, czy indeks jest bezpieczny (nie jest na minusie i jest mniejszy niż rozmiar tablicy)
-	if current_item_index >= 0 and current_item_index < items.size():
-		return items[current_item_index]
-	
-	# Jeśli indeks jest zły, zwracamy null (brak przedmiotu), zamiast crashować grę
-	#print("Błąd: Próba pobrania przedmiotu spoza zakresu ekwipunku!")
-	return null
-
+## Zmienia aktualnie wybrany indeks aktualnego itemu (zmiana wybranego itemu)
 func select_item(index) -> void :
 	current_item_index = index
 	inventory_updated.emit()
 
+## Obsługa wybierania poprzedniego i następnego indeksu
 func scroll_inventory(direction: int) -> void:
 	var new_index = current_item_index + direction
 	
@@ -124,6 +148,17 @@ func scroll_inventory(direction: int) -> void:
 		new_index = items.size() - 1
 		
 	select_item(new_index)
+
+
+
+
+
+
+
+
+
+
+
 
 func _physics_process(_delta) :
 	if Input.is_action_just_pressed("InventorySlot1") :
@@ -154,31 +189,18 @@ func _physics_process(_delta) :
 	if Input.is_action_just_pressed("DropItem"):
 		drop_current_item()
 
+
+## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
 func drop_current_item() -> void:
 	var item = get_current_item()
 	
-	if item != null and item_pickup_scene != null:
-		# 1. Tworzymy nowy fizyczny obiekt przedmiotu z naszej sceny
-		var drop = item_pickup_scene.instantiate()
-		
-		# 2. Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
+	if item != null:
+		#Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
 		var dropped_item_data = item.duplicate()
 		dropped_item_data.item_stack_count = 1 # Wyrzucamy tylko 1 sztukę na raz
-		drop.item_data = dropped_item_data
 		
-		# 3. Dodajemy obiekt do głównego świata gry (nie do gracza!)
-		# get_tree().current_scene odnosi się do głównego węzła aktualnej mapy
-		get_tree().current_scene.add_child(drop)
-		
-		# 4. Ustawiamy pozycję przedmiotu na ziemi.
-		# Ponieważ skrypt Inventory jest dzieckiem Gracza, get_parent() to Gracz.
-		# Dodajemy losowe przesunięcie, żeby przedmiot nie pojawił się idealnie 
-		# w graczu (co mogłoby spowodować jego natychmiastowe, ponowne podniesienie!)
-		var random_offset = Vector2(randf_range(-40, 40), randf_range(-40, 40))
-		drop.global_position = get_parent().global_position + random_offset
-		
-		# 5. Skoro przedmiot wyleciał z ekwipunku, zużywamy 1 sztukę ze slota
+		# Skoro wyrzucamy, zużywamy 1 sztukę ze slota (to odświeży też UI)
 		consume_current_item()
 		
-		# 6. Informujemy świat, że przedmiot został wyrzucony z tego plecaka
+		# Informujemy świat (naszego gracza), że wyrzucono przedmiot, wysyłając mu dane
 		item_dropped.emit(dropped_item_data)
