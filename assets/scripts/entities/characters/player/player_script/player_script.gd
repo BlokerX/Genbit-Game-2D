@@ -21,7 +21,7 @@ func get_inventory() -> Inventory:
 
 @onready var aim_scanner: RayCast2D = $AimScanner
 
-## Zasięg celownika
+## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
 @export var aim_distance: float = 200.0
 
 
@@ -30,6 +30,9 @@ var current_gamepad_target: InteractableComponent = null
 
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
 var is_using_mouse: bool = true
+
+# Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
+var is_holding_attack: bool = false
 
 #endregion
 
@@ -92,6 +95,10 @@ func _physics_process(delta):
 	
 	#endregion
 	
+	# Obsługa celowania padem / strzałkami
+	handle_gamepad_aiming()
+	
+	#region popychanie
 	# NOWE: System popychania fizycznych przedmiotów! ??
 	var push_force = 10.0 # Zmień tę wartość, żeby przedmioty były lżejsze/cięższe
 	
@@ -105,7 +112,9 @@ func _physics_process(delta):
 			# Uderzamy go (popychamy) w stronę przeciwną do naszego zderzenia
 			collider.apply_central_impulse(-collision.get_normal() * push_force)
 	
+	#endregion
 	
+	#region Interakcje
 	
 	# Respawn
 	if Input.is_action_just_pressed("RespawnButton") :
@@ -113,99 +122,147 @@ func _physics_process(delta):
 		print("Gracz się odrodził!")
 		return
 	
-	# Use item
-	if Input.is_action_just_pressed("UseItemButton"):
-		var _item = inventory.get_current_item()
-		
-		if _item is UseableItem and interaction_and_attack_stats_script.can_attack():
-			var used_successfully = false 
-			
-			# === LOGIKA LECZENIA ===
-			if _item is HealingItem:
-				if _item.affect_target(self):
-					inventory.consume_current_item()
-					used_successfully = true
-			
-			# === LOGIKA UŻYCIA BRONI ===
-			elif _item is ItemWeapon:
-				var hit_someone = false
-				
-				# 1. NAJPIERW sprawdzamy, czy kogoś namierzamy celownikiem
-				if current_gamepad_target != null:
-					var potential_enemy = current_gamepad_target.get_parent() # Pobieramy głównego wroga
-					if potential_enemy.is_in_group("Enemy"):
-						if _item.affect_target(potential_enemy):
-							inventory.consume_durability_of_the_item()
-							used_successfully = true
-							hit_someone = true
-				
-				# 2. Jeśli nikogo nie namierzaliśmy, sprawdzamy czy awaryjnie w kogoś nie wpadliśmy ciałem
-				#if not hit_someone:
-					#for i in get_slide_collision_count():
-						#var collision = get_slide_collision(i)
-						#var collider = collision.get_collider()
-					#
-						#if collider.is_in_group("Enemy"):
-							#if _item.affect_target(collider):
-								#inventory.consume_durability_of_the_item()
-								#used_successfully = true
-								#break 
-			
-			# Jeśli użyto z sukcesem - reset cooldownu
-			if used_successfully:
-				interaction_and_attack_stats_script.reset_cooldown()
 	
 	
-	#region Attack test script (WALKA Z PIĘŚCI)
+	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 	
-	if Input.is_action_pressed("Attack") and interaction_and_attack_stats_script.can_attack():
-		var hit_someone = false
-		
-		# 1. Atak z pięści w namierzony cel
-		if current_gamepad_target != null:
-			var potential_enemy = current_gamepad_target.get_parent()
-			if potential_enemy.is_in_group("Enemy"):
-				print("Gracz atakuje namierzonego przeciwnika!")
-				interaction_and_attack_stats_script.hand_attack(potential_enemy)
-				hit_someone = true
-				
-		# 2. Awaryjny atak w to, czego dotykamy
-		if not hit_someone:
-			for i in get_slide_collision_count():
-				var collision = get_slide_collision(i)
-				var collider = collision.get_collider()
-				
-				if collider.is_in_group("Enemy"):
-					print("Gracz atakuje zderzonego przeciwnika!")
-					interaction_and_attack_stats_script.hand_attack(collider)
-					break
-	#endregion
+	# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
+	if is_holding_attack and interaction_and_attack_stats_script.can_attack():
+		perform_attack()
 	
-	
-	# NOWE: Obsługa celowania padem / strzałkami
-	handle_gamepad_aiming()
-	
-	# NOWE: Użycie namierzonego obiektu
-	if Input.is_action_just_pressed("Interact"): # np. przycisk 'A' na padzie lub 'E' na klawiaturze
-		if current_gamepad_target != null:
-			current_gamepad_target.interact(self)
+	#var _item = inventory.get_current_item()
+	#
+	## --- 1. UŻYCIE PRZEDMIOTU Z EKWIPUNKU (Leczenie) ---
+	## Podpinamy tu TYLKO przedmioty konsumpcyjne.
+	#if Input.is_action_just_pressed("UseItemButton") and interaction_and_attack_stats_script.can_attack():
+		#if _item is HealingItem:
+			#if _item.affect_target(self):
+				#inventory.consume_current_item()
+				#interaction_and_attack_stats_script.reset_cooldown()
+#
+	## --- 2. WALKA (Broń lub Pięści) ---
+	## Wszystkie ataki podpinamy pod jeden przycisk! Gra sama decyduje, jak uderzyć.
+	#elif Input.is_action_pressed("Attack") and interaction_and_attack_stats_script.can_attack():
+		#var target_enemy = _get_enemy_target()
+		#
+		#if target_enemy != null:
+			#
+			#if _item is ItemWeapon:
+				## OPCJA A: Mamy w ręku broń -> Atakujemy bronią
+				#if _item.affect_target(target_enemy):
+					#inventory.consume_durability_of_the_item()
+					#interaction_and_attack_stats_script.reset_cooldown()
+					#
+			#elif _item == null:
+				## OPCJA B: Mamy puste ręce -> Bijemy z pięści
+				#print("Gracz atakuje przeciwnika z pięści!")
+				#interaction_and_attack_stats_script.hand_attack(target_enemy)
+				#
+			#else:
+				## OPCJA C: Trzymamy w ręku coś innego (np. ciastko)
+				## Zgodnie z Twoim trafnym pomysłem - nie pozwalamy "bić jedzeniem".
+				#pass 
+#
+	## --- 3. INTERAKCJA (Podnoszenie, otwieranie) ---
+	#if Input.is_action_just_pressed("Interact"): 
+		#if current_gamepad_target != null:
+			#current_gamepad_target.interact(self)
 
-func _input(event: InputEvent) -> void:
-	# 1. Wykrycie myszki (ruch lub kliknięcie)
+# --- NOWE: WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
+func _unhandled_input(event: InputEvent) -> void:
+	
+	# 1. Przełączanie urządzeń
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
 		is_using_mouse = true
-		
-	# 2. Wykrycie pada (ruch gałką powyżej martwej strefy lub wciśnięcie przycisku)
 	elif event is InputEventJoypadMotion and abs(event.axis_value) > 0.2:
 		is_using_mouse = false
 	elif event is InputEventJoypadButton:
 		is_using_mouse = false
-		
-	# 3. Wykrycie klawiatury (jeśli strzałki "Aim..." używają klawiszy)
 	elif event is InputEventKey and event.is_pressed():
 		if event.is_action("AimLeft") or event.is_action("AimRight") or event.is_action("AimUp") or event.is_action("AimDown"):
 			is_using_mouse = false
+
+	# 2. Akcja ataku (Pamiętamy, czy wciśnięto przycisk)
+	if event.is_action_pressed("Attack"):
+		is_holding_attack = true
+	elif event.is_action_released("Attack"):
+		is_holding_attack = false
+		
+	# 3. Użycie przedmiotu (Tylko Leczenie/Konsumpcja)
+	if event.is_action_pressed("UseItemButton") and interaction_and_attack_stats_script.can_attack():
+		var _item = inventory.get_current_item()
+		if _item is HealingItem:
+			if _item.affect_target(self):
+				inventory.consume_current_item()
+				interaction_and_attack_stats_script.reset_cooldown()
+
+	# 4. Interakcja
+	if event.is_action_pressed("Interact"):
+		if current_gamepad_target != null:
+			current_gamepad_target.interact(self)
+
+	# 5. Respawn
+	if event.is_action_pressed("RespawnButton"):
+		respawn()
+		print("Gracz się odrodził!")
+
+
+# --- FUNKCJA WALKI Z DYSTANSEM ---
+func perform_attack() -> void:
+	var _item = inventory.get_current_item()
+	var target_enemy = _get_enemy_target()
+	
+	if target_enemy != null:
+		
+		# Pobieramy dystans z naszej nowej funkcji
+		var max_attack_distance = get_current_attack_range()
+		if max_attack_distance <= 0.0:
+			return # Mamy w ręku np. miksturę, więc nie atakujemy
+			
+		# --- Mierzenie dystansu do wroga ---
+		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+		
+		# --- Właściwy atak ---
+		if distance_to_enemy <= max_attack_distance:
+			if _item is ItemWeapon:
+				if _item.affect_target(target_enemy):
+					inventory.consume_durability_of_the_item()
+					interaction_and_attack_stats_script.reset_cooldown()
+					
+			elif _item == null:
+				print("Gracz trafia z pięści!")
+				interaction_and_attack_stats_script.hand_attack(target_enemy)
+		else:
+			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
+
+# Zwraca aktualny zasięg ataku w zależności od przedmiotu
+func get_current_attack_range() -> float:
+	var _item = inventory.get_current_item()
+	if _item is ItemWeapon:
+		return aim_distance * _item.attack_range
+	elif _item == null:
+		return aim_distance * interaction_and_attack_stats_script.total_hand_range() # Puste ręce (pięści)
+	else:
+		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
+
+
+# Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
+func _get_enemy_target() -> Node2D:
+	# 1. Sprawdzamy celownik (RayCast/Myszka)
+	if current_gamepad_target != null:
+		var potential_enemy = current_gamepad_target.get_parent()
+		if potential_enemy.is_in_group("Enemy"):
+			return potential_enemy
+			
+	# 2. Awaryjnie sprawdzamy zderzenia ciała (jeśli laser nikogo nie widzi)
+	#for i in get_slide_collision_count():
+		#var collision = get_slide_collision(i)
+		#var collider = collision.get_collider()
+		#if collider != null and collider.is_in_group("Enemy"):
+			#return collider
+			
+	return null
 
 
 func on_inventory_update() :
@@ -308,27 +365,21 @@ func _on_item_broken(broken_item_name: String):
 
 
 func handle_gamepad_aiming():
+	# Celownik ma ZAWSZE pełen zasięg (do zbierania i sprawdzania z daleka)
 	if is_using_mouse:
-		# TRYB MYSZKI: Celownik na bieżąco śledzi kursor
 		var local_mouse_pos = get_local_mouse_position()
 		aim_scanner.target_position = local_mouse_pos.limit_length(aim_distance)
 	else:
-		# TRYB PADA/STRZAŁEK: Sprawdzamy wychylenie
 		var aim_vector = Input.get_vector("AimLeft", "AimRight", "AimUp", "AimDown")
-		
 		if aim_vector != Vector2.ZERO:
-			# Jeśli wychylamy, aktualizujemy pozycję celownika
 			aim_scanner.target_position = aim_vector.normalized() * aim_distance
-		# Jeśli aim_vector == Vector2.ZERO (gałka puszczona), nic NIE ROBIMY.
-		# Dzięki temu RayCast2D zostaje zamrożony w miejscu, w którym ostatnio celowaliśmy!
-		
+			
 	# Wymuszamy fizykę lasera
 	aim_scanner.force_raycast_update()
 	
 	var collider = aim_scanner.get_collider()
 	var found_target: InteractableComponent = null
 	
-	# Szukamy naszego komponentu (bezpośrednio lub w głównym ciele wroga)
 	if collider != null:
 		if collider is InteractableComponent:
 			found_target = collider
@@ -338,7 +389,29 @@ func handle_gamepad_aiming():
 					found_target = child
 					break
 	
-	# Zarządzanie podświetlaniem celu
+	# --- Sprawdzanie czy cel jest osiągalny (w zasięgu) ---
+	if found_target != null:
+		var is_reachable = false
+		var target_parent = found_target.get_parent()
+		
+		# 1. Jeśli celujemy we wroga:
+		if target_parent and target_parent.is_in_group("Enemy"):
+			var dist_to_enemy = global_position.distance_to(target_parent.global_position)
+			if dist_to_enemy <= get_current_attack_range():
+				is_reachable = true
+				
+		# 2. Jeśli celujemy w przedmioty, drzwi, skrzynki itp.
+		else:
+			var dist_to_object = global_position.distance_to(found_target.global_position)
+			if dist_to_object <= aim_distance: # Zasięg interakcji
+				is_reachable = true
+				
+		# Jeśli obiekt jest poza odpowiednim zasięgiem, ignorujemy go
+		if not is_reachable:
+			found_target = null
+
+	
+	# --- Zarządzanie podświetlaniem celu ---
 	if found_target != null:
 		if current_gamepad_target != found_target:
 			if current_gamepad_target != null:

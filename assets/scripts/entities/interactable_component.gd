@@ -12,42 +12,39 @@ signal interacted(interactor: Node)
 
 @export var outline_material: ShaderMaterial # Tutaj wrzucimy nasz materiał!
 
+
+# --- NOWE ZMIENNE EXPORT ---
+@export var target_sprite: Sprite2D
+@export var target_collision: CollisionShape2D
+
+
 # Zmienna przechowująca grafikę obiektu
 var parent_sprite: Sprite2D
 
 func _ready():
-	# Podpinamy wbudowane sygnały Godota dla myszki
-	mouse_entered.connect(_on_mouse_entered)
-	mouse_exited.connect(_on_mouse_exited)
-	
 	if highlight_sprite:
 		highlight_sprite.hide()
-		
 	
-	# Przeszukujemy dzieci naszego rodzica (czyli nasze rodzeństwo)
-	for child in get_parent().get_children():
+	# 1. PRZYPISANIE SPRITE'A
+	# Jeśli ustawiłeś Sprite2D w Inspektorze, przypisujemy go
+	if target_sprite != null:
+		parent_sprite = target_sprite
+	else:
+		print("Uwaga: InteractableComponent nie ma przypisanego target_sprite!")
 		
-		# 1. Szukamy grafiki (to już mieliśmy)
-		if child is Sprite2D:
-			parent_sprite = child
+	# 2. KOPIOWANIE KOLIZJI
+	# Jeśli ustawiłeś CollisionShape2D w Inspektorze, kopiujemy jego kształt do nas
+	if target_collision != null:
+		var my_own_collider = CollisionShape2D.new()
+		my_own_collider.shape = target_collision.shape # Kopiujemy rozmiar i typ
+		my_own_collider.transform = target_collision.transform # Kopiujemy przesunięcie
 		
-		# 2. NOWE: Szukamy istniejącej kolizji i kopiujemy ją do nas!
-		elif child is CollisionShape2D:
-			var my_own_collider = CollisionShape2D.new()
-			my_own_collider.shape = child.shape # Kopiujemy ten sam rozmiar i kształt
-			my_own_collider.transform = child.transform # Kopiujemy to samo przesunięcie
-			
-			# call_deferred bezpiecznie dodaje nowy węzeł do drzewa po załadowaniu sceny
-			call_deferred("add_child", my_own_collider)
+		# Dodajemy jako dziecko tego InteractableComponent
+		call_deferred("add_child", my_own_collider)
+	else:
+		print("Uwaga: InteractableComponent nie ma przypisanego target_collision!")
 
-# --- OBSŁUGA MYSZKI ---
-func _on_mouse_entered():
-	target()
-
-func _on_mouse_exited():
-	untarget()
-
-# --- UNIWERSALNE FUNKCJE ZAZNACZANIA (Dla myszki i Pada) ---
+# --- UNIWERSALNE FUNKCJE ZAZNACZANIA (Wywoływane TYLKO przez RayCast Gracza) ---
 func target():
 	if not is_targeted:
 		is_targeted = true
@@ -81,13 +78,3 @@ func untarget():
 # Ktoś nas wcisnął/użył
 func interact(interactor: Node):
 	interacted.emit(interactor)
-
-func _input_event(viewport, event, shape_idx):
-	# Jeśli obiekt jest kliknięty lewym przyciskiem myszy
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		
-		# Uwaga: Musimy zdobyć referencję do gracza.
-		# Najlepiej np. wyszukać go w grupie "Player"
-		var player = get_tree().get_first_node_in_group("Player")
-		if player != null:
-			interact(player)

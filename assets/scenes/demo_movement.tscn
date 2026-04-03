@@ -577,7 +577,9 @@ scale = Vector2(2, 2)
 collision_mask = 12
 collide_with_areas = true
 
-[node name="InteractableComponent" parent="Player" unique_id=566081594 instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
 
 [node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(850, 820)
@@ -624,7 +626,8 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractableComponent" parent="Enemy" unique_id=165657634 instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Enemy" unique_id=165657634 node_paths=PackedStringArray("target_collision") instance=ExtResource("27_xiq2x")]
+target_collision = NodePath("../CollisionShape2D")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
 navigation_polygon = SubResource("NavigationPolygon_hx11q")

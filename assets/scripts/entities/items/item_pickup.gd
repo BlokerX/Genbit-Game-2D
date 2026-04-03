@@ -9,9 +9,6 @@ class_name ItemPickup
 @onready var pickup_area: Area2D = $PickupArea 
 var can_pick_up: bool = false
 
-# NOWA ZMIENNA: Pamięta, czy gracz stoi aktualnie w pobliżu przedmiotu
-var player_in_range: Node2D = null
-
 func _ready() -> void:
 	if item_data != null:
 		item_data = item_data.duplicate()
@@ -20,10 +17,15 @@ func _ready() -> void:
 			
 	pickup_area.area_entered.connect(_on_area_entered)
 	
-	# NOWE: Szukamy naszego czujnika podświetlania (InteractableComponent) i podłączamy sygnał!
+	# Szukamy naszego czujnika podświetlania (InteractableComponent) i podłączamy sygnały!
 	for child in get_children():
 		if child is InteractableComponent:
+			# Reakcja na kliknięcie/użycie:
 			child.interacted.connect(_on_interacted)
+			
+			# Reakcja na namierzenie i odznaczenie celownikiem:
+			child.targeted.connect(_on_targeted)
+			child.untargeted.connect(_on_untargeted)
 			break
 	
 	set_collision_mask_value(1, false)
@@ -31,7 +33,22 @@ func _ready() -> void:
 	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
-	prompt_label.hide() # NOWE: Na starcie ukrywamy napis
+	prompt_label.hide() # Na starcie ukrywamy napis
+
+
+# --- FUNKCJE OD ETYKIETY ---
+
+func _on_targeted() -> void:
+	# Pokazujemy etykietę tylko wtedy, gdy przedmiot można już podnieść i nie znika
+	if can_pick_up and not is_queued_for_deletion():
+		if prompt_label != null:
+			prompt_label.show()
+
+func _on_untargeted() -> void:
+	# Chowamy etykietę, gdy zjedziemy z niej celownikiem
+	if prompt_label != null:
+		prompt_label.hide()
+
 
 # 1. Funkcja obsługująca wchłanianie innych przedmiotów z ziemi (BEZ ZMIAN)
 func _on_area_entered(area: Area2D) -> void:
@@ -68,54 +85,3 @@ func _on_interacted(interactor: Node) -> void:
 			else:
 				# Plecak jest pełny, reszta zostaje na ziemi
 				item_data.item_stack_count = leftover
-
-
-# Stare metody
-#func _on_body_entered(body: Node2D) -> void:
-	#if body.is_in_group("Player"):
-		#player_in_range = body
-		## Upewniamy się, że można podnieść i że przedmiot nie zaraz nie zniknie
-		#if can_pick_up and not is_queued_for_deletion():
-			#prompt_label.show()
-		#return
-	#
-	#if not can_pick_up or is_queued_for_deletion():
-		#return
-		#
-	## Zamiast sprawdzać grupę, sprawdzamy czy obiekt ma ekwipunek:
-	#if body.has_method("get_inventory"):
-		#var inventory = body.get_inventory()
-		#
-		#if inventory != null:
-			#var leftover = inventory.add_item(item_data)
-			#
-			#if leftover == 0:
-				#queue_free()
-			#else:
-				#item_data.item_stack_count = leftover
-	 #
-#
-## Gdy gracz wyjdzie ze strefy -> Chowamy przycisk
-#func _on_body_exited(body: Node2D) -> void:
-	#if body == player_in_range:
-		#player_in_range = null
-		#prompt_label.hide()
-#
-## 4. NOWE: Odczytywanie wciśnięcia klawisza "F" (Interact)
-#func _unhandled_input(event: InputEvent) -> void:
-	## Sprawdzamy czy wciśnięto przycisk ORAZ czy gracz stoi w pobliżu
-	#if event.is_action_pressed("PickUpItem") and player_in_range != null:
-		#
-		## Sprawdzamy blokadę czasową
-		#if not can_pick_up or is_queued_for_deletion():
-			#return
-			#
-		#var inventory = player_in_range.get_node_or_null("Inventory") 
-		#
-		#if inventory != null:
-			#var leftover = inventory.add_item(item_data)
-			#
-			#if leftover == 0:
-				#queue_free()
-			#else:
-				#item_data.item_stack_count = leftover
