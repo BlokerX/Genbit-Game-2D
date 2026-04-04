@@ -152,16 +152,23 @@ func scroll_inventory(direction: int) -> void:
 
 
 ## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
-func drop_current_item() -> void:
+func drop_current_item(drop_all: bool = false) -> void:
 	var item = get_current_item()
 	
 	if item != null:
 		#Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
 		var dropped_item_data = item.duplicate()
-		dropped_item_data.item_stack_count = 1 # Wyrzucamy tylko 1 sztukę na raz
 		
-		# Skoro wyrzucamy, zużywamy 1 sztukę ze slota (to odświeży też UI)
-		consume_current_item()
+		if drop_all:
+			# Jeśli wyrzucamy wszystko, przypisujemy pełną ilość i usuwamy cały stack ze slota
+			dropped_item_data.item_stack_count = item.item_stack_count
+			items[current_item_index] = null
+			inventory_updated.emit()
+		else:
+			# Wyrzucamy tylko 1 sztukę na raz
+			dropped_item_data.item_stack_count = 1 
+			# Skoro wyrzucamy jedną sztukę, zużywamy 1 sztukę ze slota (to odświeży też UI)
+			consume_current_item()
 		
 		# Informujemy świat (naszego gracza), że wyrzucono przedmiot, wysyłając mu dane
 		item_dropped.emit(dropped_item_data)

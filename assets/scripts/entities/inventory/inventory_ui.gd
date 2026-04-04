@@ -1,7 +1,7 @@
 # inventory_ui.gd
 extends Node
 
-@export var inventory: Inventory 
+@export var player : PlayerCharacter
 # Zmieniamy Sprite2D na naszą nową klasę InventorySlot:
 @onready var slots = $InventorySlotHandle.get_children()
 
@@ -9,17 +9,17 @@ extends Node
 @export var info_label: Label
 
 func _ready() -> void:
-	inventory.inventory_updated.connect(_on_inventory_updated)
+	player.inventory.inventory_updated.connect(_on_inventory_updated)
 	_on_inventory_updated() 
 
 func _on_inventory_updated() -> void:
 	# 1. Aktualizacja samych slotów i podświetlenia (Twój dotychczasowy kod)
 	for i in range(slots.size()):
-		var is_selected = (i == inventory.current_item_index)
+		var is_selected = (i == player.inventory.current_item_index)
 		slots[i].set_highlight(is_selected)
 		
-		if i < inventory.items.size():
-			slots[i].update_slot(inventory.items[i])
+		if i < player.inventory.items.size():
+			slots[i].update_slot(player.inventory.items[i])
 		else:
 			slots[i].update_slot(null)
 			
@@ -31,7 +31,7 @@ func update_info_panel() -> void:
 	if info_label == null:
 		return
 		
-	var current_item = inventory.get_current_item()
+	var current_item = player.inventory.get_current_item()
 	
 	if current_item != null:
 		# Budujemy tekst do wyświetlenia linijka po linijce

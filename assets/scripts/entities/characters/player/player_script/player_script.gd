@@ -16,6 +16,9 @@ func get_inventory() -> Inventory:
 
 @export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
 
+var drop_hold_time: float = 0.0
+## Czas w sekundach wymagany do wyrzucenia całego stacka
+var time_required_for_full_stack: float = 0.5 
 
 #region Skaner / Celownik
 
@@ -127,13 +130,28 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	#region Interakcje
+	#region Interakcja drop item
 	
-	# Respawn
-	if Input.is_action_just_pressed("RespawnButton") :
-		respawn()
-		print("Gracz się odrodził!")
-		return
+	# Załóżmy, że akcja w Input Map do wyrzucania nazywa się "drop_item"
+	if Input.is_action_pressed("DropItem"):
+		# Zwiększamy czas trzymania przycisku co klatkę
+		drop_hold_time += delta
+		if drop_hold_time >= time_required_for_full_stack :
+			# Przycisk był trzymany długo - wyrzuć wszystko (drop_all = true)
+			inventory.drop_current_item(true)
+			# Resetujemy licznik po puszczeniu klawisza, gotowi na kolejne upuszczanie
+			drop_hold_time = 0.0
+	
+	# Gdy gracz puści przycisk, sprawdzamy ile czasu go trzymał
+	if Input.is_action_just_released("DropItem"):
+		if drop_hold_time > 0.0 && drop_hold_time < time_required_for_full_stack:
+			# Przycisk wciśnięty tylko na chwilę - wyrzuć pojedynczy przedmiot
+			inventory.drop_current_item(false)
+			
+		# Resetujemy licznik po puszczeniu klawisza, gotowi na kolejne upuszczanie
+		drop_hold_time = 0.0
+	
+	#endregion
 	
 	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
@@ -231,10 +249,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		inventory.scroll_inventory(1)
 	elif event.is_action_pressed("InventoryScrollUp"):
 		inventory.scroll_inventory(-1)
-	
-	# Wyrzucanie przedmiotu
-	if event.is_action_pressed("DropItem"):
-		inventory.drop_current_item()
 		
 	#endregion
 

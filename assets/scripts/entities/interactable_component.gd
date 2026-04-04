@@ -14,12 +14,12 @@ signal interacted(interactor: Node)
 
 
 # --- NOWE ZMIENNE EXPORT ---
-@export var target_sprite: Sprite2D
+@export var target_sprite: Node2D
 @export var target_collision: CollisionShape2D
 
 
 # Zmienna przechowująca grafikę obiektu
-var parent_sprite: Sprite2D
+var parent_sprite: Node2D
 
 func _ready():
 	if highlight_sprite:
