@@ -35,8 +35,7 @@ debug_color = Color(0.71802, 0.48113406, 0, 0.41960785)
 [node name="PickupArea" type="Area2D" parent="." unique_id=1167382185]
 scale = Vector2(2, 2)
 collision_layer = 16
-collision_mask = 11
-monitoring = false
+collision_mask = 27
 
 [node name="PickupShape" type="CollisionShape2D" parent="PickupArea" unique_id=1278937336]
 scale = Vector2(4, 4)

@@ -151,45 +151,6 @@ func scroll_inventory(direction: int) -> void:
 
 
 
-
-
-
-
-
-
-
-
-
-func _physics_process(_delta) :
-	if Input.is_action_just_pressed("InventorySlot1") :
-		select_item(0)
-	elif Input.is_action_just_pressed("InventorySlot2") :
-		select_item(1)
-	elif Input.is_action_just_pressed("InventorySlot3") :
-		select_item(2)
-	elif Input.is_action_just_pressed("InventorySlot4") :
-		select_item(3)
-	elif Input.is_action_just_pressed("InventorySlot5") :
-		select_item(4)
-	elif Input.is_action_just_pressed("InventorySlot6") :
-		select_item(5)
-	elif Input.is_action_just_pressed("InventorySlot7") :
-		select_item(6)
-	elif Input.is_action_just_pressed("InventorySlot8") :
-		select_item(7)
-	elif Input.is_action_just_pressed("InventorySlot9") :
-		select_item(8)
-		
-	elif Input.is_action_just_pressed("InventoryScrollDown"):
-		scroll_inventory(1)
-	elif Input.is_action_just_pressed("InventoryScrollUp"):
-		scroll_inventory(-1)
-	
-	# NOWE: Wyrzucanie przedmiotu
-	if Input.is_action_just_pressed("DropItem"):
-		drop_current_item()
-
-
 ## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
 func drop_current_item() -> void:
 	var item = get_current_item()
