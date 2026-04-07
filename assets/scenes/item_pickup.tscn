@@ -22,7 +22,7 @@ physics_material_override = SubResource("PhysicsMaterial_wtsmv")
 gravity_scale = 0.0
 can_sleep = false
 lock_rotation = true
-linear_damp = 0.5
+linear_damp = 8.0
 script = ExtResource("1_wtsmv")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1192154879]

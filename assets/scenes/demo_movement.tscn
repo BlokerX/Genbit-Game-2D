@@ -575,14 +575,14 @@ scale = Vector2(2, 2)
 
 [node name="AimScanner" type="RayCast2D" parent="Player" unique_id=824312907]
 collision_mask = 12
-collide_with_areas = true
+hit_from_inside = true
 
 [node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
 [node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(850, 820)
+position = Vector2(1696, 872)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("6_8hvnv")

@@ -27,18 +27,23 @@ var time_required_for_full_stack: float = 0.5
 ## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
 @export var aim_distance: float = 200.0
 
+
 ## Czy system ma automatycznie zrzucać focus z przedmiotów na wrogów (Pad/Klawiatura)?
 @export var auto_enemy_selector: bool = false
 
-#todo POPRAWIĆ TO:
 ## Czy celownik ma być aktywny cały czas (True), czy tylko podczas wychylania gałki/strzałek (False)? 
-@export var continuous_gamepad_aiming: bool = true
+@export var continuous_gamepad_aiming: bool = false
+
+
+## Czy myszka ma trzymać cel dopóki z niego nie odejdziemy (True), czy odznaczać go od razu po zjechaniu kursorem w pustą przestrzeń (False)?
+@export var sticky_mouse_aiming: bool = false
+
 
 ## Przechowujemy aktualnie namierzony obiekt przez celownik
-var current_gamepad_target: InteractableComponent = null
+var current_target: InteractableComponent = null
 
 ## Pamięta ostatni cel, który zgubiliśmy tylko przez to, że wybiegliśmy z zasięgu
-var last_gamepad_target: InteractableComponent = null
+var last_target: InteractableComponent = null
 
 
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
@@ -111,8 +116,8 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Obsługa celowania padem / strzałkami
-	handle_gamepad_aiming()
+	# Obsługa celowania skanerem
+	handle_aiming()
 	
 	#region popychanie
 	# NOWE: System popychania fizycznych przedmiotów! ??
@@ -213,8 +218,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# Interakcja
 	if event.is_action_pressed("Interact"):
-		if current_gamepad_target != null:
-			current_gamepad_target.interact(self)
+		if current_target != null:
+			current_target.interact(self)
 	
 	# Respawn
 	if event.is_action_pressed("RespawnButton"):
@@ -295,8 +300,8 @@ func get_current_attack_range() -> float:
 # Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
 func _get_enemy_target() -> Node2D:
 	# 1. Sprawdzamy celownik (RayCast/Myszka)
-	if current_gamepad_target != null:
-		var potential_enemy = current_gamepad_target.get_parent()
+	if current_target != null:
+		var potential_enemy = current_target.get_parent()
 		if potential_enemy.is_in_group("Enemy"):
 			return potential_enemy
 			
@@ -375,30 +380,54 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 	var drop = item_pickup_scene.instantiate()
 	drop.item_data = dropped_item_data
 	
-	
 	# --- Fizyczne wyrzucenie przedmiotu ---
-	
-	# Dodajemy obiekt do głównego węzła mapy
 	get_tree().current_scene.add_child(drop)
-	
 	# Ustawiamy punkt startowy na środek gracza
 	drop.global_position = global_position
 	
-	# Ustawiamy kierunek (wektor), w którym poleci przedmiot
-	# 1. Pobieramy bazowy kierunek z celownika (RayCast2D zawsze jest zwrócony tam, gdzie celujemy)
-	var aim_direction = aim_scanner.target_position.normalized()
+	var drop_direction = Vector2.ZERO
+	var drop_force = 0.0
 	
-	# Zabezpieczenie: gdyby z jakiegoś powodu wektor wynosił (0,0), rzucamy w dół
-	if aim_direction == Vector2.ZERO:
-		# Losujemy kierunek (wektor), w którym poleci przedmiot
-		aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-	
-	# 2. Dodajemy delikatny rozrzut (spread), żeby przedmioty nie spadały idealnie w ten sam piksel
-	var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
-	var drop_direction = (aim_direction + spread).normalized()
-	
-	# Siła wyrzutu (możesz ją zwiększyć, jeśli przedmioty mają lecieć dalej)
-	var drop_force = randf_range(200.0, 300.0)
+	if is_using_mouse:
+		# --- WYRZUT MYSZKĄ ---
+		var mouse_global_pos = get_global_mouse_position()
+		var dist_to_mouse = global_position.distance_to(mouse_global_pos)
+		
+		# 1. Kierunek: idealnie w stronę kursora (0 rozrzutu!)
+		var aim_direction = global_position.direction_to(mouse_global_pos)
+		if aim_direction == Vector2.ZERO:
+			aim_direction = Vector2.DOWN
+		
+		drop_direction = aim_direction
+		
+		# 2. Siła: Ograniczamy maksymalny zasięg rzutu (np. do 150 pikseli)
+		var max_throw_range = 150.0
+		var actual_throw_distance = min(dist_to_mouse, max_throw_range)
+		
+		# Obliczamy siłę. Mnożnik (teraz 3.0) zależy od fizyki przedmiotu. 
+		# Jeśli nadal rzuca za daleko, zmniejsz 3.0 na 2.0 itd.
+		drop_force = actual_throw_distance * 3.0
+		
+		# Zabezpieczenie: minimalna siła, żeby przedmiot wyleciał spod nóg
+		if drop_force < 50.0:
+			drop_force = 50.0
+		
+		# Dodajemy bardzo minimalny rozrzut, żeby stacki ułożone w 1 miejscu nie nachodziły idealnie na siebie
+		var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
+		drop_direction = (aim_direction + spread).normalized()
+		
+	else:
+		# --- WYRZUT PADEM / KLAWIATURĄ ---
+		# Pobieramy bazowy kierunek z celownika
+		var aim_direction = aim_scanner.target_position.normalized()
+		
+		if aim_direction == Vector2.ZERO:
+			aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		
+		# W padzie rozrzut może być ciut większy i siła jest stała/losowa
+		var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
+		drop_direction = (aim_direction + spread).normalized()
+		drop_force = randf_range(200.0, 300.0)
 	
 	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
 	if drop is RigidBody2D:
@@ -412,111 +441,117 @@ func _on_item_broken(broken_item_name: String):
 # ==========================================
 # GŁÓWNY SYSTEM CELOWANIA
 # ==========================================
+
+func handle_aiming():
+	if is_using_mouse:
+		handle_mouse_aiming()
+	else:
+		handle_gamepad_aiming()
+
+# --- CELOWANIE MYSZKĄ ---
+func handle_mouse_aiming():
+	# 1. Ustawienie pozycji lasera za myszką
+	var local_mouse_pos = get_local_mouse_position()
+	aim_scanner.target_position = local_mouse_pos.limit_length(aim_distance)
+	
+	# 2. Aktualizacja Raycastu
+	aim_scanner.force_raycast_update()
+	var found_target = _get_raycast_target()
+	
+	# 3. Zabezpieczenie fizyczne dystansu
+	found_target = _enforce_distance_check(found_target)
+	
+	# 4. Zarządzanie podświetlaniem celu (dla myszki is_gamepad = false)
+	_manage_target_highlight(found_target, false)
+
+# --- CELOWANIE PADEM / KLAWIATURĄ ---
 func handle_gamepad_aiming():
 	var final_aim_dir = Vector2.ZERO
 	var is_pad_aiming = false 
 	
-	if is_using_mouse:
-		var local_mouse_pos = get_local_mouse_position()
-		aim_scanner.target_position = local_mouse_pos.limit_length(aim_distance)
-		if local_mouse_pos != Vector2.ZERO:
-			final_aim_dir = local_mouse_pos.normalized()
+	# 1. Odczyt wychylenia gałki/strzałek
+	var aim_vector = Input.get_vector("AimLeft", "AimRight", "AimUp", "AimDown")
+	if aim_vector != Vector2.ZERO:
+		is_pad_aiming = true
+		var raw_aim_dir = aim_vector.normalized()
+		final_aim_dir = raw_aim_dir
+		
+		# Magnetyzm celownika
+		if current_target != null and is_instance_valid(current_target):
+			var target_parent = current_target.get_parent()
+			if target_parent != null:
+				var dir_to_target = global_position.direction_to(target_parent.global_position)
+				if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
+					final_aim_dir = dir_to_target
+		
+		aim_scanner.target_position = final_aim_dir * aim_distance
 	else:
-		var aim_vector = Input.get_vector("AimLeft", "AimRight", "AimUp", "AimDown")
-		if aim_vector != Vector2.ZERO:
-			is_pad_aiming = true
-			var raw_aim_dir = aim_vector.normalized()
-			final_aim_dir = raw_aim_dir
+		# Jeśli tryb ciągły jest wyłączony i puścimy gałkę, gasimy laser
+		if not continuous_gamepad_aiming:
+			aim_scanner.target_position = Vector2.ZERO
 			
-			# Magnetyzm celownika
-			if current_gamepad_target != null and is_instance_valid(current_gamepad_target):
-				var target_parent = current_gamepad_target.get_parent()
-				if target_parent != null:
-					var dir_to_target = global_position.direction_to(target_parent.global_position)
-					if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
-						final_aim_dir = dir_to_target
-			
-			aim_scanner.target_position = final_aim_dir * aim_distance
-		else:
-			# NOWE: Jeśli tryb ciągły jest wyłączony i puścimy gałkę, gasimy laser!
-			if not continuous_gamepad_aiming:
-				aim_scanner.target_position = Vector2.ZERO
-			
-	# Update Raycastu
+	# 2. Aktualizacja Raycastu
 	aim_scanner.force_raycast_update()
-	var collider = aim_scanner.get_collider()
-	var found_target: InteractableComponent = null
+	var found_target = _get_raycast_target()
 	var found_is_enemy = false
 	
-	if collider != null:
-		if collider is InteractableComponent:
-			found_target = collider
-		else:
-			for child in collider.get_children():
-				if child is InteractableComponent:
-					found_target = child
-					break
-					
-	# Sprawdzamy co dokładnie trafił fizyczny laser
 	if found_target != null:
 		var tp = found_target.get_parent()
 		if tp and tp.is_in_group("Enemy"):
 			found_is_enemy = true
 
-	# --- AUTO-ENEMY SELECTOR (Pad/Klawiatura) ---
-	if not is_using_mouse:
-		if is_pad_aiming:
-			# Jeśli gracz celuje aktywnie, a pod celownikiem nie ma wroga, szukamy wroga w stożku ataku
-			if (found_target == null) or (auto_enemy_selector and not found_is_enemy):
-				var best_enemy = null
-				var best_angle = 0.6 
-				
-				for enemy in get_tree().get_nodes_in_group("Enemy"):
-					var dist = global_position.distance_to(enemy.global_position)
-					if dist <= get_current_attack_range(): 
-						var dir_to_enemy = global_position.direction_to(enemy.global_position)
-						var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
-						if angle < best_angle:
-							best_angle = angle
-							best_enemy = enemy
-							
-				if best_enemy != null:
-					for child in best_enemy.get_children():
-						if child is InteractableComponent:
-							found_target = child
-							found_is_enemy = true
-							break
-		else:
-			# Gracz NIE celuje aktywnie. Jeśli ma WŁĄCZONE ciągłe skanowanie, robimy skan 360 stopni.
-			if continuous_gamepad_aiming and auto_enemy_selector and not found_is_enemy:
-				var closest_enemy = null
-				var min_dist = get_current_attack_range() 
-				
-				for enemy in get_tree().get_nodes_in_group("Enemy"):
-					var dist = global_position.distance_to(enemy.global_position)
-					if dist <= min_dist:
-						min_dist = dist
-						closest_enemy = enemy
+	# --- AUTO-ENEMY SELECTOR ---
+	if is_pad_aiming:
+		# Jeśli celujemy aktywnie, a nie trafiamy wroga, szukamy go w stożku
+		if (found_target == null) or (auto_enemy_selector and not found_is_enemy):
+			var best_enemy = null
+			var best_angle = 0.6 
+			
+			for enemy in get_tree().get_nodes_in_group("Enemy"):
+				var dist = global_position.distance_to(enemy.global_position)
+				if dist <= get_current_attack_range(): 
+					var dir_to_enemy = global_position.direction_to(enemy.global_position)
+					var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
+					if angle < best_angle:
+						best_angle = angle
+						best_enemy = enemy
 						
-				if closest_enemy != null:
-					for child in closest_enemy.get_children():
-						if child is InteractableComponent:
-							found_target = child
-							found_is_enemy = true
-							break
+			if best_enemy != null:
+				for child in best_enemy.get_children():
+					if child is InteractableComponent:
+						found_target = child
+						found_is_enemy = true
+						break
+	else:
+		# Jeśli gałka puszczona, a włączone jest skanowanie ciągłe
+		if continuous_gamepad_aiming and auto_enemy_selector and not found_is_enemy:
+			var closest_enemy = null
+			var min_dist = get_current_attack_range() 
+			
+			for enemy in get_tree().get_nodes_in_group("Enemy"):
+				var dist = global_position.distance_to(enemy.global_position)
+				if dist <= min_dist:
+					min_dist = dist
+					closest_enemy = enemy
+					
+			if closest_enemy != null:
+				for child in closest_enemy.get_children():
+					if child is InteractableComponent:
+						found_target = child
+						found_is_enemy = true
+						break
 
 	# --- ZAMROŻENIE CELU (Hard Sticky Target) ---
-	# NOWE: Działa tylko, jeśli mamy włączone ciągłe celowanie!
-	if continuous_gamepad_aiming and not is_using_mouse and not is_pad_aiming and current_gamepad_target != null and is_instance_valid(current_gamepad_target):
+	if continuous_gamepad_aiming and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
 		var is_current_reachable = false
-		var target_parent = current_gamepad_target.get_parent()
+		var target_parent = current_target.get_parent()
 		var current_is_enemy = target_parent and target_parent.is_in_group("Enemy")
 		
 		if current_is_enemy:
 			if global_position.distance_to(target_parent.global_position) <= get_current_attack_range():
 				is_current_reachable = true
 		else:
-			if global_position.distance_to(current_gamepad_target.global_position) <= aim_distance:
+			if global_position.distance_to(current_target.global_position) <= aim_distance:
 				is_current_reachable = true
 				
 		var allow_sticky = true
@@ -524,23 +559,22 @@ func handle_gamepad_aiming():
 			allow_sticky = false 
 			
 		if is_current_reachable and allow_sticky:
-			found_target = current_gamepad_target
+			found_target = current_target
 			found_is_enemy = current_is_enemy
 
 	# --- PAMIĘĆ CELU (Re-focus) ---
-	# NOWE: Pamięć działa tylko, jeśli celownik ma być cały czas aktywny
-	if continuous_gamepad_aiming and not is_using_mouse and not is_pad_aiming:
+	if continuous_gamepad_aiming and not is_pad_aiming:
 		var need_memory = (found_target == null)
 		
 		if not need_memory and auto_enemy_selector and not found_is_enemy:
-			if last_gamepad_target != null and is_instance_valid(last_gamepad_target):
-				var lp = last_gamepad_target.get_parent()
+			if last_target != null and is_instance_valid(last_target):
+				var lp = last_target.get_parent()
 				if lp and lp.is_in_group("Enemy"):
 					need_memory = true 
 					
 		if need_memory:
-			if last_gamepad_target != null and is_instance_valid(last_gamepad_target):
-				var target_parent = last_gamepad_target.get_parent()
+			if last_target != null and is_instance_valid(last_target):
+				var target_parent = last_target.get_parent()
 				var dist_to_check = 9999.0
 				var required_dist = 0.0
 				var memory_is_enemy = false
@@ -550,59 +584,90 @@ func handle_gamepad_aiming():
 					required_dist = get_current_attack_range()
 					memory_is_enemy = true
 				else:
-					dist_to_check = global_position.distance_to(last_gamepad_target.global_position)
+					dist_to_check = global_position.distance_to(last_target.global_position)
 					required_dist = aim_distance
 					
 				if dist_to_check <= required_dist:
-					found_target = last_gamepad_target 
+					found_target = last_target 
 					found_is_enemy = memory_is_enemy
 			else:
-				last_gamepad_target = null 
+				last_target = null 
 
-	# --- Zabezpieczenie fizyczne dystansu ---
-	if found_target != null:
+	# 3. Zabezpieczenie fizyczne dystansu
+	found_target = _enforce_distance_check(found_target)
+
+	# 4. Zarządzanie podświetlaniem
+	_manage_target_highlight(found_target, true, is_pad_aiming)
+
+
+# ==========================================
+# FUNKCJE POMOCNICZE (Współdzielone)
+# ==========================================
+
+# Pobiera InteractableComponent z promienia lasera
+func _get_raycast_target() -> InteractableComponent:
+	var collider = aim_scanner.get_collider()
+	if collider != null:
+		if collider is InteractableComponent:
+			return collider
+		else:
+			for child in collider.get_children():
+				if child is InteractableComponent:
+					return child
+	return null
+
+# Sprawdza i limituje obiekt pod kątem dystansu z zasięgiem broni
+func _enforce_distance_check(target: InteractableComponent) -> InteractableComponent:
+	if target != null:
 		var is_reachable = false
-		var target_parent = found_target.get_parent()
+		var target_parent = target.get_parent()
 		
 		if target_parent and target_parent.is_in_group("Enemy"):
 			var dist_to_enemy = global_position.distance_to(target_parent.global_position)
 			if dist_to_enemy <= get_current_attack_range():
 				is_reachable = true
 		else:
-			var dist_to_object = global_position.distance_to(found_target.global_position)
+			var dist_to_object = global_position.distance_to(target.global_position)
 			if dist_to_object <= aim_distance:
 				is_reachable = true
 				
 		if not is_reachable:
-			found_target = null
+			return null
+	return target
 
-	# --- ZARZĄDZANIE PODŚWIETLANIEM ---
+# Odpowiada za podświetlanie, odznaczanie i zapisywanie "ostatniego" celu
+func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: bool, is_pad_aiming: bool = false):
 	if found_target != null:
-		if current_gamepad_target != found_target:
+		if current_target != found_target:
 			clear_gamepad_target()
-			current_gamepad_target = found_target
-			current_gamepad_target.target()
-			last_gamepad_target = null
+			current_target = found_target
+			current_target.target()
+			last_target = null
 	else:
-		if current_gamepad_target != null:
+		if current_target != null:
 			var should_drop = false
 			var dropped_due_to_distance = false
 			
-			if not is_using_mouse and is_pad_aiming:
-				should_drop = true
+			# --- LOGIKA GUBIENIA CELU ---
+			if is_gamepad:
+				# Odznacz jeśli celujemy padem, a laser zgubił obiekt
+				if is_pad_aiming:
+					should_drop = true
+			else:
+				# Myszka! Jeśli flaga 'sticky' jest wyłączona, odznaczamy natychmiast po zjechaniu kursorem
+				if not sticky_mouse_aiming:
+					should_drop = true
 			
-			# (USUNIĘTO WARUNEK, KTÓRY WYMUSZAŁ ZRZUCANIE CELU PO PUSZCZENIU GAŁKI W TRYBIE NON-CONTINUOUS)
-			
-			if not should_drop and is_instance_valid(current_gamepad_target):
+			if not should_drop and is_instance_valid(current_target):
 				var is_still_reachable = false
-				var target_parent = current_gamepad_target.get_parent()
+				var target_parent = current_target.get_parent()
 				
 				if target_parent and target_parent.is_in_group("Enemy"):
 					var dist = global_position.distance_to(target_parent.global_position)
 					if dist <= get_current_attack_range():
 						is_still_reachable = true
 				else:
-					var dist = global_position.distance_to(current_gamepad_target.global_position)
+					var dist = global_position.distance_to(current_target.global_position)
 					if dist <= aim_distance:
 						is_still_reachable = true
 						
@@ -610,15 +675,16 @@ func handle_gamepad_aiming():
 					should_drop = true
 					dropped_due_to_distance = true 
 			
-			elif not is_instance_valid(current_gamepad_target):
+			elif not is_instance_valid(current_target):
 				should_drop = true
 				
 			if should_drop:
 				if dropped_due_to_distance:
-					last_gamepad_target = current_gamepad_target
+					last_target = current_target
 				clear_gamepad_target()
 
+# Oczyszcza aktualny cel i usuwa obrysowanie
 func clear_gamepad_target():
-	if current_gamepad_target != null:
-		current_gamepad_target.untarget()
-		current_gamepad_target = null
+	if current_target != null:
+		current_target.untarget()
+		current_target = null
