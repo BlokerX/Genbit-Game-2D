@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_di2xb"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_ijom4"]
+[ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/knife.png" id="2_h0thy"]
 
 [resource]
 script = ExtResource("1_ijom4")
@@ -17,5 +18,6 @@ item_description = "Blooding! It has 5 hp damage."
 item_is_stackable = true
 item_stack_count = 25
 item_max_stack_count = 25
+item_icon = ExtResource("2_h0thy")
 durable = 1
 max_durable = 1

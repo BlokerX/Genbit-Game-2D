@@ -19,6 +19,10 @@ var actual_cooldown : float = 1.0
 @export var damage_adder : float = 0.0
 @export var damage_multiplier : float = 1.0
 
+# Range buff
+@export var range_adder : float = 0.0
+@export var range_multiplier : float = 1.0
+
 # Stun buff
 @export var stun_adder : float = 0.0
 @export var stun_multiplier : float = 1.0
@@ -33,6 +37,8 @@ var actual_cooldown : float = 1.0
 
 ## Hand attack.
 @export var hand_damage : int = 10
+## Hand range.
+@export var hand_range : float = 50
 ## Hand stun time.
 @export var hand_stun_time : float = 0.25
 ## Hand cooldown.
@@ -42,6 +48,9 @@ var actual_cooldown : float = 1.0
 
 func total_hand_damage() -> int :
 	return int( ( hand_damage + damage_adder ) * damage_multiplier )
+	
+func total_hand_range() -> int :
+	return int( ( hand_range + range_adder ) * range_multiplier )
 
 func total_hand_stun() -> float :
 	return ( hand_stun_time + stun_adder ) * stun_multiplier

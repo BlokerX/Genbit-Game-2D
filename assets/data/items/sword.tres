@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jqv1w"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_w0gi6"]
+[ext_resource type="Texture2D" uid="uid://c2minq0svvhxc" path="res://assets/textures/samples_examples/other_sword.png" id="2_16hix"]
 
 [resource]
 script = ExtResource("1_w0gi6")
@@ -11,5 +12,6 @@ item_id = 6
 item_name = "Sword"
 item_type = "Weapon"
 item_description = "It has 20 hp damage and new one's durable is 25."
+item_icon = ExtResource("2_16hix")
 durable = 25
 max_durable = 25

@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://d1pwrfy72pr74"]
+
+[ext_resource type="Script" uid="uid://cly3qdibifi7w" path="res://assets/scripts/entities/items/item_pickup.gd" id="1_wtsmv"]
+[ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/green_potion.png" id="2_wtsmv"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="3_6y1va"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_wtsmv"]
+friction = 0.1
+bounce = 0.6
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ndfam"]
+radius = 33.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wtsmv"]
+radius = 20.0
+
+[node name="ItemPickup" type="RigidBody2D" unique_id=889212379]
+collision_layer = 8
+collision_mask = 9
+mass = 0.3
+physics_material_override = SubResource("PhysicsMaterial_wtsmv")
+gravity_scale = 0.0
+can_sleep = false
+lock_rotation = true
+linear_damp = 8.0
+script = ExtResource("1_wtsmv")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1192154879]
+scale = Vector2(3, 3)
+texture = ExtResource("2_wtsmv")
+
+[node name="PhysicsShape" type="CollisionShape2D" parent="." unique_id=573150768]
+shape = SubResource("CircleShape2D_ndfam")
+debug_color = Color(1, 0, 0, 0.41960785)
+
+[node name="PickupArea" type="Area2D" parent="." unique_id=1167382185]
+scale = Vector2(2, 2)
+collision_layer = 16
+collision_mask = 16
+
+[node name="PickupShape" type="CollisionShape2D" parent="PickupArea" unique_id=1278937336]
+shape = SubResource("CircleShape2D_wtsmv")
+debug_color = Color(1, 1, 0, 0.05882353)
+
+[node name="PromptLabel" type="Label" parent="." unique_id=1124062456]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -91.0
+offset_top = -72.0
+offset_right = 91.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+text = "Press [F] to pick up"
+horizontal_alignment = 1
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("3_6y1va")]
+target_sprite = NodePath("../Sprite2D")
+target_collision = NodePath("../PhysicsShape")

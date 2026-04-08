@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dgvi1351teqg1"]
 
+[ext_resource type="Texture2D" uid="uid://dimqoakjir1ei" path="res://assets/textures/samples_examples/potion.png" id="1_6h61b"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="1_tdj3y"]
 
 [resource]
@@ -7,3 +8,4 @@ script = ExtResource("1_tdj3y")
 item_id = 4
 item_name = "Nothing"
 item_description = "All is nothing."
+item_icon = ExtResource("1_6h61b")

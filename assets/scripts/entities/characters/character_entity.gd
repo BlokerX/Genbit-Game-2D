@@ -23,7 +23,7 @@ func _ready():
 	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
 	if health_stats_script:
 		health_stats_script.died.connect(_on_character_died)
-		health_stats_script.health_changed.connect(_on_health_changed)
+		health_stats_script.health_changed.connect(on_health_changed)
 		
 	# Inicjalizacja UI...
 	health_stats_script.health_points_bar = health_points_bar
@@ -44,7 +44,7 @@ func _on_character_died():
 	health_stats_script.heal_completely()
 	respawn()
 
-func _on_health_changed(new_health, max_health):
+func on_health_changed(_new_health, _max_health):
 	health_stats_script.update_helath_points_bar()
 
 ## Funkcja pozwalająca na nałożenie dowolnego efektu na entity character.

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_r625p"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tfixi"]
+[ext_resource type="Texture2D" uid="uid://o3as3a0num1a" path="res://assets/textures/samples_examples/sword.png" id="2_5wucb"]
 
 [resource]
 script = ExtResource("1_r625p")
@@ -12,5 +13,6 @@ use_cooldown = 2.5
 item_name = "Big sword"
 item_type = "Weapon"
 item_description = "It has 30 hp damage and new one's durable is 40."
+item_icon = ExtResource("2_5wucb")
 durable = 40
 max_durable = 40
