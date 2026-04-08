@@ -23,6 +23,10 @@
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="13_r00hp"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres" id="15_b10mb"]
+[ext_resource type="Script" uid="uid://div30ft80j5eg" path="res://assets/scripts/entities/characters/enemies/enemy_spider.gd" id="18_bqg5n"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="20_r7ifn"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="21_ndfam"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres" id="16_eyunf"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_interaction_and_attack_stats_component.tres" id="21_mjw3m"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
@@ -54,6 +58,14 @@ metadata/_custom_type_script = "uid://bhf7u5pstn1te"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
+
+[sub_resource type="Resource" id="Resource_r00hp"]
+script = ExtResource("20_r7ifn")
+metadata/_custom_type_script = "uid://c8haxva8ra810"
+
+[sub_resource type="Resource" id="Resource_xiq2x"]
+script = ExtResource("21_ndfam")
+metadata/_custom_type_script = "uid://bhf7u5pstn1te"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
 size = Vector2(64.5, 64)
@@ -585,13 +597,12 @@ target_collision = NodePath("../CollisionShape2D")
 position = Vector2(1696, 872)
 collision_layer = 4
 collision_mask = 3
-script = ExtResource("6_8hvnv")
+script = ExtResource("18_bqg5n")
 movement_universal_script = ExtResource("15_b10mb")
-health_stats_script = ExtResource("16_eyunf")
-interaction_and_attack_stats_script = ExtResource("21_mjw3m")
+health_stats_script = SubResource("Resource_r00hp")
+interaction_and_attack_stats_script = SubResource("Resource_xiq2x")
 health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
-effects_collector = NodePath("EffectsCollector")
 
 [node name="EffectsCollector" type="Node" parent="Enemy" unique_id=473924543]
 
@@ -607,14 +618,19 @@ position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_ygk25")
 
+[node name="LineOfSight" type="RayCast2D" parent="Enemy" unique_id=654854544]
+collision_mask = 3
+
 [node name="HealthProgressBar" type="ProgressBar" parent="Enemy" unique_id=102391968]
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
 offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
 theme_override_font_sizes/font_size = 8
 theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
+script = ExtResource("23_totju")
 
 [node name="Label2" type="Label" parent="Enemy/HealthProgressBar" unique_id=271877439]
 layout_mode = 0
