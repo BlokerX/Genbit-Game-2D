@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="MonitoredStatsComponent" format=3 uid="uid://bx1joc3yy00eq"]
+
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="1_1leul"]
+
+[resource]
+script = ExtResource("1_1leul")

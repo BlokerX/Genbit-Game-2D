@@ -1,13 +1,15 @@
 extends Node
 
+@export var game_scene : PackedScene
+
 func _ready() -> void:
 	to_main_menu()
 
 func start_game(scene_to_remove : Node) -> void:
 	# Loading demo game scene
-	var scene:PackedScene = await SceneCollectionManager.get_packed_scene_deferred("res://assets/scenes/demo_movement.tscn")
+	# old // var scene:PackedScene = await SceneCollectionManager.get_packed_scene_deferred("res://assets/scenes/demo_movement.tscn")
 	# Instancing of the scene
-	var scene_instance = scene.instantiate()
+	var scene_instance = game_scene.instantiate()
 	# Adds scene_instance as child of the Main node
 	self.add_child(scene_instance)
 	# Remove main_menu from SceneTree if not null

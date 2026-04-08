@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://wn1dt8xyy57e"]
 
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="1_5oxlb"]
-[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/demo_movement.gd" id="1_hx11q"]
+[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_hx11q"]
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
@@ -10,7 +10,6 @@
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
-[ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="6_8hvnv"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
 [ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
@@ -21,14 +20,12 @@
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_3gvrm"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
-[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="13_r00hp"]
-[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/enemy_movement_component.tres" id="15_b10mb"]
+[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
 [ext_resource type="Script" uid="uid://div30ft80j5eg" path="res://assets/scripts/entities/characters/enemies/enemy_spider.gd" id="18_bqg5n"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="20_r7ifn"]
-[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="21_ndfam"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
-[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/enemy_monitored_life_stats_component.tres" id="16_eyunf"]
-[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/enemy_interaction_and_attack_stats_component.tres" id="21_mjw3m"]
+[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
+[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
@@ -53,19 +50,11 @@ physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_8hvnv")
 
 [sub_resource type="Resource" id="Resource_r00hp"]
-script = ExtResource("13_r00hp")
-metadata/_custom_type_script = "uid://bhf7u5pstn1te"
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
-
-[sub_resource type="Resource" id="Resource_r00hp"]
 script = ExtResource("20_r7ifn")
 metadata/_custom_type_script = "uid://c8haxva8ra810"
 
-[sub_resource type="Resource" id="Resource_xiq2x"]
-script = ExtResource("21_ndfam")
-metadata/_custom_type_script = "uid://bhf7u5pstn1te"
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
 size = Vector2(64.5, 64)
@@ -550,7 +539,7 @@ tile_set = SubResource("TileSet_6uf7s")
 unique_name_in_owner = true
 position = Vector2(304, 429)
 collision_layer = 2
-collision_mask = 5
+collision_mask = 7
 script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 movement_universal_script = ExtResource("4_5dhej")
@@ -593,35 +582,36 @@ hit_from_inside = true
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
-[node name="Enemy" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(1696, 872)
+[node name="Spider" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+position = Vector2(1728, 552)
 collision_layer = 4
-collision_mask = 3
+collision_mask = 7
 script = ExtResource("18_bqg5n")
 movement_universal_script = ExtResource("15_b10mb")
-health_stats_script = SubResource("Resource_r00hp")
-interaction_and_attack_stats_script = SubResource("Resource_xiq2x")
+health_stats_script = ExtResource("24_8h40k")
+interaction_and_attack_stats_script = ExtResource("25_28mns")
 health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
+effects_collector = NodePath("EffectsCollector")
 
-[node name="EffectsCollector" type="Node" parent="Enemy" unique_id=473924543]
+[node name="EffectsCollector" type="Node" parent="Spider" unique_id=473924543]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Enemy" unique_id=1292834181]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Spider" unique_id=1292834181]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy" unique_id=2110018586]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Spider" unique_id=2110018586]
 shape = SubResource("RectangleShape2D_h17bs")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemy" unique_id=1995051797]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Spider" unique_id=1995051797]
 texture_filter = 1
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_ygk25")
 
-[node name="LineOfSight" type="RayCast2D" parent="Enemy" unique_id=654854544]
+[node name="LineOfSight" type="RayCast2D" parent="Spider" unique_id=654854544]
 collision_mask = 3
 
-[node name="HealthProgressBar" type="ProgressBar" parent="Enemy" unique_id=102391968]
+[node name="HealthProgressBar" type="ProgressBar" parent="Spider" unique_id=102391968]
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
@@ -632,7 +622,7 @@ theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("23_totju")
 
-[node name="Label2" type="Label" parent="Enemy/HealthProgressBar" unique_id=271877439]
+[node name="Label2" type="Label" parent="Spider/HealthProgressBar" unique_id=271877439]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 16.0
@@ -642,7 +632,7 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractableComponent" parent="Enemy" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Spider" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 

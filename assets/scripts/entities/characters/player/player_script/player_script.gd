@@ -84,10 +84,6 @@ func _ready():
 	inventory.item_dropped.connect(_on_inventory_item_dropped)
 	#endregion
 
-func _on_item_broken(broken_item_name: String):
-	print("Twoja broń zniszczyła się: ", broken_item_name)
-	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
-
 func _process(delta):
 	# Update health gui data.
 	super(delta)

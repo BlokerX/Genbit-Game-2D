@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="InteractionAndAttackStatsComponent" format=3 uid="uid://cciwptn6i6hje"]
+
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="1_h10wb"]
+
+[resource]
+script = ExtResource("1_h10wb")
