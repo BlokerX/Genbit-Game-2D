@@ -38,7 +38,7 @@ var actual_cooldown : float = 1.0
 ## Hand attack.
 @export var hand_damage : int = 10
 ## Hand range.
-@export var hand_range : float = 50
+@export var hand_range : float = 100
 ## Hand stun time.
 @export var hand_stun_time : float = 0.25
 ## Hand cooldown.

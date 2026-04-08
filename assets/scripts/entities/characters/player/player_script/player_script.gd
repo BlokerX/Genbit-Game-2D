@@ -25,11 +25,14 @@ var time_required_for_full_stack: float = 0.5
 @onready var aim_scanner: RayCast2D = $AimScanner
 
 ## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
-@export var aim_distance: float = 200.0
+@export var aim_distance: float = 250.0
 
 
 ## Czy system ma automatycznie zrzucać focus z przedmiotów na wrogów (Pad/Klawiatura)?
-@export var auto_enemy_selector: bool = false
+@export var auto_enemy_selector: bool = true
+
+## Czy system ma automatycznie namierzać najbliższego wroga i pamiętać ostatniego? (Priorytet dla walki na padzie/klawiaturze)
+@export var auto_lock_closest_enemy: bool = true
 
 ## Czy celownik ma być aktywny cały czas (True), czy tylko podczas wychylania gałki/strzałek (False)? 
 @export var continuous_gamepad_aiming: bool = false
@@ -188,12 +191,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
 	if event.is_action_pressed("ToggleEnemyPriority"):
 		auto_enemy_selector = !auto_enemy_selector
+		auto_lock_closest_enemy = !auto_lock_closest_enemy
 		
 		# Opcjonalnie: Wyświetlamy informację w konsoli (później możesz to podpiąć pod jakiś napis na ekranie/UI)
 		if auto_enemy_selector:
-			print("Auto-Enemy Selector: WŁĄCZONY")
+			print("Auto-Enemy Selector With Locking Closest Enemy: WŁĄCZONY")
 		else:
-			print("Auto-Enemy Selector: WYŁĄCZONY")
+			print("Auto-Enemy Selector With Locking Closest Enemy: WYŁĄCZONY")
 			
 			# Jeśli wyłączyliśmy tryb, a celownik trzymał wroga "na siłę", warto zresetować celownik:
 			clear_gamepad_target()
@@ -275,7 +279,20 @@ func perform_attack() -> void:
 		
 		# --- Właściwy atak ---
 		if distance_to_enemy <= max_attack_distance:
+			
+			# NOWE: Sprawdzamy, czy ściana nie blokuje ataku
+			if not _has_line_of_sight(target_enemy):
+				print("Atak zablokowany przez ścianę!")
+				return
+				
 			if _item is ItemWeapon:
+				# Różnicowanie logiki na podstawie typu broni
+				if _item.is_ranged:
+					print("Strzał z broni dystansowej!")
+					# (Tutaj w przyszłości możesz np. instancjonować pocisk zamiast instant-hitu)
+				else:
+					print("Cios z broni białej!")
+					
 				if _item.affect_target(target_enemy):
 					inventory.consume_durability_of_the_item()
 					interaction_and_attack_stats_script.reset_cooldown()
@@ -286,13 +303,40 @@ func perform_attack() -> void:
 		else:
 			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
 
+# Sprawdza, czy gracz ma czystą linię strzału/ciosu do celu (nie zasłaniają go ściany)
+func _has_line_of_sight(target: Node2D) -> bool:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, target.global_position)
+	
+	# Wykluczamy samego gracza z kolizji promienia
+	query.exclude = [self.get_rid()]
+	
+	# Ważne: Jeśli twoje ściany mają specyficzną warstwę fizyki (Collision Layer), odkomentuj poniższą linię.
+	# Domyślnie sprawdza wszystkie warstwy, co może zablokować atak na innej jednostce / przedmiocie.
+	query.collision_mask = 1 # Ustaw maskę kolizji odpowiednią dla przeszkód (ścian)
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		var collider = result.collider
+		# Jeśli promień trafił we wroga, jego Hitbox (dziecko wroga) lub wróg jest dzieckiem trafionego obiektu
+		if collider == target or target.is_ancestor_of(collider) or collider.is_ancestor_of(target):
+			return true
+		# W przeciwnym wypadku promień trafił w coś innego (np. w ścianę TileMap)
+		return false
+		
+	# Jeśli promień w ogóle nic w nic nie uderzył, droga jest wolna (może się zdarzyć, gdy np. wróg nie ma włączonej kolizji)
+	return true
+
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
 	if _item is ItemWeapon:
+		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
 		return aim_distance * _item.attack_range
 	elif _item == null:
-		return aim_distance * interaction_and_attack_stats_script.total_hand_range() # Puste ręce (pięści)
+		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
+		return float(interaction_and_attack_stats_script.total_hand_range())
 	else:
 		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
 
@@ -486,7 +530,6 @@ func handle_gamepad_aiming():
 		
 		aim_scanner.target_position = final_aim_dir * aim_distance
 	else:
-		# Jeśli tryb ciągły jest wyłączony i puścimy gałkę, gasimy laser
 		if not continuous_gamepad_aiming:
 			aim_scanner.target_position = Vector2.ZERO
 			
@@ -500,61 +543,85 @@ func handle_gamepad_aiming():
 		if tp and tp.is_in_group("Enemy"):
 			found_is_enemy = true
 
-	# --- AUTO-ENEMY SELECTOR ---
-	if is_pad_aiming:
-		# Jeśli celujemy aktywnie, a nie trafiamy wroga, szukamy go w stożku
-		if (found_target == null) or (auto_enemy_selector and not found_is_enemy):
-			var best_enemy = null
+	# --- NOWY SYSTEM PAMIĘCI I AUTO-CELOWANIA WROGÓW ---
+	if auto_lock_closest_enemy and not found_is_enemy:
+		var best_enemy = null
+		var best_dist = get_current_attack_range()
+		
+		# KROK 1: Sprawdźmy, czy gałka jest aktywnie wychylana. Jeśli tak, priorytet ma cel w kierunku wychylenia.
+		if is_pad_aiming:
 			var best_angle = 0.6 
-			
 			for enemy in get_tree().get_nodes_in_group("Enemy"):
 				var dist = global_position.distance_to(enemy.global_position)
-				if dist <= get_current_attack_range(): 
+				if dist <= best_dist and _has_line_of_sight(enemy):
 					var dir_to_enemy = global_position.direction_to(enemy.global_position)
 					var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
 					if angle < best_angle:
 						best_angle = angle
 						best_enemy = enemy
-						
-			if best_enemy != null:
-				for child in best_enemy.get_children():
-					if child is InteractableComponent:
-						found_target = child
-						found_is_enemy = true
-						break
-	else:
-		# Jeśli gałka puszczona, a włączone jest skanowanie ciągłe
-		if continuous_gamepad_aiming and auto_enemy_selector and not found_is_enemy:
-			var closest_enemy = null
-			var min_dist = get_current_attack_range() 
+		
+		# KROK 2: Jeśli nie używamy gałki (albo nikt nie stał na drodze promienia z KROKU 1), skanujemy otoczenie!
+		if best_enemy == null and not is_pad_aiming:
+			# a) Sprawdzamy "pamięć" (czyli last_target - wroga z którym walczyliśmy, ale uciekł na chwilę z zasięgu)
+			if last_target != null and is_instance_valid(last_target):
+				var lp = last_target.get_parent()
+				if lp and lp.is_in_group("Enemy"):
+					var dist = global_position.distance_to(lp.global_position)
+					if dist <= best_dist and _has_line_of_sight(lp):
+						best_enemy = lp
+						best_dist = dist # Ustawiamy jego dystans jako punkt odniesienia
 			
+			# b) Skanujemy wszystkich wrogów. Jeśli znajdziemy jakiegoś wroga BLIŻEJ niż zapamiętany (lub jeśli pamięć jest pusta), obieramy nowy cel
 			for enemy in get_tree().get_nodes_in_group("Enemy"):
 				var dist = global_position.distance_to(enemy.global_position)
-				if dist <= min_dist:
-					min_dist = dist
-					closest_enemy = enemy
+				# Zwróć uwagę na znak mniejszości (<). Nowy wróg musi być wyraźnie bliżej, aby nadpisać pamięć starego celu.
+				if dist < best_dist and _has_line_of_sight(enemy):
+					best_dist = dist
+					best_enemy = enemy
 					
-			if closest_enemy != null:
-				for child in closest_enemy.get_children():
-					if child is InteractableComponent:
-						found_target = child
-						found_is_enemy = true
-						break
+		# Aplikowanie wybranego wroga do zmiennych
+		if best_enemy != null:
+			for child in best_enemy.get_children():
+				if child is InteractableComponent:
+					found_target = child
+					found_is_enemy = true
+					break
+
+	# --- FALLBACK dla starszego ustawienia (opcjonalny, jeśli wyłączysz nową flagę) ---
+	elif is_pad_aiming and auto_enemy_selector and not found_is_enemy and not auto_lock_closest_enemy:
+		var best_enemy = null
+		var best_angle = 0.6 
+		for enemy in get_tree().get_nodes_in_group("Enemy"):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist <= get_current_attack_range(): 
+				var dir_to_enemy = global_position.direction_to(enemy.global_position)
+				var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
+				if angle < best_angle:
+					best_angle = angle
+					best_enemy = enemy
+		if best_enemy != null:
+			for child in best_enemy.get_children():
+				if child is InteractableComponent:
+					found_target = child
+					found_is_enemy = true
+					break
 
 	# --- ZAMROŻENIE CELU (Hard Sticky Target) ---
-	if continuous_gamepad_aiming and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
+	# Podtrzymujemy fokus tak długo, jak cel żyje, jest w zasięgu i nie jest zasłonięty ścianą.
+	if (continuous_gamepad_aiming or auto_lock_closest_enemy) and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
 		var is_current_reachable = false
 		var target_parent = current_target.get_parent()
 		var current_is_enemy = target_parent and target_parent.is_in_group("Enemy")
 		
 		if current_is_enemy:
-			if global_position.distance_to(target_parent.global_position) <= get_current_attack_range():
+			if global_position.distance_to(target_parent.global_position) <= get_current_attack_range() and _has_line_of_sight(target_parent):
 				is_current_reachable = true
 		else:
 			if global_position.distance_to(current_target.global_position) <= aim_distance:
 				is_current_reachable = true
 				
 		var allow_sticky = true
+		# Odepnij obecny podniesiony cel (np. przedmiot), jeśli mamy wroga na radarze i włączony priorytet
 		if auto_enemy_selector and not current_is_enemy and found_is_enemy:
 			allow_sticky = false 
 			
@@ -562,43 +629,11 @@ func handle_gamepad_aiming():
 			found_target = current_target
 			found_is_enemy = current_is_enemy
 
-	# --- PAMIĘĆ CELU (Re-focus) ---
-	if continuous_gamepad_aiming and not is_pad_aiming:
-		var need_memory = (found_target == null)
-		
-		if not need_memory and auto_enemy_selector and not found_is_enemy:
-			if last_target != null and is_instance_valid(last_target):
-				var lp = last_target.get_parent()
-				if lp and lp.is_in_group("Enemy"):
-					need_memory = true 
-					
-		if need_memory:
-			if last_target != null and is_instance_valid(last_target):
-				var target_parent = last_target.get_parent()
-				var dist_to_check = 9999.0
-				var required_dist = 0.0
-				var memory_is_enemy = false
-				
-				if target_parent and target_parent.is_in_group("Enemy"):
-					dist_to_check = global_position.distance_to(target_parent.global_position)
-					required_dist = get_current_attack_range()
-					memory_is_enemy = true
-				else:
-					dist_to_check = global_position.distance_to(last_target.global_position)
-					required_dist = aim_distance
-					
-				if dist_to_check <= required_dist:
-					found_target = last_target 
-					found_is_enemy = memory_is_enemy
-			else:
-				last_target = null 
-
 	# 3. Zabezpieczenie fizyczne dystansu
 	found_target = _enforce_distance_check(found_target)
 
-	# 4. Zarządzanie podświetlaniem
+	# 4. Zarządzanie podświetlaniem (i uzupełnianie last_target gdy cel się oddala!)
 	_manage_target_highlight(found_target, true, is_pad_aiming)
-
 
 # ==========================================
 # FUNKCJE POMOCNICZE (Współdzielone)
