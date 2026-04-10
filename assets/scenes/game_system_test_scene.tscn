@@ -548,7 +548,7 @@ effects_collector = NodePath("EffectsCollector")
 
 [node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
 script = ExtResource("4_w0vak")
-items = Array[ExtResource("7_tme40")]([ExtResource("8_d7uxj"), ExtResource("9_d7uxj"), ExtResource("10_3gvrm"), ExtResource("11_xscv4"), ExtResource("12_d23um"), null, null, null, null])
+items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
 
 [node name="EffectsCollector" type="Node" parent="Player" unique_id=1333448843]
 

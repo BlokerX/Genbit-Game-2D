@@ -2,7 +2,7 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
-#region Podłączone komponenty
+#region Podłączone komponenty indywidualne dla gracza
 
 ## Komponent ekwipunku gracza
 @export var inventory : Inventory
@@ -12,6 +12,8 @@ func get_inventory() -> Inventory:
 
 #endregion
 
+#region Obsługa przedmiotów w inventory
+
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
 
 @export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
@@ -20,13 +22,39 @@ var drop_hold_time: float = 0.0
 ## Czas w sekundach wymagany do wyrzucenia całego stacka
 var time_required_for_full_stack: float = 0.5 
 
+#endregion
+
 #region Skaner / Celownik
 
+## Skaner celownika
 @onready var aim_scanner: RayCast2D = $AimScanner
 
 ## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
 @export var aim_distance: float = 250.0
 
+# --------
+# TARGETY:
+# --------
+
+## Przechowujemy aktualnie namierzony obiekt przez celownik
+var current_target: InteractableComponent = null
+
+## Pamięta ostatni cel, który zgubiliśmy tylko przez to, że wybiegliśmy z zasięgu
+var last_target: InteractableComponent = null
+
+# -----------
+# KONTROLERY:
+# -----------
+
+# Pamięta, z jakiego kontrolera gracz ostatnio korzystał
+var is_using_mouse: bool = true
+
+# Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
+var is_holding_attack: bool = false
+
+# ----------------
+# OPCJE CELOWNIKA:
+# ----------------
 
 ## Czy system ma automatycznie zrzucać focus z przedmiotów na wrogów (Pad/Klawiatura)?
 @export var auto_enemy_selector: bool = true
@@ -37,28 +65,12 @@ var time_required_for_full_stack: float = 0.5
 ## Czy celownik ma być aktywny cały czas (True), czy tylko podczas wychylania gałki/strzałek (False)? 
 @export var continuous_gamepad_aiming: bool = false
 
-
 ## Czy myszka ma trzymać cel dopóki z niego nie odejdziemy (True), czy odznaczać go od razu po zjechaniu kursorem w pustą przestrzeń (False)?
 @export var sticky_mouse_aiming: bool = false
 
-
-## Przechowujemy aktualnie namierzony obiekt przez celownik
-var current_target: InteractableComponent = null
-
-## Pamięta ostatni cel, który zgubiliśmy tylko przez to, że wybiegliśmy z zasięgu
-var last_target: InteractableComponent = null
-
-
-# Pamięta, z jakiego kontrolera gracz ostatnio korzystał
-var is_using_mouse: bool = true
-
-# Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
-var is_holding_attack: bool = false
-
-# Pamięta kierunek, żeby laser dla pada nie wariował
-var last_aim_direction: Vector2 = Vector2.ZERO
-
 #endregion
+
+#region Główne funkcje silnikowe
 
 func _ready():
 	
@@ -261,104 +273,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		
 	#endregion
 
+#endregion
 
-# --- FUNKCJA WALKI Z DYSTANSEM ---
-func perform_attack() -> void:
-	var _item = inventory.get_current_item()
-	var target_enemy = _get_enemy_target()
-	
-	if target_enemy != null:
-		
-		# Pobieramy dystans z naszej nowej funkcji
-		var max_attack_distance = get_current_attack_range()
-		if max_attack_distance <= 0.0:
-			return # Mamy w ręku np. miksturę, więc nie atakujemy
-			
-		# --- Mierzenie dystansu do wroga ---
-		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
-		
-		# --- Właściwy atak ---
-		if distance_to_enemy <= max_attack_distance:
-			
-			# NOWE: Sprawdzamy, czy ściana nie blokuje ataku
-			if not _has_line_of_sight(target_enemy):
-				print("Atak zablokowany przez ścianę!")
-				return
-				
-			if _item is ItemWeapon:
-				# Różnicowanie logiki na podstawie typu broni
-				if _item.is_ranged:
-					print("Strzał z broni dystansowej!")
-					# (Tutaj w przyszłości możesz np. instancjonować pocisk zamiast instant-hitu)
-				else:
-					print("Cios z broni białej!")
-					
-				if _item.affect_target(target_enemy):
-					inventory.consume_durability_of_the_item()
-					interaction_and_attack_stats_script.reset_cooldown()
-					
-			elif _item == null:
-				print("Gracz trafia z pięści!")
-				interaction_and_attack_stats_script.hand_attack(target_enemy)
-		else:
-			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
+#region Obsługa sygnałów
 
-# Sprawdza, czy gracz ma czystą linię strzału/ciosu do celu (nie zasłaniają go ściany)
-func _has_line_of_sight(target: Node2D) -> bool:
-	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(global_position, target.global_position)
-	
-	# Wykluczamy samego gracza z kolizji promienia
-	query.exclude = [self.get_rid()]
-	
-	# Ważne: Jeśli twoje ściany mają specyficzną warstwę fizyki (Collision Layer), odkomentuj poniższą linię.
-	# Domyślnie sprawdza wszystkie warstwy, co może zablokować atak na innej jednostce / przedmiocie.
-	query.collision_mask = 1 # Ustaw maskę kolizji odpowiednią dla przeszkód (ścian)
-	
-	var result = space_state.intersect_ray(query)
-	
-	if result:
-		var collider = result.collider
-		# Jeśli promień trafił we wroga, jego Hitbox (dziecko wroga) lub wróg jest dzieckiem trafionego obiektu
-		if collider == target or target.is_ancestor_of(collider) or collider.is_ancestor_of(target):
-			return true
-		# W przeciwnym wypadku promień trafił w coś innego (np. w ścianę TileMap)
-		return false
-		
-	# Jeśli promień w ogóle nic w nic nie uderzył, droga jest wolna (może się zdarzyć, gdy np. wróg nie ma włączonej kolizji)
-	return true
-
-# Zwraca aktualny zasięg ataku w zależności od przedmiotu
-func get_current_attack_range() -> float:
-	var _item = inventory.get_current_item()
-	if _item is ItemWeapon:
-		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
-		return aim_distance * _item.attack_range
-	elif _item == null:
-		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
-		return float(interaction_and_attack_stats_script.total_hand_range())
-	else:
-		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
-
-
-# Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
-func _get_enemy_target() -> Node2D:
-	# 1. Sprawdzamy celownik (RayCast/Myszka)
-	if current_target != null:
-		var potential_enemy = current_target.get_parent()
-		if potential_enemy.is_in_group("Enemy"):
-			return potential_enemy
-			
-	# 2. Awaryjnie sprawdzamy zderzenia ciała (jeśli laser nikogo nie widzi)
-	#for i in get_slide_collision_count():
-		#var collision = get_slide_collision(i)
-		#var collider = collision.get_collider()
-		#if collider != null and collider.is_in_group("Enemy"):
-			#return collider
-			
-	return null
-
-
+## Wywołuje się kiedy ekwipunek jest aktualizowany.
 func on_inventory_update() :
 	
 	##region debug log
@@ -416,6 +335,7 @@ func on_inventory_update() :
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
 		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_cooldown
 
+## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_item_data: ItemData):
 	if item_pickup_scene == null:
 		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
@@ -477,22 +397,27 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 	if drop is RigidBody2D:
 		drop.apply_central_impulse(drop_direction * drop_force)
 
+## Wywołuje się gdy przedmiot jest niszczony.
 func _on_item_broken(broken_item_name: String):
 	print("Twój przedmiot zniszczył się: ", broken_item_name)
 	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
 
+#endregion
+
+#region System celowania
 
 # ==========================================
 # GŁÓWNY SYSTEM CELOWANIA
 # ==========================================
 
+## Główna obsługa celowania
 func handle_aiming():
 	if is_using_mouse:
 		handle_mouse_aiming()
 	else:
 		handle_gamepad_aiming()
 
-# --- CELOWANIE MYSZKĄ ---
+## --- CELOWANIE MYSZKĄ ---
 func handle_mouse_aiming():
 	# 1. Ustawienie pozycji lasera za myszką
 	var local_mouse_pos = get_local_mouse_position()
@@ -508,7 +433,7 @@ func handle_mouse_aiming():
 	# 4. Zarządzanie podświetlaniem celu (dla myszki is_gamepad = false)
 	_manage_target_highlight(found_target, false)
 
-# --- CELOWANIE PADEM / KLAWIATURĄ ---
+## --- CELOWANIE PADEM / KLAWIATURĄ ---
 func handle_gamepad_aiming():
 	var final_aim_dir = Vector2.ZERO
 	var is_pad_aiming = false 
@@ -635,11 +560,17 @@ func handle_gamepad_aiming():
 	# 4. Zarządzanie podświetlaniem (i uzupełnianie last_target gdy cel się oddala!)
 	_manage_target_highlight(found_target, true, is_pad_aiming)
 
+## Oczyszcza aktualny cel i usuwa obrysowanie
+func clear_gamepad_target():
+	if current_target != null:
+		current_target.untarget()
+		current_target = null
+
 # ==========================================
 # FUNKCJE POMOCNICZE (Współdzielone)
 # ==========================================
 
-# Pobiera InteractableComponent z promienia lasera
+## Pobiera InteractableComponent z promienia lasera
 func _get_raycast_target() -> InteractableComponent:
 	var collider = aim_scanner.get_collider()
 	if collider != null:
@@ -651,7 +582,7 @@ func _get_raycast_target() -> InteractableComponent:
 					return child
 	return null
 
-# Sprawdza i limituje obiekt pod kątem dystansu z zasięgiem broni
+## Sprawdza i limituje obiekt pod kątem dystansu z zasięgiem broni
 func _enforce_distance_check(target: InteractableComponent) -> InteractableComponent:
 	if target != null:
 		var is_reachable = false
@@ -670,7 +601,32 @@ func _enforce_distance_check(target: InteractableComponent) -> InteractableCompo
 			return null
 	return target
 
-# Odpowiada za podświetlanie, odznaczanie i zapisywanie "ostatniego" celu
+# Sprawdza, czy gracz ma czystą linię strzału/ciosu do celu (nie zasłaniają go ściany)
+func _has_line_of_sight(target: Node2D) -> bool:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, target.global_position)
+	
+	# Wykluczamy samego gracza z kolizji promienia
+	query.exclude = [self.get_rid()]
+	
+	# Ważne: Jeśli twoje ściany mają specyficzną warstwę fizyki (Collision Layer), odkomentuj poniższą linię.
+	# Domyślnie sprawdza wszystkie warstwy, co może zablokować atak na innej jednostce / przedmiocie.
+	query.collision_mask = 1 # Ustaw maskę kolizji odpowiednią dla przeszkód (ścian)
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		var collider = result.collider
+		# Jeśli promień trafił we wroga, jego Hitbox (dziecko wroga) lub wróg jest dzieckiem trafionego obiektu
+		if collider == target or target.is_ancestor_of(collider) or collider.is_ancestor_of(target):
+			return true
+		# W przeciwnym wypadku promień trafił w coś innego (np. w ścianę TileMap)
+		return false
+		
+	# Jeśli promień w ogóle nic w nic nie uderzył, droga jest wolna (może się zdarzyć, gdy np. wróg nie ma włączonej kolizji)
+	return true
+
+## Odpowiada za podświetlanie, odznaczanie i zapisywanie "ostatniego" celu
 func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: bool, is_pad_aiming: bool = false):
 	if found_target != null:
 		if current_target != found_target:
@@ -718,8 +674,74 @@ func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: b
 					last_target = current_target
 				clear_gamepad_target()
 
-# Oczyszcza aktualny cel i usuwa obrysowanie
-func clear_gamepad_target():
+# --- FUNKCJA WALKI Z DYSTANSEM ---
+func perform_attack() -> void:
+	var _item = inventory.get_current_item()
+	var target_enemy = _get_enemy_target()
+	
+	if target_enemy != null:
+		
+		# Pobieramy dystans z naszej nowej funkcji
+		var max_attack_distance = get_current_attack_range()
+		if max_attack_distance <= 0.0:
+			return # Mamy w ręku np. miksturę, więc nie atakujemy
+			
+		# --- Mierzenie dystansu do wroga ---
+		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+		
+		# --- Właściwy atak ---
+		if distance_to_enemy <= max_attack_distance:
+			
+			# NOWE: Sprawdzamy, czy ściana nie blokuje ataku
+			if not _has_line_of_sight(target_enemy):
+				print("Atak zablokowany przez ścianę!")
+				return
+				
+			if _item is ItemWeapon:
+				# Różnicowanie logiki na podstawie typu broni
+				if _item.is_ranged:
+					print("Strzał z broni dystansowej!")
+					# (Tutaj w przyszłości możesz np. instancjonować pocisk zamiast instant-hitu)
+				else:
+					print("Cios z broni białej!")
+					
+				if _item.affect_target(target_enemy):
+					inventory.consume_durability_of_the_item()
+					interaction_and_attack_stats_script.reset_cooldown()
+					
+			elif _item == null:
+				print("Gracz trafia z pięści!")
+				interaction_and_attack_stats_script.hand_attack(target_enemy)
+		else:
+			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
+
+# Zwraca aktualny zasięg ataku w zależności od przedmiotu
+func get_current_attack_range() -> float:
+	var _item = inventory.get_current_item()
+	if _item is ItemWeapon:
+		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
+		return aim_distance * _item.attack_range
+	elif _item == null:
+		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
+		return float(interaction_and_attack_stats_script.total_hand_range())
+	else:
+		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
+
+## Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
+func _get_enemy_target() -> Node2D:
+	# 1. Sprawdzamy celownik (RayCast/Myszka)
 	if current_target != null:
-		current_target.untarget()
-		current_target = null
+		var potential_enemy = current_target.get_parent()
+		if potential_enemy.is_in_group("Enemy"):
+			return potential_enemy
+			
+	# 2. Awaryjnie sprawdzamy zderzenia ciała (jeśli laser nikogo nie widzi)
+	#for i in get_slide_collision_count():
+		#var collision = get_slide_collision(i)
+		#var collider = collision.get_collider()
+		#if collider != null and collider.is_in_group("Enemy"):
+			#return collider
+			
+	return null
+
+#endregion

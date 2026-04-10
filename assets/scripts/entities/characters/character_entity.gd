@@ -19,6 +19,8 @@ class_name CharacterEntity
 
 @export var effects_collector : Node
 
+#region Główne funkcje silnikowe
+
 func _ready():
 	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
 	if health_stats_script:
@@ -38,6 +40,10 @@ func _process(_delta):
 func _physics_process(_delta):
 	pass
 
+#endregion
+
+#region Obsługa sygnałów
+
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
 	print("Entity character has been killed successfully!")
@@ -46,6 +52,10 @@ func _on_character_died():
 
 func on_health_changed(_new_health, _max_health):
 	health_stats_script.update_helath_points_bar()
+
+#endregion
+
+#region Obsługa systemu akcji (Effect)
 
 ## Funkcja pozwalająca na nałożenie dowolnego efektu na entity character.
 func receive_effect(effect: Effect) -> bool:
@@ -71,6 +81,9 @@ func clear_all_effects() -> void:
 		return
 	print("Nie znaleziono kontenera efektów w entity character.")
 
+#endregion
+
+## Testowa metoda respawnu.
 func respawn():
 	position = respawnVector
 	velocity.x = 0
