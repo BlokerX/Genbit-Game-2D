@@ -170,10 +170,12 @@ metadata/_edit_lock_ = true
 [node name="Game Title" type="Label" parent="Menu Panel/Menu Options" unique_id=531227997]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_x6jn2")
-text = "ROUGELIKE"
+text = "UI_MAINMENU_TITLE"
 label_settings = SubResource("LabelSettings_fsbqx")
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 metadata/_edit_lock_ = true
 
 [node name="Menu Buttons" type="GridContainer" parent="Menu Panel/Menu Options" unique_id=1789110980]
@@ -206,7 +208,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-text = "Play"
+text = "UI_MAINMENU_PLAY"
+autowrap_mode = 3
+clip_text = true
 metadata/_edit_lock_ = true
 
 [node name="SettingsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=453230634]
@@ -232,7 +236,9 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 disabled = true
-text = "Settings"
+text = "UI_MAINMENU_SETTINGS"
+autowrap_mode = 3
+clip_text = true
 metadata/_edit_lock_ = true
 
 [node name="CreditsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=418561509]
@@ -257,7 +263,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-text = "Credits"
+text = "UI_MAINMENU_CREDITS"
+autowrap_mode = 3
+clip_text = true
 script = ExtResource("2_6r5fw")
 metadata/_edit_lock_ = true
 
@@ -277,7 +285,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-text = "Quit"
+text = "UI_MAINMENU_EXIT_GAME"
+autowrap_mode = 3
+clip_text = true
 script = ExtResource("3_6x8q2")
 metadata/_edit_lock_ = true
 
