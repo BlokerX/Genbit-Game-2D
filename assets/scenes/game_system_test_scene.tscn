@@ -22,7 +22,7 @@
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
-[ext_resource type="Script" uid="uid://div30ft80j5eg" path="res://assets/scripts/entities/characters/enemies/enemy_spider.gd" id="18_bqg5n"]
+[ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
@@ -582,7 +582,7 @@ target_collision = NodePath("../CollisionShape2D")
 position = Vector2(1728, 552)
 collision_layer = 4
 collision_mask = 7
-script = ExtResource("18_bqg5n")
+script = ExtResource("17_1f4iy")
 movement_universal_script = ExtResource("15_b10mb")
 health_stats_script = ExtResource("24_8h40k")
 interaction_and_attack_stats_script = ExtResource("25_28mns")
