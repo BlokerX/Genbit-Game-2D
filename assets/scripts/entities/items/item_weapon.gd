@@ -2,15 +2,11 @@ extends UseableItem
 
 class_name ItemWeapon
 
-@export var attack_range : float = 1.0
+@export var attack_data : AttackData
 
 @export var is_ranged : bool = false
 
 @export var weapon_type : String = "Sword"
-
-@export var attack_damage : int = 1
-
-@export var stun_time : float = 0.0
 
 # Constructor
 func _init(
@@ -28,50 +24,29 @@ func _init(
  _use_cooldown : float = 1.0,
  _effects : Array[Effect] = [], # Przekazujemy listę efektów (np. DamageEffect, StunEffect)
 # Argumenty dla ItemWeapon:
- _attack_range : float = 1.0,
+ #_attack_range : float = 1.0,
+ _attack_data : AttackData = AttackData.new(1, 0, 0.0, 1.0, 0.0, _use_cooldown),
  _is_ranged : bool = false,
  _weapon_type : String = "Sword",
- _attack_damage : int = 1,
- _stun_time : float = 0.0
+ #_attack_damage : int = 1,
+ #_stun_time : float = 0.0
 ) :
 	# Inicjalizacja dla klasy bazowej
 	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_max_stack_count, _item_sprite, _durable, _max_durable, _effects, _use_cooldown)
 	
 	# Inicjalizacja dla aktualnej klasy
-	attack_range = _attack_range
+	attack_data = _attack_data
+	
 	is_ranged = _is_ranged
 	weapon_type = _weapon_type
 	
-	attack_damage = _attack_damage
-	stun_time = _stun_time
-	
+	if _use_cooldown != attack_data.cooldown :
+		print("Uwaga, przedmiot ma dwa różne ustawienia cooldownu!")
 
 # Zaktualizowana funkcja ataku
-func affect_target(target : CharacterEntity) -> bool :
-	print("Gracz atakuje przeciwnika bronią! (Obrażenia: ", attack_damage, ", Stun: ", stun_time, ")")
+func affect_target(target : CharacterEntity) -> bool : # TODO usunąć zadawanie damage
+	print("Gracz atakuje przeciwnika bronią! (Obrażenia: ", attack_data.damage, ", Stun: ", attack_data.stun_time, ")")
 	
-	# 1. Tworzymy i nakładamy efekt obrażeń na żywo, z aktualnymi statystykami
-	var damage_effect = DamageEffect.new(attack_damage)
-	
-	# Sprawdzamy, czy cel potrafi przyjmować efekty przez nasz nowy system
-	if target.has_method("receive_effect"):
-		target.receive_effect(damage_effect)
-	else:
-		# Fallback dla obiektów, które nie są pełnoprawnymi CharacterEntity
-		damage_effect.apply_effect(target)
-	
-	# 2. Tworzymy i nakładamy efekt ogłuszenia (tylko jeśli broń faktycznie ma stun)
-	if stun_time > 0.0:
-		var stun_effect = StunEffect.new(stun_time)
-		# Sprawdzamy, czy cel potrafi przyjmować efekty przez nasz nowy system
-		if target.has_method("receive_effect"):
-			target.receive_effect(stun_effect)
-		else:
-			# Fallback dla obiektów, które nie są pełnoprawnymi CharacterEntity
-			stun_effect.apply_effect(target)
-		
-	# 3. (Opcjonalnie) Jeśli masz inne efekty dodane ręcznie w Inspektorze do tablicy 'effects',
-	# też możemy je tutaj wywołać:
 	apply_all_effects(target)
 	
 	return true

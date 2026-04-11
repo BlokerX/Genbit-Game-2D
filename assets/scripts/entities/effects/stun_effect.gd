@@ -9,7 +9,7 @@ func _init(_stun_time: float = 0.25):
 
 func apply_effect(target : CharacterBody2D) -> bool:
 	if target.get("interaction_and_attack_stats_script") != null:
-		target.interaction_and_attack_stats_script.apply_stun(stun_time)
+		target.interaction_and_attack_stats_script.apply_stun_to_self(stun_time)
 		print("Nałożono stun na: ", stun_time, "s")
 		return true
 	return false

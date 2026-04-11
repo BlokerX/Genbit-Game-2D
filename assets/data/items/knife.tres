@@ -1,15 +1,21 @@
 [gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://lo35uipqgqmm"]
 
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_3ienj"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_di2xb"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_ijom4"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/knife.png" id="2_h0thy"]
 
+[sub_resource type="Resource" id="Resource_0akag"]
+script = ExtResource("1_3ienj")
+damage = 5
+max_range = 1.2
+cooldown = 0.15
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
 [resource]
 script = ExtResource("1_ijom4")
-attack_range = 0.5
+attack_data = SubResource("Resource_0akag")
 weapon_type = "Knife"
-attack_damage = 5
-stun_time = 0.1
 use_cooldown = 0.1
 item_id = 5
 item_name = "Knife"

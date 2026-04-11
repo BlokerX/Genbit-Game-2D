@@ -57,4 +57,4 @@ func process_melee_attack(delta: float):
 		# Jeśli przeciwnik zderzył się z graczem i może zaatakować
 		if collider and collider.is_in_group("Player") and interaction_and_attack_stats_script.can_attack():
 			print(name + " atakuje gracza!")
-			interaction_and_attack_stats_script.hand_attack(collider)
+			interaction_and_attack_stats_script.execute_attack_on_target(collider)

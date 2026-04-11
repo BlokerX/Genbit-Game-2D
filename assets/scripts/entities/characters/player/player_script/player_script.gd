@@ -86,8 +86,7 @@ func _ready():
 	
 	# Inicjalizacja InteractionAndAttackStatsComponent
 	interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
-	interaction_and_attack_stats_script.hand_damage = 10
-	interaction_and_attack_stats_script.hand_cooldown = 1.0
+	interaction_and_attack_stats_script.hand_attack_data.cooldown = 1.0
 	
 	# Health points bar initialization
 	super()
@@ -331,9 +330,19 @@ func on_inventory_update() :
 	if current_item is UseableItem:
 		# Przekazujemy cooldown przedmiotu do statystyk gracza
 		interaction_and_attack_stats_script.actual_cooldown = current_item.use_cooldown
+		
+		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU (zakładam, że tablica nazywa się 'effects')
+		if "effects" in current_item:
+			interaction_and_attack_stats_script.actual_extra_effects = current_item.effects
+		
+		if current_item is ItemWeapon:
+			interaction_and_attack_stats_script.actual_attack_data = (current_item as ItemWeapon).attack_data
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
-		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_cooldown
+		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_data.cooldown
+		interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data
+		# Puste ręce nie mają dodatkowych efektów
+		interaction_and_attack_stats_script.actual_extra_effects = []
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_item_data: ItemData):
@@ -692,7 +701,7 @@ func perform_attack() -> void:
 		# --- Właściwy atak ---
 		if distance_to_enemy <= max_attack_distance:
 			
-			# NOWE: Sprawdzamy, czy ściana nie blokuje ataku
+			# Sprawdzamy, czy ściana nie blokuje ataku
 			if not _has_line_of_sight(target_enemy):
 				print("Atak zablokowany przez ścianę!")
 				return
@@ -704,14 +713,13 @@ func perform_attack() -> void:
 					# (Tutaj w przyszłości możesz np. instancjonować pocisk zamiast instant-hitu)
 				else:
 					print("Cios z broni białej!")
-					
-				if _item.affect_target(target_enemy):
-					inventory.consume_durability_of_the_item()
-					interaction_and_attack_stats_script.reset_cooldown()
-					
+					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
+				
+				# Zużywamy wytrzymałość broni po ataku
+				inventory.consume_durability_of_the_item()
 			elif _item == null:
 				print("Gracz trafia z pięści!")
-				interaction_and_attack_stats_script.hand_attack(target_enemy)
+				interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
 		else:
 			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
 
@@ -720,10 +728,10 @@ func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
 	if _item is ItemWeapon:
 		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
-		return aim_distance * _item.attack_range
+		return aim_distance * _item.attack_data.max_range
 	elif _item == null:
 		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
-		return float(interaction_and_attack_stats_script.total_hand_range())
+		return float(interaction_and_attack_stats_script.get_total_range())
 	else:
 		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
 
