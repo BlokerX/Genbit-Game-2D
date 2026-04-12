@@ -29,7 +29,7 @@ func apply_effect(target : Node2D) -> bool:
 	
 	# Dodajemy węzeł aktywnego efektu do effects_collector (lub bezpośrednio do targetu w ramach fallbacku)
 	effect_parent.add_child(active_node)
-	active_node.setup(target, self, duration, tick_interval)
+	active_node.setup(target, self, duration, tick_interval) # TODO uderzenie o ścianę uruchamia błąd
 	
 	print("Nałożono efekt czasowy: ", effect_name)
 	return true

@@ -8,8 +8,10 @@
 [sub_resource type="Resource" id="Resource_0akag"]
 script = ExtResource("1_3ienj")
 damage = 5
+critical_damage = null
+critical_rate = null
 max_range = 1.2
-cooldown = 0.15
+stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]

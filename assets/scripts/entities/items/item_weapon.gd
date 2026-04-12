@@ -25,7 +25,7 @@ func _init(
  _effects : Array[Effect] = [], # Przekazujemy listę efektów (np. DamageEffect, StunEffect)
 # Argumenty dla ItemWeapon:
  #_attack_range : float = 1.0,
- _attack_data : AttackData = AttackData.new(1, 0, 0.0, 1.0, 0.0, _use_cooldown),
+ _attack_data : AttackData = AttackData.new(1, 0, 0.0, 1.0, 0.0),
  _is_ranged : bool = false,
  _weapon_type : String = "Sword",
  #_attack_damage : int = 1,
@@ -39,9 +39,6 @@ func _init(
 	
 	is_ranged = _is_ranged
 	weapon_type = _weapon_type
-	
-	if _use_cooldown != attack_data.cooldown :
-		print("Uwaga, przedmiot ma dwa różne ustawienia cooldownu!")
 
 # Zaktualizowana funkcja ataku
 func affect_target(target : CharacterEntity) -> bool :

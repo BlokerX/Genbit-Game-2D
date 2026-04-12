@@ -11,6 +11,7 @@ damage = 20
 critical_damage = 5
 critical_rate = 0.3
 max_range = 1.5
+stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]

@@ -1,0 +1,663 @@
+[gd_scene format=4 uid="uid://wn1dt8xyy57e"]
+
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="1_5oxlb"]
+[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_hx11q"]
+[ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
+[ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
+[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
+[ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="4_5dhej"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
+[ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
+[ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
+[ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
+[ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
+[ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="9_d7uxj"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="11_vbl37"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
+[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
+[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
+[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
+[ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
+[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
+[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="30_vbl37"]
+
+[sub_resource type="Gradient" id="Gradient_mjw3m"]
+interpolation_mode = 1
+colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
+gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
+texture = ExtResource("1_r5tdj")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[sub_resource type="TileSet" id="TileSet_6uf7s"]
+tile_size = Vector2i(64, 64)
+physics_layer_0/collision_layer = 1
+sources/0 = SubResource("TileSetAtlasSource_8hvnv")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
+size = Vector2(64.5, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
+atlas = ExtResource("7_6uf7s")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7fpw2"]
+atlas = ExtResource("7_6uf7s")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tme40"]
+atlas = ExtResource("7_6uf7s")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d7uxj"]
+atlas = ExtResource("7_6uf7s")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ygk25"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w0vak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7fpw2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tme40")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d7uxj")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_hx11q"]
+vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847.9609, 73)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(65, 63, 65, 1023, 1854, 1026, 1858, 63)])
+
+[node name="Test Room Scene" type="Node2D" unique_id=451291155]
+script = ExtResource("1_hx11q")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
+
+[node name="PlayerUIGroup" type="Node" parent="CanvasLayer" unique_id=748282068]
+
+[node name="HealthPointsBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=1547176443]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 264.0
+offset_bottom = 52.36364
+scale = Vector2(1, 0.88)
+theme_override_styles/fill = ExtResource("6_6uf7s")
+show_percentage = false
+
+[node name="HealthPointsLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
+layout_mode = 0
+offset_right = 248.0
+offset_bottom = 36.36364
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+offset_left = 16.0
+offset_top = 56.0
+offset_right = 264.0
+offset_bottom = 80.0
+theme_override_styles/fill = ExtResource("2_mjw3m")
+show_percentage = false
+script = ExtResource("3_mjw3m")
+player = NodePath("../../../Player")
+cooldown_label = NodePath("CooldownLabel")
+
+[node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 248.0
+offset_bottom = 24.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterSlotTextureRect" type="TextureRect" parent="CanvasLayer/PlayerUIGroup" unique_id=854278161]
+custom_minimum_size = Vector2(7, 7)
+offset_left = 272.0
+offset_top = 16.0
+offset_right = 336.0
+offset_bottom = 80.0
+texture = SubResource("GradientTexture1D_totju")
+expand_mode = 1
+
+[node name="CharacterTexture" type="TextureRect" parent="CanvasLayer/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
+custom_minimum_size = Vector2(7, 7)
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("1_5oxlb")
+expand_mode = 1
+
+[node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
+script = ExtResource("6_r7ifn")
+player = NodePath("../../Player")
+info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
+
+[node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+
+[node name="InfoLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/ItemInfoPanelContainer" unique_id=656463042]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+
+[node name="InventorySlotHandle" type="HBoxContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=682378422]
+offset_left = 696.0
+offset_top = 1029.0
+offset_right = 872.0
+offset_bottom = 1045.0
+scale = Vector2(3, 3)
+
+[node name="Slot1" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=221569347]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=293381994]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=291313283]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 6
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot2" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1234115465]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1938205275]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1730944292]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot3" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1486498046]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=482603211]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=1065583254]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot4" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2078215487]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=129400958]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=58705887]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot5" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1206195716]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=563496007]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=1448353814]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot6" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1296410582]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=363151212]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=1015161894]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot7" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=814444252]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=1865407126]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=673553010]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot8" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1524980149]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1953929599]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1951674249]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Slot9" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1335478352]
+layout_mode = 2
+texture = ExtResource("6_totju")
+script = ExtResource("8_ndfam")
+
+[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1409919084]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1948234269]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 5
+text = "99"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TileMap" type="TileMapLayer" parent="." unique_id=363819282]
+tile_map_data = PackedByteArray("AAAAAAAAAAABAAAAAAAAAAEAAAABAAAAAAAAAAIAAAABAAAAAAAAAAMAAAABAAAAAAAAAAQAAAABAAAAAAAAAAUAAAABAAAAAAAAAAYAAAABAAAAAAAAAAcAAAABAAAAAAAAAAgAAAABAAAAAAAAAAkAAAABAAAAAAAAAAoAAAABAAAAAAAAAAsAAAABAAAAAAAAABAAAAABAAAAAAAAAA8AAAABAAAAAAAAAA4AAAABAAAAAAAAAA0AAAABAAAAAAAAAAwAAAABAAAAAAABABAAAAABAAAAAAACABAAAAABAAAAAAADABAAAAABAAAAAAAEABAAAAABAAAAAAAFABAAAAABAAAAAAAGABAAAAABAAAAAAAHABAAAAABAAAAAAAIABAAAAABAAAAAAAJABAAAAABAAAAAAAKABAAAAABAAAAAAALABAAAAABAAAAAAAMABAAAAABAAAAAAARABAAAAABAAAAAAASABAAAAABAAAAAAATABAAAAABAAAAAAAUABAAAAABAAAAAAAVABAAAAABAAAAAAAWABAAAAABAAAAAAAXABAAAAABAAAAAAAdAAAAAAABAAAAAAAdAAEAAAABAAAAAAAdAAIAAAABAAAAAAAdAAMAAAABAAAAAAAdAAQAAAABAAAAAAAdAAUAAAABAAAAAAAdAAYAAAABAAAAAAAdAAcAAAABAAAAAAAdAAgAAAABAAAAAAAdAAkAAAABAAAAAAAdAAoAAAABAAAAAAAdAAwAAAABAAAAAAAdAAsAAAABAAAAAAAdAA0AAAABAAAAAAAdAA4AAAABAAAAAAAdAA8AAAABAAAAAAAdABAAAAABAAAAAAAcABAAAAABAAAAAAAbABAAAAABAAAAAAAaABAAAAABAAAAAAAZABAAAAABAAAAAAAYABAAAAABAAAAAAAcAAAAAAABAAAAAAAbAAAAAAABAAAAAAAaAAAAAAABAAAAAAAZAAAAAAABAAAAAAAYAAAAAAABAAAAAAAXAAAAAAABAAAAAAAWAAAAAAABAAAAAAAVAAAAAAABAAAAAAAUAAAAAAABAAAAAAATAAAAAAABAAAAAAASAAAAAAABAAAAAAARAAAAAAABAAAAAAAQAAAAAAABAAAAAAAPAAAAAAABAAAAAAAOAAAAAAABAAAAAAANAAAAAAABAAAAAAAMAAAAAAABAAAAAAALAAAAAAABAAAAAAAKAAAAAAABAAAAAAAJAAAAAAABAAAAAAAIAAAAAAABAAAAAAAHAAAAAAABAAAAAAAGAAAAAAABAAAAAAAFAAAAAAABAAAAAAAEAAAAAAABAAAAAAADAAAAAAABAAAAAAACAAAAAAABAAAAAAABAAAAAAABAAAAAAARAA8AAAABAAAAAAAMAA8AAAABAAAAAAANABAAAAABAAAAAAAQABAAAAABAAAAAAAOABAAAAABAAAAAAAPABAAAAABAAAAAAAcAAoAAAABAAAAAAAcAAYAAAABAAAAAAAEAAsAAAABAAAAAAAFAAsAAAABAAAAAAAGAAsAAAABAAAAAAAHAAsAAAABAAAAAAAIAAsAAAABAAAAAAAJAAsAAAABAAAAAAAJAAoAAAABAAAAAAAJAAkAAAABAAAAAAAJAAgAAAABAAAAAAARAAoAAAAAAAAAAAARAAkAAAAAAAAAAAARAAgAAAAAAAAAAAARAAcAAAAAAAAAAAARAAYAAAAAAAAAAAARAAUAAAAAAAAAAAARAAQAAAAAAAAAAAARAAMAAAAAAAAAAAARAAIAAAAAAAAAAAARAAEAAAAAAAAAAAAQAAEAAAAAAAAAAAAPAAEAAAAAAAAAAAAOAAEAAAAAAAAAAAANAAEAAAAAAAAAAAAMAAEAAAAAAAAAAAALAAEAAAAAAAAAAAAKAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAFAAEAAAAAAAAAAAAEAAEAAAAAAAAAAAADAAEAAAAAAAAAAAACAAEAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAAAAAAAAAAABAAMAAAAAAAAAAAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAAAAAABAAcAAAAAAAAAAAABAAgAAAAAAAAAAAABAAkAAAAAAAAAAAABAAoAAAAAAAAAAAABAAsAAAAAAAAAAAABAAwAAAAAAAAAAAABAA0AAAAAAAAAAAABAA4AAAAAAAAAAAABAA8AAAAAAAAAAAACAA8AAAAAAAAAAAACAA4AAAAAAAAAAAACAA0AAAAAAAAAAAACAAwAAAAAAAAAAAACAAsAAAAAAAAAAAACAAoAAAAAAAAAAAACAAkAAAAAAAAAAAACAAgAAAAAAAAAAAACAAcAAAAAAAAAAAACAAYAAAAAAAAAAAACAAUAAAAAAAAAAAACAAQAAAAAAAAAAAACAAMAAAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAADAAMAAAAAAAAAAAADAAQAAAAAAAAAAAADAAUAAAAAAAAAAAADAAYAAAAAAAAAAAADAAcAAAAAAAAAAAADAAgAAAAAAAAAAAADAAkAAAAAAAAAAAADAAoAAAAAAAAAAAADAAsAAAAAAAAAAAADAAwAAAAAAAAAAAADAA0AAAAAAAAAAAADAA4AAAAAAAAAAAADAA8AAAAAAAAAAAAEAA8AAAAAAAAAAAAEAA4AAAAAAAAAAAAEAA0AAAAAAAAAAAAEAAwAAAAAAAAAAAAFAAwAAAAAAAAAAAAFAA0AAAAAAAAAAAAFAA4AAAAAAAAAAAAFAA8AAAAAAAAAAAAGAA8AAAAAAAAAAAAGAA4AAAAAAAAAAAAGAA0AAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAAAAAAAAAAHAA0AAAAAAAAAAAAHAA4AAAAAAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAAAAAAAAAAIAA4AAAAAAAAAAAAIAA0AAAAAAAAAAAAIAAwAAAAAAAAAAAAJAAwAAAAAAAAAAAAJAA0AAAAAAAAAAAAJAA4AAAAAAAAAAAAJAA8AAAAAAAAAAAAKAA8AAAAAAAAAAAAKAA4AAAAAAAAAAAAKAA0AAAAAAAAAAAAKAAwAAAAAAAAAAAAKAAsAAAAAAAAAAAAKAAoAAAAAAAAAAAAKAAkAAAAAAAAAAAAKAAgAAAAAAAAAAAAKAAcAAAAAAAAAAAAKAAYAAAAAAAAAAAAKAAUAAAAAAAAAAAAKAAQAAAAAAAAAAAAKAAMAAAAAAAAAAAAKAAIAAAAAAAAAAAAJAAIAAAAAAAAAAAAIAAIAAAAAAAAAAAAHAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAMAAAAAAAAAAAAEAAQAAAAAAAAAAAAEAAUAAAAAAAAAAAAEAAYAAAAAAAAAAAAEAAcAAAAAAAAAAAAEAAgAAAAAAAAAAAAEAAkAAAAAAAAAAAAEAAoAAAAAAAAAAAAFAAoAAAAAAAAAAAAFAAkAAAAAAAAAAAAFAAgAAAAAAAAAAAAFAAcAAAAAAAAAAAAFAAYAAAAAAAAAAAAFAAUAAAAAAAAAAAAFAAQAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAQAAAAAAAAAAAAGAAUAAAAAAAAAAAAGAAYAAAAAAAAAAAAGAAcAAAAAAAAAAAAGAAgAAAAAAAAAAAAGAAkAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAAAAAAAAAAHAAkAAAAAAAAAAAAHAAgAAAAAAAAAAAAHAAcAAAAAAAAAAAAHAAYAAAAAAAAAAAAHAAUAAAAAAAAAAAAHAAQAAAAAAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAIAAQAAAAAAAAAAAAIAAUAAAAAAAAAAAAIAAYAAAAAAAAAAAAIAAcAAAAAAAAAAAAIAAgAAAAAAAAAAAAIAAkAAAAAAAAAAAAIAAoAAAAAAAAAAAAJAAcAAAAAAAAAAAAJAAYAAAAAAAAAAAAJAAUAAAAAAAAAAAAJAAQAAAAAAAAAAAAJAAMAAAAAAAAAAAALAAIAAAAAAAAAAAALAAMAAAAAAAAAAAALAAQAAAAAAAAAAAALAAUAAAAAAAAAAAALAAYAAAAAAAAAAAALAAcAAAAAAAAAAAALAAgAAAAAAAAAAAALAAkAAAAAAAAAAAALAAoAAAAAAAAAAAALAAsAAAAAAAAAAAALAAwAAAAAAAAAAAALAA0AAAAAAAAAAAALAA4AAAAAAAAAAAALAA8AAAAAAAAAAAAMAA4AAAAAAAAAAAAMAA0AAAAAAAAAAAAMAAwAAAAAAAAAAAAMAAsAAAAAAAAAAAAMAAoAAAAAAAAAAAAMAAkAAAAAAAAAAAAMAAgAAAAAAAAAAAAMAAcAAAAAAAAAAAAMAAYAAAAAAAAAAAAMAAUAAAAAAAAAAAAMAAQAAAAAAAAAAAAMAAMAAAAAAAAAAAAMAAIAAAAAAAAAAAANAAIAAAAAAAAAAAANAAMAAAAAAAAAAAANAAQAAAAAAAAAAAANAAUAAAAAAAAAAAANAAYAAAAAAAAAAAANAAcAAAAAAAAAAAANAAgAAAAAAAAAAAANAAkAAAAAAAAAAAANAAoAAAAAAAAAAAANAAsAAAAAAAAAAAANAAwAAAAAAAAAAAANAA0AAAAAAAAAAAANAA4AAAAAAAAAAAANAA8AAAAAAAAAAAAOAA8AAAAAAAAAAAAOAA4AAAAAAAAAAAAOAA0AAAAAAAAAAAAOAAwAAAAAAAAAAAAOAAsAAAAAAAAAAAAOAAoAAAAAAAAAAAAOAAkAAAAAAAAAAAAOAAgAAAAAAAAAAAAOAAcAAAAAAAAAAAAOAAYAAAAAAAAAAAAOAAUAAAAAAAAAAAAOAAQAAAAAAAAAAAAOAAMAAAAAAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAAAAAAAAAAPAAMAAAAAAAAAAAAPAAQAAAAAAAAAAAAPAAUAAAAAAAAAAAAPAAYAAAAAAAAAAAAPAAcAAAAAAAAAAAAPAAgAAAAAAAAAAAAPAAkAAAAAAAAAAAAPAAoAAAAAAAAAAAAPAAsAAAAAAAAAAAAPAAwAAAAAAAAAAAAPAA0AAAAAAAAAAAAPAA4AAAAAAAAAAAAPAA8AAAAAAAAAAAAQAA8AAAAAAAAAAAAQAA4AAAAAAAAAAAAQAA0AAAAAAAAAAAAQAAwAAAAAAAAAAAAQAAsAAAAAAAAAAAAQAAoAAAAAAAAAAAAQAAkAAAAAAAAAAAAQAAgAAAAAAAAAAAAQAAcAAAAAAAAAAAAQAAYAAAAAAAAAAAAQAAUAAAAAAAAAAAAQAAQAAAAAAAAAAAAQAAMAAAAAAAAAAAAQAAIAAAAAAAAAAAARAAsAAAAAAAAAAAARAAwAAAAAAAAAAAARAA0AAAAAAAAAAAARAA4AAAAAAAAAAAASAA4AAAAAAAAAAAASAA0AAAAAAAAAAAASAAwAAAAAAAAAAAASAAsAAAAAAAAAAAASAAoAAAAAAAAAAAASAAkAAAAAAAAAAAASAAgAAAAAAAAAAAASAAcAAAAAAAAAAAASAAYAAAAAAAAAAAASAAUAAAAAAAAAAAASAAQAAAAAAAAAAAASAAMAAAAAAAAAAAASAAIAAAAAAAAAAAASAAEAAAAAAAAAAAATAAEAAAAAAAAAAAATAAIAAAAAAAAAAAATAAMAAAAAAAAAAAATAAQAAAAAAAAAAAATAAUAAAAAAAAAAAATAAYAAAAAAAAAAAATAAcAAAAAAAAAAAATAAgAAAAAAAAAAAATAAkAAAAAAAAAAAATAAoAAAAAAAAAAAATAAsAAAAAAAAAAAATAAwAAAAAAAAAAAATAA0AAAAAAAAAAAATAA4AAAAAAAAAAAATAA8AAAAAAAAAAAASAA8AAAAAAAAAAAAUAA8AAAAAAAAAAAAUAA4AAAAAAAAAAAAUAA0AAAAAAAAAAAAUAAwAAAAAAAAAAAAUAAsAAAAAAAAAAAAUAAoAAAAAAAAAAAAUAAkAAAAAAAAAAAAUAAgAAAAAAAAAAAAUAAcAAAAAAAAAAAAUAAYAAAAAAAAAAAAUAAUAAAAAAAAAAAAUAAQAAAAAAAAAAAAUAAMAAAAAAAAAAAAUAAIAAAAAAAAAAAAUAAEAAAAAAAAAAAAVAAEAAAAAAAAAAAAVAAIAAAAAAAAAAAAVAAMAAAAAAAAAAAAVAAQAAAAAAAAAAAAVAAUAAAAAAAAAAAAVAAYAAAAAAAAAAAAVAAcAAAAAAAAAAAAVAAgAAAAAAAAAAAAVAAkAAAAAAAAAAAAVAAoAAAAAAAAAAAAVAAsAAAAAAAAAAAAVAAwAAAAAAAAAAAAVAA0AAAAAAAAAAAAVAA4AAAAAAAAAAAAVAA8AAAAAAAAAAAAWAA8AAAAAAAAAAAAWAA4AAAAAAAAAAAAWAA0AAAAAAAAAAAAWAAwAAAAAAAAAAAAWAAsAAAAAAAAAAAAWAAoAAAAAAAAAAAAWAAkAAAAAAAAAAAAWAAgAAAAAAAAAAAAWAAcAAAAAAAAAAAAWAAYAAAAAAAAAAAAWAAUAAAAAAAAAAAAWAAQAAAAAAAAAAAAWAAMAAAAAAAAAAAAWAAIAAAAAAAAAAAAWAAEAAAAAAAAAAAAXAAEAAAAAAAAAAAAXAAIAAAAAAAAAAAAXAAMAAAAAAAAAAAAXAAQAAAAAAAAAAAAXAAUAAAAAAAAAAAAXAAYAAAAAAAAAAAAXAAcAAAAAAAAAAAAXAAgAAAAAAAAAAAAXAAkAAAAAAAAAAAAXAAoAAAAAAAAAAAAXAAsAAAAAAAAAAAAXAAwAAAAAAAAAAAAXAA0AAAAAAAAAAAAXAA4AAAAAAAAAAAAXAA8AAAAAAAAAAAAYAA8AAAAAAAAAAAAYAA4AAAAAAAAAAAAYAA0AAAAAAAAAAAAYAAwAAAAAAAAAAAAYAAsAAAAAAAAAAAAYAAoAAAAAAAAAAAAYAAkAAAAAAAAAAAAYAAgAAAAAAAAAAAAYAAcAAAAAAAAAAAAYAAYAAAAAAAAAAAAYAAUAAAAAAAAAAAAYAAQAAAAAAAAAAAAYAAMAAAAAAAAAAAAYAAIAAAAAAAAAAAAYAAEAAAAAAAAAAAAZAAEAAAAAAAAAAAAZAAIAAAAAAAAAAAAZAAMAAAAAAAAAAAAZAAQAAAAAAAAAAAAZAAUAAAAAAAAAAAAZAAYAAAAAAAAAAAAZAAcAAAAAAAAAAAAZAAgAAAAAAAAAAAAZAAkAAAAAAAAAAAAZAAoAAAAAAAAAAAAZAAsAAAAAAAAAAAAZAAwAAAAAAAAAAAAZAA0AAAAAAAAAAAAZAA4AAAAAAAAAAAAZAA8AAAAAAAAAAAAaAA8AAAAAAAAAAAAaAA4AAAAAAAAAAAAaAA0AAAAAAAAAAAAaAAwAAAAAAAAAAAAaAAsAAAAAAAAAAAAaAAoAAAAAAAAAAAAaAAkAAAAAAAAAAAAaAAgAAAAAAAAAAAAaAAcAAAAAAAAAAAAaAAYAAAAAAAAAAAAaAAUAAAAAAAAAAAAaAAQAAAAAAAAAAAAaAAMAAAAAAAAAAAAaAAIAAAAAAAAAAAAaAAEAAAAAAAAAAAAbAAEAAAAAAAAAAAAbAAIAAAAAAAAAAAAbAAMAAAAAAAAAAAAbAAQAAAAAAAAAAAAbAAUAAAAAAAAAAAAbAAYAAAAAAAAAAAAbAAcAAAAAAAAAAAAbAAgAAAAAAAAAAAAbAAkAAAAAAAAAAAAbAAoAAAAAAAAAAAAbAAsAAAAAAAAAAAAbAAwAAAAAAAAAAAAbAA0AAAAAAAAAAAAbAA4AAAAAAAAAAAAbAA8AAAAAAAAAAAAcAA8AAAAAAAAAAAAcAA4AAAAAAAAAAAAcAA0AAAAAAAAAAAAcAAwAAAAAAAAAAAAcAAsAAAAAAAAAAAAcAAkAAAAAAAAAAAAcAAgAAAAAAAAAAAAcAAcAAAAAAAAAAAAcAAUAAAAAAAAAAAAcAAQAAAAAAAAAAAAcAAMAAAAAAAAAAAAcAAIAAAAAAAAAAAAcAAEAAAAAAAAAAAA=")
+tile_set = SubResource("TileSet_6uf7s")
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
+unique_name_in_owner = true
+position = Vector2(304, 429)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("3_vlfoo")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("11_vbl37")
+movement_universal_script = ExtResource("4_5dhej")
+health_stats_script = ExtResource("5_mjw3m")
+interaction_and_attack_stats_script = ExtResource("13_1f4iy")
+health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
+health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
+script = ExtResource("4_w0vak")
+items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="Player" unique_id=1333448843]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=619512797]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=1849338578]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.100002, 1.38283e-05)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("1_5oxlb")
+flip_h = true
+
+[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=1042135675]
+position = Vector2(24, 43.00003)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
+
+[node name="AimScanner" type="RayCast2D" parent="Player" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="Spider" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+position = Vector2(1728, 552)
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("17_1f4iy")
+movement_universal_script = ExtResource("15_b10mb")
+health_stats_script = ExtResource("24_8h40k")
+interaction_and_attack_stats_script = ExtResource("25_28mns")
+health_points_bar = NodePath("HealthProgressBar")
+health_points_label = NodePath("HealthProgressBar/Label2")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="EffectsCollector" type="Node" parent="Spider" unique_id=473924543]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Spider" unique_id=1292834181]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Spider" unique_id=2110018586]
+shape = SubResource("RectangleShape2D_h17bs")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Spider" unique_id=1995051797]
+texture_filter = 1
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_ygk25")
+
+[node name="LineOfSight" type="RayCast2D" parent="Spider" unique_id=654854544]
+collision_mask = 3
+
+[node name="HealthProgressBar" type="ProgressBar" parent="Spider" unique_id=102391968]
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("2_mjw3m")
+show_percentage = false
+script = ExtResource("23_totju")
+
+[node name="Label2" type="Label" parent="Spider/HealthProgressBar" unique_id=271877439]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractableComponent" parent="Spider" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
+visible = false
+navigation_polygon = SubResource("NavigationPolygon_hx11q")
+
+[node name="ItemPickup" parent="." unique_id=1701967078 instance=ExtResource("25_r00hp")]
+position = Vector2(720, 184)
+item_data = ExtResource("8_d7uxj")
+
+[node name="ItemPickup2" parent="." unique_id=889212379 instance=ExtResource("25_r00hp")]
+position = Vector2(640, 344)
+item_data = ExtResource("27_r00hp")
+
+[node name="ItemPickup3" parent="." unique_id=2097510866 instance=ExtResource("25_r00hp")]
+position = Vector2(1624, 224)
+item_data = ExtResource("9_d7uxj")
+
+[node name="ItemPickup4" parent="." unique_id=1719168975 instance=ExtResource("25_r00hp")]
+position = Vector2(192, 192)
+item_data = ExtResource("11_xscv4")
+
+[node name="ItemPickup5" parent="." unique_id=97565883 instance=ExtResource("25_r00hp")]
+position = Vector2(496, 168)
+item_data = ExtResource("12_d23um")
+
+[node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("25_r00hp")]
+position = Vector2(320, 616)
+item_data = ExtResource("30_vbl37")

@@ -46,8 +46,10 @@ var actual_cooldown : float = 1.0
 #region Stats
 
 ## Ręka - domyślne ustawienia.
-@export var hand_attack_data : AttackData = AttackData.new(10, 0, 0.0, 100.0, 0.25, 1.0)
+@export var hand_attack_data : AttackData = AttackData.new(10, 0, 0.0, 100.0, 0.25)
+@export var hand_attack_cooldown : float = 1.0
 
+## Aktualne dane ataku.
 var actual_attack_data : AttackData = hand_attack_data
 
 ## Dodatkowe efekty (jeśli jest).
@@ -72,7 +74,7 @@ func get_total_stun() -> float:
 
 func get_total_actual_cooldown() -> float:
 	# Tu również aktualny cooldown zależy od tego czym atakujemy
-	return ( actual_attack_data.cooldown + cooldown_adder ) * cooldown_multiplier
+	return ( actual_cooldown + cooldown_adder ) * cooldown_multiplier
 
 func can_attack() -> bool:
 	if cooldown_timer < get_total_actual_cooldown():

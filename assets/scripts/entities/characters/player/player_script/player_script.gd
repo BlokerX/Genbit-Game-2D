@@ -96,7 +96,6 @@ func _ready():
 	
 	# Inicjalizacja InteractionAndAttackStatsComponent
 	interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
-	interaction_and_attack_stats_script.hand_attack_data.cooldown = 1.0
 	
 	# Health points bar initialization
 	super()
@@ -334,7 +333,7 @@ func on_inventory_update() :
 			interaction_and_attack_stats_script.actual_attack_data = (current_item as ItemWeapon).attack_data
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
-		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_data.cooldown
+		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_cooldown
 		interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data
 		# Puste ręce nie mają dodatkowych efektów
 		interaction_and_attack_stats_script.actual_extra_effects = []
