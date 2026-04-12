@@ -24,13 +24,23 @@ var time_required_for_full_stack: float = 0.5
 
 #endregion
 
+#region Pociski
+
+## Scena pocisku dla broni dystansowej
+@export var projectile_scene: PackedScene 
+## Mnożnik siły wyrzucania przedmiotów
+@export var throw_force_multiplier: float = 3.0 
+## Siła z jaką gracz popycha obiekty fizyczne
+@export var push_force: float = 10.0 
+#endregion
+
 #region Skaner / Celownik
 
 ## Skaner celownika
 @onready var aim_scanner: RayCast2D = $AimScanner
 
 ## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
-@export var aim_distance: float = 250.0
+@export var aim_distance: float = 4000.0
 
 # --------
 # TARGETY:
@@ -132,45 +142,10 @@ func _physics_process(delta):
 	
 	# Obsługa celowania skanerem
 	handle_aiming()
-	
-	#region popychanie
-	# NOWE: System popychania fizycznych przedmiotów! ??
-	var push_force = 10.0 # Zmień tę wartość, żeby przedmioty były lżejsze/cięższe
-	
-	# Sprawdzamy wszystkie obiekty, w które gracz właśnie uderzył
-	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
-		var collider = collision.get_collider()
-		
-		# Jeśli uderzyliśmy w RigidBody2D (nasz przedmiot)
-		if collider is RigidBody2D:
-			# Uderzamy go (popychamy) w stronę przeciwną do naszego zderzenia
-			collider.apply_central_impulse(-collision.get_normal() * push_force)
-	
-	#endregion
-	
-	#region Interakcja drop item
-	
-	# Załóżmy, że akcja w Input Map do wyrzucania nazywa się "drop_item"
-	if Input.is_action_pressed("DropItem"):
-		# Zwiększamy czas trzymania przycisku co klatkę
-		drop_hold_time += delta
-		if drop_hold_time >= time_required_for_full_stack :
-			# Przycisk był trzymany długo - wyrzuć wszystko (drop_all = true)
-			inventory.drop_current_item(true)
-			# Resetujemy licznik po puszczeniu klawisza, gotowi na kolejne upuszczanie
-			drop_hold_time = 0.0
-	
-	# Gdy gracz puści przycisk, sprawdzamy ile czasu go trzymał
-	if Input.is_action_just_released("DropItem"):
-		if drop_hold_time > 0.0 && drop_hold_time < time_required_for_full_stack:
-			# Przycisk wciśnięty tylko na chwilę - wyrzuć pojedynczy przedmiot
-			inventory.drop_current_item(false)
-			
-		# Resetujemy licznik po puszczeniu klawisza, gotowi na kolejne upuszczanie
-		drop_hold_time = 0.0
-	
-	#endregion
+	# Obsługa popychania TODO
+	_handle_pushing()
+	# Obsługa wyrzucania itemów
+	_handle_dropping(delta)
 	
 	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
@@ -178,6 +153,26 @@ func _physics_process(delta):
 	# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
 	if is_holding_attack and interaction_and_attack_stats_script.can_attack():
 		perform_attack()
+
+func _handle_pushing() -> void:
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if collider is RigidBody2D:
+			collider.apply_central_impulse(-collision.get_normal() * push_force)
+
+func _handle_dropping(delta: float) -> void:
+	if Input.is_action_pressed("DropItem"):
+		drop_hold_time += delta
+		if drop_hold_time >= time_required_for_full_stack:
+			inventory.drop_current_item(true)
+			drop_hold_time = 0.0
+	
+	if Input.is_action_just_released("DropItem"):
+		if drop_hold_time > 0.0 and drop_hold_time < time_required_for_full_stack:
+			inventory.drop_current_item(false)
+		drop_hold_time = 0.0
 
 # --- WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
 func _unhandled_input(event: InputEvent) -> void:
@@ -377,9 +372,9 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 		var max_throw_range = 150.0
 		var actual_throw_distance = min(dist_to_mouse, max_throw_range)
 		
-		# Obliczamy siłę. Mnożnik (teraz 3.0) zależy od fizyki przedmiotu. 
+		# Obliczamy siłę. Mnożnik zależy od fizyki przedmiotu. 
 		# Jeśli nadal rzuca za daleko, zmniejsz 3.0 na 2.0 itd.
-		drop_force = actual_throw_distance * 3.0
+		drop_force = actual_throw_distance * throw_force_multiplier
 		
 		# Zabezpieczenie: minimalna siła, żeby przedmiot wyleciał spod nóg
 		if drop_force < 50.0:
@@ -710,13 +705,28 @@ func perform_attack() -> void:
 				# Różnicowanie logiki na podstawie typu broni
 				if _item.is_ranged:
 					print("Strzał z broni dystansowej!")
-					# (Tutaj w przyszłości możesz np. instancjonować pocisk zamiast instant-hitu)
+					if projectile_scene != null:
+						# Zbieramy efekty
+						var generated_effects = interaction_and_attack_stats_script.get_all_attack_effects()
+						
+						# Tworzymy pocisk
+						var new_projectile = projectile_scene.instantiate()
+						new_projectile.global_position = global_position
+						
+						# Kierunek strzału (w stronę celu lub punktu celownika)
+						var shoot_dir = global_position.direction_to(target_enemy.global_position)
+						new_projectile.direction = shoot_dir
+						new_projectile.effects_to_apply = generated_effects
+						
+						get_tree().current_scene.add_child(new_projectile)
+					else:
+						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
 					print("Cios z broni białej!")
 					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
+					# Zużywamy wytrzymałość broni po ataku
+					inventory.consume_durability_of_the_item()
 				
-				# Zużywamy wytrzymałość broni po ataku
-				inventory.consume_durability_of_the_item()
 			elif _item == null:
 				print("Gracz trafia z pięści!")
 				interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)

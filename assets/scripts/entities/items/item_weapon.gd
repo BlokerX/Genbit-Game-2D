@@ -44,7 +44,7 @@ func _init(
 		print("Uwaga, przedmiot ma dwa różne ustawienia cooldownu!")
 
 # Zaktualizowana funkcja ataku
-func affect_target(target : CharacterEntity) -> bool : # TODO usunąć zadawanie damage
+func affect_target(target : CharacterEntity) -> bool :
 	print("Gracz atakuje przeciwnika bronią! (Obrażenia: ", attack_data.damage, ", Stun: ", attack_data.stun_time, ")")
 	
 	apply_all_effects(target)

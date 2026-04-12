@@ -125,6 +125,13 @@ func generate_attack_effects() -> Array[Effect]:
 		
 	return effects
 
+## Generuje listę wszystkich efektów, dołącza te z broni i resetuje cooldown
+func get_all_attack_effects() -> Array[Effect]:
+	var all_effects : Array[Effect] = generate_attack_effects()
+	all_effects.append_array(actual_extra_effects)
+	reset_cooldown()
+	return all_effects
+
 func interaction_cooldown_process(delta : float) -> void :
 	if cooldown_timer < get_total_actual_cooldown():
 		cooldown_timer += delta

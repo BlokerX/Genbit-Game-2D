@@ -9,7 +9,7 @@ func _init(_heal_amount: int = 20, _allow_overheal: bool = false):
 	allow_overheal = _allow_overheal
 	effect_name = "Heal"
 
-func apply_effect(target : CharacterBody2D) -> bool:
+func apply_effect(target : Node2D) -> bool:
 	if target.get("health_stats_script") != null:
 		var stats = target.health_stats_script
 		

@@ -5,7 +5,7 @@ class_name ClearEffectsEffect
 func _init():
 	effect_name = "Clear Effects"
 
-func apply_effect(target : CharacterBody2D) -> bool:
+func apply_effect(target : Node2D) -> bool:
 	# 1. Preferowany sposób: Wywołujemy wbudowaną metodę postaci (którą zrobiliśmy wcześniej)
 	if target.has_method("clear_all_effects"):
 		target.clear_all_effects()

@@ -1,3 +1,4 @@
+@abstract
 extends Effect
 class_name TimedEffect
 
@@ -5,7 +6,7 @@ class_name TimedEffect
 @export var tick_interval : float = 1.0 # Jeśli 0, efekt nie ma "tików" (np. tylko buff do speeda)
 
 # Nadpisujemy metodę aplikowania z bazowego Effect
-func apply_effect(target : CharacterBody2D) -> bool:
+func apply_effect(target : Node2D) -> bool:
 	# Sprawdzamy, czy cel posiada dedykowany węzeł na efekty (effects_collector)
 	var effect_parent : Node = target
 	if "effects_collector" in target and target.effects_collector != null:
