@@ -27,13 +27,15 @@ func _on_body_entered(body: Node2D):
 	# Pomijamy kolizję z graczem, który wystrzelił pocisk
 	if body is PlayerCharacter:
 		return
-		
+	
+	if body is not CharacterEntity :
+		queue_free()
+		return
+	
 	# Aplikowanie efektów na ofiarę
 	for effect in effects_to_apply:
 		if body.has_method("receive_effect"):
 			body.receive_effect(effect)
-		else:
-			effect.apply_effect(body)
 			
 	# Zniszcz pocisk po trafieniu w cokolwiek (wroga lub ścianę)
 	queue_free()

@@ -694,11 +694,6 @@ func perform_attack() -> void:
 		
 		# --- Właściwy atak ---
 		if distance_to_enemy <= max_attack_distance:
-			
-			# Sprawdzamy, czy ściana nie blokuje ataku
-			if not _has_line_of_sight(target_enemy):
-				print("Atak zablokowany przez ścianę!")
-				return
 				
 			if _item is ItemWeapon:
 				# Różnicowanie logiki na podstawie typu broni
@@ -721,12 +716,24 @@ func perform_attack() -> void:
 					else:
 						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
+					
+					# Sprawdzamy, czy ściana nie blokuje ataku
+					if not _has_line_of_sight(target_enemy):
+						print("Atak zablokowany przez ścianę!")
+						return
+						
 					print("Cios z broni białej!")
 					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
 					# Zużywamy wytrzymałość broni po ataku
 					inventory.consume_durability_of_the_item()
 				
 			elif _item == null:
+				
+				# Sprawdzamy, czy ściana nie blokuje ataku
+				if not _has_line_of_sight(target_enemy):
+					print("Atak zablokowany przez ścianę!")
+					return
+					
 				print("Gracz trafia z pięści!")
 				interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
 		else:
