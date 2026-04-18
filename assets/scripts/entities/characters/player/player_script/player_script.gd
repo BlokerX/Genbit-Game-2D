@@ -381,7 +381,7 @@ func _on_item_broken(broken_item_name: String):
 # --- FUNKCJA WALKI Z DYSTANSEM ---
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
-	var target_enemy = aim_controller._get_enemy_target()
+	var target_enemy = aim_controller.get_enemy_target()
 	
 	if target_enemy != null:
 		
@@ -419,7 +419,7 @@ func perform_attack() -> void:
 				else:
 					
 					# Sprawdzamy, czy ściana nie blokuje ataku
-					if not aim_controller._has_line_of_sight(target_enemy):
+					if not aim_controller.has_line_of_sight(target_enemy):
 						print("Atak zablokowany przez ścianę!")
 						return
 						
@@ -431,7 +431,7 @@ func perform_attack() -> void:
 			elif _item == null:
 				
 				# Sprawdzamy, czy ściana nie blokuje ataku
-				if not aim_controller._has_line_of_sight(target_enemy):
+				if not aim_controller.has_line_of_sight(target_enemy):
 					print("Atak zablokowany przez ścianę!")
 					return
 					

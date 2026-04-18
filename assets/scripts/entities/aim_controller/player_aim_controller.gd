@@ -6,6 +6,10 @@ class_name PlayerAimController
 
 ## Zasięg celownika (tylko interakcje nieposiadające ograniczonego dystansu)
 @export var aim_distance: float = 4000.0
+
+## Maksymalny dystans do interakcji z obiektami (np. podnoszenie przedmiotów)
+@export var interaction_distance: float = 150.0
+
 ## Czy system ma automatycznie zrzucać focus z przedmiotów na wrogów (Pad/Klawiatura)?
 @export var auto_enemy_selector: bool = true
 ## Czy system ma automatycznie namierzać najbliższego wroga i pamiętać ostatniego? (Priorytet dla walki na padzie/klawiaturze)
@@ -95,7 +99,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 			var best_angle = 0.6 
 			for enemy in get_tree().get_nodes_in_group("Enemy"):
 				var dist = global_position.distance_to(enemy.global_position)
-				if dist <= best_dist and _has_line_of_sight(enemy):
+				if dist <= best_dist and has_line_of_sight(enemy):
 					var dir_to_enemy = global_position.direction_to(enemy.global_position)
 					var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
 					if angle < best_angle:
@@ -109,7 +113,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 				var lp = last_target.get_parent()
 				if lp and lp.is_in_group("Enemy"):
 					var dist = global_position.distance_to(lp.global_position)
-					if dist <= best_dist and _has_line_of_sight(lp):
+					if dist <= best_dist and has_line_of_sight(lp):
 						best_enemy = lp
 						best_dist = dist # Ustawiamy jego dystans jako punkt odniesienia
 			
@@ -117,7 +121,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 			for enemy in get_tree().get_nodes_in_group("Enemy"):
 				var dist = global_position.distance_to(enemy.global_position)
 				# Zwróć uwagę na znak mniejszości (<). Nowy wróg musi być wyraźnie bliżej, aby nadpisać pamięć starego celu.
-				if dist < best_dist and _has_line_of_sight(enemy):
+				if dist < best_dist and has_line_of_sight(enemy):
 					best_dist = dist
 					best_enemy = enemy
 					
@@ -156,10 +160,10 @@ func handle_gamepad_aiming(current_attack_range: float):
 		var current_is_enemy = target_parent and target_parent.is_in_group("Enemy")
 		
 		if current_is_enemy:
-			if global_position.distance_to(target_parent.global_position) <= current_attack_range and _has_line_of_sight(target_parent):
+			if global_position.distance_to(target_parent.global_position) <= current_attack_range and has_line_of_sight(target_parent):
 				is_current_reachable = true
 		else:
-			if global_position.distance_to(current_target.global_position) <= aim_distance:
+			if global_position.distance_to(current_target.global_position) <= interaction_distance:
 				is_current_reachable = true
 				
 		var allow_sticky = true
@@ -175,7 +179,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 	found_target = _enforce_distance_check(found_target, current_attack_range)
 
 	# 4. Zarządzanie podświetlaniem (i uzupełnianie last_target gdy cel się oddala!)
-	_manage_target_highlight(found_target, true, is_pad_aiming)
+	_manage_target_highlight(found_target, true, current_attack_range, is_pad_aiming)
 
 ## Oczyszcza aktualny cel i usuwa obrysowanie
 func clear_gamepad_target():
@@ -211,7 +215,7 @@ func _enforce_distance_check(target: InteractableComponent, current_attack_range
 				is_reachable = true
 		else:
 			var dist_to_object = global_position.distance_to(target.global_position)
-			if dist_to_object <= aim_distance:
+			if dist_to_object <= interaction_distance:
 				is_reachable = true
 				
 		if not is_reachable:
@@ -219,7 +223,7 @@ func _enforce_distance_check(target: InteractableComponent, current_attack_range
 	return target
 
 # Sprawdza, czy gracz ma czystą linię strzału/ciosu do celu (nie zasłaniają go ściany)
-func _has_line_of_sight(target: Node2D) -> bool:
+func has_line_of_sight(target: Node2D) -> bool:
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(global_position, target.global_position)
 	
@@ -276,7 +280,7 @@ func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: b
 						is_still_reachable = true
 				else:
 					var dist = global_position.distance_to(current_target.global_position)
-					if dist <= aim_distance:
+					if dist <= interaction_distance:
 						is_still_reachable = true
 						
 				if not is_still_reachable:
@@ -292,7 +296,7 @@ func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: b
 				clear_gamepad_target()
 
 ## Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
-func _get_enemy_target() -> Node2D:
+func get_enemy_target() -> Node2D:
 	# 1. Sprawdzamy celownik (RayCast/Myszka)
 	if current_target != null:
 		var potential_enemy = current_target.get_parent()
