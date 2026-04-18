@@ -47,6 +47,11 @@ func _physics_process(_delta):
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
 	print("Entity character has been killed successfully!")
+	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
+	call_deferred("respawn_sequence")
+
+# Nowa funkcja, która uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
+func respawn_sequence():
 	health_stats_script.heal_completely()
 	respawn()
 
