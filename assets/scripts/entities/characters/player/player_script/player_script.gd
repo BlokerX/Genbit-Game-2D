@@ -9,9 +9,7 @@ class_name PlayerCharacter
 
 func get_inventory() -> Inventory:
 	return inventory # Zwraca wyeksportowaną zmienną inventory
-
-#endregion
-
+	
 #region Celownik / Skaner
 
 ### Aim component
@@ -19,6 +17,8 @@ func get_inventory() -> Inventory:
 
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
 var is_using_mouse: bool = true
+
+#endregion
 
 #endregion
 
@@ -376,7 +376,7 @@ func _on_item_broken(broken_item_name: String):
 
 #endregion
 
-#region System celowania
+#region System ataku
 
 # --- FUNKCJA WALKI Z DYSTANSEM ---
 func perform_attack() -> void:
@@ -413,7 +413,8 @@ func perform_attack() -> void:
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
 						
-						get_tree().current_scene.add_child(new_projectile)
+						# TODO przypisanie do sceny
+						get_parent().add_child(new_projectile)
 					else:
 						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
