@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://d26ydrnx3wo6w"]
+
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_myym0"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="2_qf0ew"]
+[ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="3_myym0"]
+[ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/active_effects/freeze_effect.gd" id="3_qf0ew"]
+[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="4_jp8f5"]
+
+[sub_resource type="Resource" id="Resource_14dwk"]
+script = ExtResource("1_myym0")
+damage = 25
+max_range = 1000.0
+stun_time = 0.15
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_d4pv6"]
+script = ExtResource("3_qf0ew")
+metadata/_custom_type_script = "uid://byffpv3e7benb"
+
+[resource]
+script = ExtResource("4_jp8f5")
+attack_data = SubResource("Resource_14dwk")
+is_ranged = true
+weapon_type = "Gun"
+effects = Array[ExtResource("2_qf0ew")]([SubResource("Resource_d4pv6")])
+use_cooldown = 2.2
+item_id = 10
+item_name = "Gun"
+item_type = "Weapon"
+item_description = "A gun machine."
+item_icon = ExtResource("3_myym0")

@@ -10,7 +10,7 @@ func _process(_delta: float) -> void:
 	if player != null and player.interaction_and_attack_stats_script != null:
 		
 		var current_time = player.interaction_and_attack_stats_script.cooldown_timer
-		var max_time = player.interaction_and_attack_stats_script.total_actual_cooldown()
+		var max_time = player.interaction_and_attack_stats_script.get_total_actual_cooldown()
 		
 		# Obliczamy ile czasu ZABRAKŁO do końca cooldownu
 		var time_left = max_time - current_time

@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bogrt5ry8rdcv"]
+
+[ext_resource type="Script" uid="uid://cbl5qns3ny3kb" path="res://assets/scripts/entities/projectile.gd" id="1_scc3m"]
+[ext_resource type="Texture2D" uid="uid://crf352jj6tc0q" path="res://assets/textures/samples_examples/yelow_potion.png" id="2_ldy4p"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vj4cm"]
+
+[node name="Projectile" type="Area2D" unique_id=349043790]
+collision_mask = 7
+script = ExtResource("1_scc3m")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1443838097]
+texture = ExtResource("2_ldy4p")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1113929393]
+shape = SubResource("CircleShape2D_vj4cm")
+debug_color = Color(1, 0, 0, 0.36862746)

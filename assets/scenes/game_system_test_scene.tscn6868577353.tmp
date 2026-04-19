@@ -17,12 +17,11 @@
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
 [ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="9_d7uxj"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="11_vbl37"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_3gvrm"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
-[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="15_pxeom"]
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
@@ -30,7 +29,6 @@
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
-[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="30_vbl37"]
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -540,7 +538,6 @@ collision_layer = 2
 collision_mask = 7
 script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
-projectile_scene = ExtResource("11_vbl37")
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
 interaction_and_attack_stats_script = ExtResource("13_1f4iy")
@@ -548,13 +545,6 @@ health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
 health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
 character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
-
-[node name="AimController" type="Node2D" parent="Player" unique_id=756643253]
-script = ExtResource("15_pxeom")
-
-[node name="AimScanner" type="RayCast2D" parent="Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
 
 [node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
 script = ExtResource("4_w0vak")
@@ -579,6 +569,10 @@ position = Vector2(24, 43.00003)
 scale = Vector2(2, 2)
 
 [node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
+
+[node name="AimScanner" type="RayCast2D" parent="Player" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
 
 [node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../CharacterSprite")
@@ -664,4 +658,4 @@ item_data = ExtResource("12_d23um")
 
 [node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("25_r00hp")]
 position = Vector2(320, 616)
-item_data = ExtResource("30_vbl37")
+item_data = ExtResource("10_3gvrm")

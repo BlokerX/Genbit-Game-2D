@@ -1,14 +1,23 @@
 [gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://bownsdq2b671r"]
 
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_g5vyt"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_r625p"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tfixi"]
 [ext_resource type="Texture2D" uid="uid://o3as3a0num1a" path="res://assets/textures/samples_examples/sword.png" id="2_5wucb"]
 
+[sub_resource type="Resource" id="Resource_joohm"]
+script = ExtResource("1_g5vyt")
+damage = 30
+critical_damage = 15
+critical_rate = 0.2
+max_range = 2.5
+stun_time = 1.2
+cooldown = 1.6
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
 [resource]
 script = ExtResource("1_r625p")
-attack_range = 1.5
-attack_damage = 30
-stun_time = 1.8
+attack_data = SubResource("Resource_joohm")
 use_cooldown = 2.5
 item_name = "Big sword"
 item_type = "Weapon"

@@ -1,17 +1,26 @@
 [gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://cb8cn5vk3trmf"]
 
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_5ah6c"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jqv1w"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_w0gi6"]
 [ext_resource type="Texture2D" uid="uid://c2minq0svvhxc" path="res://assets/textures/samples_examples/other_sword.png" id="2_16hix"]
 
+[sub_resource type="Resource" id="Resource_14dwk"]
+script = ExtResource("1_5ah6c")
+damage = 20
+critical_damage = 5
+critical_rate = 0.3
+max_range = 1.5
+stun_time = null
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
 [resource]
 script = ExtResource("1_w0gi6")
-attack_damage = 20
-stun_time = 0.5
+attack_data = SubResource("Resource_14dwk")
 item_id = 6
 item_name = "Sword"
 item_type = "Weapon"
-item_description = "It has 20 hp damage and new one's durable is 25."
+item_description = "It has 20 hp damage and new one's durable is 30."
 item_icon = ExtResource("2_16hix")
-durable = 25
-max_durable = 25
+durable = 30
+max_durable = 30

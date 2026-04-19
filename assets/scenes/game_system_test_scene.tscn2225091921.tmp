@@ -22,7 +22,6 @@
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
-[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="15_pxeom"]
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
@@ -549,13 +548,6 @@ health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/Hea
 character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="AimController" type="Node2D" parent="Player" unique_id=756643253]
-script = ExtResource("15_pxeom")
-
-[node name="AimScanner" type="RayCast2D" parent="Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
-
 [node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
 script = ExtResource("4_w0vak")
 items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
@@ -579,6 +571,10 @@ position = Vector2(24, 43.00003)
 scale = Vector2(2, 2)
 
 [node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
+
+[node name="AimScanner" type="RayCast2D" parent="Player" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
 
 [node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../CharacterSprite")

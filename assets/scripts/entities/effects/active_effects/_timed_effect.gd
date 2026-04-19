@@ -1,3 +1,4 @@
+@abstract
 extends Effect
 class_name TimedEffect
 
@@ -5,7 +6,7 @@ class_name TimedEffect
 @export var tick_interval : float = 1.0 # Jeśli 0, efekt nie ma "tików" (np. tylko buff do speeda)
 
 # Nadpisujemy metodę aplikowania z bazowego Effect
-func apply_effect(target : CharacterBody2D) -> bool:
+func apply_effect(target : Node2D) -> bool:
 	# Sprawdzamy, czy cel posiada dedykowany węzeł na efekty (effects_collector)
 	var effect_parent : Node = target
 	if "effects_collector" in target and target.effects_collector != null:
@@ -28,7 +29,7 @@ func apply_effect(target : CharacterBody2D) -> bool:
 	
 	# Dodajemy węzeł aktywnego efektu do effects_collector (lub bezpośrednio do targetu w ramach fallbacku)
 	effect_parent.add_child(active_node)
-	active_node.setup(target, self, duration, tick_interval)
+	active_node.setup(target, self, duration, tick_interval) # TODO uderzenie o ścianę uruchamia błąd
 	
 	print("Nałożono efekt czasowy: ", effect_name)
 	return true
