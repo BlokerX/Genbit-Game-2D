@@ -46,8 +46,7 @@ var size_px : Vector2
 
 func _ready() -> void:
 	# Ta linijka sprawia, że gra po uruchomieniu zbuduje kafelki i zespawnuje drzwi!
-	generate_room() 
-	calculate_room_bounds()
+	generate_room()
 
 func generate_room() -> void:
 	if not tile_map: return
@@ -67,7 +66,6 @@ func generate_room() -> void:
 			if door_positions is Array and current_pos in door_positions:
 				tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
 				_spawn_door(current_pos, tile_size)
-				continue
 
 			# Rysowanie ścian i podłogi
 			if x == 0 or x == room_size_tiles.x - 1 or y == 0 or y == room_size_tiles.y - 1:
@@ -87,6 +85,7 @@ func _clear_old_doors() -> void:
 func _spawn_door(pos: Vector2i, tile_size: Vector2i) -> void:
 	if not door_scene: return
 	
+	# Instancjonowanie nowych drzwi
 	var door_instance = door_scene.instantiate()
 	add_child(door_instance)
 	door_instance.add_to_group("doors")

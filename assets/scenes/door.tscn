@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://dlfvmsi7aocoj"]
 
 [ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="1_u1njh"]
-[ext_resource type="Script" uid="uid://dainsnvcfx1es" path="res://assets/scripts/room/door.gd" id="1_ytq3u"]
+[ext_resource type="Script" uid="uid://dainsnvcfx1es" path="res://assets/scripts/map_system/door.gd" id="1_ytq3u"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_u1njh"]
 size = Vector2(52, 52)
 
 [node name="Door" type="Area2D" unique_id=406558948]
+scale = Vector2(3, 2)
 collision_mask = 2
 script = ExtResource("1_ytq3u")
 
