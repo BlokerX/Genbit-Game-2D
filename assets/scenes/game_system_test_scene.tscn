@@ -5,9 +5,12 @@
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
+[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="3_xyupq"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="4_5dhej"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="5_b0vj2"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="6_1f4iy"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
 [ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
@@ -22,15 +25,11 @@
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
-[ext_resource type="Script" uid="uid://deuy8banyiig7" path="res://assets/scripts/map_system/room_map.gd" id="24_xyupq"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
-[ext_resource type="Script" uid="uid://efmlp53pqb22" path="res://assets/scripts/map_system/minimap_ui.gd" id="26_d8aow"]
+[ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="26_d8aow"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
 size = Vector2(64.5, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
@@ -49,7 +48,7 @@ region = Rect2(32, 0, 16, 16)
 atlas = ExtResource("7_6uf7s")
 region = Rect2(48, 0, 16, 16)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_ygk25"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_yuthg"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -69,6 +68,9 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
+
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
 colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
@@ -79,13 +81,84 @@ gradient = SubResource("Gradient_mjw3m")
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
 
-[node name="RoomMap" type="Node" parent="." unique_id=1450986761]
-script = ExtResource("24_xyupq")
-metadata/_custom_type_script = "uid://deuy8banyiig7"
+[node name="LevelManager" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("player", "starting_room")]
+script = ExtResource("26_d8aow")
+player = NodePath("../Player")
+starting_room = NodePath("Room")
 
-[node name="RoomsContainer" type="Node2D" parent="." unique_id=323866853]
+[node name="Room" parent="LevelManager" unique_id=1187411125 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
+doors = [NodePath("Door")]
 
-[node name="Room" parent="RoomsContainer" unique_id=1124479501 instance=ExtResource("9_pxeom")]
+[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_room") instance=ExtResource("3_xyupq")]
+position = Vector2(974.00006, 1058)
+destination_room = NodePath("../../Room2")
+
+[node name="ItemPickup" parent="LevelManager/Room" unique_id=889212379 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("6_1f4iy")
+
+[node name="Room2" parent="LevelManager" unique_id=1124479501 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
+floor_alt_id = 0
+wall_alt_id = 0
+doors = [NodePath("Door")]
+
+[node name="Door" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_room") instance=ExtResource("3_xyupq")]
+position = Vector2(974, 30)
+destination_room = NodePath("../../Room")
+
+[node name="Spider" type="CharacterBody2D" parent="LevelManager/Room2" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+position = Vector2(1263, 138)
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("17_1f4iy")
+movement_universal_script = ExtResource("15_b10mb")
+health_stats_script = ExtResource("24_8h40k")
+interaction_and_attack_stats_script = ExtResource("25_28mns")
+health_points_bar = NodePath("HealthProgressBar")
+health_points_label = NodePath("HealthProgressBar/Label2")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="EffectsCollector" type="Node" parent="LevelManager/Room2/Spider" unique_id=378154211]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/Room2/Spider" unique_id=1269572810]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/Room2/Spider" unique_id=1068071084]
+shape = SubResource("RectangleShape2D_8f2pv")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/Room2/Spider" unique_id=70196550]
+texture_filter = 5
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_yuthg")
+
+[node name="LineOfSight" type="RayCast2D" parent="LevelManager/Room2/Spider" unique_id=751573452]
+collision_mask = 3
+
+[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/Room2/Spider" unique_id=734905429]
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("2_mjw3m")
+show_percentage = false
+script = ExtResource("23_totju")
+
+[node name="Label2" type="Label" parent="LevelManager/Room2/Spider/HealthProgressBar" unique_id=2016708381]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractableComponent" parent="LevelManager/Room2/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
@@ -136,62 +209,8 @@ scale = Vector2(2, 2)
 [node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
 texture_filter = 5
 
-[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
-
-[node name="Spider" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(1728, 552)
-collision_layer = 4
-collision_mask = 7
-script = ExtResource("17_1f4iy")
-movement_universal_script = ExtResource("15_b10mb")
-health_stats_script = ExtResource("24_8h40k")
-interaction_and_attack_stats_script = ExtResource("25_28mns")
-health_points_bar = NodePath("HealthProgressBar")
-health_points_label = NodePath("HealthProgressBar/Label2")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="EffectsCollector" type="Node" parent="Spider" unique_id=473924543]
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Spider" unique_id=1292834181]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Spider" unique_id=2110018586]
-shape = SubResource("RectangleShape2D_h17bs")
-debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Spider" unique_id=1995051797]
-texture_filter = 5
-position = Vector2(-0.5, -0.5)
-scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_ygk25")
-
-[node name="LineOfSight" type="RayCast2D" parent="Spider" unique_id=654854544]
-collision_mask = 3
-
-[node name="HealthProgressBar" type="ProgressBar" parent="Spider" unique_id=102391968]
-offset_left = -32.0
-offset_top = -48.0
-offset_right = 32.0
-offset_bottom = -32.0
-pivot_offset = Vector2(32, 48)
-theme_override_font_sizes/font_size = 8
-theme_override_styles/background = ExtResource("2_mjw3m")
-show_percentage = false
-script = ExtResource("23_totju")
-
-[node name="Label2" type="Label" parent="Spider/HealthProgressBar" unique_id=271877439]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="InteractableComponent" parent="Spider" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
@@ -627,14 +646,3 @@ theme_override_font_sizes/font_size = 5
 text = "99"
 horizontal_alignment = 2
 vertical_alignment = 2
-
-[node name="MinimapUI" type="Control" parent="CanvasLayer" unique_id=885231945 node_paths=PackedStringArray("room_map")]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 1273.0
-offset_top = 12.0
-offset_right = 1313.0
-offset_bottom = 52.0
-script = ExtResource("26_d8aow")
-room_map = NodePath("../../RoomMap")
-cell_size = Vector2(200, 200)

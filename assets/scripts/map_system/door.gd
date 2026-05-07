@@ -7,7 +7,7 @@ signal player_entered_door(door_node)
 
 @export_group("Konfiguracja Drzwi")
 ## Możesz w przyszłości wpisywać tu np. nazwę pokoju, do którego prowadzą drzwi.
-@export var destination_room : String = ""
+@export var destination_room : Room = null
 
 func _ready() -> void:
 	# Automatycznie podłączamy sygnał z Area2D, gdy coś w nią wejdzie

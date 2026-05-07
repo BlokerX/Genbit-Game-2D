@@ -45,6 +45,7 @@ folder_colors={
 Enemy="Enemy entity"
 NPC="Non player character"
 Player="Player entity"
+Rooms=""
 
 [input]
 
