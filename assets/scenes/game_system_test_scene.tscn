@@ -129,7 +129,35 @@ position = Vector2(960, 1056)
 rotation = 3.1415927
 destination_door = NodePath("../../Room3/DoorUp3")
 
-[node name="Spider" type="CharacterBody2D" parent="LevelManager/Room2" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+[node name="ItemPickup" parent="LevelManager/Room2" unique_id=313552387 instance=ExtResource("5_b0vj2")]
+position = Vector2(232, 256)
+item_data = ExtResource("6_1f4iy")
+
+[node name="ItemPickup2" parent="LevelManager/Room2" unique_id=418610573 instance=ExtResource("5_b0vj2")]
+position = Vector2(256, 840)
+item_data = ExtResource("7_6s3yp")
+
+[node name="ItemPickup3" parent="LevelManager/Room2" unique_id=878630740 instance=ExtResource("5_b0vj2")]
+position = Vector2(1560, 256)
+item_data = ExtResource("8_r7ala")
+
+[node name="ItemPickup4" parent="LevelManager/Room2" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("9_pgj7d")
+
+[node name="ItemPickup5" parent="LevelManager/Room2" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
+position = Vector2(1296, 136)
+item_data = ExtResource("10_jj5mx")
+
+[node name="Room3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
+map_position = Vector2i(0, 2)
+wall_alt_id = 0
+
+[node name="DoorUp3" parent="LevelManager/Room3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room2/DoorDown2")
+
+[node name="Spider" type="CharacterBody2D" parent="LevelManager/Room3" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
@@ -142,24 +170,24 @@ health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="EffectsCollector" type="Node" parent="LevelManager/Room2/Spider" unique_id=378154211]
+[node name="EffectsCollector" type="Node" parent="LevelManager/Room3/Spider" unique_id=378154211]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/Room2/Spider" unique_id=1269572810]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/Room3/Spider" unique_id=1269572810]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/Room2/Spider" unique_id=1068071084]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/Room3/Spider" unique_id=1068071084]
 shape = SubResource("RectangleShape2D_8f2pv")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/Room2/Spider" unique_id=70196550]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/Room3/Spider" unique_id=70196550]
 texture_filter = 5
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_yuthg")
 
-[node name="LineOfSight" type="RayCast2D" parent="LevelManager/Room2/Spider" unique_id=751573452]
+[node name="LineOfSight" type="RayCast2D" parent="LevelManager/Room3/Spider" unique_id=751573452]
 collision_mask = 3
 
-[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/Room2/Spider" unique_id=734905429]
+[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/Room3/Spider" unique_id=734905429]
 texture_filter = 5
 offset_left = -32.0
 offset_top = -48.0
@@ -171,7 +199,7 @@ theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("23_totju")
 
-[node name="Label2" type="Label" parent="LevelManager/Room2/Spider/HealthProgressBar" unique_id=2016708381]
+[node name="Label2" type="Label" parent="LevelManager/Room3/Spider/HealthProgressBar" unique_id=2016708381]
 texture_filter = 5
 layout_mode = 0
 offset_right = 64.0
@@ -182,36 +210,9 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractableComponent" parent="LevelManager/Room2/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="LevelManager/Room3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
-
-[node name="Room3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
-map_position = Vector2i(0, 2)
-
-[node name="DoorUp3" parent="LevelManager/Room3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../Room2/DoorDown2")
-
-[node name="ItemPickup" parent="LevelManager/Room3" unique_id=313552387 instance=ExtResource("5_b0vj2")]
-position = Vector2(232, 256)
-item_data = ExtResource("6_1f4iy")
-
-[node name="ItemPickup2" parent="LevelManager/Room3" unique_id=418610573 instance=ExtResource("5_b0vj2")]
-position = Vector2(256, 840)
-item_data = ExtResource("7_6s3yp")
-
-[node name="ItemPickup3" parent="LevelManager/Room3" unique_id=878630740 instance=ExtResource("5_b0vj2")]
-position = Vector2(1560, 256)
-item_data = ExtResource("8_r7ala")
-
-[node name="ItemPickup4" parent="LevelManager/Room3" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
-position = Vector2(1608, 731)
-item_data = ExtResource("9_pgj7d")
-
-[node name="ItemPickup5" parent="LevelManager/Room3" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
-position = Vector2(952, 224)
-item_data = ExtResource("10_jj5mx")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
