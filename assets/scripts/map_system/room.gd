@@ -28,7 +28,7 @@ class_name Room
 		generate_room()
 
 @export_group("Drzwi")
-@export var doors : Array[Node2D] = []
+var doors : Array[Door] = []
 
 @export_group("Elementy Pokoju")
 @onready var tile_map : TileMapLayer = $TileMap
@@ -40,6 +40,29 @@ var size_px : Vector2
 func _ready() -> void:
 	# Ta linijka sprawia, że gra po uruchomieniu zbuduje kafelki i zespawnuje drzwi!
 	generate_room()
+	
+	# Automatyczne pobieranie drzwi przy starcie sceny
+	# Ignorujemy działanie w edytorze, jeśli nie jest nam tam potrzebne do logiki
+	if not Engine.is_editor_hint():
+		_auto_fetch_doors()
+
+# NOWA FUNKCJA: Główna funkcja wywoływana do zebrania drzwi
+func _auto_fetch_doors() -> void:
+	doors.clear() # Czyścimy listę dla pewności
+	_find_doors_recursive(self) # Zaczynamy szukać od samego pokoju (self)
+	print("Pokój " + name + " znalazł automatycznie " + str(doors.size()) + " drzwi.")
+
+# NOWA FUNKCJA: Rekurencyjne szukanie (znajdzie drzwi nawet jeśli są zgrupowane w innym Node2D)
+func _find_doors_recursive(node: Node) -> void:
+	for child in node.get_children():
+		if child is Door:
+			# Zaleźliśmy obiekt klasy Door! Dodajemy do listy.
+			doors.append(child)
+		
+		# Niezależnie od tego, czy to drzwi czy nie, szukamy też w dzieciach tego węzła.
+		# Pozwala to trzymać drzwi w "folderach" np. Node2D o nazwie "Doors".
+		if child.get_child_count() > 0:
+			_find_doors_recursive(child)
 
 func generate_room() -> void:
 	if not tile_map: return

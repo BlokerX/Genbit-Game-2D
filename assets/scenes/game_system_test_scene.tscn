@@ -89,14 +89,12 @@ script = ExtResource("1_hx11q")
 script = ExtResource("26_d8aow")
 starting_room = NodePath("Room")
 
-[node name="Room" parent="LevelManager" unique_id=1187411125 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
-doors = [NodePath("Door")]
+[node name="Room" parent="LevelManager" unique_id=1187411125 instance=ExtResource("9_pxeom")]
 
-[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_room", "teleport_door") instance=ExtResource("3_xyupq")]
+[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
 position = Vector2(960, 1056)
 rotation = 3.1415927
-destination_room = NodePath("../../Room2")
-teleport_door = NodePath("../../Room2/Door2")
+destination_door = NodePath("../../Room2/Door2")
 
 [node name="ItemPickup" parent="LevelManager/Room" unique_id=889212379 instance=ExtResource("5_b0vj2")]
 position = Vector2(232, 256)
@@ -136,15 +134,13 @@ text = "Pokój startowy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Room2" parent="LevelManager" unique_id=1124479501 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
+[node name="Room2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
 floor_alt_id = 0
 wall_alt_id = 0
-doors = [NodePath("Door2")]
 
-[node name="Door2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_room", "teleport_door") instance=ExtResource("3_xyupq")]
+[node name="Door2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
 position = Vector2(960, 32)
-destination_room = NodePath("../../Room")
-teleport_door = NodePath("../../Room/Door")
+destination_door = NodePath("../../Room/Door")
 
 [node name="Spider" type="CharacterBody2D" parent="LevelManager/Room2" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(968, 928)

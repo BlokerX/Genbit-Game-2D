@@ -60,6 +60,14 @@ func _disconnect_door_signals(room: Room) -> void:
 			door.player_entered_door.disconnect(_on_door_entered)
 
 func _on_door_entered(door: Door) -> void:
-	var next_room = door.destination_room
-	if next_room:
-		call_deferred("change_room", next_room, door.teleport_door)
+	# Sprawdzamy, czy te drzwi w ogóle gdzieś prowadzą
+	if door.destination_door:
+		# Pobieramy pokój bezpośrednio z przypisanych drzwi docelowych
+		var next_room = door.destination_door.get_room()
+		
+		if next_room:
+			call_deferred("change_room", next_room, door.destination_door)
+		else:
+			push_warning("LevelManager: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
+	else:
+		push_warning("LevelManager: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
