@@ -14,10 +14,14 @@
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
 [ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="7_6s3yp"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
 [ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_r7ala"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="9_pgj7d"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="9_pxeom"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_jj5mx"]
 [ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="11_vbl37"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
@@ -81,33 +85,69 @@ gradient = SubResource("Gradient_mjw3m")
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
 
-[node name="LevelManager" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("player", "starting_room")]
+[node name="LevelManager" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("26_d8aow")
-player = NodePath("../Player")
 starting_room = NodePath("Room")
 
 [node name="Room" parent="LevelManager" unique_id=1187411125 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
 doors = [NodePath("Door")]
 
-[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_room") instance=ExtResource("3_xyupq")]
-position = Vector2(974.00006, 1058)
+[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_room", "teleport_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = 3.1415927
 destination_room = NodePath("../../Room2")
+teleport_door = NodePath("../../Room2/Door2")
 
 [node name="ItemPickup" parent="LevelManager/Room" unique_id=889212379 instance=ExtResource("5_b0vj2")]
-position = Vector2(1608, 731)
+position = Vector2(232, 256)
 item_data = ExtResource("6_1f4iy")
+
+[node name="ItemPickup2" parent="LevelManager/Room" unique_id=46937566 instance=ExtResource("5_b0vj2")]
+position = Vector2(256, 840)
+item_data = ExtResource("7_6s3yp")
+
+[node name="ItemPickup3" parent="LevelManager/Room" unique_id=1301421364 instance=ExtResource("5_b0vj2")]
+position = Vector2(1560, 256)
+item_data = ExtResource("8_r7ala")
+
+[node name="ItemPickup4" parent="LevelManager/Room" unique_id=1969013928 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("9_pgj7d")
+
+[node name="ItemPickup5" parent="LevelManager/Room" unique_id=404467611 instance=ExtResource("5_b0vj2")]
+position = Vector2(952, 224)
+item_data = ExtResource("10_jj5mx")
+
+[node name="StartRoomLabel" type="Label" parent="LevelManager/Room" unique_id=1778539474]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 902.5
+offset_top = 540.0
+offset_right = 1018.5
+offset_bottom = 563.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój startowy"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Room2" parent="LevelManager" unique_id=1124479501 node_paths=PackedStringArray("doors") instance=ExtResource("9_pxeom")]
 floor_alt_id = 0
 wall_alt_id = 0
-doors = [NodePath("Door")]
+doors = [NodePath("Door2")]
 
-[node name="Door" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_room") instance=ExtResource("3_xyupq")]
-position = Vector2(974, 30)
+[node name="Door2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_room", "teleport_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
 destination_room = NodePath("../../Room")
+teleport_door = NodePath("../../Room/Door")
 
 [node name="Spider" type="CharacterBody2D" parent="LevelManager/Room2" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(1263, 138)
+position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
 script = ExtResource("17_1f4iy")
@@ -136,6 +176,7 @@ sprite_frames = SubResource("SpriteFrames_yuthg")
 collision_mask = 3
 
 [node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/Room2/Spider" unique_id=734905429]
+texture_filter = 5
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
@@ -147,6 +188,7 @@ show_percentage = false
 script = ExtResource("23_totju")
 
 [node name="Label2" type="Label" parent="LevelManager/Room2/Spider/HealthProgressBar" unique_id=2016708381]
+texture_filter = 5
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 16.0
@@ -163,12 +205,13 @@ target_collision = NodePath("../CollisionShape2D")
 [node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
 texture_filter = 5
-position = Vector2(304, 429)
+position = Vector2(960, 540)
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 projectile_scene = ExtResource("11_vbl37")
+respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
 interaction_and_attack_stats_script = ExtResource("13_1f4iy")

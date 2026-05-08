@@ -46,6 +46,8 @@ Enemy="Enemy entity"
 NPC="Non player character"
 Player="Player entity"
 Rooms=""
+LevelManager=""
+ItemPickup=""
 
 [input]
 

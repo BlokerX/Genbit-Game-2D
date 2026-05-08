@@ -316,9 +316,16 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 	var drop = item_pickup_scene.instantiate()
 	drop.item_data = dropped_item_data
 	
-	# --- Fizyczne wyrzucenie przedmiotu ---
-	get_tree().current_scene.add_child(drop)
-	# Ustawiamy punkt startowy na środek gracza
+	# --- Fizyczne wyrzucenie przedmiotu do aktualnego pokoju ---
+	var level_manager = get_tree().get_first_node_in_group("LevelManager")
+	
+	if level_manager and level_manager.current_room:
+		level_manager.current_room.add_child(drop)
+	else:
+		# Fallback - w razie testowania sceny bez menedżera
+		get_tree().current_scene.add_child(drop)
+		
+	# Ustawiamy punkt startowy na środek gracza (musi być PO dodaniu do drzewa)
 	drop.global_position = global_position
 	
 	var drop_direction = Vector2.ZERO
@@ -413,8 +420,12 @@ func perform_attack() -> void:
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
 						
-						# TODO przypisanie do sceny
-						get_parent().add_child(new_projectile)
+						# --- Przypisanie pocisku do aktualnego pokoju ---
+						var level_manager = get_tree().get_first_node_in_group("LevelManager")
+						if level_manager and level_manager.current_room:
+							level_manager.current_room.add_child(new_projectile)
+						else:
+							get_parent().add_child(new_projectile)
 					else:
 						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
