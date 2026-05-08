@@ -66,6 +66,7 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			remove_child(current_room)
 		
 	current_room = new_room
+	current_room.visible = true
 	
 	if not current_room.is_inside_tree():
 		add_child(current_room)

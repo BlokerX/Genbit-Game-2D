@@ -88,26 +88,21 @@ script = ExtResource("1_hx11q")
 
 [node name="LevelManager" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("26_d8aow")
-starting_room = NodePath("Room")
+starting_room = NodePath("StartRoom")
 
-[node name="Room" parent="LevelManager" unique_id=1187411125 instance=ExtResource("9_pxeom")]
+[node name="StartRoom" parent="LevelManager" unique_id=1187411125 instance=ExtResource("9_pxeom")]
 
-[node name="DoorDown1" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 1056)
-rotation = 3.1415927
-destination_door = NodePath("../../Room2/DoorUp2")
-
-[node name="StartRoomLabel" type="Label" parent="LevelManager/Room" unique_id=1778539474]
+[node name="RoomLabel" type="Label" parent="LevelManager/StartRoom" unique_id=1778539474]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 902.5
-offset_top = 540.0
-offset_right = 1018.5
-offset_bottom = 563.0
+offset_left = 816.5
+offset_top = 524.0
+offset_right = 1104.5
+offset_bottom = 579.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 40
@@ -115,49 +110,157 @@ text = "Pokój startowy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Room2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
-map_position = Vector2i(0, 1)
-floor_alt_id = 0
-wall_alt_id = 0
-
-[node name="DoorUp2" parent="LevelManager/Room2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../Room/DoorDown1")
-
-[node name="DoorDown2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+[node name="DoorDown1" parent="LevelManager/StartRoom" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
 position = Vector2(960, 1056)
 rotation = 3.1415927
-destination_door = NodePath("../../Room3/DoorUp3")
+destination_door = NodePath("../../LootRoom2/DoorUp2")
 
-[node name="ItemPickup" parent="LevelManager/Room2" unique_id=313552387 instance=ExtResource("5_b0vj2")]
-position = Vector2(232, 256)
-item_data = ExtResource("6_1f4iy")
+[node name="LootRoom2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 1)
 
-[node name="ItemPickup2" parent="LevelManager/Room2" unique_id=418610573 instance=ExtResource("5_b0vj2")]
+[node name="RoomLabel" type="Label" parent="LevelManager/LootRoom2" unique_id=58840949]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 750.5
+offset_top = 524.0
+offset_right = 1170.5
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój z przedmiotami"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp2" parent="LevelManager/LootRoom2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../StartRoom/DoorDown1")
+
+[node name="DoorDown2" parent="LevelManager/LootRoom2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../HallRoom4/DoorUp4")
+
+[node name="Items" type="Node2D" parent="LevelManager/LootRoom2" unique_id=2000525934]
+
+[node name="ItemPickup2" parent="LevelManager/LootRoom2/Items" unique_id=418610573 instance=ExtResource("5_b0vj2")]
 position = Vector2(256, 840)
 item_data = ExtResource("7_6s3yp")
 
-[node name="ItemPickup3" parent="LevelManager/Room2" unique_id=878630740 instance=ExtResource("5_b0vj2")]
+[node name="ItemPickup3" parent="LevelManager/LootRoom2/Items" unique_id=878630740 instance=ExtResource("5_b0vj2")]
 position = Vector2(1560, 256)
 item_data = ExtResource("8_r7ala")
 
-[node name="ItemPickup4" parent="LevelManager/Room2" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
+[node name="ItemPickup4" parent="LevelManager/LootRoom2/Items" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
 position = Vector2(1608, 731)
 item_data = ExtResource("9_pgj7d")
 
-[node name="ItemPickup5" parent="LevelManager/Room2" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
+[node name="ItemPickup5" parent="LevelManager/LootRoom2/Items" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
 position = Vector2(1296, 136)
 item_data = ExtResource("10_jj5mx")
 
-[node name="Room3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
+[node name="HallRoom4" parent="LevelManager" unique_id=1732907218 instance=ExtResource("9_pxeom")]
+visible = false
 map_position = Vector2i(0, 2)
+
+[node name="RoomLabel" type="Label" parent="LevelManager/HallRoom4" unique_id=768567471]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 789.0
+offset_top = 524.0
+offset_right = 1132.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przejściowy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp4" parent="LevelManager/HallRoom4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../LootRoom2/DoorDown2")
+
+[node name="DoorRight4" parent="LevelManager/HallRoom4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../SecretRoom5/DoorLeft5")
+
+[node name="DoorDown4" parent="LevelManager/HallRoom4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../EnemyRoom3/DoorUp3")
+
+[node name="SecretRoom5" parent="LevelManager" unique_id=1848038951 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(1, 2)
+is_secret = true
+floor_alt_id = 0
+
+[node name="RoomLabel" type="Label" parent="LevelManager/SecretRoom5" unique_id=392174043]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 816.0
+offset_top = 524.0
+offset_right = 1105.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Sekretny pokój"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorLeft5" parent="LevelManager/SecretRoom5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../HallRoom4/DoorRight4")
+
+[node name="ItemPickup" parent="LevelManager/SecretRoom5" unique_id=313552387 instance=ExtResource("5_b0vj2")]
+position = Vector2(965, 459)
+item_data = ExtResource("6_1f4iy")
+
+[node name="EnemyRoom3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 3)
 wall_alt_id = 0
 
-[node name="DoorUp3" parent="LevelManager/Room3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../Room2/DoorDown2")
+[node name="RoomLabel" type="Label" parent="LevelManager/EnemyRoom3" unique_id=1729822279]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 786.0
+offset_top = 524.0
+offset_right = 1135.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przeciwnika"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Spider" type="CharacterBody2D" parent="LevelManager/Room3" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+[node name="DoorUp3" parent="LevelManager/EnemyRoom3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../HallRoom4/DoorDown4")
+
+[node name="Spider" type="CharacterBody2D" parent="LevelManager/EnemyRoom3" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
@@ -170,24 +273,24 @@ health_points_bar = NodePath("HealthProgressBar")
 health_points_label = NodePath("HealthProgressBar/Label2")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="EffectsCollector" type="Node" parent="LevelManager/Room3/Spider" unique_id=378154211]
+[node name="EffectsCollector" type="Node" parent="LevelManager/EnemyRoom3/Spider" unique_id=378154211]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/Room3/Spider" unique_id=1269572810]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=1269572810]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/Room3/Spider" unique_id=1068071084]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=1068071084]
 shape = SubResource("RectangleShape2D_8f2pv")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/Room3/Spider" unique_id=70196550]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=70196550]
 texture_filter = 5
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_yuthg")
 
-[node name="LineOfSight" type="RayCast2D" parent="LevelManager/Room3/Spider" unique_id=751573452]
+[node name="LineOfSight" type="RayCast2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=751573452]
 collision_mask = 3
 
-[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/Room3/Spider" unique_id=734905429]
+[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/EnemyRoom3/Spider" unique_id=734905429]
 texture_filter = 5
 offset_left = -32.0
 offset_top = -48.0
@@ -199,7 +302,7 @@ theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("23_totju")
 
-[node name="Label2" type="Label" parent="LevelManager/Room3/Spider/HealthProgressBar" unique_id=2016708381]
+[node name="Label2" type="Label" parent="LevelManager/EnemyRoom3/Spider/HealthProgressBar" unique_id=2016708381]
 texture_filter = 5
 layout_mode = 0
 offset_right = 64.0
@@ -210,7 +313,7 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractableComponent" parent="LevelManager/Room3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="LevelManager/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
