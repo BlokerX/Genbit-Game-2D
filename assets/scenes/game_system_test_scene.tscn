@@ -32,6 +32,7 @@
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="26_d8aow"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
+[ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
 size = Vector2(64.5, 64)
@@ -91,30 +92,10 @@ starting_room = NodePath("Room")
 
 [node name="Room" parent="LevelManager" unique_id=1187411125 instance=ExtResource("9_pxeom")]
 
-[node name="Door" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+[node name="DoorDown1" parent="LevelManager/Room" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
 position = Vector2(960, 1056)
 rotation = 3.1415927
-destination_door = NodePath("../../Room2/Door2")
-
-[node name="ItemPickup" parent="LevelManager/Room" unique_id=889212379 instance=ExtResource("5_b0vj2")]
-position = Vector2(232, 256)
-item_data = ExtResource("6_1f4iy")
-
-[node name="ItemPickup2" parent="LevelManager/Room" unique_id=46937566 instance=ExtResource("5_b0vj2")]
-position = Vector2(256, 840)
-item_data = ExtResource("7_6s3yp")
-
-[node name="ItemPickup3" parent="LevelManager/Room" unique_id=1301421364 instance=ExtResource("5_b0vj2")]
-position = Vector2(1560, 256)
-item_data = ExtResource("8_r7ala")
-
-[node name="ItemPickup4" parent="LevelManager/Room" unique_id=1969013928 instance=ExtResource("5_b0vj2")]
-position = Vector2(1608, 731)
-item_data = ExtResource("9_pgj7d")
-
-[node name="ItemPickup5" parent="LevelManager/Room" unique_id=404467611 instance=ExtResource("5_b0vj2")]
-position = Vector2(952, 224)
-item_data = ExtResource("10_jj5mx")
+destination_door = NodePath("../../Room2/DoorUp2")
 
 [node name="StartRoomLabel" type="Label" parent="LevelManager/Room" unique_id=1778539474]
 texture_filter = 5
@@ -135,18 +116,25 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Room2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
+map_position = Vector2i(0, 1)
 floor_alt_id = 0
 wall_alt_id = 0
 
-[node name="Door2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+[node name="DoorUp2" parent="LevelManager/Room2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
 position = Vector2(960, 32)
-destination_door = NodePath("../../Room/Door")
+destination_door = NodePath("../../Room/DoorDown1")
+
+[node name="DoorDown2" parent="LevelManager/Room2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = 3.1415927
+destination_door = NodePath("../../Room3/DoorUp3")
 
 [node name="Spider" type="CharacterBody2D" parent="LevelManager/Room2" unique_id=563277704 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
 script = ExtResource("17_1f4iy")
+respawnVector = Vector2(968, 928)
 movement_universal_script = ExtResource("15_b10mb")
 health_stats_script = ExtResource("24_8h40k")
 interaction_and_attack_stats_script = ExtResource("25_28mns")
@@ -197,6 +185,33 @@ vertical_alignment = 1
 [node name="InteractableComponent" parent="LevelManager/Room2/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
+
+[node name="Room3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
+map_position = Vector2i(0, 2)
+
+[node name="DoorUp3" parent="LevelManager/Room3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room2/DoorDown2")
+
+[node name="ItemPickup" parent="LevelManager/Room3" unique_id=313552387 instance=ExtResource("5_b0vj2")]
+position = Vector2(232, 256)
+item_data = ExtResource("6_1f4iy")
+
+[node name="ItemPickup2" parent="LevelManager/Room3" unique_id=418610573 instance=ExtResource("5_b0vj2")]
+position = Vector2(256, 840)
+item_data = ExtResource("7_6s3yp")
+
+[node name="ItemPickup3" parent="LevelManager/Room3" unique_id=878630740 instance=ExtResource("5_b0vj2")]
+position = Vector2(1560, 256)
+item_data = ExtResource("8_r7ala")
+
+[node name="ItemPickup4" parent="LevelManager/Room3" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("9_pgj7d")
+
+[node name="ItemPickup5" parent="LevelManager/Room3" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
+position = Vector2(952, 224)
+item_data = ExtResource("10_jj5mx")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
@@ -338,10 +353,10 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 
 [node name="InventorySlotHandle" type="HBoxContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=682378422]
-offset_left = 696.0
-offset_top = 1029.0
-offset_right = 872.0
-offset_bottom = 1045.0
+offset_left = 8.0
+offset_top = 1032.0
+offset_right = 184.0
+offset_bottom = 1048.0
 scale = Vector2(3, 3)
 
 [node name="Slot1" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=221569347]
@@ -685,3 +700,15 @@ theme_override_font_sizes/font_size = 5
 text = "99"
 horizontal_alignment = 2
 vertical_alignment = 2
+
+[node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -224.0
+offset_top = 920.0
+offset_bottom = 1080.0
+grow_horizontal = 0
+script = ExtResource("33_r7ala")
+level_manager = NodePath("../../LevelManager")

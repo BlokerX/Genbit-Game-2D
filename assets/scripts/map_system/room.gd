@@ -2,6 +2,12 @@
 extends Node2D
 class_name Room
 
+@export_group("Mapa")
+## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
+@export var map_position : Vector2i = Vector2i.ZERO
+## Jeśli prawda, pokój pojawi się na mapie dopiero po wejściu do niego
+@export var is_secret : bool = false
+
 @export_group("Wymiary Pokoju")
 @export var room_size_tiles : Vector2i = Vector2i(30, 17):
 	set(value):
