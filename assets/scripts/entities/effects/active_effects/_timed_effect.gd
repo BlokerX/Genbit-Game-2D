@@ -36,11 +36,11 @@ func apply_effect(target : Node2D) -> bool:
 
 # Metody do nadpisania w konkretnych efektach czasowych:
 
-func on_effect_start(_target : CharacterBody2D) -> void:
+func on_effect_start(_target : Node2D) -> void:
 	pass # Co ma się stać na samym początku?
 
-func on_effect_tick(_target : CharacterBody2D) -> void:
+func on_effect_tick(_target : Node2D) -> void:
 	pass # Co ma się stać co każdy tick_interval?
 
-func on_effect_end(_target : CharacterBody2D) -> void:
+func on_effect_end(_target : Node2D) -> void:
 	pass # Co ma się stać po upływie czasu?

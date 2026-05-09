@@ -10,7 +10,7 @@ func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
 	tick_interval = 0.0 # 0, ponieważ nie potrzebujemy "tików", działa to jako twardy stan
 	effect_name = "Freeze"
 
-func on_effect_start(target : CharacterBody2D) -> void:
+func on_effect_start(target : Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")
 	
 	# Odcinamy logikę i input
@@ -31,7 +31,7 @@ func on_effect_start(target : CharacterBody2D) -> void:
 			target.set_meta("original_modulate", sprite.modulate)
 			sprite.modulate = Color(0.337, 0.341, 1.0, 0.502) # Lodowy niebieski
 
-func on_effect_end(target : CharacterBody2D) -> void:
+func on_effect_end(target : Node2D) -> void:
 	print("Odmrażam obiekt: ", target.name)
 	
 	# Przywracamy wejścia i logikę
@@ -53,7 +53,7 @@ func on_effect_end(target : CharacterBody2D) -> void:
 		target.remove_meta("original_modulate")
 
 # Funkcja pomocnicza do znajdowania obrazka ofiary
-func _get_sprite_from_target(target: CharacterBody2D) -> Node:
+func _get_sprite_from_target(target: Node2D) -> Node:
 	if "character_sprite" in target and target.character_sprite != null:
 		return target.character_sprite
 	elif target.has_node("Sprite2D"):

@@ -413,6 +413,7 @@ func perform_attack() -> void:
 						
 						# Tworzymy pocisk
 						var new_projectile = projectile_scene.instantiate()
+						new_projectile.shooter = self
 						new_projectile.global_position = global_position
 						
 						# Kierunek strzału (w stronę celu lub punktu celownika)

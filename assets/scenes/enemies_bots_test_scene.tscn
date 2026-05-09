@@ -26,7 +26,7 @@
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_abcm4"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_6tbl5"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="26_7mlfs"]
-[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="27_uut35"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="27_uut35"]
 [ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="28_xn1bq"]
 [ext_resource type="Resource" uid="uid://d0ydkc7jh7dbj" path="res://assets/scripts/entities/movement/special_instations/old_enemy_movement_component.tres" id="29_fow65"]
 [ext_resource type="Resource" uid="uid://bx1joc3yy00eq" path="res://assets/scripts/entities/stats/special_instations/old_enemy_monitored_life_stats_component.tres" id="30_88oph"]

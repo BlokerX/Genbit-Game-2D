@@ -8,7 +8,7 @@
 
 [sub_resource type="Resource" id="Resource_14dwk"]
 script = ExtResource("1_myym0")
-damage = 25
+damage = 2
 max_range = 1000.0
 stun_time = 0.15
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"

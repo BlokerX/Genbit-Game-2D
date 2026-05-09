@@ -3,7 +3,7 @@ class_name ActiveEffect
 
 signal effect_ended(effect_resource) # Sygnał zakończenia
 
-var target : CharacterBody2D
+var target : Node2D
 var tick_interval : float
 var duration : float
 var effect_resource : Resource # Przechowuje referencję do zasobu, który go stworzył
@@ -11,7 +11,7 @@ var effect_resource : Resource # Przechowuje referencję do zasobu, który go st
 var _tick_timer : float = 0.0
 
 # Inicjalizacja węzła
-func setup(_target: CharacterBody2D, _effect: Resource, _duration: float, _tick_interval: float) -> void:
+func setup(_target: Node2D, _effect: Resource, _duration: float, _tick_interval: float) -> void:
 	target = _target
 	effect_resource = _effect
 	duration = _duration

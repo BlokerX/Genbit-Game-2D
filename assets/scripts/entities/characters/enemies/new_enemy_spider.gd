@@ -33,9 +33,6 @@ var state: State = State.IDLE
 #endregion
 
 func _ready():
-	health_stats_script.health = 50
-	health_stats_script.max_health = 50
-	
 	interaction_and_attack_stats_script.hand_attack_data.damage = 10
 	interaction_and_attack_stats_script.hand_attack_cooldown = 2.0
 	

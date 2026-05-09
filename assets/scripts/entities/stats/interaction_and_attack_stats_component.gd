@@ -4,6 +4,9 @@ class_name InteractionAndAttackStatsComponent
 
 #region Cooldown timer
 
+signal cooldown_started
+signal cooldown_ready
+
 # Zmienna przechowująca czas, jeśli jest równy max to można wykonać atak.
 var cooldown_timer : float = 1.0
 # Zmienna przechowująca aktualny limit cooldowna (zależne od itemu/ręki...) 
@@ -135,9 +138,18 @@ func get_all_attack_effects() -> Array[Effect]:
 	return all_effects
 
 func interaction_cooldown_process(delta : float) -> void :
-	if cooldown_timer < get_total_actual_cooldown():
+	var max_cooldown = get_total_actual_cooldown()
+	
+	# Jeśli timer jest mniejszy niż max, to znaczy, że odnawiamy atak
+	if cooldown_timer < max_cooldown:
 		cooldown_timer += delta
+		
+		# Jeśli po dodaniu czasu z tej klatki właśnie osiągnęliśmy lub przekroczyliśmy max...
+		if cooldown_timer >= max_cooldown:
+			cooldown_timer = max_cooldown # Wyrównujemy do równego maksimum
+			cooldown_ready.emit() # ...wysyłamy sygnał gotowości TYLKO RAZ!
 
 ## Ustawia cooldown timer aby odliczał od początku.
 func reset_cooldown() -> void:
 	cooldown_timer = 0.0
+	cooldown_started.emit()

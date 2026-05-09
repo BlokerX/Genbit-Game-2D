@@ -30,6 +30,10 @@ func _ready() -> void:
 	
 	set_collision_mask_value(1, false)
 	await get_tree().create_timer(0.5).timeout
+	
+	if not is_instance_valid(self) or is_queued_for_deletion():
+		return # Obiekt nie istnieje, przerywamy kod!
+		
 	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
@@ -54,8 +58,16 @@ func _on_untargeted() -> void:
 func _on_area_entered(area: Area2D) -> void:
 	var other_pickup = area.get_parent()
 	if other_pickup is ItemPickup and other_pickup != self:
+		
+		# --- ROZWIĄZANIE RACE CONDITION ---
+		# Sprawdzamy ID. Tylko obiekt z WIĘKSZYM ID zajmie się fuzją. 
+		# Drugi obiekt (ten z mniejszym) natychmiast przerwie funkcję.
+		if get_instance_id() < other_pickup.get_instance_id():
+			return
+		
 		if self.is_queued_for_deletion() or other_pickup.is_queued_for_deletion():
 			return
+			
 		var other_item = other_pickup.item_data
 		if item_data.item_id == other_item.item_id and item_data.item_is_stackable:
 			var available_space = item_data.item_max_stack_count - item_data.item_stack_count
