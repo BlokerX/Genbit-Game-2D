@@ -10,13 +10,10 @@ signal interacted(interactor: Node)
 # Możesz tu dodać np. Sprite "celownika", który jest domyślnie ukryty
 @onready var highlight_sprite: Sprite2D = $HighlightSprite 
 
-@export var outline_material: ShaderMaterial # Tutaj wrzucimy nasz materiał!
+@export var outline_material: ShaderMaterial
 
-
-# --- NOWE ZMIENNE EXPORT ---
 @export var target_sprite: Node2D
 @export var target_collision: CollisionShape2D
-
 
 # Zmienna przechowująca grafikę obiektu
 var parent_sprite: Node2D
@@ -30,7 +27,7 @@ func _ready():
 	if target_sprite != null:
 		parent_sprite = target_sprite
 	else:
-		print("Uwaga: InteractableComponent nie ma przypisanego target_sprite!")
+		push_warning("Uwaga: InteractableComponent nie ma przypisanego target_sprite! Węzeł: ", name)
 		
 	# 2. KOPIOWANIE KOLIZJI
 	# Jeśli ustawiłeś CollisionShape2D w Inspektorze, kopiujemy jego kształt do nas
@@ -42,7 +39,7 @@ func _ready():
 		# Dodajemy jako dziecko tego InteractableComponent
 		call_deferred("add_child", my_own_collider)
 	else:
-		print("Uwaga: InteractableComponent nie ma przypisanego target_collision!")
+		push_warning("Uwaga: InteractableComponent nie ma przypisanego target_collision! Węzeł: ", name)
 
 # --- UNIWERSALNE FUNKCJE ZAZNACZANIA (Wywoływane TYLKO przez RayCast Gracza) ---
 func target():
@@ -53,8 +50,6 @@ func target():
 		# Prosty efekt wizualny - pokazujemy celownik (lub zmieniamy kolor)
 		if highlight_sprite:
 			highlight_sprite.show()
-		else:
-			get_parent().modulate = Color(1.5, 1.5, 1.5) # Podświetlenie rodzica
 		
 		# WŁĄCZANIE ZAZNACZENIA WIZUALNEGO
 		if parent_sprite != null and outline_material != null:
@@ -68,8 +63,6 @@ func untarget():
 		# Ukrywamy celownik / resetujemy kolor
 		if highlight_sprite:
 			highlight_sprite.hide()
-		else:
-			get_parent().modulate = Color(1.0, 1.0, 1.0)
 		
 		# WYŁĄCZANIE ZAZNACZENIA WIZUALNEGO
 		if parent_sprite != null:

@@ -13,11 +13,9 @@
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="6_1f4iy"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
-[ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="7_6s3yp"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
-[ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_r7ala"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="9_pgj7d"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="9_pxeom"]
@@ -33,6 +31,7 @@
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="26_d8aow"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="29_pgj7d"]
+[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="32_r7ala"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
@@ -314,6 +313,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="InteractableComponent" parent="LevelManager/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+outline_material = null
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
@@ -463,347 +463,32 @@ offset_right = 184.0
 offset_bottom = 1048.0
 scale = Vector2(3, 3)
 
-[node name="Slot1" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=221569347]
+[node name="Slot" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1315751759 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=293381994]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=291313283]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 6
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot2" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1234115465]
+[node name="Slot2" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=401580884 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1938205275]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1730944292]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot3" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1486498046]
+[node name="Slot3" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2124368672 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=482603211]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=1065583254]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot4" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2078215487]
+[node name="Slot4" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=756972471 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=129400958]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=58705887]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot5" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1206195716]
+[node name="Slot5" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1953207854 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=563496007]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=1448353814]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot6" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1296410582]
+[node name="Slot6" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1471169057 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=363151212]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=1015161894]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot7" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=814444252]
+[node name="Slot7" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1237336103 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=1865407126]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=673553010]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot8" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1524980149]
+[node name="Slot8" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1230213238 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1953929599]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1951674249]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot9" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1335478352]
+[node name="Slot9" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1394381743 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1409919084]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1948234269]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
 
 [node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
 layout_mode = 3

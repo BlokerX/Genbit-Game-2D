@@ -1,6 +1,9 @@
 extends Node
 class_name LevelManager
 
+# --- STAŁE (Wyeliminowanie magicznych stringów) ---
+const PLAYER_GROUP = "Player"
+
 signal room_changed(new_room: Room)
 signal map_updated() # Nowy uniwersalny sygnał zmiany na mapie
 
@@ -40,7 +43,7 @@ func unregister_room(room: Room) -> void:
 	if discovered_rooms.has(room):
 		discovered_rooms.erase(room)
 		
-	# --- POPRAWKA: Usunięcie z listy odwiedzonych przy kasowaniu pokoju ---
+	# Usunięcie z listy odwiedzonych przy kasowaniu pokoju
 	if visited_rooms.has(room):
 		visited_rooms.erase(room)
 		
@@ -76,14 +79,16 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	# Zaznaczamy pokój jako odkryty (to odświeży mapę)
 	discover_room(current_room)
 	
-	# Dodajemy pokój do listy ODWWIEDZONYCH
+	# Dodajemy pokój do listy ODWIEDZONYCH
 	if not visited_rooms.has(current_room):
 		visited_rooms.append(current_room)
 	
 	room_changed.emit(current_room)
 	
-	var player = get_tree().get_first_node_in_group("Player")
+	var player = get_tree().get_first_node_in_group(PLAYER_GROUP)
 	if player:
+		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
+			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
 		if target_door and target_door.spawn_point:
 			player.global_position = target_door.spawn_point.global_position
 		elif current_room.spawn_points.size() > 0:
@@ -113,3 +118,14 @@ func _on_door_entered(door: Door) -> void:
 			push_warning("LevelManager: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
 	else:
 		push_warning("LevelManager: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
+
+# --- OBSŁUGA SPAWNOWANIA (Z SYGNAŁU GRACZA) ---
+func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
+	if current_room:
+		current_room.add_child(spawned_node)
+	else:
+		# Awaryjne dodanie bezpośrednio do sceny, jeśli nie ma aktywnego pokoju
+		get_tree().current_scene.add_child(spawned_node)
+		
+	# Pozycję ustalamy ZAWSZE po dodaniu obiektu do drzewa!
+	spawned_node.global_position = spawn_pos

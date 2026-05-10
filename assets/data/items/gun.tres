@@ -23,7 +23,6 @@ attack_data = SubResource("Resource_14dwk")
 is_ranged = true
 weapon_type = "Gun"
 effects = Array[ExtResource("2_qf0ew")]([SubResource("Resource_d4pv6")])
-use_cooldown = 2.2
 item_id = 10
 item_name = "Gun"
 item_type = "Weapon"

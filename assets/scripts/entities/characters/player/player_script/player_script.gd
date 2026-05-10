@@ -2,6 +2,36 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
+#region Zmienne i Stałe Globalne
+
+# --- STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów) ---
+const INPUT_LEFT = "Left"
+const INPUT_RIGHT = "Right"
+const INPUT_UP = "Up"
+const INPUT_DOWN = "Down"
+
+const INPUT_AIM_LEFT = "AimLeft"
+const INPUT_AIM_RIGHT = "AimRight"
+const INPUT_AIM_UP = "AimUp"
+const INPUT_AIM_DOWN = "AimDown"
+
+const INPUT_DROP_ITEM = "DropItem"
+const INPUT_ATTACK = "Attack"
+const INPUT_USE_ITEM = "UseItemButton"
+const INPUT_INTERACT = "Interact"
+const INPUT_RESPAWN = "RespawnButton"
+const INPUT_TOGGLE_ENEMY_PRIO = "ToggleEnemyPriority"
+
+const INPUT_INV_SLOT_PREFIX = "InventorySlot"
+const INPUT_INV_SCROLL_UP = "InventoryScrollUp"
+const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
+# ----------------------------------------------------------
+
+## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
+signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
+
+#endregion
+
 #region Podłączone komponenty indywidualne dla gracza
 
 ## Komponent ekwipunku gracza
@@ -53,26 +83,26 @@ var is_holding_attack: bool = false
 func _ready():
 	
 	# Inicjalizacja MovementComponent
-	movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
+	#movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
 	# Domyślne parametry:
 	# moveSpeed = 450
 	# accelerationMultiplayer = 5.0
 	# decelerationMultiplayer = 0.825
 	
 	# Inicjalizacja MonitoredStatsComponent
-	health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
+	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
 	
 	# Inicjalizacja InteractionAndAttackStatsComponent
-	interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
 	
 	# Health points bar initialization
 	super()
 	
 	#region Linkowanie zdarzeń
-	inventory.inventory_updated.connect(on_inventory_update)
-	on_inventory_update()
-
-	inventory.item_dropped.connect(_on_inventory_item_dropped)
+	if inventory:
+		inventory.inventory_updated.connect(on_inventory_update)
+		on_inventory_update()
+		inventory.item_dropped.connect(_on_inventory_item_dropped)
 	#endregion
 
 func _process(delta):
@@ -85,8 +115,8 @@ func _physics_process(delta):
 	#region Move Procedure
 	
 	# Movement inputs
-	var horizontal := Input.get_axis("Left", "Right")
-	var vertical := Input.get_axis("Up","Down")
+	var horizontal := Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
+	var vertical := Input.get_axis(INPUT_UP, INPUT_DOWN)
 	
 	# Movement procedure
 	velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
@@ -131,13 +161,13 @@ func _handle_pushing() -> void:
 			collider.apply_central_impulse(-collision.get_normal() * push_force)
 
 func _handle_dropping(delta: float) -> void:
-	if Input.is_action_pressed("DropItem"):
+	if Input.is_action_pressed(INPUT_DROP_ITEM):
 		drop_hold_time += delta
 		if drop_hold_time >= time_required_for_full_stack:
 			inventory.drop_current_item(true)
 			drop_hold_time = 0.0
 	
-	if Input.is_action_just_released("DropItem"):
+	if Input.is_action_just_released(INPUT_DROP_ITEM):
 		if drop_hold_time > 0.0 and drop_hold_time < time_required_for_full_stack:
 			inventory.drop_current_item(false)
 		drop_hold_time = 0.0
@@ -155,7 +185,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventJoypadButton:
 		is_using_mouse = false
 	elif event is InputEventKey and event.is_pressed():
-		if event.is_action("AimLeft") or event.is_action("AimRight") or event.is_action("AimUp") or event.is_action("AimDown"):
+		if event.is_action(INPUT_AIM_LEFT) or event.is_action(INPUT_AIM_RIGHT) or event.is_action(INPUT_AIM_UP) or event.is_action(INPUT_AIM_DOWN):
 			is_using_mouse = false
 	
 	#endregion
@@ -163,7 +193,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	#region Ustawienia celownika
 	
 	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
-	if event.is_action_pressed("ToggleEnemyPriority"):
+	if event.is_action_pressed(INPUT_TOGGLE_ENEMY_PRIO):
 		aim_controller.auto_enemy_selector = !aim_controller.auto_enemy_selector
 		aim_controller.auto_lock_closest_enemy = !aim_controller.auto_lock_closest_enemy
 		
@@ -181,13 +211,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	#region Obsługa interakcji i wydarzeń
 	
 	# Akcja ataku (Pamiętamy, czy wciśnięto przycisk)
-	if event.is_action_pressed("Attack"):
+	if event.is_action_pressed(INPUT_ATTACK):
 		is_holding_attack = true
-	elif event.is_action_released("Attack"):
+	elif event.is_action_released(INPUT_ATTACK):
 		is_holding_attack = false
 		
 	# Użycie przedmiotu (Tylko Leczenie/Konsumpcja)
-	if event.is_action_pressed("UseItemButton") and interaction_and_attack_stats_script.can_attack():
+	if event.is_action_pressed(INPUT_USE_ITEM) and interaction_and_attack_stats_script.can_attack():
 		var _item = inventory.get_current_item()
 		if _item is HealingItem:
 			if _item.affect_target(self):
@@ -195,12 +225,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				interaction_and_attack_stats_script.reset_cooldown()
 
 	# Interakcja
-	if event.is_action_pressed("Interact"):
+	if event.is_action_pressed(INPUT_INTERACT):
 		if aim_controller.current_target != null:
 			aim_controller.current_target.interact(self)
 	
 	# Respawn
-	if event.is_action_pressed("RespawnButton"):
+	if event.is_action_pressed(INPUT_RESPAWN):
 		respawn()
 		print("Gracz się odrodził!")
 	
@@ -208,29 +238,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	#region Sterowanie ekwipunkiem
 	
-	# STEROWANIE EKWIPUNKIEM (Zainicjowane przez gracza)
-	if event.is_action_pressed("InventorySlot1"):
-		inventory.select_item(0)
-	elif event.is_action_pressed("InventorySlot2"):
-		inventory.select_item(1)
-	elif event.is_action_pressed("InventorySlot3"):
-		inventory.select_item(2)
-	elif event.is_action_pressed("InventorySlot4"):
-		inventory.select_item(3)
-	elif event.is_action_pressed("InventorySlot5"):
-		inventory.select_item(4)
-	elif event.is_action_pressed("InventorySlot6"):
-		inventory.select_item(5)
-	elif event.is_action_pressed("InventorySlot7"):
-		inventory.select_item(6)
-	elif event.is_action_pressed("InventorySlot8"):
-		inventory.select_item(7)
-	elif event.is_action_pressed("InventorySlot9"):
-		inventory.select_item(8)
+	# Sterowanie ekwipunkiem
+	for i in range(1, 10):
+		if event.is_action_pressed(INPUT_INV_SLOT_PREFIX + str(i)):
+			inventory.select_item(i - 1)
 		
-	elif event.is_action_pressed("InventoryScrollDown"):
+	if event.is_action_pressed(INPUT_INV_SCROLL_DOWN):
 		inventory.scroll_inventory(1)
-	elif event.is_action_pressed("InventoryScrollUp"):
+	elif event.is_action_pressed(INPUT_INV_SCROLL_UP):
 		inventory.scroll_inventory(-1)
 		
 	#endregion
@@ -316,17 +331,7 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 	var drop = item_pickup_scene.instantiate()
 	drop.item_data = dropped_item_data
 	
-	# --- Fizyczne wyrzucenie przedmiotu do aktualnego pokoju ---
-	var level_manager = get_tree().get_first_node_in_group("LevelManager")
-	
-	if level_manager and level_manager.current_room:
-		level_manager.current_room.add_child(drop)
-	else:
-		# Fallback - w razie testowania sceny bez menedżera
-		get_tree().current_scene.add_child(drop)
-		
-	# Ustawiamy punkt startowy na środek gracza (musi być PO dodaniu do drzewa)
-	drop.global_position = global_position
+	entity_spawn_requested.emit(drop, global_position)
 	
 	var drop_direction = Vector2.ZERO
 	var drop_force = 0.0
@@ -421,12 +426,8 @@ func perform_attack() -> void:
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
 						
-						# --- Przypisanie pocisku do aktualnego pokoju ---
-						var level_manager = get_tree().get_first_node_in_group("LevelManager")
-						if level_manager and level_manager.current_room:
-							level_manager.current_room.add_child(new_projectile)
-						else:
-							get_parent().add_child(new_projectile)
+						# EMISJA SYGNAŁU ZAMIAST LEVEL_MANAGERA
+						entity_spawn_requested.emit(new_projectile, global_position)
 					else:
 						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
