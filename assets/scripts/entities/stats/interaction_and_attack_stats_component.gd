@@ -49,16 +49,25 @@ var actual_cooldown : float = 1.0
 #region Stats
 
 ## Ręka - domyślne ustawienia.
-@export var hand_attack_data : AttackData = AttackData.new(10, 0, 0.0, 100.0, 0.25)
+@export var hand_attack_data : AttackData = null
 @export var hand_attack_cooldown : float = 1.0
 
 ## Aktualne dane ataku.
-var actual_attack_data : AttackData = hand_attack_data
+var actual_attack_data : AttackData = null
 
 ## Dodatkowe efekty (jeśli jest).
 var actual_extra_effects : Array[Effect] = []
 
 #endregion
+
+func _init() -> void:
+	# Jeśli Inspektor załadował pustą wartość, wymuszamy nasze domyślne dane:
+	if hand_attack_data == null:
+		hand_attack_data = AttackData.new(10, 0, 0.0, 100.0, 0.25)
+		
+	# Zabezpieczamy również zmienną actual_attack_data na starcie
+	if actual_attack_data == null:
+		actual_attack_data = hand_attack_data
 
 func get_total_damage() -> int:
 	return int( ( actual_attack_data.damage + damage_adder ) * damage_multiplier )
