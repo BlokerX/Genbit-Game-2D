@@ -34,6 +34,9 @@
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="32_r7ala"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
 size = Vector2(64.5, 64)
 
@@ -73,9 +76,6 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
-
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
 colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
@@ -114,6 +114,58 @@ vertical_alignment = 1
 position = Vector2(960, 1056)
 rotation = 3.1415927
 destination_door = NodePath("../../LootRoom2/DoorUp2")
+
+[node name="Player" type="CharacterBody2D" parent="LevelManager/StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+unique_name_in_owner = true
+texture_filter = 5
+position = Vector2(960, 540)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("3_vlfoo")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("11_vbl37")
+respawnVector = Vector2(960, 540)
+movement_universal_script = ExtResource("4_5dhej")
+health_stats_script = ExtResource("5_mjw3m")
+interaction_and_attack_stats_script = ExtResource("13_1f4iy")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="AimController" type="Node2D" parent="LevelManager/StartRoom/Player" unique_id=756643253]
+script = ExtResource("15_pxeom")
+
+[node name="AimScanner" type="RayCast2D" parent="LevelManager/StartRoom/Player/AimController" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="Inventory" type="Node" parent="LevelManager/StartRoom/Player" unique_id=2070691423]
+script = ExtResource("4_w0vak")
+items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="LevelManager/StartRoom/Player" unique_id=1333448843]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/StartRoom/Player" unique_id=619512797]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="CharacterSprite" type="Sprite2D" parent="LevelManager/StartRoom/Player" unique_id=1849338578]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.100002, 1.38283e-05)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("1_5oxlb")
+flip_h = true
+
+[node name="HeldItemHandler" type="Node2D" parent="LevelManager/StartRoom/Player" unique_id=1042135675]
+position = Vector2(24, 43.00003)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="LevelManager/StartRoom/Player/HeldItemHandler" unique_id=971580810]
+texture_filter = 5
+
+[node name="InteractableComponent" parent="LevelManager/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
 
 [node name="LootRoom2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
 visible = false
@@ -317,58 +369,6 @@ outline_material = null
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
-[node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
-unique_name_in_owner = true
-texture_filter = 5
-position = Vector2(960, 540)
-collision_layer = 2
-collision_mask = 7
-script = ExtResource("3_vlfoo")
-inventory = NodePath("Inventory")
-projectile_scene = ExtResource("11_vbl37")
-respawnVector = Vector2(960, 540)
-movement_universal_script = ExtResource("4_5dhej")
-health_stats_script = ExtResource("5_mjw3m")
-interaction_and_attack_stats_script = ExtResource("13_1f4iy")
-character_sprite = NodePath("CharacterSprite")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="AimController" type="Node2D" parent="Player" unique_id=756643253]
-script = ExtResource("15_pxeom")
-
-[node name="AimScanner" type="RayCast2D" parent="Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
-
-[node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
-script = ExtResource("4_w0vak")
-items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
-
-[node name="EffectsCollector" type="Node" parent="Player" unique_id=1333448843]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=619512797]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
-
-[node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=1849338578]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(-0.100002, 1.38283e-05)
-scale = Vector2(0.391406, 0.392)
-texture = ExtResource("1_5oxlb")
-flip_h = true
-
-[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=1042135675]
-position = Vector2(24, 43.00003)
-scale = Vector2(2, 2)
-
-[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
-texture_filter = 5
-
-[node name="InteractableComponent" parent="Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
-
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 
 [node name="PlayerUIGroup" type="Node" parent="CanvasLayer" unique_id=748282068]
@@ -405,7 +405,7 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("3_mjw3m")
-player = NodePath("../../../Player")
+player = NodePath("../../../LevelManager/StartRoom/Player")
 cooldown_label = NodePath("CooldownLabel")
 
 [node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
@@ -438,7 +438,7 @@ expand_mode = 1
 
 [node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("6_r7ifn")
-player = NodePath("../../Player")
+player = NodePath("../../LevelManager/StartRoom/Player")
 info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
 
 [node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
