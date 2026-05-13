@@ -148,3 +148,11 @@ func _on_door_entered(door: Door) -> void:
 
 func get_player() -> PlayerCharacter :
 	return get_tree().get_first_node_in_group(PLAYER_GROUP)
+
+# Odpala się automatycznie, gdy węzeł jest na stałe usuwany z gry (np. przy zamykaniu okna)
+func _exit_tree() -> void:
+	for room in all_rooms:
+		# Jeśli pokój wciąż istnieje w pamięci, ale nie ma go na mapie (jest sierotą), 
+		# musimy go ręcznie zniszczyć, aby nie wyciekł:
+		if is_instance_valid(room) and not room.is_inside_tree():
+			room.queue_free()

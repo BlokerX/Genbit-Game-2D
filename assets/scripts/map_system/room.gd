@@ -93,14 +93,21 @@ func update_navigation_region() -> void:
 	if not navigation_region_2d or not tile_map or not tile_map.tile_set: return
 	var tile_size = tile_map.tile_set.tile_size
 	var nav_poly = NavigationPolygon.new()
-	var outline = PackedVector2Array([
+	
+	# Definiujemy wierzchołki naszego prostokątnego pokoju
+	var points = PackedVector2Array([
 		Vector2(0, 0),
 		Vector2(room_size_tiles.x * tile_size.x, 0),
 		Vector2(room_size_tiles.x * tile_size.x, room_size_tiles.y * tile_size.y),
 		Vector2(0, room_size_tiles.y * tile_size.y)
 	])
-	nav_poly.add_outline(outline)
-	nav_poly.make_polygons_from_outlines()
+	
+	# Zamiast przestarzałego 'outlines', przypisujemy wierzchołki bezpośrednio:
+	nav_poly.vertices = points
+	
+	# Tworzymy z nich jeden wielki poligon, łącząc wierzchołki (indeksy: 0, 1, 2, 3)
+	nav_poly.add_polygon(PackedInt32Array([0, 1, 2, 3]))
+	
 	navigation_region_2d.navigation_polygon = nav_poly
 
 func calculate_room_bounds() -> void:
