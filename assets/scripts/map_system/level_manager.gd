@@ -94,6 +94,11 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	
 	# 4. UMIESZCZAMY GRACZA W NOWYM POKOJU
 	if player:
+		# Ustawianie entity spawn signal
+		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
+			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
+		
+		# Ustawianie pozycji spawnpointem
 		if target_door and target_door.spawn_point:
 			player.global_position = target_door.spawn_point.global_position
 			
@@ -104,6 +109,17 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			
 		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
+
+# --- OBSŁUGA SPAWNOWANIA (Z SYGNAŁU GRACZA) ---
+func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
+	if current_room:
+		current_room.add_child(spawned_node)
+	else:
+		# Awaryjne dodanie bezpośrednio do sceny, jeśli nie ma aktywnego pokoju
+		get_tree().current_scene.add_child(spawned_node)
+		
+	# Pozycję ustalamy ZAWSZE po dodaniu obiektu do drzewa!
+	spawned_node.global_position = spawn_pos
 
 # --- Sygnały drzwi (podłączanie/odłączanie) ---
 func _connect_door_signals(room: Room) -> void:
