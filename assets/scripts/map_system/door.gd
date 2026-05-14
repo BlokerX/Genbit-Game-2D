@@ -46,7 +46,7 @@ func _start_opening() -> void:
 	await tween.finished
 	
 	# Zabezpieczenie: Sprawdzamy, czy po odczekaniu drzwi nadal są w aktywnym drzewie 
-	# (bo LevelManager mógł w międzyczasie usunąć pokój przez remove_child)
+	# (bo Map mógł w międzyczasie usunąć pokój przez remove_child)
 	if not is_inside_tree():
 		current_state = State.CLOSED
 		return
@@ -70,7 +70,7 @@ func _trigger_teleport() -> void:
 		push_error("BŁĄD KRYTYCZNY: Drzwi '%s' (Pokój: %s) nie mają przypisanego 'destination_door' w Inspektorze!" % [name, str(get_room().name) if get_room() else "Nieznany"])
 		return
 	
-	# Wywołujemy sygnał, który LevelManager już obsługuje
+	# Wywołujemy sygnał, który Map już obsługuje
 	player_entered_door.emit(self)
 
 func get_room() -> Room:

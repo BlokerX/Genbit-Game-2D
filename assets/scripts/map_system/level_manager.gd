@@ -1,32 +1,45 @@
 extends Node
-class_name LevelManager
+## Klasa poziomu, przechowywująca pokoje na poziomie
+class_name Map
 
 # --- STAŁE (Wyeliminowanie magicznych stringów) ---
+## Grupa gracza
 const PLAYER_GROUP = "Player"
 
+## Sygnał zmiany pokoju
 signal room_changed(new_room: Room)
-signal map_updated() # Nowy uniwersalny sygnał zmiany na mapie
+
+## Sygnał aktualizacji mapy (UI)
+signal map_updated()
 
 @export_group("Główne Obiekty")
+## Pokój startowy
 @export var starting_room: Room
 
+## Obecny pokój na scenie
 var current_room: Room
+## Wszystkie pokoje
 var all_rooms: Array[Room] = []
-var discovered_rooms: Array[Room] = [] # Pokoje widoczne na mapie
-var visited_rooms: Array[Room] = []    # Pokoje, w których gracz już był
+## Odkryte pokoje (widoczne na mapie)
+var discovered_rooms: Array[Room] = []
+## Pokoje odwiedzone
+var visited_rooms: Array[Room] = []
 
 func _ready() -> void:
+	# Rejestracja i ustawianie pokoi
 	for child in get_children():
 		if child is Room:
-			register_room(child) # Używamy nowej funkcji do rejestracji
+			register_room(child)
 			if child != starting_room :
-				remove_child(child) 
-			
+				remove_child(child)
+	
+	# Wejście do pokoju startowego
 	if starting_room:
 		change_room(starting_room)
 
 # --- FUNKCJE DYNAMIKI MAPY ---
 
+## Rejestracja pokoju, przypisuje go do list pokoi i aktualizuje mapę
 func register_room(room: Room) -> void:
 	if not all_rooms.has(room):
 		all_rooms.append(room)
@@ -50,11 +63,13 @@ func unregister_room(room: Room) -> void:
 		
 	map_updated.emit() # Informujemy UI o zmianie
 
+## Odwiedzenie pokoju (dodaje do listy odwiedzonych)
 func discover_room(room: Room) -> void:
 	if not discovered_rooms.has(room):
 		discovered_rooms.append(room)
 		map_updated.emit() # Odświeżamy mapę po odkryciu
 
+## Zwraca pokój w którym znajdują się drzwi
 func find_room_by_door(target_door: Door) -> Room:
 	for room in all_rooms:
 		# Sprawdzamy czy te konkretne drzwi należą do tego pokoju
@@ -63,6 +78,7 @@ func find_room_by_door(target_door: Door) -> Room:
 			return room
 	return null
 
+## Funkcja zmiany pokoju
 func change_room(new_room: Room, target_door: Door = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
@@ -110,7 +126,7 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
 
-# --- OBSŁUGA SPAWNOWANIA (Z SYGNAŁU GRACZA) ---
+## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
 	if current_room:
 		current_room.add_child(spawned_node)
@@ -121,18 +137,20 @@ func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> voi
 	# Pozycję ustalamy ZAWSZE po dodaniu obiektu do drzewa!
 	spawned_node.global_position = spawn_pos
 
-# --- Sygnały drzwi (podłączanie/odłączanie) ---
+## Podłączenie sygnału do drzwi
 func _connect_door_signals(room: Room) -> void:
 	# Room sam pobiera swoje drzwi w _ready lub auto_fetch
 	for door in room.doors:
 		if not door.player_entered_door.is_connected(_on_door_entered):
 			door.player_entered_door.connect(_on_door_entered)
 
+## Odłączenie sygnału od drzwi
 func _disconnect_door_signals(room: Room) -> void:
 	for door in room.doors:
 		if door.player_entered_door.is_connected(_on_door_entered):
 			door.player_entered_door.disconnect(_on_door_entered)
 
+## Obługa sygnału wejścia w drzwi
 func _on_door_entered(door: Door) -> void:
 	# Sprawdzamy, czy te drzwi w ogóle gdzieś prowadzą
 	if door.destination_door:
@@ -142,10 +160,11 @@ func _on_door_entered(door: Door) -> void:
 		if next_room:
 			call_deferred("change_room", next_room, door.destination_door)
 		else:
-			push_warning("LevelManager: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
+			push_warning("Map: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
 	else:
-		push_warning("LevelManager: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
+		push_warning("Map: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
 
+## Zwrócenie gracza ze sceny
 func get_player() -> PlayerCharacter :
 	return get_tree().get_first_node_in_group(PLAYER_GROUP)
 

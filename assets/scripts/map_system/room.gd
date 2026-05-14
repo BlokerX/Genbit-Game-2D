@@ -1,5 +1,6 @@
 @tool
 extends Node2D
+## Pokój
 class_name Room
 
 @export_group("Mapa")
@@ -52,13 +53,13 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		_auto_fetch_doors()
 
-# NOWA FUNKCJA: Główna funkcja wywoływana do zebrania drzwi
+## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
 	doors.clear() # Czyścimy listę dla pewności
 	_find_doors_recursive(self) # Zaczynamy szukać od samego pokoju (self)
 	print("Pokój " + name + " znalazł automatycznie " + str(doors.size()) + " drzwi.")
 
-# NOWA FUNKCJA: Rekurencyjne szukanie (znajdzie drzwi nawet jeśli są zgrupowane w innym Node2D)
+## Rekurencyjne szukanie (znajdzie drzwi nawet jeśli są zgrupowane w innym Node2D)
 func _find_doors_recursive(node: Node) -> void:
 	for child in node.get_children():
 		if child is Door:
@@ -70,6 +71,7 @@ func _find_doors_recursive(node: Node) -> void:
 		if child.get_child_count() > 0:
 			_find_doors_recursive(child)
 
+## Generowanie pokoju
 func generate_room() -> void:
 	if not tile_map: return
 	
@@ -89,6 +91,7 @@ func generate_room() -> void:
 	calculate_room_bounds()
 	update_navigation_region()
 
+## Akutalizacja regionu nawigacji
 func update_navigation_region() -> void:
 	if not navigation_region_2d or not tile_map or not tile_map.tile_set: return
 	var tile_size = tile_map.tile_set.tile_size
@@ -110,6 +113,7 @@ func update_navigation_region() -> void:
 	
 	navigation_region_2d.navigation_polygon = nav_poly
 
+## Wyliczanie granic pokoju
 func calculate_room_bounds() -> void:
 	if tile_map and tile_map.tile_set:
 		var tile_size = tile_map.tile_set.tile_size

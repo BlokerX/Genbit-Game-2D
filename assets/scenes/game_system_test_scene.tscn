@@ -34,6 +34,13 @@
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="32_r7ala"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
 
+[sub_resource type="Gradient" id="Gradient_mjw3m"]
+interpolation_mode = 1
+colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
+gradient = SubResource("Gradient_mjw3m")
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
@@ -76,299 +83,8 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="Gradient" id="Gradient_mjw3m"]
-interpolation_mode = 1
-colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
-gradient = SubResource("Gradient_mjw3m")
-
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
-
-[node name="LevelManager" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
-script = ExtResource("26_d8aow")
-starting_room = NodePath("StartRoom")
-
-[node name="StartRoom" parent="LevelManager" unique_id=1187411125 instance=ExtResource("9_pxeom")]
-
-[node name="RoomLabel" type="Label" parent="LevelManager/StartRoom" unique_id=1778539474]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 816.5
-offset_top = 524.0
-offset_right = 1104.5
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Pokój startowy"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DoorDown1" parent="LevelManager/StartRoom" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 1056)
-rotation = 3.1415927
-destination_door = NodePath("../../LootRoom2/DoorUp2")
-
-[node name="Player" type="CharacterBody2D" parent="LevelManager/StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
-unique_name_in_owner = true
-texture_filter = 5
-position = Vector2(960, 540)
-collision_layer = 2
-collision_mask = 7
-script = ExtResource("3_vlfoo")
-inventory = NodePath("Inventory")
-projectile_scene = ExtResource("11_vbl37")
-respawnVector = Vector2(960, 540)
-movement_universal_script = ExtResource("4_5dhej")
-health_stats_script = ExtResource("5_mjw3m")
-interaction_and_attack_stats_script = ExtResource("13_1f4iy")
-character_sprite = NodePath("CharacterSprite")
-effects_collector = NodePath("EffectsCollector")
-destroy_entity_after_die = false
-
-[node name="AimController" type="Node2D" parent="LevelManager/StartRoom/Player" unique_id=756643253]
-script = ExtResource("15_pxeom")
-
-[node name="AimScanner" type="RayCast2D" parent="LevelManager/StartRoom/Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
-
-[node name="Inventory" type="Node" parent="LevelManager/StartRoom/Player" unique_id=2070691423]
-script = ExtResource("4_w0vak")
-items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
-
-[node name="EffectsCollector" type="Node" parent="LevelManager/StartRoom/Player" unique_id=1333448843]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/StartRoom/Player" unique_id=619512797]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
-
-[node name="CharacterSprite" type="Sprite2D" parent="LevelManager/StartRoom/Player" unique_id=1849338578]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(-0.100002, 1.38283e-05)
-scale = Vector2(0.391406, 0.392)
-texture = ExtResource("1_5oxlb")
-flip_h = true
-
-[node name="HeldItemHandler" type="Node2D" parent="LevelManager/StartRoom/Player" unique_id=1042135675]
-position = Vector2(24, 43.00003)
-scale = Vector2(2, 2)
-
-[node name="HeldItemVisual" type="Sprite2D" parent="LevelManager/StartRoom/Player/HeldItemHandler" unique_id=971580810]
-texture_filter = 5
-
-[node name="InteractableComponent" parent="LevelManager/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
-
-[node name="LootRoom2" parent="LevelManager" unique_id=1124479501 instance=ExtResource("9_pxeom")]
-visible = false
-map_position = Vector2i(0, 1)
-
-[node name="RoomLabel" type="Label" parent="LevelManager/LootRoom2" unique_id=58840949]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 750.5
-offset_top = 524.0
-offset_right = 1170.5
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Pokój z przedmiotami"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DoorUp2" parent="LevelManager/LootRoom2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../StartRoom/DoorDown1")
-
-[node name="DoorDown2" parent="LevelManager/LootRoom2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 1056)
-rotation = -3.1415925
-destination_door = NodePath("../../HallRoom4/DoorUp4")
-
-[node name="Items" type="Node2D" parent="LevelManager/LootRoom2" unique_id=2000525934]
-
-[node name="ItemPickup2" parent="LevelManager/LootRoom2/Items" unique_id=418610573 instance=ExtResource("5_b0vj2")]
-position = Vector2(256, 840)
-item_data = ExtResource("7_6s3yp")
-
-[node name="ItemPickup3" parent="LevelManager/LootRoom2/Items" unique_id=878630740 instance=ExtResource("5_b0vj2")]
-position = Vector2(1560, 256)
-item_data = ExtResource("8_r7ala")
-
-[node name="ItemPickup4" parent="LevelManager/LootRoom2/Items" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
-position = Vector2(1608, 731)
-item_data = ExtResource("9_pgj7d")
-
-[node name="ItemPickup5" parent="LevelManager/LootRoom2/Items" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
-position = Vector2(1296, 136)
-item_data = ExtResource("10_jj5mx")
-
-[node name="HallRoom4" parent="LevelManager" unique_id=1732907218 instance=ExtResource("9_pxeom")]
-visible = false
-map_position = Vector2i(0, 2)
-
-[node name="RoomLabel" type="Label" parent="LevelManager/HallRoom4" unique_id=768567471]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 789.0
-offset_top = 524.0
-offset_right = 1132.0
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Pokój przejściowy"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DoorUp4" parent="LevelManager/HallRoom4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../LootRoom2/DoorDown2")
-
-[node name="DoorRight4" parent="LevelManager/HallRoom4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(1888, 544)
-rotation = 1.5707964
-destination_door = NodePath("../../SecretRoom5/DoorLeft5")
-
-[node name="DoorDown4" parent="LevelManager/HallRoom4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 1056)
-rotation = -3.1415925
-destination_door = NodePath("../../EnemyRoom3/DoorUp3")
-
-[node name="SecretRoom5" parent="LevelManager" unique_id=1848038951 instance=ExtResource("9_pxeom")]
-visible = false
-map_position = Vector2i(1, 2)
-is_secret = true
-floor_alt_id = 0
-
-[node name="RoomLabel" type="Label" parent="LevelManager/SecretRoom5" unique_id=392174043]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 816.0
-offset_top = 524.0
-offset_right = 1105.0
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Sekretny pokój"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DoorLeft5" parent="LevelManager/SecretRoom5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(32, 544)
-rotation = -1.5707964
-destination_door = NodePath("../../HallRoom4/DoorRight4")
-
-[node name="ItemPickup" parent="LevelManager/SecretRoom5" unique_id=313552387 instance=ExtResource("5_b0vj2")]
-position = Vector2(965, 459)
-item_data = ExtResource("6_1f4iy")
-
-[node name="EnemyRoom3" parent="LevelManager" unique_id=81165659 instance=ExtResource("9_pxeom")]
-visible = false
-map_position = Vector2i(0, 3)
-wall_alt_id = 0
-
-[node name="RoomLabel" type="Label" parent="LevelManager/EnemyRoom3" unique_id=1729822279]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 786.0
-offset_top = 524.0
-offset_right = 1135.0
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 40
-text = "Pokój przeciwnika"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DoorUp3" parent="LevelManager/EnemyRoom3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
-position = Vector2(960, 32)
-destination_door = NodePath("../../HallRoom4/DoorDown4")
-
-[node name="Spider" type="CharacterBody2D" parent="LevelManager/EnemyRoom3" unique_id=563277704 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(968, 928)
-collision_layer = 4
-collision_mask = 7
-script = ExtResource("17_1f4iy")
-respawnVector = Vector2(968, 928)
-movement_universal_script = ExtResource("15_b10mb")
-health_stats_script = ExtResource("24_8h40k")
-interaction_and_attack_stats_script = ExtResource("25_28mns")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="EffectsCollector" type="Node" parent="LevelManager/EnemyRoom3/Spider" unique_id=378154211]
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=1269572810]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=1068071084]
-shape = SubResource("RectangleShape2D_8f2pv")
-debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=70196550]
-texture_filter = 5
-position = Vector2(-0.5, -0.5)
-scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_yuthg")
-
-[node name="LineOfSight" type="RayCast2D" parent="LevelManager/EnemyRoom3/Spider" unique_id=751573452]
-collision_mask = 3
-
-[node name="HealthProgressBar" type="ProgressBar" parent="LevelManager/EnemyRoom3/Spider" unique_id=734905429]
-texture_filter = 5
-offset_left = -32.0
-offset_top = -48.0
-offset_right = 32.0
-offset_bottom = -32.0
-pivot_offset = Vector2(32, 48)
-theme_override_font_sizes/font_size = 8
-theme_override_styles/background = ExtResource("2_mjw3m")
-show_percentage = false
-script = ExtResource("23_totju")
-player_stats = ExtResource("24_8h40k")
-
-[node name="Label2" type="Label" parent="LevelManager/EnemyRoom3/Spider/HealthProgressBar" unique_id=2016708381]
-texture_filter = 5
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="InteractableComponent" parent="LevelManager/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-outline_material = null
-target_sprite = NodePath("../AnimatedSprite2D")
-target_collision = NodePath("../CollisionShape2D")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 
@@ -406,7 +122,7 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("3_mjw3m")
-player = NodePath("../../../LevelManager/StartRoom/Player")
+player = NodePath("../../../Map/StartRoom/Player")
 cooldown_label = NodePath("CooldownLabel")
 
 [node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
@@ -439,7 +155,7 @@ expand_mode = 1
 
 [node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("6_r7ifn")
-player = NodePath("../../LevelManager/StartRoom/Player")
+player = NodePath("../../Map/StartRoom/Player")
 info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
 
 [node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
@@ -492,6 +208,7 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -501,4 +218,295 @@ offset_top = 920.0
 offset_bottom = 1080.0
 grow_horizontal = 0
 script = ExtResource("33_r7ala")
-level_manager = NodePath("../../LevelManager")
+level_manager = NodePath("../../Map")
+cell_size = null
+cell_spacing = null
+current_room_color = null
+visited_room_color = null
+discovered_not_visited_color = null
+background_color = null
+text_color = null
+
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+script = ExtResource("26_d8aow")
+starting_room = NodePath("StartRoom")
+
+[node name="StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("9_pxeom")]
+
+[node name="RoomLabel" type="Label" parent="Map/StartRoom" unique_id=1778539474]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 816.5
+offset_top = 524.0
+offset_right = 1104.5
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój startowy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorDown1" parent="Map/StartRoom" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = 3.1415927
+destination_door = NodePath("../../LootRoom2/DoorUp2")
+
+[node name="Player" type="CharacterBody2D" parent="Map/StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+unique_name_in_owner = true
+texture_filter = 5
+position = Vector2(960, 540)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("3_vlfoo")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("11_vbl37")
+respawnVector = Vector2(960, 540)
+movement_universal_script = ExtResource("4_5dhej")
+health_stats_script = ExtResource("5_mjw3m")
+interaction_and_attack_stats_script = ExtResource("13_1f4iy")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+destroy_entity_after_die = false
+
+[node name="AimController" type="Node2D" parent="Map/StartRoom/Player" unique_id=756643253]
+script = ExtResource("15_pxeom")
+
+[node name="AimScanner" type="RayCast2D" parent="Map/StartRoom/Player/AimController" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="Inventory" type="Node" parent="Map/StartRoom/Player" unique_id=2070691423]
+script = ExtResource("4_w0vak")
+items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="Map/StartRoom/Player" unique_id=1333448843]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartRoom/Player" unique_id=619512797]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="CharacterSprite" type="Sprite2D" parent="Map/StartRoom/Player" unique_id=1849338578]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.100002, 1.38283e-05)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("1_5oxlb")
+flip_h = true
+
+[node name="HeldItemHandler" type="Node2D" parent="Map/StartRoom/Player" unique_id=1042135675]
+position = Vector2(24, 43.00003)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="Map/StartRoom/Player/HeldItemHandler" unique_id=971580810]
+texture_filter = 5
+
+[node name="InteractableComponent" parent="Map/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="LootRoom2" parent="Map" unique_id=1124479501 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 1)
+
+[node name="RoomLabel" type="Label" parent="Map/LootRoom2" unique_id=58840949]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 750.5
+offset_top = 524.0
+offset_right = 1170.5
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój z przedmiotami"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp2" parent="Map/LootRoom2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../StartRoom/DoorDown1")
+
+[node name="DoorDown2" parent="Map/LootRoom2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../HallRoom4/DoorUp4")
+
+[node name="Items" type="Node2D" parent="Map/LootRoom2" unique_id=2000525934]
+
+[node name="ItemPickup2" parent="Map/LootRoom2/Items" unique_id=418610573 instance=ExtResource("5_b0vj2")]
+position = Vector2(256, 840)
+item_data = ExtResource("7_6s3yp")
+
+[node name="ItemPickup3" parent="Map/LootRoom2/Items" unique_id=878630740 instance=ExtResource("5_b0vj2")]
+position = Vector2(1560, 256)
+item_data = ExtResource("8_r7ala")
+
+[node name="ItemPickup4" parent="Map/LootRoom2/Items" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("9_pgj7d")
+
+[node name="ItemPickup5" parent="Map/LootRoom2/Items" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
+position = Vector2(1296, 136)
+item_data = ExtResource("10_jj5mx")
+
+[node name="HallRoom4" parent="Map" unique_id=1732907218 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 2)
+
+[node name="RoomLabel" type="Label" parent="Map/HallRoom4" unique_id=768567471]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 789.0
+offset_top = 524.0
+offset_right = 1132.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przejściowy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp4" parent="Map/HallRoom4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../LootRoom2/DoorDown2")
+
+[node name="DoorRight4" parent="Map/HallRoom4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../SecretRoom5/DoorLeft5")
+
+[node name="DoorDown4" parent="Map/HallRoom4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../EnemyRoom3/DoorUp3")
+
+[node name="SecretRoom5" parent="Map" unique_id=1848038951 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(1, 2)
+is_secret = true
+floor_alt_id = 0
+
+[node name="RoomLabel" type="Label" parent="Map/SecretRoom5" unique_id=392174043]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 816.0
+offset_top = 524.0
+offset_right = 1105.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Sekretny pokój"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorLeft5" parent="Map/SecretRoom5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../HallRoom4/DoorRight4")
+
+[node name="ItemPickup" parent="Map/SecretRoom5" unique_id=313552387 instance=ExtResource("5_b0vj2")]
+position = Vector2(965, 459)
+item_data = ExtResource("6_1f4iy")
+
+[node name="EnemyRoom3" parent="Map" unique_id=81165659 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 3)
+wall_alt_id = 0
+
+[node name="RoomLabel" type="Label" parent="Map/EnemyRoom3" unique_id=1729822279]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 786.0
+offset_top = 524.0
+offset_right = 1135.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przeciwnika"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp3" parent="Map/EnemyRoom3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../HallRoom4/DoorDown4")
+
+[node name="Spider" type="CharacterBody2D" parent="Map/EnemyRoom3" unique_id=563277704 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
+position = Vector2(968, 928)
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("17_1f4iy")
+respawnVector = Vector2(968, 928)
+movement_universal_script = ExtResource("15_b10mb")
+health_stats_script = ExtResource("24_8h40k")
+interaction_and_attack_stats_script = ExtResource("25_28mns")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="EffectsCollector" type="Node" parent="Map/EnemyRoom3/Spider" unique_id=378154211]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyRoom3/Spider" unique_id=1269572810]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyRoom3/Spider" unique_id=1068071084]
+shape = SubResource("RectangleShape2D_8f2pv")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Map/EnemyRoom3/Spider" unique_id=70196550]
+texture_filter = 5
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_yuthg")
+
+[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyRoom3/Spider" unique_id=751573452]
+collision_mask = 3
+
+[node name="HealthProgressBar" type="ProgressBar" parent="Map/EnemyRoom3/Spider" unique_id=734905429]
+texture_filter = 5
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("2_mjw3m")
+show_percentage = false
+script = ExtResource("23_totju")
+player_stats = ExtResource("24_8h40k")
+
+[node name="Label2" type="Label" parent="Map/EnemyRoom3/Spider/HealthProgressBar" unique_id=2016708381]
+texture_filter = 5
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractableComponent" parent="Map/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+outline_material = null
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")

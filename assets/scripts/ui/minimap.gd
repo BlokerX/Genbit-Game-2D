@@ -2,7 +2,7 @@ extends Control
 class_name Minimap
 
 @export_group("Konfiguracja")
-@export var level_manager : LevelManager
+@export var level_manager : Map
 @export var cell_size : float = 32.0
 @export var cell_spacing : float = 4.0
 
@@ -19,7 +19,7 @@ func _ready() -> void:
 		level_manager.room_changed.connect(_on_map_state_changed)
 		level_manager.map_updated.connect(_on_map_state_changed)
 	else:
-		push_warning("Minimap: Brak LevelManager'a!")
+		push_warning("Minimap: Brak Map'a!")
 
 # Ta funkcja odpala się ZAWSZE, gdy w grze doda się, usunie lub odkryje pokój
 func _on_map_state_changed(_room = null) -> void:
