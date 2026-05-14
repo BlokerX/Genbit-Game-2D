@@ -130,6 +130,7 @@ health_stats_script = ExtResource("5_mjw3m")
 interaction_and_attack_stats_script = ExtResource("13_1f4iy")
 character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
+destroy_entity_after_die = false
 
 [node name="AimController" type="Node2D" parent="LevelManager/StartRoom/Player" unique_id=756643253]
 script = ExtResource("15_pxeom")

@@ -36,7 +36,6 @@ sources/0 = SubResource("TileSetAtlasSource_cve4a")
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_l3nri"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)])
 
 [node name="Room" type="Node2D" unique_id=1124479501 groups=["Rooms"]]
 script = ExtResource("1_l3nri")

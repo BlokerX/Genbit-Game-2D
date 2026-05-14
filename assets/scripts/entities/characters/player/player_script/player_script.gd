@@ -81,7 +81,6 @@ var is_holding_attack: bool = false
 #region Główne funkcje silnikowe
 
 func _ready():
-	
 	# Inicjalizacja MovementComponent
 	#movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
 	# Domyślne parametry:
@@ -231,7 +230,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	# Respawn
 	if event.is_action_pressed(INPUT_RESPAWN):
-		respawn()
+		call_deferred("respawn_sequence")
 		print("Gracz się odrodził!")
 	
 	#endregion

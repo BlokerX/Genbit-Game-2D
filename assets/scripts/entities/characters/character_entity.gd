@@ -15,6 +15,8 @@ class_name CharacterEntity
 
 @export var effects_collector : Node
 
+@export var destroy_entity_after_die : bool = true
+
 #region Główne funkcje silnikowe
 
 func _ready():
@@ -34,14 +36,26 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
-	print("Entity character has been killed successfully!")
+	print(self.name + " has been killed successfully!")
+	
 	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
-	call_deferred("respawn_sequence")
+	# call_deferred("respawn_sequence")
+	
+	# todo poprowadzić tu jakoś koniec rozgrywki
+	if destroy_entity_after_die :
+		self.queue_free()
+		print(self.name + " został zwolniony z istnienia.")
+	
 
-# Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
+# Sekwencja respawnu, Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
 func respawn_sequence():
 	health_stats_script.heal_completely()
-	respawn()
+	
+	position = respawnVector
+	velocity.x = 0
+	velocity.y = 0
+	
+	clear_all_effects()
 
 #endregion
 
@@ -72,11 +86,3 @@ func clear_all_effects() -> void:
 	print("Nie znaleziono kontenera efektów w entity character.")
 
 #endregion
-
-## Testowa metoda respawnu.
-func respawn():
-	position = respawnVector
-	velocity.x = 0
-	velocity.y = 0
-	# Przy odrodzeniu usuwamy z postaci wszystkie nałożone na nią statusy
-	clear_all_effects()
