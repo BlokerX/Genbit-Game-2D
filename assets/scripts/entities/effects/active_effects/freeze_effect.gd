@@ -1,8 +1,10 @@
 extends TimedEffect
 class_name FreezeEffect
 
-# Dodana flaga! Domyślnie nałożona, ale możesz to odznaczyć w edytorze.
+# Domyślnie nałożona, ale możesz to odznaczyć w edytorze.
 @export var apply_blue_tint: bool = true
+
+@export var freeze_modulate: Color = Color(0.337, 0.341, 1.0, 0.502)
 
 func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
 	duration = _duration
@@ -10,7 +12,7 @@ func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
 	tick_interval = 0.0 # 0, ponieważ nie potrzebujemy "tików", działa to jako twardy stan
 	effect_name = "Freeze"
 
-func on_effect_start(target : CharacterBody2D) -> void:
+func on_effect_start(target : Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")
 	
 	# Odcinamy logikę i input
@@ -28,10 +30,10 @@ func on_effect_start(target : CharacterBody2D) -> void:
 		var sprite = _get_sprite_from_target(target)
 		if sprite != null:
 			# Zapisujemy oryginalny kolor wewnątrz ofiary
-			target.set_meta("original_modulate", sprite.modulate)
-			sprite.modulate = Color(0.337, 0.341, 1.0, 0.502) # Lodowy niebieski
+			target.set_meta("original_self_modulate", sprite.self_modulate)
+			sprite.self_modulate = freeze_modulate # Lodowy niebieski
 
-func on_effect_end(target : CharacterBody2D) -> void:
+func on_effect_end(target : Node2D) -> void:
 	print("Odmrażam obiekt: ", target.name)
 	
 	# Przywracamy wejścia i logikę
@@ -47,13 +49,13 @@ func on_effect_end(target : CharacterBody2D) -> void:
 	# Przywracamy oryginalny kolor ofiary
 	# Wystarczy sprawdzić, czy zapisaliśmy oryginalny kolor - jeśli tak, to znaczy, że flaga była aktywna
 	var sprite = _get_sprite_from_target(target)
-	if sprite != null and target.has_meta("original_modulate"):
-		sprite.modulate = target.get_meta("original_modulate")
+	if sprite != null and target.has_meta("original_self_modulate"):
+		sprite.self_modulate = target.get_meta("original_self_modulate")
 		# Czyścimy metadane po zakończeniu efektu
-		target.remove_meta("original_modulate")
+		target.remove_meta("original_self_modulate")
 
 # Funkcja pomocnicza do znajdowania obrazka ofiary
-func _get_sprite_from_target(target: CharacterBody2D) -> Node:
+func _get_sprite_from_target(target: Node2D) -> Node:
 	if "character_sprite" in target and target.character_sprite != null:
 		return target.character_sprite
 	elif target.has_node("Sprite2D"):

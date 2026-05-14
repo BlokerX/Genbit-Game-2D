@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bpalvm4aaiwe5" path="res://assets/scripts/scene_scripts/main_menu/main_menu.gd" id="1_4qj7h"]
 [ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/scene_scripts/main_menu/credits_button.gd" id="2_6r5fw"]
 [ext_resource type="Script" uid="uid://d1u13mv3i3t0n" path="res://assets/scripts/scene_scripts/main_menu/quit_button.gd" id="3_6x8q2"]
+[ext_resource type="PackedScene" uid="uid://uuss2dodm1na" path="res://assets/scenes/credits.tscn" id="3_f2xsc"]
 [ext_resource type="AudioStream" uid="uid://giwx4maycjpr" path="res://assets/audio/main_menu/rougelike_main_menu_ambience.wav" id="4_h8d3m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_77rv3"]
@@ -259,6 +260,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 text = "Credits"
 script = ExtResource("2_6r5fw")
+credits_scene = ExtResource("3_f2xsc")
 metadata/_edit_lock_ = true
 
 [node name="QuitButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=2115213143]

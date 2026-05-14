@@ -8,7 +8,7 @@ func _init():
 	duration = 5.0
 	tick_interval = 1.0 # Zadaje obrażenia co 1 sekundę
 
-func on_effect_tick(target: CharacterBody2D) -> void:
+func on_effect_tick(target: Node2D) -> void:
 	if target.get("health_stats_script") != null:
 		target.health_stats_script.take_damage(poison_damage_per_tick)
 		print("Trucizna zadaje ", poison_damage_per_tick, " obrażeń!")

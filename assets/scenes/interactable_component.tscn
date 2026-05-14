@@ -17,5 +17,6 @@ debug_color = Color(0, 0.6, 0.69803923, 0.44705883)
 
 [node name="HighlightSprite" type="Sprite2D" parent="." unique_id=959983918]
 visible = false
+texture_filter = 5
 scale = Vector2(5, 5)
 texture = ExtResource("3_4nmfj")

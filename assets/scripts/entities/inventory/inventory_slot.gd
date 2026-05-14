@@ -2,9 +2,13 @@
 extends TextureRect
 class_name InventorySlot
 
+@export_group("Slot Textures")
+## Tekstura zwykłego, niewybranego slotu
+@export var texture_normal: Texture2D
+## Tekstura aktywnego (wybranego) slotu
+@export var texture_highlighted: Texture2D
+
 @onready var icon_rect: TextureRect = $Item
-var texture_normal = preload("res://assets/textures/samples_examples/inventory_slot.png")
-var texture_highlighted = preload("res://assets/textures/samples_examples/inventory_active_slot.png")
 # Pobieramy nasz nowy węzeł z cyferką
 @onready var amount_label: Label = $AmountLabel
 

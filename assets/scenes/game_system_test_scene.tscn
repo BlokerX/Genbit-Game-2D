@@ -1,36 +1,38 @@
-[gd_scene format=4 uid="uid://wn1dt8xyy57e"]
+[gd_scene format=3 uid="uid://wn1dt8xyy57e"]
 
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="1_5oxlb"]
 [ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_hx11q"]
-[ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="1_r5tdj"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
+[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="3_xyupq"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="4_5dhej"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="5_b0vj2"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="6_1f4iy"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
-[ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slot.png" id="6_totju"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="7_6s3yp"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
-[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_d7uxj"]
-[ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="8_ndfam"]
-[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="9_d7uxj"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_r7ala"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="9_pgj7d"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="9_pxeom"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="10_jj5mx"]
 [ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="11_vbl37"]
-[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="11_xscv4"]
-[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="12_d23um"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="13_1f4iy"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="15_b10mb"]
 [ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="15_pxeom"]
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="17_1f4iy"]
-[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="23_totju"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="23_totju"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_8h40k"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_28mns"]
-[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="25_r00hp"]
-[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="27_r00hp"]
+[ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="26_d8aow"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="27_xiq2x"]
-[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="30_vbl37"]
+[ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="29_pgj7d"]
+[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="32_r7ala"]
+[ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -39,22 +41,10 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8hvnv"]
-texture = ExtResource("1_r5tdj")
-texture_region_size = Vector2i(64, 64)
-0:0/0 = 0
-1:0/0 = 0
-1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
-
-[sub_resource type="TileSet" id="TileSet_6uf7s"]
-tile_size = Vector2i(64, 64)
-physics_layer_0/collision_layer = 1
-sources/0 = SubResource("TileSetAtlasSource_8hvnv")
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
 size = Vector2(64.5, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
@@ -73,7 +63,7 @@ region = Rect2(32, 0, 16, 16)
 atlas = ExtResource("7_6uf7s")
 region = Rect2(48, 0, 16, 16)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_ygk25"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_yuthg"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -93,11 +83,6 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_hx11q"]
-vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847.9609, 73)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(65, 63, 65, 1023, 1854, 1026, 1858, 63)])
-
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
 
@@ -106,6 +91,7 @@ script = ExtResource("1_hx11q")
 [node name="PlayerUIGroup" type="Node" parent="CanvasLayer" unique_id=748282068]
 
 [node name="HealthPointsBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=1547176443]
+texture_filter = 5
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 264.0
@@ -113,8 +99,11 @@ offset_bottom = 52.36364
 scale = Vector2(1, 0.88)
 theme_override_styles/fill = ExtResource("6_6uf7s")
 show_percentage = false
+script = ExtResource("29_pgj7d")
+player_stats = ExtResource("5_mjw3m")
 
 [node name="HealthPointsLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
+texture_filter = 5
 layout_mode = 0
 offset_right = 248.0
 offset_bottom = 36.36364
@@ -125,6 +114,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+texture_filter = 5
 offset_left = 16.0
 offset_top = 56.0
 offset_right = 264.0
@@ -132,10 +122,11 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("3_mjw3m")
-player = NodePath("../../../Player")
+player = NodePath("../../../Map/StartRoom/Player")
 cooldown_label = NodePath("CooldownLabel")
 
 [node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
+texture_filter = 5
 layout_mode = 0
 offset_top = 1.0
 offset_right = 248.0
@@ -144,6 +135,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CharacterSlotTextureRect" type="TextureRect" parent="CanvasLayer/PlayerUIGroup" unique_id=854278161]
+texture_filter = 5
 custom_minimum_size = Vector2(7, 7)
 offset_left = 272.0
 offset_top = 16.0
@@ -153,6 +145,7 @@ texture = SubResource("GradientTexture1D_totju")
 expand_mode = 1
 
 [node name="CharacterTexture" type="TextureRect" parent="CanvasLayer/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
+texture_filter = 5
 custom_minimum_size = Vector2(7, 7)
 layout_mode = 0
 offset_right = 64.0
@@ -162,7 +155,7 @@ expand_mode = 1
 
 [node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("6_r7ifn")
-player = NodePath("../../Player")
+player = NodePath("../../Map/StartRoom/Player")
 info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
 
 [node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
@@ -181,439 +174,316 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 
 [node name="InventorySlotHandle" type="HBoxContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=682378422]
-offset_left = 696.0
-offset_top = 1029.0
-offset_right = 872.0
-offset_bottom = 1045.0
+offset_left = 8.0
+offset_top = 1032.0
+offset_right = 184.0
+offset_bottom = 1048.0
 scale = Vector2(3, 3)
 
-[node name="Slot1" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=221569347]
+[node name="Slot" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1315751759 instance=ExtResource("32_r7ala")]
 layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
 
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=293381994]
-layout_mode = 1
+[node name="Slot2" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=401580884 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot3" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2124368672 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot4" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=756972471 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot5" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1953207854 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot6" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1471169057 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot7" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1237336103 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot8" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1230213238 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Slot9" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1394381743 instance=ExtResource("32_r7ala")]
+layout_mode = 2
+
+[node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -224.0
+offset_top = 920.0
+offset_bottom = 1080.0
+grow_horizontal = 0
+script = ExtResource("33_r7ala")
+level_manager = NodePath("../../Map")
+cell_size = null
+cell_spacing = null
+current_room_color = null
+visited_room_color = null
+discovered_not_visited_color = null
+background_color = null
+text_color = null
+
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+script = ExtResource("26_d8aow")
+starting_room = NodePath("StartRoom")
+
+[node name="StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("9_pxeom")]
+
+[node name="RoomLabel" type="Label" parent="Map/StartRoom" unique_id=1778539474]
+texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
+offset_left = 816.5
+offset_top = 524.0
+offset_right = 1104.5
+offset_bottom = 579.0
 grow_horizontal = 2
 grow_vertical = 2
-expand_mode = 1
+theme_override_font_sizes/font_size = 40
+text = "Pokój startowy"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot1" unique_id=291313283]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 6
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
+[node name="DoorDown1" parent="Map/StartRoom" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = 3.1415927
+destination_door = NodePath("../../LootRoom2/DoorUp2")
 
-[node name="Slot2" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1234115465]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1938205275]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot2" unique_id=1730944292]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot3" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1486498046]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=482603211]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot3" unique_id=1065583254]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot4" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2078215487]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=129400958]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot4" unique_id=58705887]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot5" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1206195716]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=563496007]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot5" unique_id=1448353814]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot6" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1296410582]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=363151212]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot6" unique_id=1015161894]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot7" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=814444252]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=1865407126]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot7" unique_id=673553010]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot8" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1524980149]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1953929599]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot8" unique_id=1951674249]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Slot9" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1335478352]
-layout_mode = 2
-texture = ExtResource("6_totju")
-script = ExtResource("8_ndfam")
-
-[node name="Item" type="TextureRect" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1409919084]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -7.0
-offset_top = -7.0
-offset_right = 7.0
-offset_bottom = 7.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-
-[node name="AmountLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle/Slot9" unique_id=1948234269]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 5
-text = "99"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="TileMap" type="TileMapLayer" parent="." unique_id=363819282]
-tile_map_data = PackedByteArray("AAAAAAAAAAABAAAAAAAAAAEAAAABAAAAAAAAAAIAAAABAAAAAAAAAAMAAAABAAAAAAAAAAQAAAABAAAAAAAAAAUAAAABAAAAAAAAAAYAAAABAAAAAAAAAAcAAAABAAAAAAAAAAgAAAABAAAAAAAAAAkAAAABAAAAAAAAAAoAAAABAAAAAAAAAAsAAAABAAAAAAAAABAAAAABAAAAAAAAAA8AAAABAAAAAAAAAA4AAAABAAAAAAAAAA0AAAABAAAAAAAAAAwAAAABAAAAAAABABAAAAABAAAAAAACABAAAAABAAAAAAADABAAAAABAAAAAAAEABAAAAABAAAAAAAFABAAAAABAAAAAAAGABAAAAABAAAAAAAHABAAAAABAAAAAAAIABAAAAABAAAAAAAJABAAAAABAAAAAAAKABAAAAABAAAAAAALABAAAAABAAAAAAAMABAAAAABAAAAAAARABAAAAABAAAAAAASABAAAAABAAAAAAATABAAAAABAAAAAAAUABAAAAABAAAAAAAVABAAAAABAAAAAAAWABAAAAABAAAAAAAXABAAAAABAAAAAAAdAAAAAAABAAAAAAAdAAEAAAABAAAAAAAdAAIAAAABAAAAAAAdAAMAAAABAAAAAAAdAAQAAAABAAAAAAAdAAUAAAABAAAAAAAdAAYAAAABAAAAAAAdAAcAAAABAAAAAAAdAAgAAAABAAAAAAAdAAkAAAABAAAAAAAdAAoAAAABAAAAAAAdAAwAAAABAAAAAAAdAAsAAAABAAAAAAAdAA0AAAABAAAAAAAdAA4AAAABAAAAAAAdAA8AAAABAAAAAAAdABAAAAABAAAAAAAcABAAAAABAAAAAAAbABAAAAABAAAAAAAaABAAAAABAAAAAAAZABAAAAABAAAAAAAYABAAAAABAAAAAAAcAAAAAAABAAAAAAAbAAAAAAABAAAAAAAaAAAAAAABAAAAAAAZAAAAAAABAAAAAAAYAAAAAAABAAAAAAAXAAAAAAABAAAAAAAWAAAAAAABAAAAAAAVAAAAAAABAAAAAAAUAAAAAAABAAAAAAATAAAAAAABAAAAAAASAAAAAAABAAAAAAARAAAAAAABAAAAAAAQAAAAAAABAAAAAAAPAAAAAAABAAAAAAAOAAAAAAABAAAAAAANAAAAAAABAAAAAAAMAAAAAAABAAAAAAALAAAAAAABAAAAAAAKAAAAAAABAAAAAAAJAAAAAAABAAAAAAAIAAAAAAABAAAAAAAHAAAAAAABAAAAAAAGAAAAAAABAAAAAAAFAAAAAAABAAAAAAAEAAAAAAABAAAAAAADAAAAAAABAAAAAAACAAAAAAABAAAAAAABAAAAAAABAAAAAAARAA8AAAABAAAAAAAMAA8AAAABAAAAAAANABAAAAABAAAAAAAQABAAAAABAAAAAAAOABAAAAABAAAAAAAPABAAAAABAAAAAAAcAAoAAAABAAAAAAAcAAYAAAABAAAAAAAEAAsAAAABAAAAAAAFAAsAAAABAAAAAAAGAAsAAAABAAAAAAAHAAsAAAABAAAAAAAIAAsAAAABAAAAAAAJAAsAAAABAAAAAAAJAAoAAAABAAAAAAAJAAkAAAABAAAAAAAJAAgAAAABAAAAAAARAAoAAAAAAAAAAAARAAkAAAAAAAAAAAARAAgAAAAAAAAAAAARAAcAAAAAAAAAAAARAAYAAAAAAAAAAAARAAUAAAAAAAAAAAARAAQAAAAAAAAAAAARAAMAAAAAAAAAAAARAAIAAAAAAAAAAAARAAEAAAAAAAAAAAAQAAEAAAAAAAAAAAAPAAEAAAAAAAAAAAAOAAEAAAAAAAAAAAANAAEAAAAAAAAAAAAMAAEAAAAAAAAAAAALAAEAAAAAAAAAAAAKAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAFAAEAAAAAAAAAAAAEAAEAAAAAAAAAAAADAAEAAAAAAAAAAAACAAEAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAAAAAAAAAAABAAMAAAAAAAAAAAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAAAAAABAAcAAAAAAAAAAAABAAgAAAAAAAAAAAABAAkAAAAAAAAAAAABAAoAAAAAAAAAAAABAAsAAAAAAAAAAAABAAwAAAAAAAAAAAABAA0AAAAAAAAAAAABAA4AAAAAAAAAAAABAA8AAAAAAAAAAAACAA8AAAAAAAAAAAACAA4AAAAAAAAAAAACAA0AAAAAAAAAAAACAAwAAAAAAAAAAAACAAsAAAAAAAAAAAACAAoAAAAAAAAAAAACAAkAAAAAAAAAAAACAAgAAAAAAAAAAAACAAcAAAAAAAAAAAACAAYAAAAAAAAAAAACAAUAAAAAAAAAAAACAAQAAAAAAAAAAAACAAMAAAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAADAAMAAAAAAAAAAAADAAQAAAAAAAAAAAADAAUAAAAAAAAAAAADAAYAAAAAAAAAAAADAAcAAAAAAAAAAAADAAgAAAAAAAAAAAADAAkAAAAAAAAAAAADAAoAAAAAAAAAAAADAAsAAAAAAAAAAAADAAwAAAAAAAAAAAADAA0AAAAAAAAAAAADAA4AAAAAAAAAAAADAA8AAAAAAAAAAAAEAA8AAAAAAAAAAAAEAA4AAAAAAAAAAAAEAA0AAAAAAAAAAAAEAAwAAAAAAAAAAAAFAAwAAAAAAAAAAAAFAA0AAAAAAAAAAAAFAA4AAAAAAAAAAAAFAA8AAAAAAAAAAAAGAA8AAAAAAAAAAAAGAA4AAAAAAAAAAAAGAA0AAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAAAAAAAAAAHAA0AAAAAAAAAAAAHAA4AAAAAAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAAAAAAAAAAIAA4AAAAAAAAAAAAIAA0AAAAAAAAAAAAIAAwAAAAAAAAAAAAJAAwAAAAAAAAAAAAJAA0AAAAAAAAAAAAJAA4AAAAAAAAAAAAJAA8AAAAAAAAAAAAKAA8AAAAAAAAAAAAKAA4AAAAAAAAAAAAKAA0AAAAAAAAAAAAKAAwAAAAAAAAAAAAKAAsAAAAAAAAAAAAKAAoAAAAAAAAAAAAKAAkAAAAAAAAAAAAKAAgAAAAAAAAAAAAKAAcAAAAAAAAAAAAKAAYAAAAAAAAAAAAKAAUAAAAAAAAAAAAKAAQAAAAAAAAAAAAKAAMAAAAAAAAAAAAKAAIAAAAAAAAAAAAJAAIAAAAAAAAAAAAIAAIAAAAAAAAAAAAHAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAMAAAAAAAAAAAAEAAQAAAAAAAAAAAAEAAUAAAAAAAAAAAAEAAYAAAAAAAAAAAAEAAcAAAAAAAAAAAAEAAgAAAAAAAAAAAAEAAkAAAAAAAAAAAAEAAoAAAAAAAAAAAAFAAoAAAAAAAAAAAAFAAkAAAAAAAAAAAAFAAgAAAAAAAAAAAAFAAcAAAAAAAAAAAAFAAYAAAAAAAAAAAAFAAUAAAAAAAAAAAAFAAQAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAQAAAAAAAAAAAAGAAUAAAAAAAAAAAAGAAYAAAAAAAAAAAAGAAcAAAAAAAAAAAAGAAgAAAAAAAAAAAAGAAkAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAAAAAAAAAAHAAkAAAAAAAAAAAAHAAgAAAAAAAAAAAAHAAcAAAAAAAAAAAAHAAYAAAAAAAAAAAAHAAUAAAAAAAAAAAAHAAQAAAAAAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAIAAQAAAAAAAAAAAAIAAUAAAAAAAAAAAAIAAYAAAAAAAAAAAAIAAcAAAAAAAAAAAAIAAgAAAAAAAAAAAAIAAkAAAAAAAAAAAAIAAoAAAAAAAAAAAAJAAcAAAAAAAAAAAAJAAYAAAAAAAAAAAAJAAUAAAAAAAAAAAAJAAQAAAAAAAAAAAAJAAMAAAAAAAAAAAALAAIAAAAAAAAAAAALAAMAAAAAAAAAAAALAAQAAAAAAAAAAAALAAUAAAAAAAAAAAALAAYAAAAAAAAAAAALAAcAAAAAAAAAAAALAAgAAAAAAAAAAAALAAkAAAAAAAAAAAALAAoAAAAAAAAAAAALAAsAAAAAAAAAAAALAAwAAAAAAAAAAAALAA0AAAAAAAAAAAALAA4AAAAAAAAAAAALAA8AAAAAAAAAAAAMAA4AAAAAAAAAAAAMAA0AAAAAAAAAAAAMAAwAAAAAAAAAAAAMAAsAAAAAAAAAAAAMAAoAAAAAAAAAAAAMAAkAAAAAAAAAAAAMAAgAAAAAAAAAAAAMAAcAAAAAAAAAAAAMAAYAAAAAAAAAAAAMAAUAAAAAAAAAAAAMAAQAAAAAAAAAAAAMAAMAAAAAAAAAAAAMAAIAAAAAAAAAAAANAAIAAAAAAAAAAAANAAMAAAAAAAAAAAANAAQAAAAAAAAAAAANAAUAAAAAAAAAAAANAAYAAAAAAAAAAAANAAcAAAAAAAAAAAANAAgAAAAAAAAAAAANAAkAAAAAAAAAAAANAAoAAAAAAAAAAAANAAsAAAAAAAAAAAANAAwAAAAAAAAAAAANAA0AAAAAAAAAAAANAA4AAAAAAAAAAAANAA8AAAAAAAAAAAAOAA8AAAAAAAAAAAAOAA4AAAAAAAAAAAAOAA0AAAAAAAAAAAAOAAwAAAAAAAAAAAAOAAsAAAAAAAAAAAAOAAoAAAAAAAAAAAAOAAkAAAAAAAAAAAAOAAgAAAAAAAAAAAAOAAcAAAAAAAAAAAAOAAYAAAAAAAAAAAAOAAUAAAAAAAAAAAAOAAQAAAAAAAAAAAAOAAMAAAAAAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAAAAAAAAAAPAAMAAAAAAAAAAAAPAAQAAAAAAAAAAAAPAAUAAAAAAAAAAAAPAAYAAAAAAAAAAAAPAAcAAAAAAAAAAAAPAAgAAAAAAAAAAAAPAAkAAAAAAAAAAAAPAAoAAAAAAAAAAAAPAAsAAAAAAAAAAAAPAAwAAAAAAAAAAAAPAA0AAAAAAAAAAAAPAA4AAAAAAAAAAAAPAA8AAAAAAAAAAAAQAA8AAAAAAAAAAAAQAA4AAAAAAAAAAAAQAA0AAAAAAAAAAAAQAAwAAAAAAAAAAAAQAAsAAAAAAAAAAAAQAAoAAAAAAAAAAAAQAAkAAAAAAAAAAAAQAAgAAAAAAAAAAAAQAAcAAAAAAAAAAAAQAAYAAAAAAAAAAAAQAAUAAAAAAAAAAAAQAAQAAAAAAAAAAAAQAAMAAAAAAAAAAAAQAAIAAAAAAAAAAAARAAsAAAAAAAAAAAARAAwAAAAAAAAAAAARAA0AAAAAAAAAAAARAA4AAAAAAAAAAAASAA4AAAAAAAAAAAASAA0AAAAAAAAAAAASAAwAAAAAAAAAAAASAAsAAAAAAAAAAAASAAoAAAAAAAAAAAASAAkAAAAAAAAAAAASAAgAAAAAAAAAAAASAAcAAAAAAAAAAAASAAYAAAAAAAAAAAASAAUAAAAAAAAAAAASAAQAAAAAAAAAAAASAAMAAAAAAAAAAAASAAIAAAAAAAAAAAASAAEAAAAAAAAAAAATAAEAAAAAAAAAAAATAAIAAAAAAAAAAAATAAMAAAAAAAAAAAATAAQAAAAAAAAAAAATAAUAAAAAAAAAAAATAAYAAAAAAAAAAAATAAcAAAAAAAAAAAATAAgAAAAAAAAAAAATAAkAAAAAAAAAAAATAAoAAAAAAAAAAAATAAsAAAAAAAAAAAATAAwAAAAAAAAAAAATAA0AAAAAAAAAAAATAA4AAAAAAAAAAAATAA8AAAAAAAAAAAASAA8AAAAAAAAAAAAUAA8AAAAAAAAAAAAUAA4AAAAAAAAAAAAUAA0AAAAAAAAAAAAUAAwAAAAAAAAAAAAUAAsAAAAAAAAAAAAUAAoAAAAAAAAAAAAUAAkAAAAAAAAAAAAUAAgAAAAAAAAAAAAUAAcAAAAAAAAAAAAUAAYAAAAAAAAAAAAUAAUAAAAAAAAAAAAUAAQAAAAAAAAAAAAUAAMAAAAAAAAAAAAUAAIAAAAAAAAAAAAUAAEAAAAAAAAAAAAVAAEAAAAAAAAAAAAVAAIAAAAAAAAAAAAVAAMAAAAAAAAAAAAVAAQAAAAAAAAAAAAVAAUAAAAAAAAAAAAVAAYAAAAAAAAAAAAVAAcAAAAAAAAAAAAVAAgAAAAAAAAAAAAVAAkAAAAAAAAAAAAVAAoAAAAAAAAAAAAVAAsAAAAAAAAAAAAVAAwAAAAAAAAAAAAVAA0AAAAAAAAAAAAVAA4AAAAAAAAAAAAVAA8AAAAAAAAAAAAWAA8AAAAAAAAAAAAWAA4AAAAAAAAAAAAWAA0AAAAAAAAAAAAWAAwAAAAAAAAAAAAWAAsAAAAAAAAAAAAWAAoAAAAAAAAAAAAWAAkAAAAAAAAAAAAWAAgAAAAAAAAAAAAWAAcAAAAAAAAAAAAWAAYAAAAAAAAAAAAWAAUAAAAAAAAAAAAWAAQAAAAAAAAAAAAWAAMAAAAAAAAAAAAWAAIAAAAAAAAAAAAWAAEAAAAAAAAAAAAXAAEAAAAAAAAAAAAXAAIAAAAAAAAAAAAXAAMAAAAAAAAAAAAXAAQAAAAAAAAAAAAXAAUAAAAAAAAAAAAXAAYAAAAAAAAAAAAXAAcAAAAAAAAAAAAXAAgAAAAAAAAAAAAXAAkAAAAAAAAAAAAXAAoAAAAAAAAAAAAXAAsAAAAAAAAAAAAXAAwAAAAAAAAAAAAXAA0AAAAAAAAAAAAXAA4AAAAAAAAAAAAXAA8AAAAAAAAAAAAYAA8AAAAAAAAAAAAYAA4AAAAAAAAAAAAYAA0AAAAAAAAAAAAYAAwAAAAAAAAAAAAYAAsAAAAAAAAAAAAYAAoAAAAAAAAAAAAYAAkAAAAAAAAAAAAYAAgAAAAAAAAAAAAYAAcAAAAAAAAAAAAYAAYAAAAAAAAAAAAYAAUAAAAAAAAAAAAYAAQAAAAAAAAAAAAYAAMAAAAAAAAAAAAYAAIAAAAAAAAAAAAYAAEAAAAAAAAAAAAZAAEAAAAAAAAAAAAZAAIAAAAAAAAAAAAZAAMAAAAAAAAAAAAZAAQAAAAAAAAAAAAZAAUAAAAAAAAAAAAZAAYAAAAAAAAAAAAZAAcAAAAAAAAAAAAZAAgAAAAAAAAAAAAZAAkAAAAAAAAAAAAZAAoAAAAAAAAAAAAZAAsAAAAAAAAAAAAZAAwAAAAAAAAAAAAZAA0AAAAAAAAAAAAZAA4AAAAAAAAAAAAZAA8AAAAAAAAAAAAaAA8AAAAAAAAAAAAaAA4AAAAAAAAAAAAaAA0AAAAAAAAAAAAaAAwAAAAAAAAAAAAaAAsAAAAAAAAAAAAaAAoAAAAAAAAAAAAaAAkAAAAAAAAAAAAaAAgAAAAAAAAAAAAaAAcAAAAAAAAAAAAaAAYAAAAAAAAAAAAaAAUAAAAAAAAAAAAaAAQAAAAAAAAAAAAaAAMAAAAAAAAAAAAaAAIAAAAAAAAAAAAaAAEAAAAAAAAAAAAbAAEAAAAAAAAAAAAbAAIAAAAAAAAAAAAbAAMAAAAAAAAAAAAbAAQAAAAAAAAAAAAbAAUAAAAAAAAAAAAbAAYAAAAAAAAAAAAbAAcAAAAAAAAAAAAbAAgAAAAAAAAAAAAbAAkAAAAAAAAAAAAbAAoAAAAAAAAAAAAbAAsAAAAAAAAAAAAbAAwAAAAAAAAAAAAbAA0AAAAAAAAAAAAbAA4AAAAAAAAAAAAbAA8AAAAAAAAAAAAcAA8AAAAAAAAAAAAcAA4AAAAAAAAAAAAcAA0AAAAAAAAAAAAcAAwAAAAAAAAAAAAcAAsAAAAAAAAAAAAcAAkAAAAAAAAAAAAcAAgAAAAAAAAAAAAcAAcAAAAAAAAAAAAcAAUAAAAAAAAAAAAcAAQAAAAAAAAAAAAcAAMAAAAAAAAAAAAcAAIAAAAAAAAAAAAcAAEAAAAAAAAAAAA=")
-tile_set = SubResource("TileSet_6uf7s")
-
-[node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" parent="Map/StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
-position = Vector2(304, 429)
+texture_filter = 5
+position = Vector2(960, 540)
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("3_vlfoo")
 inventory = NodePath("Inventory")
 projectile_scene = ExtResource("11_vbl37")
+respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("4_5dhej")
 health_stats_script = ExtResource("5_mjw3m")
 interaction_and_attack_stats_script = ExtResource("13_1f4iy")
-health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
-health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
 character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
+destroy_entity_after_die = false
 
-[node name="AimController" type="Node2D" parent="Player" unique_id=756643253]
+[node name="AimController" type="Node2D" parent="Map/StartRoom/Player" unique_id=756643253]
 script = ExtResource("15_pxeom")
 
-[node name="AimScanner" type="RayCast2D" parent="Player/AimController" unique_id=824312907]
+[node name="AimScanner" type="RayCast2D" parent="Map/StartRoom/Player/AimController" unique_id=824312907]
 collision_mask = 12
 hit_from_inside = true
 
-[node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
+[node name="Inventory" type="Node" parent="Map/StartRoom/Player" unique_id=2070691423]
 script = ExtResource("4_w0vak")
 items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null, null, null])
 
-[node name="EffectsCollector" type="Node" parent="Player" unique_id=1333448843]
+[node name="EffectsCollector" type="Node" parent="Map/StartRoom/Player" unique_id=1333448843]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=619512797]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartRoom/Player" unique_id=619512797]
 position = Vector2(-0.5, 0)
 shape = SubResource("RectangleShape2D_p58j5")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
-[node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=1849338578]
+[node name="CharacterSprite" type="Sprite2D" parent="Map/StartRoom/Player" unique_id=1849338578]
 self_modulate = Color(1, 0.866667, 0.235294, 1)
 position = Vector2(-0.100002, 1.38283e-05)
 scale = Vector2(0.391406, 0.392)
 texture = ExtResource("1_5oxlb")
 flip_h = true
 
-[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=1042135675]
+[node name="HeldItemHandler" type="Node2D" parent="Map/StartRoom/Player" unique_id=1042135675]
 position = Vector2(24, 43.00003)
 scale = Vector2(2, 2)
 
-[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
+[node name="HeldItemVisual" type="Sprite2D" parent="Map/StartRoom/Player/HeldItemHandler" unique_id=971580810]
+texture_filter = 5
 
-[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Map/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
-[node name="Spider" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(1728, 552)
+[node name="LootRoom2" parent="Map" unique_id=1124479501 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 1)
+
+[node name="RoomLabel" type="Label" parent="Map/LootRoom2" unique_id=58840949]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 750.5
+offset_top = 524.0
+offset_right = 1170.5
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój z przedmiotami"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp2" parent="Map/LootRoom2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../StartRoom/DoorDown1")
+
+[node name="DoorDown2" parent="Map/LootRoom2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../HallRoom4/DoorUp4")
+
+[node name="Items" type="Node2D" parent="Map/LootRoom2" unique_id=2000525934]
+
+[node name="ItemPickup2" parent="Map/LootRoom2/Items" unique_id=418610573 instance=ExtResource("5_b0vj2")]
+position = Vector2(256, 840)
+item_data = ExtResource("7_6s3yp")
+
+[node name="ItemPickup3" parent="Map/LootRoom2/Items" unique_id=878630740 instance=ExtResource("5_b0vj2")]
+position = Vector2(1560, 256)
+item_data = ExtResource("8_r7ala")
+
+[node name="ItemPickup4" parent="Map/LootRoom2/Items" unique_id=1393213531 instance=ExtResource("5_b0vj2")]
+position = Vector2(1608, 731)
+item_data = ExtResource("9_pgj7d")
+
+[node name="ItemPickup5" parent="Map/LootRoom2/Items" unique_id=1643014827 instance=ExtResource("5_b0vj2")]
+position = Vector2(1296, 136)
+item_data = ExtResource("10_jj5mx")
+
+[node name="HallRoom4" parent="Map" unique_id=1732907218 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 2)
+
+[node name="RoomLabel" type="Label" parent="Map/HallRoom4" unique_id=768567471]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 789.0
+offset_top = 524.0
+offset_right = 1132.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przejściowy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp4" parent="Map/HallRoom4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../LootRoom2/DoorDown2")
+
+[node name="DoorRight4" parent="Map/HallRoom4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../SecretRoom5/DoorLeft5")
+
+[node name="DoorDown4" parent="Map/HallRoom4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../EnemyRoom3/DoorUp3")
+
+[node name="SecretRoom5" parent="Map" unique_id=1848038951 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(1, 2)
+is_secret = true
+floor_alt_id = 0
+
+[node name="RoomLabel" type="Label" parent="Map/SecretRoom5" unique_id=392174043]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 816.0
+offset_top = 524.0
+offset_right = 1105.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Sekretny pokój"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorLeft5" parent="Map/SecretRoom5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../HallRoom4/DoorRight4")
+
+[node name="ItemPickup" parent="Map/SecretRoom5" unique_id=313552387 instance=ExtResource("5_b0vj2")]
+position = Vector2(965, 459)
+item_data = ExtResource("6_1f4iy")
+
+[node name="EnemyRoom3" parent="Map" unique_id=81165659 instance=ExtResource("9_pxeom")]
+visible = false
+map_position = Vector2i(0, 3)
+wall_alt_id = 0
+
+[node name="RoomLabel" type="Label" parent="Map/EnemyRoom3" unique_id=1729822279]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 786.0
+offset_top = 524.0
+offset_right = 1135.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój przeciwnika"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorUp3" parent="Map/EnemyRoom3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("3_xyupq")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../HallRoom4/DoorDown4")
+
+[node name="Spider" type="CharacterBody2D" parent="Map/EnemyRoom3" unique_id=563277704 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
+position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
 script = ExtResource("17_1f4iy")
+respawnVector = Vector2(968, 928)
 movement_universal_script = ExtResource("15_b10mb")
 health_stats_script = ExtResource("24_8h40k")
 interaction_and_attack_stats_script = ExtResource("25_28mns")
-health_points_bar = NodePath("HealthProgressBar")
-health_points_label = NodePath("HealthProgressBar/Label2")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="EffectsCollector" type="Node" parent="Spider" unique_id=473924543]
+[node name="EffectsCollector" type="Node" parent="Map/EnemyRoom3/Spider" unique_id=378154211]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Spider" unique_id=1292834181]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyRoom3/Spider" unique_id=1269572810]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Spider" unique_id=2110018586]
-shape = SubResource("RectangleShape2D_h17bs")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyRoom3/Spider" unique_id=1068071084]
+shape = SubResource("RectangleShape2D_8f2pv")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Spider" unique_id=1995051797]
-texture_filter = 1
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Map/EnemyRoom3/Spider" unique_id=70196550]
+texture_filter = 5
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_ygk25")
+sprite_frames = SubResource("SpriteFrames_yuthg")
 
-[node name="LineOfSight" type="RayCast2D" parent="Spider" unique_id=654854544]
+[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyRoom3/Spider" unique_id=751573452]
 collision_mask = 3
 
-[node name="HealthProgressBar" type="ProgressBar" parent="Spider" unique_id=102391968]
+[node name="HealthProgressBar" type="ProgressBar" parent="Map/EnemyRoom3/Spider" unique_id=734905429]
+texture_filter = 5
 offset_left = -32.0
 offset_top = -48.0
 offset_right = 32.0
@@ -623,8 +493,10 @@ theme_override_font_sizes/font_size = 8
 theme_override_styles/background = ExtResource("2_mjw3m")
 show_percentage = false
 script = ExtResource("23_totju")
+player_stats = ExtResource("24_8h40k")
 
-[node name="Label2" type="Label" parent="Spider/HealthProgressBar" unique_id=271877439]
+[node name="Label2" type="Label" parent="Map/EnemyRoom3/Spider/HealthProgressBar" unique_id=2016708381]
+texture_filter = 5
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 16.0
@@ -634,34 +506,7 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InteractableComponent" parent="Spider" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+[node name="InteractableComponent" parent="Map/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+outline_material = null
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
-
-[node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
-visible = false
-navigation_polygon = SubResource("NavigationPolygon_hx11q")
-
-[node name="ItemPickup" parent="." unique_id=1701967078 instance=ExtResource("25_r00hp")]
-position = Vector2(720, 184)
-item_data = ExtResource("8_d7uxj")
-
-[node name="ItemPickup2" parent="." unique_id=889212379 instance=ExtResource("25_r00hp")]
-position = Vector2(640, 344)
-item_data = ExtResource("27_r00hp")
-
-[node name="ItemPickup3" parent="." unique_id=2097510866 instance=ExtResource("25_r00hp")]
-position = Vector2(1624, 224)
-item_data = ExtResource("9_d7uxj")
-
-[node name="ItemPickup4" parent="." unique_id=1719168975 instance=ExtResource("25_r00hp")]
-position = Vector2(192, 192)
-item_data = ExtResource("11_xscv4")
-
-[node name="ItemPickup5" parent="." unique_id=97565883 instance=ExtResource("25_r00hp")]
-position = Vector2(496, 168)
-item_data = ExtResource("12_d23um")
-
-[node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("25_r00hp")]
-position = Vector2(320, 616)
-item_data = ExtResource("30_vbl37")

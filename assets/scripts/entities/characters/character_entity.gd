@@ -11,13 +11,11 @@ class_name CharacterEntity
 @export var health_stats_script : MonitoredStatsComponent 
 @export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
 
-# GUI elements:
-@export var health_points_bar : ProgressBar
-@export var health_points_label : Label
-
 @export var character_sprite : Sprite2D
 
 @export var effects_collector : Node
+
+@export var destroy_entity_after_die : bool = true
 
 #region Główne funkcje silnikowe
 
@@ -25,14 +23,6 @@ func _ready():
 	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
 	if health_stats_script:
 		health_stats_script.died.connect(_on_character_died)
-		health_stats_script.health_changed.connect(on_health_changed)
-		
-	# Inicjalizacja UI...
-	health_stats_script.health_points_bar = health_points_bar
-	health_stats_script.health_points_label = health_points_label
-	health_stats_script.change_health_points_bar_max_value()
-	
-	health_stats_script.update_helath_points_bar()
 
 func _process(_delta):
 	pass
@@ -46,17 +36,26 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
-	print("Entity character has been killed successfully!")
+	print(self.name + " has been killed successfully!")
+	
 	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
-	call_deferred("respawn_sequence")
+	# call_deferred("respawn_sequence")
+	
+	# todo poprowadzić tu jakoś koniec rozgrywki
+	if destroy_entity_after_die :
+		self.queue_free()
+		print(self.name + " został zwolniony z istnienia.")
+	
 
-# Nowa funkcja, która uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
+# Sekwencja respawnu, Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
 func respawn_sequence():
 	health_stats_script.heal_completely()
-	respawn()
-
-func on_health_changed(_new_health, _max_health):
-	health_stats_script.update_helath_points_bar()
+	
+	position = respawnVector
+	velocity.x = 0
+	velocity.y = 0
+	
+	clear_all_effects()
 
 #endregion
 
@@ -87,11 +86,3 @@ func clear_all_effects() -> void:
 	print("Nie znaleziono kontenera efektów w entity character.")
 
 #endregion
-
-## Testowa metoda respawnu.
-func respawn():
-	position = respawnVector
-	velocity.x = 0
-	velocity.y = 0
-	# Przy odrodzeniu usuwamy z postaci wszystkie nałożone na nią statusy
-	clear_all_effects()

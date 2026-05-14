@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dlfvmsi7aocoj"]
+
+[ext_resource type="Script" uid="uid://dainsnvcfx1es" path="res://assets/scripts/map_system/door.gd" id="1_ytq3u"]
+[ext_resource type="Texture2D" uid="uid://b8xycbp13b438" path="res://assets/textures/samples_examples/the_doors.png" id="2_ytq3u"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u1njh"]
+size = Vector2(80, 80)
+
+[node name="Door" type="Area2D" unique_id=406558948 groups=["Door"]]
+collision_mask = 2
+script = ExtResource("1_ytq3u")
+opening_time = 0.15
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=338021962]
+texture = ExtResource("2_ytq3u")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=670294462]
+position = Vector2(0, 8)
+shape = SubResource("RectangleShape2D_u1njh")
+debug_color = Color(0, 0.64496654, 0.27651262, 0.41960785)
+
+[node name="Spawnpoint" type="Marker2D" parent="." unique_id=736383661]
+position = Vector2(0, 121)

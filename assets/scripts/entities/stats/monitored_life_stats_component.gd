@@ -2,36 +2,37 @@ extends LifeStatsComponent
 
 class_name MonitoredStatsComponent
 
-var health_points_bar : ProgressBar
-var health_points_label : Label
+signal health_updated(current_health: int, maximum_health: int)
+signal max_health_changed(new_max_health: int)
 
 # D_E_B_U_G
 func monitor() -> void :
 	#print("Monitor zdrowia gracza: ", health, " / ", max_health)
 	return
 
-func update_helath_points_bar() -> void :
-	# Show HP in GUI
-	# percents:
-	# health_points_bar.value = health * 100 / max_health
-	# points:
-	health_points_bar.value = health
-	health_points_label.text = str(health) + " / " + str(max_health)
-	monitor()
-
-func change_health_points_bar_max_value() :
-	health_points_bar.max_value = max_health
-
 #override
 func boost_max_health(boost : int) -> void :
 	super.boost_max_health(boost)
-	change_health_points_bar_max_value()
+	emit_max_health_change()
+	emit_health_update() # Aktualizujemy też zwykłe HP, bo zmieniły się proporcje
 
 #override
 func reduce_max_health(reduction : int) -> void :
 	super.reduce_max_health(reduction)
-	change_health_points_bar_max_value()
+	emit_max_health_change()
+	emit_health_update()
 
-func reset_stats() :
+#override
+func reset_stats() -> void :
 	super.reset_stats()
-	change_health_points_bar_max_value()
+	emit_max_health_change()
+	emit_health_update()
+
+# Ta funkcja teraz tylko "ogłasza" zmianę zdrowia, zamiast fizycznie zmieniać pasek
+func emit_health_update() -> void :
+	health_updated.emit(health, max_health)
+	monitor()
+
+# Ta funkcja ogłasza zmianę maksymalnego zdrowia
+func emit_max_health_change() -> void :
+	max_health_changed.emit(max_health)

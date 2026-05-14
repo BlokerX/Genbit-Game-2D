@@ -19,10 +19,42 @@ class_name PlayerAimController
 ## Czy myszka ma trzymać cel dopóki z niego nie odejdziemy (True), czy odznaczać go od razu po zjechaniu kursorem w pustą przestrzeń (False)?
 @export var sticky_mouse_aiming: bool = false
 
+# --- NAPRAWA BŁĘDÓW KRYTYCZNYCH ---
+## Maska kolizji dla ścian. Ustaw w Inspektorze warstwy (Layers), na których są Twoje ściany/przeszkody!
+@export_flags_2d_physics var obstacles_mask: int = 1
+
+## Lokalna pamięć wrogów w pobliżu. Oszczędza 99% zużycia procesora!
+var nearby_enemies: Array[Node2D] = []
+
 ## Przechowujemy aktualnie namierzony obiekt przez celownik
 var current_target: InteractableComponent = null
 ## Pamięta ostatni cel, który zgubiliśmy tylko przez to, że wybiegliśmy z zasięgu
 var last_target: InteractableComponent = null
+
+func _ready() -> void:
+	# Tworzymy automatyczny skaner wrogów
+	var detection_area = Area2D.new()
+	detection_area.collision_layer = 0
+	detection_area.collision_mask = 0xFFFFFFFF # Reaguje na wszystkie obiekty
+	
+	var collision_shape = CollisionShape2D.new()
+	var circle = CircleShape2D.new()
+	circle.radius = aim_distance # Zasięg skanera równy max zasięgowi celowania
+	collision_shape.shape = circle
+	
+	detection_area.add_child(collision_shape)
+	add_child(detection_area)
+	
+	detection_area.body_entered.connect(_on_enemy_entered)
+	detection_area.body_exited.connect(_on_enemy_exited)
+
+func _on_enemy_entered(body: Node2D) -> void:
+	if body.is_in_group("Enemy") and not nearby_enemies.has(body):
+		nearby_enemies.append(body)
+
+func _on_enemy_exited(body: Node2D) -> void:
+	if nearby_enemies.has(body):
+		nearby_enemies.erase(body)
 
 #region System celowania
 
@@ -97,7 +129,8 @@ func handle_gamepad_aiming(current_attack_range: float):
 		# KROK 1: Sprawdźmy, czy gałka jest aktywnie wychylana. Jeśli tak, priorytet ma cel w kierunku wychylenia.
 		if is_pad_aiming:
 			var best_angle = 0.6 
-			for enemy in get_tree().get_nodes_in_group("Enemy"):
+			for enemy in nearby_enemies:
+				if not is_instance_valid(enemy): continue
 				var dist = global_position.distance_to(enemy.global_position)
 				if dist <= best_dist and has_line_of_sight(enemy):
 					var dir_to_enemy = global_position.direction_to(enemy.global_position)
@@ -118,7 +151,8 @@ func handle_gamepad_aiming(current_attack_range: float):
 						best_dist = dist # Ustawiamy jego dystans jako punkt odniesienia
 			
 			# b) Skanujemy wszystkich wrogów. Jeśli znajdziemy jakiegoś wroga BLIŻEJ niż zapamiętany (lub jeśli pamięć jest pusta), obieramy nowy cel
-			for enemy in get_tree().get_nodes_in_group("Enemy"):
+			for enemy in nearby_enemies:
+				if not is_instance_valid(enemy): continue
 				var dist = global_position.distance_to(enemy.global_position)
 				# Zwróć uwagę na znak mniejszości (<). Nowy wróg musi być wyraźnie bliżej, aby nadpisać pamięć starego celu.
 				if dist < best_dist and has_line_of_sight(enemy):
@@ -137,7 +171,8 @@ func handle_gamepad_aiming(current_attack_range: float):
 	elif is_pad_aiming and auto_enemy_selector and not found_is_enemy and not auto_lock_closest_enemy:
 		var best_enemy = null
 		var best_angle = 0.6 
-		for enemy in get_tree().get_nodes_in_group("Enemy"):
+		for enemy in nearby_enemies:
+			if not is_instance_valid(enemy): continue
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= current_attack_range: 
 				var dir_to_enemy = global_position.direction_to(enemy.global_position)
@@ -232,7 +267,7 @@ func has_line_of_sight(target: Node2D) -> bool:
 	
 	# Ważne: Jeśli twoje ściany mają specyficzną warstwę fizyki (Collision Layer), odkomentuj poniższą linię.
 	# Domyślnie sprawdza wszystkie warstwy, co może zablokować atak na innej jednostce / przedmiocie.
-	query.collision_mask = 1 # Ustaw maskę kolizji odpowiednią dla przeszkód (ścian)
+	query.collision_mask = obstacles_mask # Ustaw maskę kolizji odpowiednią dla przeszkód (ścian)
 	
 	var result = space_state.intersect_ray(query)
 	
