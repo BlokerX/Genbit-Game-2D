@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://bagixi7kmhv0w"]
+
+[ext_resource type="Script" uid="uid://f36an8gam2kg" path="res://assets/scripts/entities/characters/enemies/enemy_charger.gd" id="1_8t410"]
+[ext_resource type="Resource" uid="uid://cmvdj5yhnyogn" path="res://assets/scripts/entities/movement/special_instations/charger_movement_component.tres" id="2_8t410"]
+[ext_resource type="Resource" uid="uid://c1wsorf76dx08" path="res://assets/scripts/entities/stats/special_instations/charger_monitored_life_stats_component.tres" id="3_li4ya"]
+[ext_resource type="Resource" uid="uid://brldwecgj1u8y" path="res://assets/scripts/entities/stats/special_instations/charger_interaction_and_attack_stats_component.tres" id="4_l23qh"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="5_7bi0n"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="6_ci3ag"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="7_a181c"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="8_jwyo3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
+size = Vector2(64.5, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
+atlas = ExtResource("5_7bi0n")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7fpw2"]
+atlas = ExtResource("5_7bi0n")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tme40"]
+atlas = ExtResource("5_7bi0n")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d7uxj"]
+atlas = ExtResource("5_7bi0n")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ygk25"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w0vak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7fpw2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tme40")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d7uxj")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Charger" type="CharacterBody2D" unique_id=1488500863 node_paths=PackedStringArray("health_points_bar", "health_points_label") groups=["Enemy", "NPC"]]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1_8t410")
+movement_universal_script = ExtResource("2_8t410")
+health_stats_script = ExtResource("3_li4ya")
+interaction_and_attack_stats_script = ExtResource("4_l23qh")
+health_points_bar = NodePath("HealthProgressBar")
+health_points_label = NodePath("HealthProgressBar/Label2")
+
+[node name="EffectsCollector" type="Node" parent="." unique_id=1670252307]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1662320894]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=17808197]
+shape = SubResource("RectangleShape2D_h17bs")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=377311324]
+texture_filter = 1
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_ygk25")
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=2862716]
+collision_mask = 3
+
+[node name="HealthProgressBar" type="ProgressBar" parent="." unique_id=1576100755]
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("6_ci3ag")
+show_percentage = false
+script = ExtResource("7_a181c")
+
+[node name="Label2" type="Label" parent="HealthProgressBar" unique_id=1044355182]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("8_jwyo3")]
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")

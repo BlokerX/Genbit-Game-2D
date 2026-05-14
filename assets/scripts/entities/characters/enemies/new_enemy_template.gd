@@ -1,13 +1,7 @@
-# ---
-# ---
-# ---
-# ---
-# ---
-# Wzór jak łączyć z parentem
 extends EnemyEntity 
 
 func _ready():
-	# Możesz tutaj ustawić unikalne statystyki dla tego konkretnego typu wroga
+	# Unikalne statystyki dla tego konkretnego typu wroga
 	health_stats_script.health = 50
 	health_stats_script.max_health = 50
 	
@@ -16,14 +10,14 @@ func _ready():
 	
 	respawnVector = Vector2(1080, 720)
 	
-	# Pamiętaj o wywołaniu super(), które zainicjuje UI i znajdzie gracza w EnemyEntity
+	# Inicjuje UI i znajduje gracza (EnemyEntity)
 	super()
 
 func _process(delta):
 	super(delta)
 
 func _physics_process(delta):
-	# Zamiast powielać kod, wywołujemy naszą nową funkcję z EnemyEntity
+	# Obsługa ataku (EnemyEntity)
 	process_melee_attack(delta)
 	
 	#region Move Procedure

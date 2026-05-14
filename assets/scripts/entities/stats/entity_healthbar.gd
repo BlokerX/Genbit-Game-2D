@@ -2,5 +2,5 @@
 ## Btw nie wiem gdzie dać ten skrypt. Zapraszam do zmian w razie czego
 extends ProgressBar
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	rotation = -get_parent().rotation

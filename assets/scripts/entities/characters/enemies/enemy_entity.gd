@@ -23,6 +23,8 @@ func _ready():
 	
 	# Przypisanie gracza jako domyślnego celu
 	target = %Player
+	
+	actor_setup()
 
 func _process(_delta):
 	super(_delta)
@@ -48,7 +50,7 @@ func process_melee_attack(delta: float):
 		
 	# Procesowanie cooldownu ataku
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
-		
+	
 	# Sprawdzanie wszystkich kolizji w danej klatce
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)

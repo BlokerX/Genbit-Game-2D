@@ -12,25 +12,19 @@
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="10_qmmn1"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="11_cl65v"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="12_0qduo"]
-[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="13_jhr1q"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="14_p0c18"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="15_45tqp"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="16_wqbfv"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="17_4isnk"]
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="18_v8mxx"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="19_e3uly"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="19_hn6t6"]
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="20_5j62c"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="21_ee25p"]
-[ext_resource type="Script" uid="uid://div30ft80j5eg" path="res://assets/scripts/entities/characters/enemies/enemy_spider.gd" id="22_0xbxg"]
-[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="23_klpf3"]
-[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="24_abcm4"]
-[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="25_6tbl5"]
-[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="26_7mlfs"]
-[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/entities/stats/entity_healthbar.gd" id="27_uut35"]
-[ext_resource type="Script" uid="uid://cukiikhwrm8su" path="res://assets/scripts/entities/characters/enemies/enemy_template.gd" id="28_xn1bq"]
-[ext_resource type="Resource" uid="uid://d0ydkc7jh7dbj" path="res://assets/scripts/entities/movement/special_instations/old_enemy_movement_component.tres" id="29_fow65"]
-[ext_resource type="Resource" uid="uid://bx1joc3yy00eq" path="res://assets/scripts/entities/stats/special_instations/old_enemy_monitored_life_stats_component.tres" id="30_88oph"]
-[ext_resource type="Resource" uid="uid://cciwptn6i6hje" path="res://assets/scripts/entities/stats/special_instations/old_enemy_interaction_and_attack_stats_component.tres" id="31_wnewa"]
+[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="22_qht6y"]
+[ext_resource type="PackedScene" uid="uid://v506lpjdm8v4" path="res://assets/scenes/spider.tscn" id="22_tfshx"]
+[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="23_fhjnl"]
+[ext_resource type="PackedScene" uid="uid://bagixi7kmhv0w" path="res://assets/scenes/charger.tscn" id="27_qht6y"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="32_jhw3i"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="33_ahwiw"]
 
@@ -53,56 +47,13 @@ tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_8hvnv")
 
-[sub_resource type="Resource" id="Resource_r00hp"]
-script = ExtResource("13_jhr1q")
-metadata/_custom_type_script = "uid://c8haxva8ra810"
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_h17bs"]
-size = Vector2(64.5, 64)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
-atlas = ExtResource("26_7mlfs")
-region = Rect2(0, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_7fpw2"]
-atlas = ExtResource("26_7mlfs")
-region = Rect2(16, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_tme40"]
-atlas = ExtResource("26_7mlfs")
-region = Rect2(32, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_d7uxj"]
-atlas = ExtResource("26_7mlfs")
-region = Rect2(48, 0, 16, 16)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_ygk25"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_w0vak")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_7fpw2")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_tme40")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d7uxj")
-}],
-"loop": true,
-"name": &"default",
-"speed": 5.0
-}]
-
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_hx11q"]
 vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847.9609, 73)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(65, 63, 65, 1023, 1854, 1026, 1858, 63)])
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e3uly"]
+size = Vector2(59, 100)
 
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_4gvpw")
@@ -130,7 +81,7 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("cooldown_label")]
 offset_left = 16.0
 offset_top = 56.0
 offset_right = 264.0
@@ -138,7 +89,6 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("3_0n1lf")
 show_percentage = false
 script = ExtResource("4_5otrt")
-player = NodePath("../../../Player")
 cooldown_label = NodePath("CooldownLabel")
 
 [node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
@@ -539,163 +489,10 @@ vertical_alignment = 2
 tile_map_data = PackedByteArray("AAAAAAAAAAABAAAAAAAAAAEAAAABAAAAAAAAAAIAAAABAAAAAAAAAAMAAAABAAAAAAAAAAQAAAABAAAAAAAAAAUAAAABAAAAAAAAAAYAAAABAAAAAAAAAAcAAAABAAAAAAAAAAgAAAABAAAAAAAAAAkAAAABAAAAAAAAAAoAAAABAAAAAAAAAAsAAAABAAAAAAAAABAAAAABAAAAAAAAAA8AAAABAAAAAAAAAA4AAAABAAAAAAAAAA0AAAABAAAAAAAAAAwAAAABAAAAAAABABAAAAABAAAAAAACABAAAAABAAAAAAADABAAAAABAAAAAAAEABAAAAABAAAAAAAFABAAAAABAAAAAAAGABAAAAABAAAAAAAHABAAAAABAAAAAAAIABAAAAABAAAAAAAJABAAAAABAAAAAAAKABAAAAABAAAAAAALABAAAAABAAAAAAAMABAAAAABAAAAAAARABAAAAABAAAAAAASABAAAAABAAAAAAATABAAAAABAAAAAAAUABAAAAABAAAAAAAVABAAAAABAAAAAAAWABAAAAABAAAAAAAXABAAAAABAAAAAAAdAAAAAAABAAAAAAAdAAEAAAABAAAAAAAdAAIAAAABAAAAAAAdAAMAAAABAAAAAAAdAAQAAAABAAAAAAAdAAUAAAABAAAAAAAdAAYAAAABAAAAAAAdAAcAAAABAAAAAAAdAAgAAAABAAAAAAAdAAkAAAABAAAAAAAdAAoAAAABAAAAAAAdAAwAAAABAAAAAAAdAAsAAAABAAAAAAAdAA0AAAABAAAAAAAdAA4AAAABAAAAAAAdAA8AAAABAAAAAAAdABAAAAABAAAAAAAcABAAAAABAAAAAAAbABAAAAABAAAAAAAaABAAAAABAAAAAAAZABAAAAABAAAAAAAYABAAAAABAAAAAAAcAAAAAAABAAAAAAAbAAAAAAABAAAAAAAaAAAAAAABAAAAAAAZAAAAAAABAAAAAAAYAAAAAAABAAAAAAAXAAAAAAABAAAAAAAWAAAAAAABAAAAAAAVAAAAAAABAAAAAAAUAAAAAAABAAAAAAATAAAAAAABAAAAAAASAAAAAAABAAAAAAARAAAAAAABAAAAAAAQAAAAAAABAAAAAAAPAAAAAAABAAAAAAAOAAAAAAABAAAAAAANAAAAAAABAAAAAAAMAAAAAAABAAAAAAALAAAAAAABAAAAAAAKAAAAAAABAAAAAAAJAAAAAAABAAAAAAAIAAAAAAABAAAAAAAHAAAAAAABAAAAAAAGAAAAAAABAAAAAAAFAAAAAAABAAAAAAAEAAAAAAABAAAAAAADAAAAAAABAAAAAAACAAAAAAABAAAAAAABAAAAAAABAAAAAAARAA8AAAABAAAAAAAMAA8AAAABAAAAAAANABAAAAABAAAAAAAQABAAAAABAAAAAAAOABAAAAABAAAAAAAPABAAAAABAAAAAAAcAAoAAAABAAAAAAAcAAYAAAABAAAAAAAEAAsAAAABAAAAAAAFAAsAAAABAAAAAAAGAAsAAAABAAAAAAAHAAsAAAABAAAAAAAIAAsAAAABAAAAAAAJAAsAAAABAAAAAAAJAAoAAAABAAAAAAAJAAkAAAABAAAAAAAJAAgAAAABAAAAAAARAAoAAAAAAAAAAAARAAkAAAAAAAAAAAARAAgAAAAAAAAAAAARAAcAAAAAAAAAAAARAAYAAAAAAAAAAAARAAUAAAAAAAAAAAARAAQAAAAAAAAAAAARAAMAAAAAAAAAAAARAAIAAAAAAAAAAAARAAEAAAAAAAAAAAAQAAEAAAAAAAAAAAAPAAEAAAAAAAAAAAAOAAEAAAAAAAAAAAANAAEAAAAAAAAAAAAMAAEAAAAAAAAAAAALAAEAAAAAAAAAAAAKAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAFAAEAAAAAAAAAAAAEAAEAAAAAAAAAAAADAAEAAAAAAAAAAAACAAEAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAAAAAAAAAAABAAMAAAAAAAAAAAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAAAAAABAAcAAAAAAAAAAAABAAgAAAAAAAAAAAABAAkAAAAAAAAAAAABAAoAAAAAAAAAAAABAAsAAAAAAAAAAAABAAwAAAAAAAAAAAABAA0AAAAAAAAAAAABAA4AAAAAAAAAAAABAA8AAAAAAAAAAAACAA8AAAAAAAAAAAACAA4AAAAAAAAAAAACAA0AAAAAAAAAAAACAAwAAAAAAAAAAAACAAsAAAAAAAAAAAACAAoAAAAAAAAAAAACAAkAAAAAAAAAAAACAAgAAAAAAAAAAAACAAcAAAAAAAAAAAACAAYAAAAAAAAAAAACAAUAAAAAAAAAAAACAAQAAAAAAAAAAAACAAMAAAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAADAAMAAAAAAAAAAAADAAQAAAAAAAAAAAADAAUAAAAAAAAAAAADAAYAAAAAAAAAAAADAAcAAAAAAAAAAAADAAgAAAAAAAAAAAADAAkAAAAAAAAAAAADAAoAAAAAAAAAAAADAAsAAAAAAAAAAAADAAwAAAAAAAAAAAADAA0AAAAAAAAAAAADAA4AAAAAAAAAAAADAA8AAAAAAAAAAAAEAA8AAAAAAAAAAAAEAA4AAAAAAAAAAAAEAA0AAAAAAAAAAAAEAAwAAAAAAAAAAAAFAAwAAAAAAAAAAAAFAA0AAAAAAAAAAAAFAA4AAAAAAAAAAAAFAA8AAAAAAAAAAAAGAA8AAAAAAAAAAAAGAA4AAAAAAAAAAAAGAA0AAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAAAAAAAAAAHAA0AAAAAAAAAAAAHAA4AAAAAAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAAAAAAAAAAIAA4AAAAAAAAAAAAIAA0AAAAAAAAAAAAIAAwAAAAAAAAAAAAJAAwAAAAAAAAAAAAJAA0AAAAAAAAAAAAJAA4AAAAAAAAAAAAJAA8AAAAAAAAAAAAKAA8AAAAAAAAAAAAKAA4AAAAAAAAAAAAKAA0AAAAAAAAAAAAKAAwAAAAAAAAAAAAKAAsAAAAAAAAAAAAKAAoAAAAAAAAAAAAKAAkAAAAAAAAAAAAKAAgAAAAAAAAAAAAKAAcAAAAAAAAAAAAKAAYAAAAAAAAAAAAKAAUAAAAAAAAAAAAKAAQAAAAAAAAAAAAKAAMAAAAAAAAAAAAKAAIAAAAAAAAAAAAJAAIAAAAAAAAAAAAIAAIAAAAAAAAAAAAHAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAMAAAAAAAAAAAAEAAQAAAAAAAAAAAAEAAUAAAAAAAAAAAAEAAYAAAAAAAAAAAAEAAcAAAAAAAAAAAAEAAgAAAAAAAAAAAAEAAkAAAAAAAAAAAAEAAoAAAAAAAAAAAAFAAoAAAAAAAAAAAAFAAkAAAAAAAAAAAAFAAgAAAAAAAAAAAAFAAcAAAAAAAAAAAAFAAYAAAAAAAAAAAAFAAUAAAAAAAAAAAAFAAQAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAQAAAAAAAAAAAAGAAUAAAAAAAAAAAAGAAYAAAAAAAAAAAAGAAcAAAAAAAAAAAAGAAgAAAAAAAAAAAAGAAkAAAAAAAAAAAAGAAoAAAAAAAAAAAAHAAoAAAAAAAAAAAAHAAkAAAAAAAAAAAAHAAgAAAAAAAAAAAAHAAcAAAAAAAAAAAAHAAYAAAAAAAAAAAAHAAUAAAAAAAAAAAAHAAQAAAAAAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAIAAQAAAAAAAAAAAAIAAUAAAAAAAAAAAAIAAYAAAAAAAAAAAAIAAcAAAAAAAAAAAAIAAgAAAAAAAAAAAAIAAkAAAAAAAAAAAAIAAoAAAAAAAAAAAAJAAcAAAAAAAAAAAAJAAYAAAAAAAAAAAAJAAUAAAAAAAAAAAAJAAQAAAAAAAAAAAAJAAMAAAAAAAAAAAALAAIAAAAAAAAAAAALAAMAAAAAAAAAAAALAAQAAAAAAAAAAAALAAUAAAAAAAAAAAALAAYAAAAAAAAAAAALAAcAAAAAAAAAAAALAAgAAAAAAAAAAAALAAkAAAAAAAAAAAALAAoAAAAAAAAAAAALAAsAAAAAAAAAAAALAAwAAAAAAAAAAAALAA0AAAAAAAAAAAALAA4AAAAAAAAAAAALAA8AAAAAAAAAAAAMAA4AAAAAAAAAAAAMAA0AAAAAAAAAAAAMAAwAAAAAAAAAAAAMAAsAAAAAAAAAAAAMAAoAAAAAAAAAAAAMAAkAAAAAAAAAAAAMAAgAAAAAAAAAAAAMAAcAAAAAAAAAAAAMAAYAAAAAAAAAAAAMAAUAAAAAAAAAAAAMAAQAAAAAAAAAAAAMAAMAAAAAAAAAAAAMAAIAAAAAAAAAAAANAAIAAAAAAAAAAAANAAMAAAAAAAAAAAANAAQAAAAAAAAAAAANAAUAAAAAAAAAAAANAAYAAAAAAAAAAAANAAcAAAAAAAAAAAANAAgAAAAAAAAAAAANAAkAAAAAAAAAAAANAAoAAAAAAAAAAAANAAsAAAAAAAAAAAANAAwAAAAAAAAAAAANAA0AAAAAAAAAAAANAA4AAAAAAAAAAAANAA8AAAAAAAAAAAAOAA8AAAAAAAAAAAAOAA4AAAAAAAAAAAAOAA0AAAAAAAAAAAAOAAwAAAAAAAAAAAAOAAsAAAAAAAAAAAAOAAoAAAAAAAAAAAAOAAkAAAAAAAAAAAAOAAgAAAAAAAAAAAAOAAcAAAAAAAAAAAAOAAYAAAAAAAAAAAAOAAUAAAAAAAAAAAAOAAQAAAAAAAAAAAAOAAMAAAAAAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAAAAAAAAAAPAAMAAAAAAAAAAAAPAAQAAAAAAAAAAAAPAAUAAAAAAAAAAAAPAAYAAAAAAAAAAAAPAAcAAAAAAAAAAAAPAAgAAAAAAAAAAAAPAAkAAAAAAAAAAAAPAAoAAAAAAAAAAAAPAAsAAAAAAAAAAAAPAAwAAAAAAAAAAAAPAA0AAAAAAAAAAAAPAA4AAAAAAAAAAAAPAA8AAAAAAAAAAAAQAA8AAAAAAAAAAAAQAA4AAAAAAAAAAAAQAA0AAAAAAAAAAAAQAAwAAAAAAAAAAAAQAAsAAAAAAAAAAAAQAAoAAAAAAAAAAAAQAAkAAAAAAAAAAAAQAAgAAAAAAAAAAAAQAAcAAAAAAAAAAAAQAAYAAAAAAAAAAAAQAAUAAAAAAAAAAAAQAAQAAAAAAAAAAAAQAAMAAAAAAAAAAAAQAAIAAAAAAAAAAAARAAsAAAAAAAAAAAARAAwAAAAAAAAAAAARAA0AAAAAAAAAAAARAA4AAAAAAAAAAAASAA4AAAAAAAAAAAASAA0AAAAAAAAAAAASAAwAAAAAAAAAAAASAAsAAAAAAAAAAAASAAoAAAAAAAAAAAASAAkAAAAAAAAAAAASAAgAAAAAAAAAAAASAAcAAAAAAAAAAAASAAYAAAAAAAAAAAASAAUAAAAAAAAAAAASAAQAAAAAAAAAAAASAAMAAAAAAAAAAAASAAIAAAAAAAAAAAASAAEAAAAAAAAAAAATAAEAAAAAAAAAAAATAAIAAAAAAAAAAAATAAMAAAAAAAAAAAATAAQAAAAAAAAAAAATAAUAAAAAAAAAAAATAAYAAAAAAAAAAAATAAcAAAAAAAAAAAATAAgAAAAAAAAAAAATAAkAAAAAAAAAAAATAAoAAAAAAAAAAAATAAsAAAAAAAAAAAATAAwAAAAAAAAAAAATAA0AAAAAAAAAAAATAA4AAAAAAAAAAAATAA8AAAAAAAAAAAASAA8AAAAAAAAAAAAUAA8AAAAAAAAAAAAUAA4AAAAAAAAAAAAUAA0AAAAAAAAAAAAUAAwAAAAAAAAAAAAUAAsAAAAAAAAAAAAUAAoAAAAAAAAAAAAUAAkAAAAAAAAAAAAUAAgAAAAAAAAAAAAUAAcAAAAAAAAAAAAUAAYAAAAAAAAAAAAUAAUAAAAAAAAAAAAUAAQAAAAAAAAAAAAUAAMAAAAAAAAAAAAUAAIAAAAAAAAAAAAUAAEAAAAAAAAAAAAVAAEAAAAAAAAAAAAVAAIAAAAAAAAAAAAVAAMAAAAAAAAAAAAVAAQAAAAAAAAAAAAVAAUAAAAAAAAAAAAVAAYAAAAAAAAAAAAVAAcAAAAAAAAAAAAVAAgAAAAAAAAAAAAVAAkAAAAAAAAAAAAVAAoAAAAAAAAAAAAVAAsAAAAAAAAAAAAVAAwAAAAAAAAAAAAVAA0AAAAAAAAAAAAVAA4AAAAAAAAAAAAVAA8AAAAAAAAAAAAWAA8AAAAAAAAAAAAWAA4AAAAAAAAAAAAWAA0AAAAAAAAAAAAWAAwAAAAAAAAAAAAWAAsAAAAAAAAAAAAWAAoAAAAAAAAAAAAWAAkAAAAAAAAAAAAWAAgAAAAAAAAAAAAWAAcAAAAAAAAAAAAWAAYAAAAAAAAAAAAWAAUAAAAAAAAAAAAWAAQAAAAAAAAAAAAWAAMAAAAAAAAAAAAWAAIAAAAAAAAAAAAWAAEAAAAAAAAAAAAXAAEAAAAAAAAAAAAXAAIAAAAAAAAAAAAXAAMAAAAAAAAAAAAXAAQAAAAAAAAAAAAXAAUAAAAAAAAAAAAXAAYAAAAAAAAAAAAXAAcAAAAAAAAAAAAXAAgAAAAAAAAAAAAXAAkAAAAAAAAAAAAXAAoAAAAAAAAAAAAXAAsAAAAAAAAAAAAXAAwAAAAAAAAAAAAXAA0AAAAAAAAAAAAXAA4AAAAAAAAAAAAXAA8AAAAAAAAAAAAYAA8AAAAAAAAAAAAYAA4AAAAAAAAAAAAYAA0AAAAAAAAAAAAYAAwAAAAAAAAAAAAYAAsAAAAAAAAAAAAYAAoAAAAAAAAAAAAYAAkAAAAAAAAAAAAYAAgAAAAAAAAAAAAYAAcAAAAAAAAAAAAYAAYAAAAAAAAAAAAYAAUAAAAAAAAAAAAYAAQAAAAAAAAAAAAYAAMAAAAAAAAAAAAYAAIAAAAAAAAAAAAYAAEAAAAAAAAAAAAZAAEAAAAAAAAAAAAZAAIAAAAAAAAAAAAZAAMAAAAAAAAAAAAZAAQAAAAAAAAAAAAZAAUAAAAAAAAAAAAZAAYAAAAAAAAAAAAZAAcAAAAAAAAAAAAZAAgAAAAAAAAAAAAZAAkAAAAAAAAAAAAZAAoAAAAAAAAAAAAZAAsAAAAAAAAAAAAZAAwAAAAAAAAAAAAZAA0AAAAAAAAAAAAZAA4AAAAAAAAAAAAZAA8AAAAAAAAAAAAaAA8AAAAAAAAAAAAaAA4AAAAAAAAAAAAaAA0AAAAAAAAAAAAaAAwAAAAAAAAAAAAaAAsAAAAAAAAAAAAaAAoAAAAAAAAAAAAaAAkAAAAAAAAAAAAaAAgAAAAAAAAAAAAaAAcAAAAAAAAAAAAaAAYAAAAAAAAAAAAaAAUAAAAAAAAAAAAaAAQAAAAAAAAAAAAaAAMAAAAAAAAAAAAaAAIAAAAAAAAAAAAaAAEAAAAAAAAAAAAbAAEAAAAAAAAAAAAbAAIAAAAAAAAAAAAbAAMAAAAAAAAAAAAbAAQAAAAAAAAAAAAbAAUAAAAAAAAAAAAbAAYAAAAAAAAAAAAbAAcAAAAAAAAAAAAbAAgAAAAAAAAAAAAbAAkAAAAAAAAAAAAbAAoAAAAAAAAAAAAbAAsAAAAAAAAAAAAbAAwAAAAAAAAAAAAbAA0AAAAAAAAAAAAbAA4AAAAAAAAAAAAbAA8AAAAAAAAAAAAcAA8AAAAAAAAAAAAcAA4AAAAAAAAAAAAcAA0AAAAAAAAAAAAcAAwAAAAAAAAAAAAcAAsAAAAAAAAAAAAcAAkAAAAAAAAAAAAcAAgAAAAAAAAAAAAcAAcAAAAAAAAAAAAcAAUAAAAAAAAAAAAcAAQAAAAAAAAAAAAcAAMAAAAAAAAAAAAcAAIAAAAAAAAAAAAcAAEAAAAAAAAAAAA=")
 tile_set = SubResource("TileSet_6uf7s")
 
-[node name="Player" type="CharacterBody2D" parent="." unique_id=78745694 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
-unique_name_in_owner = true
-position = Vector2(304, 429)
-collision_layer = 2
-collision_mask = 7
-script = ExtResource("10_qmmn1")
-inventory = NodePath("Inventory")
-movement_universal_script = ExtResource("11_cl65v")
-health_stats_script = ExtResource("12_0qduo")
-interaction_and_attack_stats_script = SubResource("Resource_r00hp")
-health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
-health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
-character_sprite = NodePath("CharacterSprite")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="Inventory" type="Node" parent="Player" unique_id=2070691423]
-script = ExtResource("14_p0c18")
-items = Array[ExtResource("15_45tqp")]([ExtResource("16_wqbfv"), ExtResource("17_4isnk"), ExtResource("18_v8mxx"), ExtResource("19_hn6t6"), ExtResource("20_5j62c"), null, null, null, null])
-
-[node name="EffectsCollector" type="Node" parent="Player" unique_id=1333448843]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=619512797]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
-
-[node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=1849338578]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(-0.100002, 1.38283e-05)
-scale = Vector2(0.391406, 0.392)
-texture = ExtResource("5_tm6s0")
-flip_h = true
-
-[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=1042135675]
-position = Vector2(24, 43.00003)
-scale = Vector2(2, 2)
-
-[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=971580810]
-
-[node name="AimScanner" type="RayCast2D" parent="Player" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
-
-[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("21_ee25p")]
-target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
-
-[node name="Spider" type="CharacterBody2D" parent="." unique_id=634546861 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
+[node name="Spider" parent="." unique_id=1488500863 instance=ExtResource("22_tfshx")]
 position = Vector2(1728, 552)
-collision_layer = 4
-collision_mask = 7
-script = ExtResource("22_0xbxg")
-movement_universal_script = ExtResource("23_klpf3")
-health_stats_script = ExtResource("24_abcm4")
-interaction_and_attack_stats_script = ExtResource("25_6tbl5")
-health_points_bar = NodePath("HealthProgressBar")
-health_points_label = NodePath("HealthProgressBar/Label2")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="EffectsCollector" type="Node" parent="Spider" unique_id=473924543]
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Spider" unique_id=1292834181]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Spider" unique_id=2110018586]
-shape = SubResource("RectangleShape2D_h17bs")
-debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Spider" unique_id=1995051797]
-texture_filter = 1
-position = Vector2(-0.5, -0.5)
-scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_ygk25")
-
-[node name="LineOfSight" type="RayCast2D" parent="Spider" unique_id=654854544]
-collision_mask = 3
-
-[node name="HealthProgressBar" type="ProgressBar" parent="Spider" unique_id=102391968]
-offset_left = -32.0
-offset_top = -48.0
-offset_right = 32.0
-offset_bottom = -32.0
-pivot_offset = Vector2(32, 48)
-theme_override_font_sizes/font_size = 8
-theme_override_styles/background = ExtResource("3_0n1lf")
-show_percentage = false
-script = ExtResource("27_uut35")
-
-[node name="Label2" type="Label" parent="Spider/HealthProgressBar" unique_id=271877439]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="InteractableComponent" parent="Spider" unique_id=165657634 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("21_ee25p")]
-target_sprite = NodePath("../AnimatedSprite2D")
-target_collision = NodePath("../CollisionShape2D")
-
-[node name="OldEnemy" type="CharacterBody2D" parent="." unique_id=154228535 node_paths=PackedStringArray("health_points_bar", "health_points_label", "effects_collector") groups=["Enemy", "NPC"]]
-position = Vector2(1272, 960)
-collision_layer = 4
-collision_mask = 7
-script = ExtResource("28_xn1bq")
-movement_universal_script = ExtResource("29_fow65")
-health_stats_script = ExtResource("30_88oph")
-interaction_and_attack_stats_script = ExtResource("31_wnewa")
-health_points_bar = NodePath("HealthProgressBar")
-health_points_label = NodePath("HealthProgressBar/Label2")
-effects_collector = NodePath("EffectsCollector")
-
-[node name="EffectsCollector" type="Node" parent="OldEnemy" unique_id=670958217]
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="OldEnemy" unique_id=1171654718]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="OldEnemy" unique_id=2008497364]
-shape = SubResource("RectangleShape2D_h17bs")
-debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="OldEnemy" unique_id=1549322469]
-texture_filter = 1
-position = Vector2(-0.5, -0.5)
-scale = Vector2(4, 4)
-sprite_frames = SubResource("SpriteFrames_ygk25")
-
-[node name="LineOfSight" type="RayCast2D" parent="OldEnemy" unique_id=1993222605]
-collision_mask = 3
-
-[node name="HealthProgressBar" type="ProgressBar" parent="OldEnemy" unique_id=1198654656]
-offset_left = -32.0
-offset_top = -48.0
-offset_right = 32.0
-offset_bottom = -32.0
-pivot_offset = Vector2(32, 48)
-theme_override_font_sizes/font_size = 8
-theme_override_styles/background = ExtResource("3_0n1lf")
-show_percentage = false
-script = ExtResource("27_uut35")
-
-[node name="Label2" type="Label" parent="OldEnemy/HealthProgressBar" unique_id=150787062]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="InteractableComponent" parent="OldEnemy" unique_id=862830390 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("21_ee25p")]
-target_sprite = NodePath("../AnimatedSprite2D")
-target_collision = NodePath("../CollisionShape2D")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=350463201]
-visible = false
 navigation_polygon = SubResource("NavigationPolygon_hx11q")
 
 [node name="ItemPickup" parent="." unique_id=1701967078 instance=ExtResource("32_jhw3i")]
@@ -721,3 +518,57 @@ item_data = ExtResource("20_5j62c")
 [node name="ItemPickup6" parent="." unique_id=1612150391 instance=ExtResource("32_jhw3i")]
 position = Vector2(320, 616)
 item_data = ExtResource("18_v8mxx")
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=357499416 node_paths=PackedStringArray("inventory", "health_points_bar", "health_points_label", "character_sprite", "effects_collector") groups=["Player"]]
+unique_name_in_owner = true
+position = Vector2(304, 348)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("10_qmmn1")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("19_e3uly")
+movement_universal_script = ExtResource("11_cl65v")
+health_stats_script = ExtResource("12_0qduo")
+interaction_and_attack_stats_script = ExtResource("22_qht6y")
+health_points_bar = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar")
+health_points_label = NodePath("../CanvasLayer/PlayerUIGroup/HealthPointsBar/HealthPointsLabel")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="AimController" type="Node2D" parent="Player" unique_id=1532167487]
+script = ExtResource("23_fhjnl")
+
+[node name="AimScanner" type="RayCast2D" parent="Player/AimController" unique_id=583275932]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="Inventory" type="Node" parent="Player" unique_id=1351917577]
+script = ExtResource("14_p0c18")
+items = Array[ExtResource("15_45tqp")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="Player" unique_id=1029976183]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1489736581]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_e3uly")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="CharacterSprite" type="Sprite2D" parent="Player" unique_id=184324424]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.100002, 1.38283e-05)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("5_tm6s0")
+flip_h = true
+
+[node name="HeldItemHandler" type="Node2D" parent="Player" unique_id=326462368]
+position = Vector2(24, 43.00003)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="Player/HeldItemHandler" unique_id=413892488]
+
+[node name="InteractableComponent" parent="Player" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("21_ee25p")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="Charger" parent="." unique_id=1088879367 instance=ExtResource("27_qht6y")]
+position = Vector2(1676, 938)

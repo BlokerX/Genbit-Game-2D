@@ -1,16 +1,3 @@
-# Jak zaktualizować Pająka (enemy_spider.gd)?
-# W enemy_spider.gd robisz dokładnie to samo:
-#
-# Zmieniasz na samej górze extends CharacterEntity na extends EnemyEntity.
-#
-# Usuwasz z niego deklaracje zmiennych rotationSpeed, detectionDistance, target i navigation_agent (bo dziedziczy je teraz z nowej klasy).
-#
-# Z _ready() usuwasz target = %Player (zostawiasz super()).
-#
-# Zastępujesz pętlę sprawdzającą kolizję i wywołującą cooldown w _physics_process jednym prostym: process_melee_attack(delta).
-#
-# Usuwasz funkcje set_movement_target oraz actor_setup z pliku pająka.
-
 extends EnemyEntity
 
 #region Movement (Zmienne specyficzne dla Pająka)
@@ -41,6 +28,9 @@ func _ready():
 	
 	respawnVector = Vector2(1080, 720)
 	
+	# Sygnał zakończenia nawigacji do punktu
+	navigation_agent.navigation_finished.connect(_on_navigation_finished)
+	
 	# Wywołanie inicjalizacji z EnemyEntity (w tym paska życia oraz znalezienie Gracza)
 	super()
 
@@ -55,13 +45,19 @@ func has_line_of_sight() -> bool:
 		return los_ray.get_collider() == target
 	return false
 
+func _on_navigation_finished():
+	if state == State.SEARCHING:
+		hasLastKnownPos = false
+		wanderTimer = randf_range(wanderIntervalMin, wanderIntervalMax)
+		state = State.IDLE
+
 func _process(delta):
 	super(delta)
 
 func _physics_process(delta):
 	# Zamiast długiej pętli kolizji – wywołujemy naszą nową funkcję z EnemyEntity
 	process_melee_attack(delta)
-	
+
 	#region Line of sight
 	var in_range = target and global_position.distance_to(target.global_position) <= detectionDistance
 	var can_see = in_range and has_line_of_sight()
@@ -103,11 +99,6 @@ func _physics_process(delta):
 			if can_see:
 				# Pająk idąc w ostatnie miejsce gdzie był gracz zobaczył go znowu
 				state = State.CHASING
-			elif navigation_agent.is_navigation_finished():
-				# Pająk dotarł do ostatniego miejsca gdzie był gracz i go nie znalazł
-				hasLastKnownPos = false
-				wanderTimer = randf_range(wanderIntervalMin, wanderIntervalMax)
-				state = State.IDLE
 	#endregion
 
 	#region Obrót i ruch
@@ -127,7 +118,7 @@ func _physics_process(delta):
 			
 		# --- Użycie komponentu z obliczonym wektorem kierunku do ruchu ---
 		velocity = movement_universal_script.movement_procedure(delta, velocity, direction)
-			
+
 		move_and_slide()
 		return
 	#endregion
