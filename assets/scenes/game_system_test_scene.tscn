@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="3_xyupq"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="4_5dhej"]
-[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/_inventory.gd" id="4_w0vak"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="4_w0vak"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="5_b0vj2"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="5_mjw3m"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="6_1f4iy"]
@@ -44,9 +44,6 @@ gradient = SubResource("Gradient_mjw3m")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
-size = Vector2(64.5, 64)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
 atlas = ExtResource("7_6uf7s")
 region = Rect2(0, 0, 16, 16)
@@ -82,6 +79,9 @@ animations = [{
 "name": &"default",
 "speed": 5.0
 }]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
+size = Vector2(64.5, 64)
 
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_hx11q")
@@ -273,12 +273,9 @@ character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
 
-[node name="AimController" type="Node2D" parent="Map/StartRoom/Player" unique_id=756643253]
-script = ExtResource("15_pxeom")
-
-[node name="AimScanner" type="RayCast2D" parent="Map/StartRoom/Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
+[node name="InteractableComponent" parent="Map/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
 
 [node name="Inventory" type="Node" parent="Map/StartRoom/Player" unique_id=2070691423]
 script = ExtResource("4_w0vak")
@@ -286,28 +283,31 @@ items = Array[ExtResource("7_tme40")]([null, null, null, null, null, null, null,
 
 [node name="EffectsCollector" type="Node" parent="Map/StartRoom/Player" unique_id=1333448843]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartRoom/Player" unique_id=619512797]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+[node name="AimController" type="Node2D" parent="Map/StartRoom/Player" unique_id=756643253]
+script = ExtResource("15_pxeom")
 
-[node name="CharacterSprite" type="Sprite2D" parent="Map/StartRoom/Player" unique_id=1849338578]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(-0.100002, 1.38283e-05)
-scale = Vector2(0.391406, 0.392)
-texture = ExtResource("1_5oxlb")
-flip_h = true
+[node name="AimScanner" type="RayCast2D" parent="Map/StartRoom/Player/AimController" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
 
 [node name="HeldItemHandler" type="Node2D" parent="Map/StartRoom/Player" unique_id=1042135675]
-position = Vector2(24, 43.00003)
+position = Vector2(24, 43)
 scale = Vector2(2, 2)
 
 [node name="HeldItemVisual" type="Sprite2D" parent="Map/StartRoom/Player/HeldItemHandler" unique_id=971580810]
 texture_filter = 5
 
-[node name="InteractableComponent" parent="Map/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
+[node name="CharacterSprite" type="Sprite2D" parent="Map/StartRoom/Player" unique_id=1849338578]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.099975586, 0)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("1_5oxlb")
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartRoom/Player" unique_id=619512797]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
 [node name="LootRoom2" parent="Map" unique_id=1124479501 instance=ExtResource("9_pxeom")]
 visible = false
@@ -465,13 +465,17 @@ health_stats_script = ExtResource("24_8h40k")
 interaction_and_attack_stats_script = ExtResource("25_28mns")
 effects_collector = NodePath("EffectsCollector")
 
+[node name="InteractableComponent" parent="Map/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
+outline_material = null
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
+
 [node name="EffectsCollector" type="Node" parent="Map/EnemyRoom3/Spider" unique_id=378154211]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyRoom3/Spider" unique_id=1269572810]
+[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyRoom3/Spider" unique_id=751573452]
+collision_mask = 3
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyRoom3/Spider" unique_id=1068071084]
-shape = SubResource("RectangleShape2D_8f2pv")
-debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyRoom3/Spider" unique_id=1269572810]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Map/EnemyRoom3/Spider" unique_id=70196550]
 texture_filter = 5
@@ -479,8 +483,9 @@ position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_yuthg")
 
-[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyRoom3/Spider" unique_id=751573452]
-collision_mask = 3
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyRoom3/Spider" unique_id=1068071084]
+shape = SubResource("RectangleShape2D_8f2pv")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
 [node name="HealthProgressBar" type="ProgressBar" parent="Map/EnemyRoom3/Spider" unique_id=734905429]
 texture_filter = 5
@@ -505,8 +510,3 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="InteractableComponent" parent="Map/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("27_xiq2x")]
-outline_material = null
-target_sprite = NodePath("../AnimatedSprite2D")
-target_collision = NodePath("../CollisionShape2D")

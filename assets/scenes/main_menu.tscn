@@ -26,6 +26,7 @@ border_blend = true
 [sub_resource type="SystemFont" id="SystemFont_x6jn2"]
 font_names = PackedStringArray("Sans-Serif")
 font_weight = 900
+subpixel_positioning = 0
 
 [sub_resource type="LabelSettings" id="LabelSettings_fsbqx"]
 font = SubResource("SystemFont_x6jn2")
@@ -36,6 +37,7 @@ font_color = Color(0.42, 0.1932, 0.1932, 1)
 font_names = PackedStringArray("Sans-Serif")
 font_italic = true
 font_weight = 825
+subpixel_positioning = 0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fadmi"]
 bg_color = Color(0.76, 0.56772, 0.2584, 1)
@@ -147,7 +149,7 @@ grow_vertical = 2
 color = Color(0.118581, 0.118581, 0.118581, 1)
 metadata/_edit_lock_ = true
 
-[node name="Menu Panel" type="PanelContainer" parent="." unique_id=1594227860]
+[node name="MenuPanel" type="PanelContainer" parent="." unique_id=1594227860]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -163,12 +165,12 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_77rv3")
 metadata/_edit_lock_ = true
 
-[node name="Menu Options" type="VBoxContainer" parent="Menu Panel" unique_id=293869987]
+[node name="MenuOptions" type="VBoxContainer" parent="MenuPanel" unique_id=293869987]
 layout_mode = 2
 theme_override_constants/separation = 2
 metadata/_edit_lock_ = true
 
-[node name="Game Title" type="Label" parent="Menu Panel/Menu Options" unique_id=531227997]
+[node name="GameTitle" type="Label" parent="MenuPanel/MenuOptions" unique_id=531227997]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_x6jn2")
 text = "ROUGELIKE"
@@ -177,7 +179,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="Menu Buttons" type="GridContainer" parent="Menu Panel/Menu Options" unique_id=1789110980]
+[node name="MenuButtons" type="GridContainer" parent="MenuPanel/MenuOptions" unique_id=1789110980]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/h_separation = 2
@@ -185,7 +187,7 @@ theme_override_constants/v_separation = 2
 columns = 2
 metadata/_edit_lock_ = true
 
-[node name="PlayButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=2004125674]
+[node name="PlayButton" type="Button" parent="MenuPanel/MenuOptions/MenuButtons" unique_id=2004125674]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -210,7 +212,7 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
 text = "Play"
 metadata/_edit_lock_ = true
 
-[node name="SettingsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=453230634]
+[node name="SettingsButton" type="Button" parent="MenuPanel/MenuOptions/MenuButtons" unique_id=453230634]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -236,7 +238,7 @@ disabled = true
 text = "Settings"
 metadata/_edit_lock_ = true
 
-[node name="CreditsButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=418561509]
+[node name="CreditsButton" type="Button" parent="MenuPanel/MenuOptions/MenuButtons" unique_id=418561509]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -263,7 +265,7 @@ script = ExtResource("2_6r5fw")
 credits_scene = ExtResource("3_f2xsc")
 metadata/_edit_lock_ = true
 
-[node name="QuitButton" type="Button" parent="Menu Panel/Menu Options/Menu Buttons" unique_id=2115213143]
+[node name="QuitButton" type="Button" parent="MenuPanel/MenuOptions/MenuButtons" unique_id=2115213143]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
