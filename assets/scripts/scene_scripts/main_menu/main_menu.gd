@@ -1,8 +1,8 @@
 extends Control
 
 @onready var main_scene = self.get_parent()
-@onready var button_start = $"Menu Panel/Menu Options/Menu Buttons/PlayButton"
-@onready var button_credits = $"Menu Panel/Menu Options/Menu Buttons/CreditsButton"
+@onready var button_start = $"MenuPanel/MenuOptions/MenuButtons/PlayButton"
+@onready var button_credits = $"MenuPanel/MenuOptions/MenuButtons/CreditsButton"
 @onready var canvaslayer_menus = $CanvasLayer
 @onready var ambience = $Ambience
 

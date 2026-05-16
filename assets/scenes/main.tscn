@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://8ut7xkjehk1b"]
 
 [ext_resource type="Script" uid="uid://bobllldvk18du" path="res://assets/scripts/scene_scripts/main/main.gd" id="1_iklni"]
-[ext_resource type="PackedScene" uid="uid://wn1dt8xyy57e" path="res://assets/scenes/game_system_test_scene.tscn" id="2_kpi06"]
+[ext_resource type="PackedScene" uid="uid://is353qmp4irh" path="res://assets/scenes/_DEMO_scene.tscn" id="2_dfgan"]
 [ext_resource type="PackedScene" uid="uid://daetexya25b0v" path="res://assets/scenes/main_menu.tscn" id="3_dfgan"]
 
 [node name="Main" type="Node" unique_id=395075483]
 script = ExtResource("1_iklni")
-game_scene = ExtResource("2_kpi06")
+game_scene = ExtResource("2_dfgan")
 main_menu_scene = ExtResource("3_dfgan")

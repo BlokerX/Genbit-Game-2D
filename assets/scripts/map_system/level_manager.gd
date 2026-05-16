@@ -43,10 +43,6 @@ func _ready() -> void:
 func register_room(room: Room) -> void:
 	if not all_rooms.has(room):
 		all_rooms.append(room)
-		
-		# Logika autoodkrywania: jeśli to NIE jest sekret, dodaj do widocznych
-		if not room.is_secret:
-			discovered_rooms.append(room)
 			
 		map_updated.emit()
 
@@ -78,6 +74,16 @@ func find_room_by_door(target_door: Door) -> Room:
 			return room
 	return null
 
+## Odkrywa wszystkie pokoje sąsiadujące z podanym pokojem (poprzez połączone drzwi)
+func _discover_neighboring_rooms(room: Room) -> void:
+	for door in room.doors:
+		if door.destination_door:
+			# Szukamy pokoju, w którym znajdują się drzwi docelowe
+			var neighbor_room = find_room_by_door(door.destination_door)
+			# Sprawdzamy, czy pokój istnieje i CZY NIE JEST oznaczony jako sekretny
+			if neighbor_room and not neighbor_room.is_secret:
+				discover_room(neighbor_room) # Odkrywamy go na mapie
+
 ## Funkcja zmiany pokoju
 func change_room(new_room: Room, target_door: Door = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
@@ -102,6 +108,7 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		
 	_connect_door_signals(current_room)
 	discover_room(current_room)
+	_discover_neighboring_rooms(current_room)
 	
 	if not visited_rooms.has(current_room):
 		visited_rooms.append(current_room)
@@ -125,6 +132,9 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			
 		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
+		
+	# 5. Odpalamy logikę walki / blokady pokoju po wejściu gracza
+	current_room.check_and_lock_room()
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:

@@ -18,11 +18,18 @@ const PLAYER_GROUP = "Player"
 
 var current_state : State = State.CLOSED
 
+## Blokada drzwi (if is true it doesn't work)
+var is_locked : bool = false
+
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
 func _on_body_entered(body: Node2D) -> void:
+	# Jeśli drzwi są zablokowane (trwa walka), ignorujemy wejście gracza
+	if is_locked:
+		return
+	
 	if body.is_in_group(PLAYER_GROUP):
 		if current_state == State.CLOSED:
 			_start_opening()
@@ -63,6 +70,17 @@ func _start_opening() -> void:
 		
 		# Po przejściu zamykamy drzwi
 		current_state = State.CLOSED
+
+#region Lock metods
+
+func lock_door() -> void:
+	is_locked = true
+	current_state = State.CLOSED # Upewniamy się, że drzwi są w stanie zamkniętym
+
+func unlock_door() -> void:
+	is_locked = false
+
+#endregion
 
 func _trigger_teleport() -> void:
 	# Bezpieczne sprawdzenie, czy programista na pewno podpiął drzwi w edytorze.

@@ -1,0 +1,568 @@
+[gd_scene format=3 uid="uid://is353qmp4irh"]
+
+[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_megpf"]
+[ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="2_lh5g3"]
+[ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="3_tdiry"]
+[ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="4_sg8r4"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="5_wsqjt"]
+[ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="6_7hw8a"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="7_oh07v"]
+[ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="8_gr8ix"]
+[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="9_ww3fo"]
+[ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="10_7o2d0"]
+[ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="11_iv1w6"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="12_jjq1y"]
+[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="13_obi6l"]
+[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="14_ljipw"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="15_t4i57"]
+[ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="16_c8cpk"]
+[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="17_mtc0x"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="18_2j03w"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="19_st4md"]
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="20_6rmfg"]
+[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="21_in1xr"]
+
+[sub_resource type="Gradient" id="Gradient_mjw3m"]
+interpolation_mode = 1
+colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
+gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
+
+[node name="DemoScene" type="Node2D" unique_id=451291155]
+script = ExtResource("1_megpf")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
+
+[node name="PlayerUIGroup" type="Node" parent="CanvasLayer" unique_id=748282068]
+
+[node name="HealthPointsBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=1547176443]
+texture_filter = 5
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 264.0
+offset_bottom = 52.36364
+scale = Vector2(1, 0.88)
+theme_override_styles/fill = ExtResource("2_lh5g3")
+show_percentage = false
+script = ExtResource("3_tdiry")
+player_stats = ExtResource("4_sg8r4")
+
+[node name="HealthPointsLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
+texture_filter = 5
+layout_mode = 0
+offset_right = 248.0
+offset_bottom = 36.36364
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CooldownProgressBar" type="ProgressBar" parent="CanvasLayer/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+texture_filter = 5
+offset_left = 16.0
+offset_top = 56.0
+offset_right = 264.0
+offset_bottom = 80.0
+theme_override_styles/fill = ExtResource("5_wsqjt")
+show_percentage = false
+script = ExtResource("6_7hw8a")
+player = NodePath("../../../Map/Room13_StartRoom/Player")
+cooldown_label = NodePath("CooldownLabel")
+
+[node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
+texture_filter = 5
+layout_mode = 0
+offset_top = 1.0
+offset_right = 248.0
+offset_bottom = 24.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterSlotTextureRect" type="TextureRect" parent="CanvasLayer/PlayerUIGroup" unique_id=854278161]
+texture_filter = 5
+custom_minimum_size = Vector2(7, 7)
+offset_left = 272.0
+offset_top = 16.0
+offset_right = 336.0
+offset_bottom = 80.0
+texture = SubResource("GradientTexture1D_totju")
+expand_mode = 1
+
+[node name="CharacterTexture" type="TextureRect" parent="CanvasLayer/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
+texture_filter = 5
+custom_minimum_size = Vector2(7, 7)
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("7_oh07v")
+expand_mode = 1
+
+[node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
+script = ExtResource("8_gr8ix")
+player = NodePath("../../Map/Room13_StartRoom/Player")
+info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
+
+[node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+
+[node name="InfoLabel" type="Label" parent="CanvasLayer/InventoryUIGroup/ItemInfoPanelContainer" unique_id=656463042]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+
+[node name="InventorySlotHandle" type="HBoxContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=682378422]
+offset_left = 8.0
+offset_top = 1032.0
+offset_right = 184.0
+offset_bottom = 1048.0
+scale = Vector2(3, 3)
+
+[node name="Slot" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1315751759 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot2" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=401580884 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot3" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=2124368672 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot4" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=756972471 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot5" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1953207854 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot6" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1471169057 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot7" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1237336103 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot8" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1230213238 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Slot9" parent="CanvasLayer/InventoryUIGroup/InventorySlotHandle" unique_id=1394381743 instance=ExtResource("9_ww3fo")]
+layout_mode = 2
+
+[node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -448.0
+offset_top = 760.0
+offset_bottom = 1080.0
+grow_horizontal = 0
+script = ExtResource("10_7o2d0")
+level_manager = NodePath("../../Map")
+cell_size = 35.0
+current_room_color = null
+visited_room_color = null
+discovered_not_visited_color = null
+background_color = null
+text_color = null
+metadata/_edit_group_ = true
+
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+script = ExtResource("11_iv1w6")
+starting_room = NodePath("Room13_StartRoom")
+
+[node name="Room11" parent="Map" unique_id=1124479501 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 1)
+
+[node name="DoorRight" parent="Map/Room11" unique_id=348301975 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room12/DoorLeft")
+
+[node name="DoorDown" parent="Map/Room11" unique_id=155782579 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room21/DoorUp")
+
+[node name="Room12" parent="Map" unique_id=350822120 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(2, 1)
+
+[node name="DoorLeft" parent="Map/Room12" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room11/DoorRight")
+
+[node name="DoorRight" parent="Map/Room12" unique_id=350746797 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room13_StartRoom/DoorLeft")
+
+[node name="Room13_StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(3, 1)
+
+[node name="DoorLeft" parent="Map/Room13_StartRoom" unique_id=1555798131 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room12/DoorRight")
+
+[node name="DoorRight" parent="Map/Room13_StartRoom" unique_id=1228993431 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room14/DoorLeft")
+
+[node name="RoomLabel" type="Label" parent="Map/Room13_StartRoom" unique_id=1778539474]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 816.5
+offset_top = 524.0
+offset_right = 1104.5
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 40
+text = "Pokój startowy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Player" type="CharacterBody2D" parent="Map/Room13_StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+unique_name_in_owner = true
+texture_filter = 5
+position = Vector2(960, 540)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("14_ljipw")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("15_t4i57")
+respawnVector = Vector2(960, 540)
+movement_universal_script = ExtResource("16_c8cpk")
+health_stats_script = ExtResource("4_sg8r4")
+interaction_and_attack_stats_script = ExtResource("17_mtc0x")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+destroy_entity_after_die = false
+
+[node name="InteractableComponent" parent="Map/Room13_StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("18_2j03w")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="Inventory" type="Node" parent="Map/Room13_StartRoom/Player" unique_id=2070691423]
+script = ExtResource("19_st4md")
+items = Array[ExtResource("20_6rmfg")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="Map/Room13_StartRoom/Player" unique_id=1333448843]
+
+[node name="AimController" type="Node2D" parent="Map/Room13_StartRoom/Player" unique_id=756643253]
+script = ExtResource("21_in1xr")
+
+[node name="AimScanner" type="RayCast2D" parent="Map/Room13_StartRoom/Player/AimController" unique_id=824312907]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="HeldItemHandler" type="Node2D" parent="Map/Room13_StartRoom/Player" unique_id=1042135675]
+position = Vector2(24, 43)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="Map/Room13_StartRoom/Player/HeldItemHandler" unique_id=971580810]
+texture_filter = 5
+
+[node name="CharacterSprite" type="Sprite2D" parent="Map/Room13_StartRoom/Player" unique_id=1849338578]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.099975586, 0)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("7_oh07v")
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Room13_StartRoom/Player" unique_id=619512797]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="Room14" parent="Map" unique_id=1268703346 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(4, 1)
+
+[node name="DoorLeft" parent="Map/Room14" unique_id=2116129238 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room13_StartRoom/DoorRight")
+
+[node name="DoorRight" parent="Map/Room14" unique_id=892900780 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room15/DoorLeft")
+
+[node name="Room15" parent="Map" unique_id=1738842860 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(5, 1)
+
+[node name="DoorLeft" parent="Map/Room15" unique_id=113620322 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room14/DoorRight")
+
+[node name="DoorDown" parent="Map/Room15" unique_id=1228906732 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room25/DoorUp")
+
+[node name="Room21" parent="Map" unique_id=1548363602 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 2)
+
+[node name="DoorUp" parent="Map/Room21" unique_id=1462750747 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room11/DoorDown")
+
+[node name="DoorDown" parent="Map/Room21" unique_id=1220882190 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room31/DoorUp")
+
+[node name="Room25" parent="Map" unique_id=1194822409 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(5, 2)
+
+[node name="DoorUp" parent="Map/Room25" unique_id=1518041568 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room15/DoorDown")
+
+[node name="DoorDown" parent="Map/Room25" unique_id=1094009818 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room35/DoorUp")
+
+[node name="Room31" parent="Map" unique_id=1898943010 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 3)
+
+[node name="DoorUp" parent="Map/Room31" unique_id=1634508102 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room21/DoorDown")
+
+[node name="DoorDown" parent="Map/Room31" unique_id=1717070366 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room41/DoorUp")
+
+[node name="Room35" parent="Map" unique_id=1618740216 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(5, 3)
+
+[node name="DoorUp" parent="Map/Room35" unique_id=625542842 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room25/DoorDown")
+
+[node name="DoorDown" parent="Map/Room35" unique_id=1165688379 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room45/DoorUp")
+
+[node name="Room41" parent="Map" unique_id=409765852 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 4)
+
+[node name="DoorUp" parent="Map/Room41" unique_id=1589377498 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room31/DoorDown")
+
+[node name="DoorRight" parent="Map/Room41" unique_id=16173584 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room42/DoorLeft")
+
+[node name="DoorDown" parent="Map/Room41" unique_id=684641705 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room51/DoorUp")
+
+[node name="Room42" parent="Map" unique_id=53033222 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(2, 4)
+
+[node name="DoorLeft" parent="Map/Room42" unique_id=2121670053 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room41/DoorRight")
+
+[node name="DoorRight" parent="Map/Room42" unique_id=1885624441 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room43/DoorLeft")
+
+[node name="DoorDown" parent="Map/Room42" unique_id=1452629494 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room52/DoorUp")
+
+[node name="Room43" parent="Map" unique_id=728015522 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(3, 4)
+
+[node name="DoorLeft" parent="Map/Room43" unique_id=27867195 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room42/DoorRight")
+
+[node name="DoorRight" parent="Map/Room43" unique_id=506008368 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room44/DoorLeft")
+
+[node name="DoorDown" parent="Map/Room43" unique_id=1656899872 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room53/DoorUp")
+
+[node name="Room44" parent="Map" unique_id=1288837808 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(4, 4)
+
+[node name="DoorLeft" parent="Map/Room44" unique_id=1638363230 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room43/DoorRight")
+
+[node name="DoorRight" parent="Map/Room44" unique_id=961189259 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room45/DoorLeft")
+
+[node name="Room45" parent="Map" unique_id=975420192 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(5, 4)
+
+[node name="DoorUp" parent="Map/Room45" unique_id=1439264432 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room35/DoorDown")
+
+[node name="DoorLeft" parent="Map/Room45" unique_id=1060170890 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room44/DoorRight")
+
+[node name="Room51" parent="Map" unique_id=186025939 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 5)
+
+[node name="DoorUp" parent="Map/Room51" unique_id=1803768144 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room41/DoorDown")
+
+[node name="DoorRight" parent="Map/Room51" unique_id=658420067 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room52/DoorLeft")
+
+[node name="DoorDown" parent="Map/Room51" unique_id=1560421307 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room61/DoorUp")
+
+[node name="Room52" parent="Map" unique_id=542491163 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(2, 5)
+
+[node name="DoorUp" parent="Map/Room52" unique_id=2096475626 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room42/DoorDown")
+
+[node name="DoorLeft" parent="Map/Room52" unique_id=601442854 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room51/DoorRight")
+
+[node name="DoorRight" parent="Map/Room52" unique_id=2129579479 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room53/DoorLeft")
+
+[node name="Room53" parent="Map" unique_id=1118217670 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(3, 5)
+
+[node name="DoorUp" parent="Map/Room53" unique_id=320357144 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room43/DoorDown")
+
+[node name="DoorLeft" parent="Map/Room53" unique_id=544945533 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room52/DoorRight")
+
+[node name="DoorDown" parent="Map/Room53" unique_id=1333356433 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room63/DoorUp")
+
+[node name="Room61" parent="Map" unique_id=1182440239 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 6)
+
+[node name="DoorUp" parent="Map/Room61" unique_id=57760922 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room51/DoorDown")
+
+[node name="DoorDown" parent="Map/Room61" unique_id=1537778105 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room71/DoorUp")
+
+[node name="Room63" parent="Map" unique_id=1962506192 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(3, 6)
+
+[node name="DoorUp" parent="Map/Room63" unique_id=707114295 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room53/DoorDown")
+
+[node name="DoorRight" parent="Map/Room63" unique_id=357309883 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room64/DoorLeft")
+
+[node name="Room64" parent="Map" unique_id=893835166 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(4, 6)
+
+[node name="DoorLeft" parent="Map/Room64" unique_id=433799666 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room63/DoorRight")
+
+[node name="DoorDown" parent="Map/Room64" unique_id=699081760 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 1056)
+rotation = -3.1415925
+destination_door = NodePath("../../Room74/DoorUp")
+
+[node name="Room71" parent="Map" unique_id=448018799 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(1, 7)
+
+[node name="DoorUp" parent="Map/Room71" unique_id=1088774629 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room61/DoorDown")
+
+[node name="DoorRight" parent="Map/Room71" unique_id=1859156537 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room74/DoorLeft")
+
+[node name="Room74" parent="Map" unique_id=1643355136 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(4, 7)
+
+[node name="DoorUp" parent="Map/Room74" unique_id=131744984 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(960, 32)
+destination_door = NodePath("../../Room64/DoorDown")
+
+[node name="DoorLeft" parent="Map/Room74" unique_id=958357101 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room71/DoorRight")
+
+[node name="DoorRight" parent="Map/Room74" unique_id=27173218 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(1888, 544)
+rotation = 1.5707964
+destination_door = NodePath("../../Room75/DoorLeft")
+
+[node name="Room75" parent="Map" unique_id=1303196059 instance=ExtResource("12_jjq1y")]
+map_position = Vector2i(5, 7)
+
+[node name="DoorLeft" parent="Map/Room75" unique_id=1754067354 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
+position = Vector2(32, 544)
+rotation = -1.5707964
+destination_door = NodePath("../../Room74/DoorRight")
