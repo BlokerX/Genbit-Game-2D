@@ -10,6 +10,7 @@ script = ExtResource("2_p7alj")
 metadata/_custom_type_script = "uid://bucrmdkvkkry5"
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("1_1d7vr")
 heal_amount = 49
 cures_poison = true
@@ -20,6 +21,6 @@ item_name = "Choco Cookie"
 item_type = "Consumable"
 item_description = "The delicious cookie! It revials 49 hp but it is hard."
 item_is_stackable = true
-item_stack_count = 10
+item_stack_count = 2
 item_max_stack_count = 10
 item_icon = ExtResource("3_htw1r")

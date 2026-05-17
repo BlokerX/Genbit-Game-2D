@@ -3,4 +3,5 @@
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="1_1qad3"]
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("1_1qad3")

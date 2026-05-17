@@ -2,7 +2,7 @@ extends ProgressBar # Lub cokolwiek innego, co trzyma Twoje UI
 class_name HealthBar
 
 # Tu podpinasz tylko zasób ze statystykami gracza
-@export var player_stats: MonitoredStatsComponent
+@export var character_entity: CharacterEntity
 
 # Zmienna na etykietę (nie eksportujemy jej, bo skrypt znajdzie ją sam)
 var health_points_label: Label = null
@@ -15,14 +15,14 @@ func _ready() -> void:
 			break # Znaleźliśmy, przerywamy pętlę!
 			
 	# 2. Podłączenie do czystego zasobu (Resource)
-	if player_stats != null:
+	if character_entity != null and character_entity.health_stats_script != null:
 		# Podłączamy ucho do sygnałów z Zasobu
-		player_stats.health_changed.connect(_on_health_updated)
-		player_stats.max_health_changed.connect(_on_max_health_changed)
+		character_entity.health_stats_script.health_changed.connect(_on_health_updated)
+		character_entity.health_stats_script.max_health_changed.connect(_on_max_health_changed)
 		
 		# Inicjalizujemy UI na starcie, żeby nie było pustych pasków
-		_on_max_health_changed(player_stats.max_health)
-		_on_health_updated(player_stats.health, player_stats.max_health)
+		_on_max_health_changed(character_entity.health_stats_script.max_health)
+		_on_health_updated(character_entity.health_stats_script.health, character_entity.health_stats_script.max_health)
 
 # Reakcja na sygnał zmiany aktualnego HP
 func _on_health_updated(current_health: int, maximum_health: int) -> void:
