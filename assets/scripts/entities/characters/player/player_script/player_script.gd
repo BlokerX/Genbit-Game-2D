@@ -409,7 +409,7 @@ func perform_attack() -> void:
 				
 			if _item is ItemWeapon:
 				# Różnicowanie logiki na podstawie typu broni
-				if _item.is_ranged:
+				if _item is ItemDistanceWeapon:
 					print("Strzał z broni dystansowej!")
 					if projectile_scene != null:
 						# Zbieramy efekty
@@ -424,6 +424,21 @@ func perform_attack() -> void:
 						var shoot_dir = global_position.direction_to(target_enemy.global_position)
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
+						
+						# Przekazujemy prędkość i czas życia. Zakładam, że w pliku 'projectile.gd'
+						# masz zmienne np. 'speed' i 'lifetime'. Jeśli nazywają się inaczej, zmień je poniżej.
+						if "speed" in new_projectile:
+							new_projectile.speed = _item.projectile_speed
+						elif "projectile_speed" in new_projectile:
+							new_projectile.projectile_speed = _item.projectile_speed
+					
+						if "lifetime" in new_projectile:
+							new_projectile.lifetime = _item.projectile_lifetime
+				
+						# Przekazujemy teksturę do Sprite2D wewnątrz pocisku
+						var sprite = new_projectile.get_node_or_null("Sprite2D")
+						if sprite != null and _item.projectile_texture != null:
+							sprite.texture = _item.projectile_texture
 						
 						# EMISJA SYGNAŁU ZAMIAST LEVEL_MANAGERA
 						entity_spawn_requested.emit(new_projectile, global_position)
