@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dh0frexf3gfjw" path="res://assets/textures/samples_examples/blue_potion.png" id="5_v43kk"]
 [ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="6_q4a0c"]
 
-[sub_resource type="Resource" id="Resource_14dwk"]
+[sub_resource type="Resource" id="Resource_hnsvy"]
 script = ExtResource("1_opd0k")
 damage = 5
 max_range = 1000.0
@@ -22,12 +22,12 @@ metadata/_custom_type_script = "uid://byffpv3e7benb"
 resource_local_to_scene = true
 script = ExtResource("6_q4a0c")
 projectile_texture = ExtResource("5_v43kk")
-attack_data = SubResource("Resource_14dwk")
+attack_data = SubResource("Resource_hnsvy")
 is_ranged = true
 weapon_type = "Gun"
 effects = Array[ExtResource("2_v43kk")]([SubResource("Resource_d4pv6")])
 use_cooldown = 0.5
-item_id = 12
+item_id = 3
 item_name = "Freezing Gun"
 item_type = "Weapon"
 item_description = "A freezing machine."
