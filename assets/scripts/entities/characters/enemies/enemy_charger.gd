@@ -45,7 +45,7 @@ func _ready():
 	interaction_and_attack_stats_script.hand_attack_data.damage  = 20
 	interaction_and_attack_stats_script.hand_attack_cooldown      = 1.5
 
-	respawnVector = Vector2(1080, 720)
+	respawnVector = Vector2(global_position.x, global_position.y)
 
 	# Charger uses the nav agent only for IDLE roaming (not for the lunge itself)
 	navigation_agent.navigation_finished.connect(_on_navigation_finished)

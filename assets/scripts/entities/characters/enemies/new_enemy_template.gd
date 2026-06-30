@@ -8,7 +8,8 @@ func _ready():
 	interaction_and_attack_stats_script.hand_damage = 10
 	interaction_and_attack_stats_script.hand_cooldown = 2.0
 	
-	respawnVector = Vector2(1080, 720)
+	# Enemy spawnuje się tam, gdzie pierwotnie został ustawiony jego node na mapie
+	respawnVector = Vector2(global_position.x, global_position.y)
 	
 	# Inicjuje UI i znajduje gracza (EnemyEntity)
 	super()

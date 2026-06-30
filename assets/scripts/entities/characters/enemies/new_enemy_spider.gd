@@ -26,7 +26,7 @@ func _ready():
 	interaction_and_attack_stats_script.hand_attack_data.damage = 10
 	interaction_and_attack_stats_script.hand_attack_cooldown = 2.0
 	
-	respawnVector = Vector2(1080, 720)
+	respawnVector = Vector2(global_position.x, global_position.y)
 	
 	# Sygnał zakończenia nawigacji do punktu
 	navigation_agent.navigation_finished.connect(_on_navigation_finished)
