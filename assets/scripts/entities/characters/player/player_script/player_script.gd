@@ -30,6 +30,9 @@ const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
+## Sygnał wykonywany po skończonej inicjalizacji gracza
+#signal setup_complete
+
 #endregion
 
 #region Podłączone komponenty indywidualne dla gracza
@@ -103,6 +106,8 @@ func _ready():
 		on_inventory_update()
 		inventory.item_dropped.connect(_on_inventory_item_dropped)
 	#endregion
+	
+	#setup_complete.emit()
 
 func _process(delta):
 	# Update health gui data.

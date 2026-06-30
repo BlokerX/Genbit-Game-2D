@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://dt5lmjgy4fgjv"]
+
+[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="1_hyvrl"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="2_yfi7d"]
+[ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="3_hsamt"]
+[ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="4_b3dqe"]
+[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="5_u84jc"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="6_q3ml6"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="8_2tf2h"]
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="9_rrkuk"]
+[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="10_jf6n8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
+size = Vector2(59, 100)
+
+[node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+texture_filter = 5
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_hyvrl")
+inventory = NodePath("Inventory")
+projectile_scene = ExtResource("2_yfi7d")
+respawnVector = Vector2(960, 540)
+movement_universal_script = ExtResource("3_hsamt")
+health_stats_script = ExtResource("4_b3dqe")
+interaction_and_attack_stats_script = ExtResource("5_u84jc")
+character_sprite = NodePath("CharacterSprite")
+effects_collector = NodePath("EffectsCollector")
+destroy_entity_after_die = false
+
+[node name="CharacterSprite" type="Sprite2D" parent="." unique_id=2071309223]
+self_modulate = Color(1, 0.866667, 0.235294, 1)
+position = Vector2(-0.099975586, 0)
+scale = Vector2(0.391406, 0.392)
+texture = ExtResource("6_q3ml6")
+flip_h = true
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("7_oet4l")]
+target_sprite = NodePath("../CharacterSprite")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="Inventory" type="Node" parent="." unique_id=647434682]
+script = ExtResource("8_2tf2h")
+items = Array[ExtResource("9_rrkuk")]([null, null, null, null, null, null, null, null, null])
+
+[node name="EffectsCollector" type="Node" parent="." unique_id=768136432]
+
+[node name="AimController" type="Node2D" parent="." unique_id=236252994]
+script = ExtResource("10_jf6n8")
+
+[node name="AimScanner" type="RayCast2D" parent="AimController" unique_id=674220857]
+collision_mask = 12
+hit_from_inside = true
+
+[node name="HeldItemHandler" type="Node2D" parent="." unique_id=878024246]
+position = Vector2(24, 43)
+scale = Vector2(2, 2)
+
+[node name="HeldItemVisual" type="Sprite2D" parent="HeldItemHandler" unique_id=1102164567]
+texture_filter = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1127700823]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_p58j5")
+debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)

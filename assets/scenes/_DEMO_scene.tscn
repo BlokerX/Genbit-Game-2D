@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_megpf"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="2_lh5g3"]
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="3_tdiry"]
-[ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="4_sg8r4"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="5_wsqjt"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="6_7hw8a"]
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="7_oh07v"]
@@ -14,23 +13,15 @@
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="12_jjq1y"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="13_obi6l"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="14_d8532"]
-[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="14_ljipw"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="14_ndhn8"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="14_x51g6"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="15_t4i57"]
 [ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="15_vfc7k"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="15_x51g6"]
-[ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="16_c8cpk"]
 [ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/green_potion.png" id="16_pijm0"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/entities/stats/monitored_life_stats_component.gd" id="16_tdd8s"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="17_2seqv"]
 [ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="17_6mq0h"]
-[ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="17_mtc0x"]
-[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="18_2j03w"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="18_jwwkk"]
-[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="19_st4md"]
-[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="20_6rmfg"]
-[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="21_in1xr"]
 [ext_resource type="Script" uid="uid://chlfbfwe1orr8" path="res://assets/scripts/entities/effects/active_effects/liliput_effect.gd" id="23_d2eul"]
 [ext_resource type="Texture2D" uid="uid://bv7176plr3gkb" path="res://assets/textures/samples_examples/purple_potion.png" id="24_hpgrf"]
 [ext_resource type="Script" uid="uid://lcxsjhe5qlia" path="res://assets/scripts/entities/effects/active_effects/giant_effect.gd" id="25_deaq4"]
@@ -38,6 +29,7 @@
 [ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="27_gawav"]
 [ext_resource type="Texture2D" uid="uid://crf352jj6tc0q" path="res://assets/textures/samples_examples/yelow_potion.png" id="28_1xjul"]
 [ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/active_effects/slow_effect.gd" id="29_ix51x"]
+[ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="31_nfr4t"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/knife.png" id="32_hbkny"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="33_nfr4t"]
 [ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="34_7sij3"]
@@ -61,7 +53,7 @@ gradient = SubResource("Gradient_mjw3m")
 script = ExtResource("15_vfc7k")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
-[sub_resource type="Resource" id="Resource_pefj8"]
+[sub_resource type="Resource" id="Resource_nfr4t"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -75,7 +67,7 @@ item_is_stackable = true
 item_max_stack_count = 12
 item_icon = ExtResource("16_pijm0")
 
-[sub_resource type="Resource" id="Resource_aibmg"]
+[sub_resource type="Resource" id="Resource_7sij3"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -89,7 +81,7 @@ item_is_stackable = true
 item_max_stack_count = 12
 item_icon = ExtResource("16_pijm0")
 
-[sub_resource type="Resource" id="Resource_hrav4"]
+[sub_resource type="Resource" id="Resource_0thu2"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -103,7 +95,7 @@ item_is_stackable = true
 item_max_stack_count = 12
 item_icon = ExtResource("16_pijm0")
 
-[sub_resource type="Resource" id="Resource_6c7pm"]
+[sub_resource type="Resource" id="Resource_di1ml"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -117,13 +109,13 @@ item_is_stackable = true
 item_max_stack_count = 12
 item_icon = ExtResource("16_pijm0")
 
-[sub_resource type="Resource" id="Resource_wxccy"]
+[sub_resource type="Resource" id="Resource_m6t8g"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_7ttlc"]
+[sub_resource type="Resource" id="Resource_d2eul"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 health = 25
@@ -134,7 +126,7 @@ script = ExtResource("17_2seqv")
 damage = 5
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_l4vby"]
+[sub_resource type="Resource" id="Resource_hpgrf"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_jnda7")
@@ -143,7 +135,7 @@ hand_attack_data = SubResource("Resource_jnda7")
 script = ExtResource("23_d2eul")
 metadata/_custom_type_script = "uid://chlfbfwe1orr8"
 
-[sub_resource type="Resource" id="Resource_d84os"]
+[sub_resource type="Resource" id="Resource_deaq4"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 heal_amount = 0
@@ -163,7 +155,7 @@ item_icon = ExtResource("24_hpgrf")
 script = ExtResource("25_deaq4")
 metadata/_custom_type_script = "uid://lcxsjhe5qlia"
 
-[sub_resource type="Resource" id="Resource_vamu6"]
+[sub_resource type="Resource" id="Resource_gawav"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 heal_amount = 0
@@ -183,7 +175,7 @@ item_icon = ExtResource("26_gawav")
 script = ExtResource("27_gawav")
 metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
 
-[sub_resource type="Resource" id="Resource_0krbe"]
+[sub_resource type="Resource" id="Resource_1xjul"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 heal_amount = 0
@@ -203,7 +195,7 @@ item_icon = ExtResource("28_1xjul")
 script = ExtResource("29_ix51x")
 metadata/_custom_type_script = "uid://bmbnddjayowv6"
 
-[sub_resource type="Resource" id="Resource_ok3uq"]
+[sub_resource type="Resource" id="Resource_pefj8"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 heal_amount = 0
@@ -219,8 +211,25 @@ item_stack_count = 12
 item_max_stack_count = 12
 item_icon = ExtResource("42_deaq4")
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
+[sub_resource type="Resource" id="Resource_aibmg"]
+resource_local_to_scene = true
+script = ExtResource("15_x51g6")
+moveSpeed = 450.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_hrav4"]
+resource_local_to_scene = true
+script = ExtResource("16_tdd8s")
+
+[sub_resource type="Resource" id="Resource_osvyu"]
+script = ExtResource("17_2seqv")
+max_range = 200.0
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_6c7pm"]
+resource_local_to_scene = true
+script = ExtResource("18_jwwkk")
+hand_attack_data = SubResource("Resource_osvyu")
 
 [sub_resource type="Resource" id="Resource_0akag"]
 script = ExtResource("17_2seqv")
@@ -231,7 +240,7 @@ max_range = 1.2
 stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_wqqpu"]
+[sub_resource type="Resource" id="Resource_wxccy"]
 resource_local_to_scene = true
 script = ExtResource("33_nfr4t")
 attack_data = SubResource("Resource_0akag")
@@ -247,6 +256,60 @@ item_max_stack_count = 25
 item_icon = ExtResource("32_hbkny")
 durable = 1
 max_durable = 1
+
+[sub_resource type="Resource" id="Resource_7ttlc"]
+resource_local_to_scene = true
+script = ExtResource("15_x51g6")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_l4vby"]
+resource_local_to_scene = true
+script = ExtResource("16_tdd8s")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_d84os"]
+resource_local_to_scene = true
+script = ExtResource("18_jwwkk")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_vamu6"]
+resource_local_to_scene = true
+script = ExtResource("15_x51g6")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_0krbe"]
+resource_local_to_scene = true
+script = ExtResource("16_tdd8s")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_ok3uq"]
+resource_local_to_scene = true
+script = ExtResource("18_jwwkk")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_htw1r"]
+script = ExtResource("34_7sij3")
+metadata/_custom_type_script = "uid://bucrmdkvkkry5"
+
+[sub_resource type="Resource" id="Resource_wqqpu"]
+resource_local_to_scene = true
+script = ExtResource("17_6mq0h")
+heal_amount = 49
+cures_poison = true
+effects = Array[ExtResource("14_d8532")]([SubResource("Resource_htw1r")])
+use_cooldown = 6.0
+item_id = 2
+item_name = "Choco Cookie"
+item_type = "Consumable"
+item_description = "The delicious cookie! It revials 49 hp but it is hard."
+item_is_stackable = true
+item_stack_count = 2
+item_max_stack_count = 10
+item_icon = ExtResource("35_0thu2")
 
 [sub_resource type="Resource" id="Resource_kl23m"]
 resource_local_to_scene = true
@@ -282,90 +345,36 @@ resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_jnda7")
 
-[sub_resource type="Resource" id="Resource_htw1r"]
-script = ExtResource("34_7sij3")
-metadata/_custom_type_script = "uid://bucrmdkvkkry5"
-
 [sub_resource type="Resource" id="Resource_2psgk"]
 resource_local_to_scene = true
-script = ExtResource("17_6mq0h")
-heal_amount = 49
-cures_poison = true
-effects = Array[ExtResource("14_d8532")]([SubResource("Resource_htw1r")])
-use_cooldown = 6.0
-item_id = 2
-item_name = "Choco Cookie"
-item_type = "Consumable"
-item_description = "The delicious cookie! It revials 49 hp but it is hard."
-item_is_stackable = true
-item_stack_count = 2
-item_max_stack_count = 10
-item_icon = ExtResource("35_0thu2")
+script = ExtResource("15_x51g6")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
 [sub_resource type="Resource" id="Resource_6i6mq"]
 resource_local_to_scene = true
-script = ExtResource("15_x51g6")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
+script = ExtResource("16_tdd8s")
+health = 25
+max_health = 25
 
 [sub_resource type="Resource" id="Resource_fesh0"]
 resource_local_to_scene = true
-script = ExtResource("16_tdd8s")
-health = 25
-max_health = 25
+script = ExtResource("18_jwwkk")
+hand_attack_data = SubResource("Resource_jnda7")
 
 [sub_resource type="Resource" id="Resource_wtvjn"]
 resource_local_to_scene = true
-script = ExtResource("18_jwwkk")
-hand_attack_data = SubResource("Resource_jnda7")
+script = ExtResource("15_x51g6")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
 [sub_resource type="Resource" id="Resource_yg0s7"]
 resource_local_to_scene = true
-script = ExtResource("15_x51g6")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
+script = ExtResource("16_tdd8s")
+health = 25
+max_health = 25
 
 [sub_resource type="Resource" id="Resource_ln31g"]
-resource_local_to_scene = true
-script = ExtResource("16_tdd8s")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_bkki6"]
-resource_local_to_scene = true
-script = ExtResource("18_jwwkk")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_6c8xf"]
-resource_local_to_scene = true
-script = ExtResource("15_x51g6")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_k5gqw"]
-resource_local_to_scene = true
-script = ExtResource("16_tdd8s")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_ray5m"]
-resource_local_to_scene = true
-script = ExtResource("18_jwwkk")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_1gk60"]
-resource_local_to_scene = true
-script = ExtResource("15_x51g6")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_1twjm"]
-resource_local_to_scene = true
-script = ExtResource("16_tdd8s")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_wkiri"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_jnda7")
@@ -379,7 +388,7 @@ max_range = 1.5
 stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_av66l"]
+[sub_resource type="Resource" id="Resource_bkki6"]
 resource_local_to_scene = true
 script = ExtResource("33_nfr4t")
 attack_data = SubResource("Resource_14dwk")
@@ -397,7 +406,7 @@ max_range = 1000.0
 stun_time = 0.17
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_e41jd"]
+[sub_resource type="Resource" id="Resource_6c8xf"]
 resource_local_to_scene = true
 script = ExtResource("39_m6t8g")
 projectile_texture = ExtResource("38_di1ml")
@@ -410,13 +419,13 @@ item_type = "Weapon"
 item_description = "A gun machine."
 item_icon = ExtResource("37_0thu2")
 
-[sub_resource type="Resource" id="Resource_r55e4"]
+[sub_resource type="Resource" id="Resource_k5gqw"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_qrinu"]
+[sub_resource type="Resource" id="Resource_ray5m"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 health = 50
@@ -426,24 +435,24 @@ max_health = 50
 script = ExtResource("17_2seqv")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_6o3jn"]
+[sub_resource type="Resource" id="Resource_1gk60"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_p05go")
 
-[sub_resource type="Resource" id="Resource_7xak8"]
+[sub_resource type="Resource" id="Resource_1twjm"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_6w1ys"]
+[sub_resource type="Resource" id="Resource_wkiri"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 health = 50
 max_health = 50
 
-[sub_resource type="Resource" id="Resource_ho5d1"]
+[sub_resource type="Resource" id="Resource_av66l"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_p05go")
@@ -452,7 +461,7 @@ hand_attack_data = SubResource("Resource_p05go")
 script = ExtResource("15_vfc7k")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
-[sub_resource type="Resource" id="Resource_6w18y"]
+[sub_resource type="Resource" id="Resource_e41jd"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -470,7 +479,7 @@ item_icon = ExtResource("16_pijm0")
 script = ExtResource("15_vfc7k")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
-[sub_resource type="Resource" id="Resource_bah5s"]
+[sub_resource type="Resource" id="Resource_r55e4"]
 resource_local_to_scene = true
 script = ExtResource("17_6mq0h")
 allow_overheal = true
@@ -484,7 +493,7 @@ item_is_stackable = true
 item_max_stack_count = 12
 item_icon = ExtResource("16_pijm0")
 
-[sub_resource type="Resource" id="Resource_bh8qg"]
+[sub_resource type="Resource" id="Resource_qrinu"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 375.0
@@ -504,7 +513,7 @@ critical_rate = 0.2
 max_range = 400.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_t5fan"]
+[sub_resource type="Resource" id="Resource_6o3jn"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_ix51x")
@@ -521,7 +530,7 @@ metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 script = ExtResource("40_d2eul")
 metadata/_custom_type_script = "uid://byffpv3e7benb"
 
-[sub_resource type="Resource" id="Resource_rw6de"]
+[sub_resource type="Resource" id="Resource_7xak8"]
 resource_local_to_scene = true
 script = ExtResource("39_m6t8g")
 projectile_texture = ExtResource("42_deaq4")
@@ -536,31 +545,31 @@ item_type = "Weapon"
 item_description = "A freezing machine."
 item_icon = ExtResource("41_hpgrf")
 
-[sub_resource type="Resource" id="Resource_8bv4t"]
+[sub_resource type="Resource" id="Resource_6w1ys"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 375.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_orv6l"]
+[sub_resource type="Resource" id="Resource_ho5d1"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 health = 500
 max_health = 500
 
-[sub_resource type="Resource" id="Resource_la40l"]
+[sub_resource type="Resource" id="Resource_6w18y"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_ix51x")
 hand_attack_cooldown = 3.8
 
-[sub_resource type="Resource" id="Resource_m46o3"]
+[sub_resource type="Resource" id="Resource_bah5s"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_rtpo8"]
+[sub_resource type="Resource" id="Resource_bh8qg"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 
@@ -568,22 +577,22 @@ script = ExtResource("16_tdd8s")
 script = ExtResource("17_2seqv")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_bc7dr"]
+[sub_resource type="Resource" id="Resource_t5fan"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_nkt6r")
 
-[sub_resource type="Resource" id="Resource_krtsk"]
+[sub_resource type="Resource" id="Resource_rw6de"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_i16qa"]
+[sub_resource type="Resource" id="Resource_8bv4t"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 
-[sub_resource type="Resource" id="Resource_gy1ms"]
+[sub_resource type="Resource" id="Resource_orv6l"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_nkt6r")
@@ -752,21 +761,22 @@ destination_door = NodePath("../../Room21/DoorUp")
 
 [node name="ItemPickup" parent="Map/Room11" unique_id=889212379 instance=ExtResource("14_x51g6")]
 position = Vector2(384, 264)
-item_data = SubResource("Resource_pefj8")
+item_data = SubResource("Resource_nfr4t")
 
 [node name="ItemPickup2" parent="Map/Room11" unique_id=1843962169 instance=ExtResource("14_x51g6")]
 position = Vector2(1600, 848)
-item_data = SubResource("Resource_aibmg")
+item_data = SubResource("Resource_7sij3")
 
 [node name="ItemPickup3" parent="Map/Room11" unique_id=279185431 instance=ExtResource("14_x51g6")]
 position = Vector2(1600, 264)
-item_data = SubResource("Resource_hrav4")
+item_data = SubResource("Resource_0thu2")
 
 [node name="ItemPickup4" parent="Map/Room11" unique_id=1853972946 instance=ExtResource("14_x51g6")]
 position = Vector2(392, 856)
-item_data = SubResource("Resource_6c7pm")
+item_data = SubResource("Resource_di1ml")
 
 [node name="Room12" parent="Map" unique_id=350822120 instance=ExtResource("12_jjq1y")]
+visible = false
 map_position = Vector2i(2, 1)
 
 [node name="DoorLeft" parent="Map/Room12" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
@@ -781,28 +791,27 @@ destination_door = NodePath("../../Room13_StartRoom/DoorLeft")
 
 [node name="Spider" parent="Map/Room12" unique_id=1198211542 instance=ExtResource("14_ndhn8")]
 position = Vector2(968, 520)
-movement_universal_script = SubResource("Resource_wxccy")
-health_stats_script = SubResource("Resource_7ttlc")
-interaction_and_attack_stats_script = SubResource("Resource_l4vby")
+movement_universal_script = SubResource("Resource_m6t8g")
+health_stats_script = SubResource("Resource_d2eul")
+interaction_and_attack_stats_script = SubResource("Resource_hpgrf")
 
 [node name="LiliputPotion" parent="Map/Room12" unique_id=1114826906 instance=ExtResource("14_x51g6")]
 position = Vector2(1668, 933)
-item_data = SubResource("Resource_d84os")
+item_data = SubResource("Resource_deaq4")
 
 [node name="GianticPotion" parent="Map/Room12" unique_id=1478946179 instance=ExtResource("14_x51g6")]
 position = Vector2(1637, 255)
-item_data = SubResource("Resource_vamu6")
+item_data = SubResource("Resource_gawav")
 
 [node name="HastePotion" parent="Map/Room12" unique_id=808550624 instance=ExtResource("14_x51g6")]
 position = Vector2(1776, 385)
-item_data = SubResource("Resource_0krbe")
+item_data = SubResource("Resource_1xjul")
 
 [node name="SlowPotion" parent="Map/Room12" unique_id=2016003923 instance=ExtResource("14_x51g6")]
 position = Vector2(1776, 716)
-item_data = SubResource("Resource_ok3uq")
+item_data = SubResource("Resource_pefj8")
 
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("12_jjq1y")]
-visible = false
 map_position = Vector2i(3, 1)
 
 [node name="DoorLeft" parent="Map/Room13_StartRoom" unique_id=1555798131 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
@@ -833,58 +842,12 @@ text = "Pokój startowy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Player" type="CharacterBody2D" parent="Map/Room13_StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+[node name="Player" parent="Map/Room13_StartRoom" unique_id=1016659893 instance=ExtResource("31_nfr4t")]
 unique_name_in_owner = true
-texture_filter = 5
 position = Vector2(960, 540)
-collision_layer = 2
-collision_mask = 7
-script = ExtResource("14_ljipw")
-inventory = NodePath("Inventory")
-projectile_scene = ExtResource("15_t4i57")
-respawnVector = Vector2(960, 540)
-movement_universal_script = ExtResource("16_c8cpk")
-health_stats_script = ExtResource("4_sg8r4")
-interaction_and_attack_stats_script = ExtResource("17_mtc0x")
-character_sprite = NodePath("CharacterSprite")
-effects_collector = NodePath("EffectsCollector")
-destroy_entity_after_die = false
-
-[node name="CharacterSprite" type="Sprite2D" parent="Map/Room13_StartRoom/Player" unique_id=1849338578]
-self_modulate = Color(1, 0.866667, 0.235294, 1)
-position = Vector2(-0.099975586, 0)
-scale = Vector2(0.391406, 0.392)
-texture = ExtResource("7_oh07v")
-flip_h = true
-
-[node name="InteractableComponent" parent="Map/Room13_StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("18_2j03w")]
-target_sprite = NodePath("../CharacterSprite")
-target_collision = NodePath("../CollisionShape2D")
-
-[node name="Inventory" type="Node" parent="Map/Room13_StartRoom/Player" unique_id=2070691423]
-script = ExtResource("19_st4md")
-items = Array[ExtResource("20_6rmfg")]([null, null, null, null, null, null, null, null, null])
-
-[node name="EffectsCollector" type="Node" parent="Map/Room13_StartRoom/Player" unique_id=1333448843]
-
-[node name="AimController" type="Node2D" parent="Map/Room13_StartRoom/Player" unique_id=756643253]
-script = ExtResource("21_in1xr")
-
-[node name="AimScanner" type="RayCast2D" parent="Map/Room13_StartRoom/Player/AimController" unique_id=824312907]
-collision_mask = 12
-hit_from_inside = true
-
-[node name="HeldItemHandler" type="Node2D" parent="Map/Room13_StartRoom/Player" unique_id=1042135675]
-position = Vector2(24, 43)
-scale = Vector2(2, 2)
-
-[node name="HeldItemVisual" type="Sprite2D" parent="Map/Room13_StartRoom/Player/HeldItemHandler" unique_id=971580810]
-texture_filter = 5
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Room13_StartRoom/Player" unique_id=619512797]
-position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
-debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+movement_universal_script = SubResource("Resource_aibmg")
+health_stats_script = SubResource("Resource_hrav4")
+interaction_and_attack_stats_script = SubResource("Resource_6c7pm")
 
 [node name="Room14" parent="Map" unique_id=1268703346 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -902,7 +865,7 @@ destination_door = NodePath("../../Room15/DoorLeft")
 
 [node name="ItemPickup" parent="Map/Room14" unique_id=1682361138 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 576)
-item_data = SubResource("Resource_wqqpu")
+item_data = SubResource("Resource_wxccy")
 
 [node name="Room15" parent="Map" unique_id=1738842860 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -921,19 +884,19 @@ destination_door = NodePath("../../Room25/DoorUp")
 
 [node name="Spider" parent="Map/Room15" unique_id=1401249178 instance=ExtResource("14_ndhn8")]
 position = Vector2(1288, 184)
-movement_universal_script = SubResource("Resource_kl23m")
-health_stats_script = SubResource("Resource_8hfry")
-interaction_and_attack_stats_script = SubResource("Resource_wpun4")
+movement_universal_script = SubResource("Resource_7ttlc")
+health_stats_script = SubResource("Resource_l4vby")
+interaction_and_attack_stats_script = SubResource("Resource_d84os")
 
 [node name="Spider2" parent="Map/Room15" unique_id=895289693 instance=ExtResource("14_ndhn8")]
 position = Vector2(600, 864)
-movement_universal_script = SubResource("Resource_oc3gg")
-health_stats_script = SubResource("Resource_w3dgf")
-interaction_and_attack_stats_script = SubResource("Resource_g8hlt")
+movement_universal_script = SubResource("Resource_vamu6")
+health_stats_script = SubResource("Resource_0krbe")
+interaction_and_attack_stats_script = SubResource("Resource_ok3uq")
 
 [node name="ItemPickup" parent="Map/Room15" unique_id=1531441209 instance=ExtResource("14_x51g6")]
 position = Vector2(952, 520)
-item_data = SubResource("Resource_2psgk")
+item_data = SubResource("Resource_wqqpu")
 
 [node name="Room21" parent="Map" unique_id=1548363602 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -963,27 +926,27 @@ destination_door = NodePath("../../Room35/DoorUp")
 
 [node name="Spider" parent="Map/Room25" unique_id=871961312 instance=ExtResource("14_ndhn8")]
 position = Vector2(312, 200)
-movement_universal_script = SubResource("Resource_6i6mq")
-health_stats_script = SubResource("Resource_fesh0")
-interaction_and_attack_stats_script = SubResource("Resource_wtvjn")
+movement_universal_script = SubResource("Resource_kl23m")
+health_stats_script = SubResource("Resource_8hfry")
+interaction_and_attack_stats_script = SubResource("Resource_wpun4")
 
 [node name="Spider2" parent="Map/Room25" unique_id=144696867 instance=ExtResource("14_ndhn8")]
 position = Vector2(1288, 184)
-movement_universal_script = SubResource("Resource_yg0s7")
-health_stats_script = SubResource("Resource_ln31g")
-interaction_and_attack_stats_script = SubResource("Resource_bkki6")
+movement_universal_script = SubResource("Resource_oc3gg")
+health_stats_script = SubResource("Resource_w3dgf")
+interaction_and_attack_stats_script = SubResource("Resource_g8hlt")
 
 [node name="Spider3" parent="Map/Room25" unique_id=984517003 instance=ExtResource("14_ndhn8")]
 position = Vector2(264, 808)
-movement_universal_script = SubResource("Resource_6c8xf")
-health_stats_script = SubResource("Resource_k5gqw")
-interaction_and_attack_stats_script = SubResource("Resource_ray5m")
+movement_universal_script = SubResource("Resource_2psgk")
+health_stats_script = SubResource("Resource_6i6mq")
+interaction_and_attack_stats_script = SubResource("Resource_fesh0")
 
 [node name="Spider4" parent="Map/Room25" unique_id=1734148899 instance=ExtResource("14_ndhn8")]
 position = Vector2(1680, 880)
-movement_universal_script = SubResource("Resource_1gk60")
-health_stats_script = SubResource("Resource_1twjm")
-interaction_and_attack_stats_script = SubResource("Resource_wkiri")
+movement_universal_script = SubResource("Resource_wtvjn")
+health_stats_script = SubResource("Resource_yg0s7")
+interaction_and_attack_stats_script = SubResource("Resource_ln31g")
 
 [node name="Room31" parent="Map" unique_id=1898943010 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1013,7 +976,7 @@ destination_door = NodePath("../../Room45/DoorUp")
 
 [node name="ItemPickup" parent="Map/Room35" unique_id=269641304 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 576)
-item_data = SubResource("Resource_av66l")
+item_data = SubResource("Resource_bkki6")
 
 [node name="Room41" parent="Map" unique_id=409765852 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1073,7 +1036,7 @@ destination_door = NodePath("../../Room53/DoorUp")
 
 [node name="ItemPickup" parent="Map/Room43" unique_id=872442358 instance=ExtResource("14_x51g6")]
 position = Vector2(968, 552)
-item_data = SubResource("Resource_e41jd")
+item_data = SubResource("Resource_6c8xf")
 
 [node name="Room44" parent="Map" unique_id=1288837808 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1091,23 +1054,23 @@ destination_door = NodePath("../../Room45/DoorLeft")
 
 [node name="Spider" parent="Map/Room44" unique_id=1935206072 instance=ExtResource("14_ndhn8")]
 position = Vector2(1472, 256)
-movement_universal_script = SubResource("Resource_r55e4")
-health_stats_script = SubResource("Resource_qrinu")
-interaction_and_attack_stats_script = SubResource("Resource_6o3jn")
+movement_universal_script = SubResource("Resource_k5gqw")
+health_stats_script = SubResource("Resource_ray5m")
+interaction_and_attack_stats_script = SubResource("Resource_1gk60")
 
 [node name="Spider2" parent="Map/Room44" unique_id=1345406238 instance=ExtResource("14_ndhn8")]
 position = Vector2(1472, 904)
-movement_universal_script = SubResource("Resource_7xak8")
-health_stats_script = SubResource("Resource_6w1ys")
-interaction_and_attack_stats_script = SubResource("Resource_ho5d1")
+movement_universal_script = SubResource("Resource_1twjm")
+health_stats_script = SubResource("Resource_wkiri")
+interaction_and_attack_stats_script = SubResource("Resource_av66l")
 
 [node name="ItemPickup" parent="Map/Room44" unique_id=1572277518 instance=ExtResource("14_x51g6")]
 position = Vector2(256, 200)
-item_data = SubResource("Resource_6w18y")
+item_data = SubResource("Resource_e41jd")
 
 [node name="ItemPickup2" parent="Map/Room44" unique_id=520759424 instance=ExtResource("14_x51g6")]
 position = Vector2(264, 904)
-item_data = SubResource("Resource_bah5s")
+item_data = SubResource("Resource_r55e4")
 
 [node name="Room45" parent="Map" unique_id=975420192 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1125,9 +1088,9 @@ destination_door = NodePath("../../Room44/DoorRight")
 [node name="MegaSpider" parent="Map/Room45" unique_id=2004969902 instance=ExtResource("14_ndhn8")]
 position = Vector2(960, 544)
 scale = Vector2(2, 2)
-movement_universal_script = SubResource("Resource_bh8qg")
+movement_universal_script = SubResource("Resource_qrinu")
 health_stats_script = SubResource("Resource_x5jnv")
-interaction_and_attack_stats_script = SubResource("Resource_t5fan")
+interaction_and_attack_stats_script = SubResource("Resource_6o3jn")
 
 [node name="Room51" parent="Map" unique_id=186025939 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1262,7 +1225,7 @@ vertical_alignment = 1
 
 [node name="FreezingGun" parent="Map/Room71" unique_id=501348094 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 664)
-item_data = SubResource("Resource_rw6de")
+item_data = SubResource("Resource_7xak8")
 
 [node name="Room74" parent="Map" unique_id=1643355136 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1294,18 +1257,18 @@ destination_door = NodePath("../../Room74/DoorRight")
 [node name="MegaSpider" parent="Map/Room75" unique_id=1258055663 instance=ExtResource("14_ndhn8")]
 position = Vector2(1496, 544)
 scale = Vector2(4, 4)
-movement_universal_script = SubResource("Resource_8bv4t")
-health_stats_script = SubResource("Resource_orv6l")
-interaction_and_attack_stats_script = SubResource("Resource_la40l")
+movement_universal_script = SubResource("Resource_6w1ys")
+health_stats_script = SubResource("Resource_ho5d1")
+interaction_and_attack_stats_script = SubResource("Resource_6w18y")
 
 [node name="Spider" parent="Map/Room75" unique_id=1345325751 instance=ExtResource("14_ndhn8")]
 position = Vector2(704, 200)
-movement_universal_script = SubResource("Resource_m46o3")
-health_stats_script = SubResource("Resource_rtpo8")
-interaction_and_attack_stats_script = SubResource("Resource_bc7dr")
+movement_universal_script = SubResource("Resource_bah5s")
+health_stats_script = SubResource("Resource_bh8qg")
+interaction_and_attack_stats_script = SubResource("Resource_t5fan")
 
 [node name="Spider2" parent="Map/Room75" unique_id=404036365 instance=ExtResource("14_ndhn8")]
 position = Vector2(704, 896)
-movement_universal_script = SubResource("Resource_krtsk")
-health_stats_script = SubResource("Resource_i16qa")
-interaction_and_attack_stats_script = SubResource("Resource_gy1ms")
+movement_universal_script = SubResource("Resource_rw6de")
+health_stats_script = SubResource("Resource_8bv4t")
+interaction_and_attack_stats_script = SubResource("Resource_orv6l")
