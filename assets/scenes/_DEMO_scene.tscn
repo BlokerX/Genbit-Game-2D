@@ -42,9 +42,10 @@
 [ext_resource type="Script" uid="uid://blbmtjd4674n5" path="res://assets/scripts/entities/effects/insta_kill_effect.gd" id="37_gawav"]
 [ext_resource type="Texture2D" uid="uid://c7t6q4tmeydge" path="res://assets/textures/samples_examples/black_potion.png" id="38_1xjul"]
 [ext_resource type="Texture2D" uid="uid://uooe1hbaklrt" path="res://assets/textures/samples_examples/yellow_potion_v2.png" id="38_di1ml"]
-[ext_resource type="Resource" uid="uid://b3rurgfxeb1gd" path="res://assets/data/items/full_regenerate_potion.tres" id="39_hpgrf"]
+[ext_resource type="Script" uid="uid://c7l5kqe6qpcqt" path="res://assets/scripts/entities/effects/full_restore_effect.gd" id="39_deaq4"]
 [ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="39_m6t8g"]
 [ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/active_effects/freeze_effect.gd" id="40_d2eul"]
+[ext_resource type="Texture2D" uid="uid://b8grgj8hph8s0" path="res://assets/textures/samples_examples/green_health_potion.png" id="40_gawav"]
 [ext_resource type="Texture2D" uid="uid://cgk5oysyttlvb" path="res://assets/textures/samples_examples/freezing_gun_test.png" id="41_hpgrf"]
 [ext_resource type="Texture2D" uid="uid://dh0frexf3gfjw" path="res://assets/textures/samples_examples/blue_potion.png" id="42_deaq4"]
 
@@ -58,6 +59,20 @@ gradient = SubResource("Gradient_mjw3m")
 [sub_resource type="Resource" id="Resource_8ngts"]
 script = ExtResource("15_vfc7k")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
+
+[sub_resource type="Resource" id="Resource_1xjul"]
+resource_local_to_scene = true
+script = ExtResource("17_6mq0h")
+allow_overheal = true
+effects = Array[ExtResource("14_d8532")]([SubResource("Resource_8ngts")])
+use_cooldown = 0.25
+item_id = 3
+item_name = "Health Potioon"
+item_type = "Consumable"
+item_description = "It revials 15 hp instantly by bootle."
+item_is_stackable = true
+item_max_stack_count = 12
+item_icon = ExtResource("16_pijm0")
 
 [sub_resource type="Resource" id="Resource_pefj8"]
 resource_local_to_scene = true
@@ -103,25 +118,11 @@ item_icon = ExtResource("16_pijm0")
 
 [sub_resource type="Resource" id="Resource_6c7pm"]
 resource_local_to_scene = true
-script = ExtResource("17_6mq0h")
-allow_overheal = true
-effects = Array[ExtResource("14_d8532")]([SubResource("Resource_8ngts")])
-use_cooldown = 0.25
-item_id = 3
-item_name = "Health Potioon"
-item_type = "Consumable"
-item_description = "It revials 15 hp instantly by bootle."
-item_is_stackable = true
-item_max_stack_count = 12
-item_icon = ExtResource("16_pijm0")
-
-[sub_resource type="Resource" id="Resource_wxccy"]
-resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_7ttlc"]
+[sub_resource type="Resource" id="Resource_wxccy"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 health = 25
@@ -132,7 +133,7 @@ script = ExtResource("17_2seqv")
 damage = 5
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_l4vby"]
+[sub_resource type="Resource" id="Resource_7ttlc"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_jnda7")
@@ -141,7 +142,7 @@ hand_attack_data = SubResource("Resource_jnda7")
 script = ExtResource("23_d2eul")
 metadata/_custom_type_script = "uid://chlfbfwe1orr8"
 
-[sub_resource type="Resource" id="Resource_d84os"]
+[sub_resource type="Resource" id="Resource_l4vby"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_xxcbq")])
@@ -159,7 +160,7 @@ item_icon = ExtResource("24_hpgrf")
 script = ExtResource("25_deaq4")
 metadata/_custom_type_script = "uid://lcxsjhe5qlia"
 
-[sub_resource type="Resource" id="Resource_vamu6"]
+[sub_resource type="Resource" id="Resource_d84os"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_ko707")])
@@ -177,7 +178,7 @@ item_icon = ExtResource("26_gawav")
 script = ExtResource("27_gawav")
 metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
 
-[sub_resource type="Resource" id="Resource_0krbe"]
+[sub_resource type="Resource" id="Resource_vamu6"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_np566")])
@@ -195,7 +196,7 @@ item_icon = ExtResource("28_1xjul")
 script = ExtResource("29_ix51x")
 metadata/_custom_type_script = "uid://bmbnddjayowv6"
 
-[sub_resource type="Resource" id="Resource_ok3uq"]
+[sub_resource type="Resource" id="Resource_0krbe"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_msb2i")])
@@ -209,13 +210,13 @@ item_stack_count = 12
 item_max_stack_count = 12
 item_icon = ExtResource("42_deaq4")
 
-[sub_resource type="Resource" id="Resource_wqqpu"]
+[sub_resource type="Resource" id="Resource_ok3uq"]
 resource_local_to_scene = true
 script = ExtResource("15_x51g6")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_kl23m"]
+[sub_resource type="Resource" id="Resource_wqqpu"]
 resource_local_to_scene = true
 script = ExtResource("16_tdd8s")
 
@@ -224,7 +225,7 @@ script = ExtResource("17_2seqv")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_8hfry"]
+[sub_resource type="Resource" id="Resource_kl23m"]
 resource_local_to_scene = true
 script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -233,7 +234,7 @@ hand_attack_data = SubResource("Resource_osvyu")
 script = ExtResource("34_7sij3")
 metadata/_custom_type_script = "uid://bucrmdkvkkry5"
 
-[sub_resource type="Resource" id="Resource_wpun4"]
+[sub_resource type="Resource" id="Resource_8hfry"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_oy5ia")])
@@ -251,7 +252,7 @@ item_icon = ExtResource("34_hpgrf")
 script = ExtResource("40_d2eul")
 metadata/_custom_type_script = "uid://byffpv3e7benb"
 
-[sub_resource type="Resource" id="Resource_oc3gg"]
+[sub_resource type="Resource" id="Resource_wpun4"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_tijpp")])
@@ -269,7 +270,7 @@ item_icon = ExtResource("42_deaq4")
 script = ExtResource("36_deaq4")
 metadata/_custom_type_script = "uid://csdcvcev8ylem"
 
-[sub_resource type="Resource" id="Resource_w3dgf"]
+[sub_resource type="Resource" id="Resource_oc3gg"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_w8sgk")])
@@ -287,7 +288,7 @@ item_icon = ExtResource("26_gawav")
 script = ExtResource("37_gawav")
 metadata/_custom_type_script = "uid://blbmtjd4674n5"
 
-[sub_resource type="Resource" id="Resource_g8hlt"]
+[sub_resource type="Resource" id="Resource_w3dgf"]
 resource_local_to_scene = true
 script = ExtResource("25_d2eul")
 effects = Array[ExtResource("14_d8532")]([SubResource("Resource_07t2i")])
@@ -300,6 +301,24 @@ item_is_stackable = true
 item_stack_count = 12
 item_max_stack_count = 12
 item_icon = ExtResource("38_1xjul")
+
+[sub_resource type="Resource" id="Resource_dpgun"]
+script = ExtResource("39_deaq4")
+metadata/_custom_type_script = "uid://c7l5kqe6qpcqt"
+
+[sub_resource type="Resource" id="Resource_g8hlt"]
+resource_local_to_scene = true
+script = ExtResource("25_d2eul")
+effects = Array[ExtResource("14_d8532")]([SubResource("Resource_dpgun")])
+use_cooldown = 0.25
+item_id = 17
+item_name = "Full Regenerate Potioon"
+item_type = "Consumable"
+item_description = "It's good for you!"
+item_is_stackable = true
+item_stack_count = 12
+item_max_stack_count = 12
+item_icon = ExtResource("40_gawav")
 
 [sub_resource type="Resource" id="Resource_0akag"]
 script = ExtResource("17_2seqv")
@@ -793,21 +812,18 @@ layout_mode = 2
 [node name="Minimap" type="Control" parent="CanvasLayer" unique_id=726594060 node_paths=PackedStringArray("level_manager")]
 clip_contents = true
 layout_mode = 3
-anchors_preset = 1
+anchors_preset = 3
 anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
-offset_left = -448.0
-offset_top = 760.0
-offset_bottom = 1080.0
+anchor_bottom = 1.0
+offset_left = -480.0
+offset_top = -270.0
 grow_horizontal = 0
+grow_vertical = 0
 script = ExtResource("10_7o2d0")
 level_manager = NodePath("../../Map")
 cell_size = 35.0
-current_room_color = null
-visited_room_color = null
-discovered_not_visited_color = null
-background_color = null
-text_color = null
 metadata/_edit_group_ = true
 
 [node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
@@ -830,19 +846,19 @@ destination_door = NodePath("../../Room21/DoorUp")
 
 [node name="ItemPickup" parent="Map/Room11" unique_id=889212379 instance=ExtResource("14_x51g6")]
 position = Vector2(384, 264)
-item_data = SubResource("Resource_pefj8")
+item_data = SubResource("Resource_1xjul")
 
 [node name="ItemPickup2" parent="Map/Room11" unique_id=1843962169 instance=ExtResource("14_x51g6")]
 position = Vector2(1600, 848)
-item_data = SubResource("Resource_aibmg")
+item_data = SubResource("Resource_pefj8")
 
 [node name="ItemPickup3" parent="Map/Room11" unique_id=279185431 instance=ExtResource("14_x51g6")]
 position = Vector2(1600, 264)
-item_data = SubResource("Resource_hrav4")
+item_data = SubResource("Resource_aibmg")
 
 [node name="ItemPickup4" parent="Map/Room11" unique_id=1853972946 instance=ExtResource("14_x51g6")]
 position = Vector2(392, 856)
-item_data = SubResource("Resource_6c7pm")
+item_data = SubResource("Resource_hrav4")
 
 [node name="Room12" parent="Map" unique_id=350822120 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -860,25 +876,25 @@ destination_door = NodePath("../../Room13_StartRoom/DoorLeft")
 
 [node name="Spider" parent="Map/Room12" unique_id=1198211542 instance=ExtResource("14_ndhn8")]
 position = Vector2(968, 520)
-movement_universal_script = SubResource("Resource_wxccy")
-health_stats_script = SubResource("Resource_7ttlc")
-interaction_and_attack_stats_script = SubResource("Resource_l4vby")
+movement_universal_script = SubResource("Resource_6c7pm")
+health_stats_script = SubResource("Resource_wxccy")
+interaction_and_attack_stats_script = SubResource("Resource_7ttlc")
 
 [node name="LiliputPotion" parent="Map/Room12" unique_id=1114826906 instance=ExtResource("14_x51g6")]
 position = Vector2(1668, 933)
-item_data = SubResource("Resource_d84os")
+item_data = SubResource("Resource_l4vby")
 
 [node name="GianticPotion" parent="Map/Room12" unique_id=1478946179 instance=ExtResource("14_x51g6")]
 position = Vector2(1637, 255)
-item_data = SubResource("Resource_vamu6")
+item_data = SubResource("Resource_d84os")
 
 [node name="HastePotion" parent="Map/Room12" unique_id=808550624 instance=ExtResource("14_x51g6")]
 position = Vector2(1776, 385)
-item_data = SubResource("Resource_0krbe")
+item_data = SubResource("Resource_vamu6")
 
 [node name="SlowPotion" parent="Map/Room12" unique_id=2016003923 instance=ExtResource("14_x51g6")]
 position = Vector2(1776, 716)
-item_data = SubResource("Resource_ok3uq")
+item_data = SubResource("Resource_0krbe")
 
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("12_jjq1y")]
 map_position = Vector2i(3, 1)
@@ -914,29 +930,29 @@ vertical_alignment = 1
 [node name="Player" parent="Map/Room13_StartRoom" unique_id=1016659893 instance=ExtResource("31_nfr4t")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_wqqpu")
-health_stats_script = SubResource("Resource_kl23m")
-interaction_and_attack_stats_script = SubResource("Resource_8hfry")
+movement_universal_script = SubResource("Resource_ok3uq")
+health_stats_script = SubResource("Resource_wqqpu")
+interaction_and_attack_stats_script = SubResource("Resource_kl23m")
 
 [node name="ResetPotion" parent="Map/Room13_StartRoom" unique_id=1857893565 instance=ExtResource("14_x51g6")]
 position = Vector2(696, 424)
-item_data = SubResource("Resource_wpun4")
+item_data = SubResource("Resource_8hfry")
 
 [node name="FreezingPotion" parent="Map/Room13_StartRoom" unique_id=931039841 instance=ExtResource("14_x51g6")]
 position = Vector2(1248, 344)
-item_data = SubResource("Resource_oc3gg")
+item_data = SubResource("Resource_wpun4")
 
 [node name="SimplePotion" parent="Map/Room13_StartRoom" unique_id=2101736203 instance=ExtResource("14_x51g6")]
 position = Vector2(1432, 832)
-item_data = SubResource("Resource_w3dgf")
+item_data = SubResource("Resource_oc3gg")
 
 [node name="EscapePotion" parent="Map/Room13_StartRoom" unique_id=1814950280 instance=ExtResource("14_x51g6")]
 position = Vector2(264, 968)
-item_data = SubResource("Resource_g8hlt")
+item_data = SubResource("Resource_w3dgf")
 
 [node name="FullRegeneratePotion" parent="Map/Room13_StartRoom" unique_id=1991165791 instance=ExtResource("14_x51g6")]
 position = Vector2(160, 552)
-item_data = ExtResource("39_hpgrf")
+item_data = SubResource("Resource_g8hlt")
 
 [node name="Room14" parent="Map" unique_id=1268703346 instance=ExtResource("12_jjq1y")]
 visible = false

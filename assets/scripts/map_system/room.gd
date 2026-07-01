@@ -11,6 +11,10 @@ const ENEMY_GROUP = "Enemy"
 ## Jeśli prawda, pokój pojawi się na mapie dopiero po wejściu do niego
 @export var is_secret : bool = false
 
+#@export_group("Typ Pokoju")
+#enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS }
+#@export var room_type: RoomType = RoomType.NORMAL
+
 @export_group("Wymiary Pokoju")
 @export var room_size_tiles : Vector2i = Vector2i(30, 17):
 	set(value):
