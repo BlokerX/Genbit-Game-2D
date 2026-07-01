@@ -6,11 +6,6 @@ class_name Minimap
 #@export var icon_shop : Texture2D
 #@export var icon_boss : Texture2D
 
-@export_group("Ikony Ziemnego Lootu")
-@export var drop_icon_weapon : Texture2D
-@export var drop_icon_eatable : Texture2D
-@export var drop_icon_other : Texture2D
-
 @export_group("Konfiguracja")
 @export var level_manager : Map
 @export var cell_size : float = 32.0
@@ -24,6 +19,9 @@ var original_bg_color: Color
 @export var discovered_not_visited_color : Color = Color(0.3, 0.3, 0.3, 0.6) # Ciemny/półprzezroczysty (widziany na mapie)
 @export var background_color : Color = Color(0.0, 0.0, 0.0, 0.5)
 @export var text_color : Color = Color(0.0, 0.0, 0.0, 1.0) # Kolor litery S
+
+# --- ZMIENNE DO OBSŁUGI KLAWISZA TAB ---
+var is_map_toggled_large: bool = false # Przechowuje informację, czy mapa jest powiększona na stałe
 
 func _ready() -> void:
 	original_bg_color = background_color
@@ -41,21 +39,25 @@ func _ready() -> void:
 
 # Wychwytywanie wciśnięcia i puszczenia klawisza TAB
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.keycode == KEY_TAB:
+	if event is InputEventKey and event.keycode == KEY_M:
 		
-		# Klawisz TAB ZOSTANIE WCIŚNIĘTY (i ignorujemy "przytrzymanie/echo" systemu)
+		# Klawisz TAB ZOSTANIE WCIŚNIĘTY
 		if event.is_pressed() and not event.is_echo():
-			scale = Vector2(full_view_scaller, full_view_scaller) # Powiększamy mapę 2.5 raza (możesz dostosować tę wartość)
-			clip_contents = false     # Magia! Pokazujemy wszystkie pokoje wystające poza standardową ramkę
-			background_color.a = 0.8  # Przyciemniamy czarne tło dla lepszej czytelności
-			queue_redraw()
-			
-		# Klawisz TAB ZOSTAJE PUSZCZONY
-		elif not event.is_pressed():
-			scale = Vector2(1.0, 1.0) # Wracamy do oryginalnego rozmiaru
-			clip_contents = true      # Z powrotem ucinamy widok do małego kwadratu w rogu
-			background_color = original_bg_color
-			queue_redraw()
+			is_map_toggled_large = not is_map_toggled_large
+			_set_map_large_state(is_map_toggled_large)
+
+# Nowa funkcja pomocnicza zarządzająca wyglądem mapy
+func _set_map_large_state(is_large: bool) -> void:
+	if is_large:
+		scale = Vector2(full_view_scaller, full_view_scaller)
+		clip_contents = false
+		background_color.a = 0.8
+	else:
+		scale = Vector2(1.0, 1.0)
+		clip_contents = true
+		background_color = original_bg_color
+		
+	queue_redraw()
 
 # Ta funkcja odpala się ZAWSZE, gdy w grze doda się, usunie lub odkryje pokój
 func _on_map_state_changed(_room = null) -> void:
