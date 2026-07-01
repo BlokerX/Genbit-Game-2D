@@ -223,7 +223,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Użycie przedmiotu (Tylko Leczenie/Konsumpcja)
 	if event.is_action_pressed(INPUT_USE_ITEM) and interaction_and_attack_stats_script.can_attack():
 		var _item = inventory.get_current_item()
-		if _item is HealingItem:
+		if _item is EatableItem:
 			if _item.affect_target(self):
 				inventory.consume_current_item()
 				interaction_and_attack_stats_script.reset_cooldown()

@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://chssjufigosbf"]
+[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://chssjufigosbf"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_lf0xb"]
 [ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="2_lf0xb"]
 [ext_resource type="Texture2D" uid="uid://crf352jj6tc0q" path="res://assets/textures/samples_examples/yelow_potion.png" id="3_lf0xb"]
-[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="4_rel2s"]
+[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_lf0xb"]
 
 [sub_resource type="Resource" id="Resource_np566"]
 script = ExtResource("2_lf0xb")
@@ -11,9 +11,7 @@ metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
 
 [resource]
 resource_local_to_scene = true
-script = ExtResource("4_rel2s")
-heal_amount = 0
-allow_overheal = true
+script = ExtResource("4_lf0xb")
 effects = Array[ExtResource("1_lf0xb")]([SubResource("Resource_np566")])
 use_cooldown = 0.25
 item_id = 11

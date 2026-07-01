@@ -1,9 +1,8 @@
-extends UseableItem
+extends EatableItem
 class_name HealingItem
 
 # Unikalne właściwości dla przedmiotu leczącego
 @export var heal_amount : int = 20
-@export var cures_poison : bool = false
 @export var allow_overheal : bool = false
 
 # Constructor
@@ -31,7 +30,6 @@ func _init(
 	
 	# Inicjalizacja dla aktualnej klasy
 	heal_amount = _heal_amount
-	cures_poison = _cures_poison
 	allow_overheal = _allow_overheal
 
 func affect_target(target : CharacterEntity) -> bool :
@@ -48,17 +46,7 @@ func affect_target(target : CharacterEntity) -> bool :
 	
 	# Jeśli leczenie się powiodło (HP nie było pełne lub allow_overheal == true)
 	if success:
-		print("Gracz używa przedmiotu leczącego! (Leczenie: ", heal_amount, ", Usuwanie trucizny: ", cures_poison, ")")
-		
-		# (Opcjonalnie: aplikowanie innych efektów z tablicy 'effects' np. buff do zdrowia lub regeneracja)
-		# Używamy pętli bez sprawdzania cooldownu (bo zrobiliśmy to wyżej)
-		for additional_effect in effects:
-			if additional_effect != null:
-				if target.has_method("receive_effect"):
-					target.receive_effect(additional_effect)
-				else:
-					additional_effect.apply_effect(target)
-		
-		return true
+		print("Gracz używa przedmiotu leczącego! (Leczenie: ", heal_amount, ")")
+		return super(target)
 		
 	return false

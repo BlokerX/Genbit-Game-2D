@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://4nrtiqt267k8"]
+[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://4nrtiqt267k8"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_whwwo"]
 [ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/red_potion.png" id="2_6fuyj"]
+[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="2_bu7lc"]
 [ext_resource type="Script" uid="uid://lcxsjhe5qlia" path="res://assets/scripts/entities/effects/active_effects/giant_effect.gd" id="2_whwwo"]
-[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="4_mge4x"]
 
 [sub_resource type="Resource" id="Resource_ko707"]
 script = ExtResource("2_whwwo")
@@ -11,9 +11,7 @@ metadata/_custom_type_script = "uid://lcxsjhe5qlia"
 
 [resource]
 resource_local_to_scene = true
-script = ExtResource("4_mge4x")
-heal_amount = 0
-allow_overheal = true
+script = ExtResource("2_bu7lc")
 effects = Array[ExtResource("1_whwwo")]([SubResource("Resource_ko707")])
 use_cooldown = 0.25
 item_id = 4
