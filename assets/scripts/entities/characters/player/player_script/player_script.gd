@@ -91,7 +91,7 @@ func _ready():
 	# accelerationMultiplayer = 5.0
 	# decelerationMultiplayer = 0.825
 	
-	# Inicjalizacja MonitoredStatsComponent
+	# Inicjalizacja MonitoredLifeStatsComponent
 	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
 	
 	# Inicjalizacja InteractionAndAttackStatsComponent

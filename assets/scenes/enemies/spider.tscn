@@ -6,7 +6,11 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="4_nj7ig"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="5_r73tf"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="6_ninxk"]
+[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="6_nj7ig"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="6_r73tf"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_3xyyd"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_r73tf"]
+[ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="8_ninxk"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
 
@@ -28,6 +32,13 @@ metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 resource_local_to_scene = true
 script = ExtResource("5_r73tf")
 hand_attack_data = SubResource("Resource_p05go")
+
+[sub_resource type="Resource" id="Resource_yn8as"]
+script = ExtResource("8_ninxk")
+item_pickup_scene = ExtResource("6_r73tf")
+loot_table = Array[ExtResource("6_nj7ig")]([ExtResource("7_r73tf")])
+drop_chance = 0.1
+metadata/_custom_type_script = "uid://brgrsjbml6fve"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
 atlas = ExtResource("7_3xyyd")
@@ -76,6 +87,7 @@ respawnVector = Vector2(968, 928)
 movement_universal_script = SubResource("Resource_k1opt")
 health_stats_script = SubResource("Resource_d8532")
 interaction_and_attack_stats_script = SubResource("Resource_vfc7k")
+loot_drop_script = SubResource("Resource_yn8as")
 effects_collector = NodePath("EffectsCollector")
 
 [node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("6_ninxk")]

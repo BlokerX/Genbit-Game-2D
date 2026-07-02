@@ -8,8 +8,9 @@ class_name CharacterEntity
 
 # Komponent ruchu i statystyk:
 @export var movement_universal_script : MovementComponent
-@export var health_stats_script : MonitoredStatsComponent 
+@export var health_stats_script : MonitoredLifeStatsComponent 
 @export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
+@export var loot_drop_script : LootDropComponent
 
 @export var character_sprite : Sprite2D
 
@@ -36,6 +37,10 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
+	# Jeśli przypisaliśmy skrypt w Inspektorze
+	if loot_drop_script:
+		loot_drop_script.perform_drop(self)
+	
 	print(self.name + " has been killed successfully!")
 	
 	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
