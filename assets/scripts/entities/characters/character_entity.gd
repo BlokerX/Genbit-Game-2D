@@ -50,6 +50,7 @@ func _on_character_died():
 	if destroy_entity_after_die :
 		self.queue_free()
 		print(self.name + " został zwolniony z istnienia.")
+	else : call_deferred("respawn_sequence")
 	
 
 # Sekwencja respawnu, Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać

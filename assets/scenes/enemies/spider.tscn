@@ -37,7 +37,7 @@ hand_attack_data = SubResource("Resource_p05go")
 script = ExtResource("8_ninxk")
 item_pickup_scene = ExtResource("6_r73tf")
 loot_table = Array[ExtResource("6_nj7ig")]([ExtResource("7_r73tf")])
-drop_chance = 0.1
+drop_chance = 1.0
 metadata/_custom_type_script = "uid://brgrsjbml6fve"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]

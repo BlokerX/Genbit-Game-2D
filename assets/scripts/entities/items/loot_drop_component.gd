@@ -18,7 +18,12 @@ func perform_drop(spawner: Node2D) -> void:
 	if not item_pickup_scene:
 		push_error("LootDropComponent: Brak przypisanej sceny item_pickup_scene!")
 		return
-		
+	
+	# Pobieramy rodzica wroga (czyli węzeł Pokoju, w którym on się znajduje)
+	var spawn_parent = spawner.get_parent()
+	if not spawn_parent:
+		return
+	
 	# PĘTLA: Przechodzimy przez każdy element w liście łupów
 	for item_data in loot_table:
 		if item_data == null:
@@ -32,5 +37,5 @@ func perform_drop(spawner: Node2D) -> void:
 		var random_offset = Vector2(randf_range(-25, 25), randf_range(-25, 25))
 		pickup_instance.global_position = spawner.global_position + random_offset
 		
-		# Używamy get_tree() ze spawnera, bezpiecznie dodając obiekt do świata
-		spawner.get_tree().current_scene.call_deferred("add_child", pickup_instance)
+		# Dodajemy przedmiot do POKOJU (rodzica wroga), a nie do głównej sceny!
+		spawn_parent.call_deferred("add_child", pickup_instance)
