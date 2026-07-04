@@ -8,8 +8,12 @@
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="7_oh07v"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="8_gr8ix"]
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="9_ww3fo"]
+[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/stone_cross.png" id="10_1xjul"]
+[ext_resource type="Script" uid="uid://bmyf7elwyv8up" path="res://assets/scripts/crafting/crafting_ui.gd" id="10_6c7pm"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="10_7o2d0"]
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="11_iv1w6"]
+[ext_resource type="Script" uid="uid://crevd6m1abpfw" path="res://assets/scripts/crafting/crafting_recipe.gd" id="11_wxccy"]
+[ext_resource type="Script" uid="uid://qsxdqtacj8cm" path="res://assets/scripts/crafting/recipe_ingridient.gd" id="12_7ttlc"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="12_jjq1y"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="13_obi6l"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="14_d8532"]
@@ -28,11 +32,15 @@
 [ext_resource type="Script" uid="uid://lcxsjhe5qlia" path="res://assets/scripts/entities/effects/active_effects/giant_effect.gd" id="25_deaq4"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/knife.png" id="27_1xjul"]
 [ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="27_gawav"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="28_0thu2"]
 [ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/active_effects/slow_effect.gd" id="29_ix51x"]
 [ext_resource type="Texture2D" uid="uid://7p5gp34slg45" path="res://assets/textures/samples_examples/cookie.png" id="30_ix51x"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="30_pijm0"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="31_nfr4t"]
 [ext_resource type="Texture2D" uid="uid://c421ko77rkqnj" path="res://assets/textures/samples_examples/white_potion.png" id="31_pefj8"]
+[ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="32_6mq0h"]
 [ext_resource type="Texture2D" uid="uid://c2minq0svvhxc" path="res://assets/textures/samples_examples/other_sword.png" id="32_aibmg"]
+[ext_resource type="Resource" uid="uid://bxr06u6ayl4mb" path="res://assets/data/items/freezing_potion.tres" id="33_hbkny"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="33_nfr4t"]
 [ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="34_7sij3"]
 [ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/red_potion.png" id="34_hrav4"]
@@ -56,6 +64,36 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="Resource" id="Resource_b2a41"]
+script = ExtResource("12_7ttlc")
+item_data = ExtResource("28_0thu2")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_x38i0"]
+script = ExtResource("12_7ttlc")
+item_data = ExtResource("33_hbkny")
+required_amount = 2
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_3f1qw"]
+script = ExtResource("11_wxccy")
+ingredients = Array[ExtResource("12_7ttlc")]([SubResource("Resource_b2a41"), SubResource("Resource_x38i0")])
+result_item = ExtResource("32_6mq0h")
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_jrfy2"]
+script = ExtResource("12_7ttlc")
+item_data = ExtResource("30_pijm0")
+required_amount = 3
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_dh7nh"]
+script = ExtResource("11_wxccy")
+recipe_name = "Szklana butla"
+ingredients = Array[ExtResource("12_7ttlc")]([SubResource("Resource_jrfy2")])
+result_item = ExtResource("35_7sij3")
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
 
 [sub_resource type="Resource" id="Resource_8ngts"]
 script = ExtResource("15_vfc7k")
@@ -800,6 +838,94 @@ script = ExtResource("10_7o2d0")
 level_manager = NodePath("../../Map")
 cell_size = 35.0
 metadata/_edit_group_ = true
+
+[node name="CraftingUI" type="Control" parent="CanvasLayer" unique_id=777297149 node_paths=PackedStringArray("player")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("10_6c7pm")
+player = NodePath("../../Map/Room13_StartRoom/Player")
+available_recipes = Array[ExtResource("11_wxccy")]([SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh")])
+
+[node name="BackgroundPanel" type="Panel" parent="CanvasLayer/CraftingUI" unique_id=729721762]
+custom_minimum_size = Vector2(800, 500)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/CraftingUI/BackgroundPanel" unique_id=1604310372]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeftPanel" type="VBoxContainer" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer" unique_id=1693873802]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/LeftPanel" unique_id=1534331451]
+texture_filter = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Dostępne Receptury"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/LeftPanel" unique_id=1450102159]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RecipeList" type="VBoxContainer" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/LeftPanel/ScrollContainer" unique_id=1513355947]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightPanel" type="VBoxContainer" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer" unique_id=802374362]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 15
+
+[node name="ResultIcon" type="TextureRect" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/RightPanel" unique_id=815770596]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("10_1xjul")
+stretch_mode = 5
+
+[node name="ResultName" type="Label" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/RightPanel" unique_id=879300198]
+texture_filter = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Przedmiot do wytworzenia"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IngredientsLabel" type="RichTextLabel" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/RightPanel" unique_id=1287122581]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="CraftButton" type="Button" parent="CanvasLayer/CraftingUI/BackgroundPanel/HBoxContainer/RightPanel" unique_id=59437838]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Wytwórz"
 
 [node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("11_iv1w6")
