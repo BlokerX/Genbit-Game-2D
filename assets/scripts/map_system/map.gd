@@ -16,6 +16,15 @@ signal map_updated()
 ## Pokój startowy
 @export var starting_room: Room
 
+
+@export_group("Ustawienia Respawnu")
+## Czy po respawnie wyczyścić historię odkrytych i odwiedzonych pokoi na minimapie?
+@export var reset_map_history_on_respawn: bool = true
+
+## Czy całkowicie zresetować poziom (przeładować aktualną scenę gry)?
+## UWAGA: Przeładowanie sceny zresetuje też statystyki/ekwipunek gracza do wartości początkowych.
+@export var reload_entire_scene_on_respawn: bool = false
+
 ## Obecny pokój na scenie
 var current_room: Room
 ## Wszystkie pokoje
@@ -43,10 +52,6 @@ func _ready() -> void:
 func register_room(room: Room) -> void:
 	if not all_rooms.has(room):
 		all_rooms.append(room)
-		
-		# Logika autoodkrywania: jeśli to NIE jest sekret, dodaj do widocznych
-		if not room.is_secret:
-			discovered_rooms.append(room)
 			
 		map_updated.emit()
 
@@ -78,6 +83,16 @@ func find_room_by_door(target_door: Door) -> Room:
 			return room
 	return null
 
+## Odkrywa wszystkie pokoje sąsiadujące z podanym pokojem (poprzez połączone drzwi)
+func _discover_neighboring_rooms(room: Room) -> void:
+	for door in room.doors:
+		if door.destination_door:
+			# Szukamy pokoju, w którym znajdują się drzwi docelowe
+			var neighbor_room = find_room_by_door(door.destination_door)
+			# Sprawdzamy, czy pokój istnieje i CZY NIE JEST oznaczony jako sekretny
+			if neighbor_room and not neighbor_room.is_secret:
+				discover_room(neighbor_room) # Odkrywamy go na mapie
+
 ## Funkcja zmiany pokoju
 func change_room(new_room: Room, target_door: Door = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
@@ -102,6 +117,7 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		
 	_connect_door_signals(current_room)
 	discover_room(current_room)
+	_discover_neighboring_rooms(current_room)
 	
 	if not visited_rooms.has(current_room):
 		visited_rooms.append(current_room)
@@ -125,6 +141,9 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			
 		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
+		
+	# 5. Odpalamy logikę walki / blokady pokoju po wejściu gracza
+	current_room.check_and_lock_room()
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
@@ -163,6 +182,43 @@ func _on_door_entered(door: Door) -> void:
 			push_warning("Map: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
 	else:
 		push_warning("Map: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
+
+## Funkcja wywoływana, gdy gracz zostanie zrespawnowany
+func handle_player_respawn(player: PlayerCharacter) -> void:
+	# OPCJA 1: Pełny, twardy reset (Najwygodniejszy dla gier typu Roguelike)
+	if reload_entire_scene_on_respawn:
+		print("Menedżer Mapy: Włączony pełny reset. Przeładowuję aktualną scenę gry...")
+		get_tree().reload_current_scene()
+		return # Kod poniżej się nie wykona, ponieważ gra buduje się na nowo od zera
+	
+	# OPCJA 2: Miękki reset (Gracz zachowuje swój obiekt, np. zdobyty ekwipunek w inventory)
+	if starting_room:
+		# Przenosimy gracza z powrotem do pokoju startowego za pomocą istniejącej logiki
+		change_room(starting_room)
+		
+		# Pozycjonowanie gracza w pokoju
+		if starting_room.spawn_points.size() > 0:
+			player.global_position = starting_room.spawn_points[0].global_position
+			print("Menedżer Mapy: Gracz zrespawnował się w punkcie 'spawn_points' pokoju startowego.")
+		else:
+			var room_center_offset = starting_room.size_px / 2.0
+			player.global_position = starting_room.global_position + room_center_offset
+			push_warning("Menedżer Mapy: Pokój startowy nie ma zdefiniowanych spawn_points. Użyto środka pokoju.")
+		
+		# Obsługa flagi historii mapy (odkryte/odwiedzone pokoje)
+		if reset_map_history_on_respawn:
+			discovered_rooms.clear()
+			visited_rooms.clear()
+			discover_room(starting_room)
+			print("Menedżer Mapy: Wyczyszczono historię minimapy (Reset historii pokoi).")
+		else:
+			print("Menedżer Mapy: Zachowano historię minimapy.")
+			# Upewniamy się tylko, że pokój startowy jest oznaczony jako odkryty i odwiedzony
+			discover_room(starting_room)
+			
+		map_updated.emit()
+	else:
+		push_warning("Menedżer Mapy: Brak zdefiniowanego starting_room dla respawnu.")
 
 ## Zwrócenie gracza ze sceny
 func get_player() -> PlayerCharacter :

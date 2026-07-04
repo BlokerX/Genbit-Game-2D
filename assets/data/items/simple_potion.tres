@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://bqxxg8gmcq814"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tdxhj"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/active_effects/poison_effect.gd" id="2_tdxhj"]
+[ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/red_potion.png" id="3_6snh5"]
+[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_xpmky"]
+
+[sub_resource type="Resource" id="Resource_w8sgk"]
+script = ExtResource("2_tdxhj")
+metadata/_custom_type_script = "uid://csdcvcev8ylem"
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("4_xpmky")
+effects = Array[ExtResource("1_tdxhj")]([SubResource("Resource_w8sgk")])
+use_cooldown = 0.25
+item_id = 15
+item_name = "Simple Potioon"
+item_type = "Consumable"
+item_description = "It is potion."
+item_is_stackable = true
+item_max_stack_count = 12
+item_icon = ExtResource("3_6snh5")

@@ -8,5 +8,6 @@ script = ExtResource("1_em6k5")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("1_rtxb7")
 hand_attack_data = SubResource("Resource_jnda7")

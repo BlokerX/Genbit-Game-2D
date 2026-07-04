@@ -5,7 +5,7 @@ extends Node
 # Zmieniamy Sprite2D na naszą nową klasę InventorySlot:
 @onready var slots = $InventorySlotHandle.get_children()
 
-# NOWE: Referencja do naszego tekstu (przeciągniesz go tu w Inspektorze)
+# Referencja do naszego tekstu (przeciągniesz go tu w Inspektorze)
 @export var info_label: Label
 
 func _ready() -> void:
@@ -23,7 +23,7 @@ func _on_inventory_updated() -> void:
 		else:
 			slots[i].update_slot(null)
 			
-	# 2. NOWE: Aktualizacja okienka z informacjami o aktywnym przedmiocie
+	# 2.Aktualizacja okienka z informacjami o aktywnym przedmiocie
 	update_info_panel()
 
 func update_info_panel() -> void:

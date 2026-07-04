@@ -15,11 +15,12 @@ stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("1_ijom4")
 attack_data = SubResource("Resource_0akag")
 weapon_type = "Knife"
 use_cooldown = 0.1
-item_id = 5
+item_id = 8
 item_name = "Knife"
 item_type = "Weapon"
 item_description = "Blooding! It has 5 hp damage."

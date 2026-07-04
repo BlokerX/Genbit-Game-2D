@@ -1,25 +1,63 @@
 extends Control
 class_name Minimap
 
+#@export_group("Ikony Pokoi")
+#@export var icon_treasure : Texture2D
+#@export var icon_shop : Texture2D
+#@export var icon_boss : Texture2D
+
 @export_group("Konfiguracja")
 @export var level_manager : Map
 @export var cell_size : float = 32.0
 @export var cell_spacing : float = 4.0
+@export var full_view_scaller : float = 4
 
 @export_group("Kolory")
+var original_bg_color: Color
 @export var current_room_color : Color = Color(1.0, 1.0, 1.0, 0.9)
 @export var visited_room_color : Color = Color(0.6, 0.6, 0.6, 0.8) # Solidny szary (odwiedzony)
 @export var discovered_not_visited_color : Color = Color(0.3, 0.3, 0.3, 0.6) # Ciemny/półprzezroczysty (widziany na mapie)
 @export var background_color : Color = Color(0.0, 0.0, 0.0, 0.5)
 @export var text_color : Color = Color(0.0, 0.0, 0.0, 1.0) # Kolor litery S
 
+# --- ZMIENNE DO OBSŁUGI KLAWISZA TAB ---
+var is_map_toggled_large: bool = false # Przechowuje informację, czy mapa jest powiększona na stałe
+
 func _ready() -> void:
+	original_bg_color = background_color
+	
+	# Ustawiamy punkt skalowania na prawy górny róg.
+	# Dzięki temu mapa przy powiększaniu rozleje się w dół i w lewo (do środka ekranu)
+	pivot_offset = size
+	
 	if level_manager:
 		# Podłączamy się pod sygnały informujące o dynamice gry
 		level_manager.room_changed.connect(_on_map_state_changed)
 		level_manager.map_updated.connect(_on_map_state_changed)
 	else:
 		push_warning("Minimap: Brak Map'a!")
+
+# Wychwytywanie wciśnięcia i puszczenia klawisza TAB
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.keycode == KEY_M:
+		
+		# Klawisz TAB ZOSTANIE WCIŚNIĘTY
+		if event.is_pressed() and not event.is_echo():
+			is_map_toggled_large = not is_map_toggled_large
+			_set_map_large_state(is_map_toggled_large)
+
+# Nowa funkcja pomocnicza zarządzająca wyglądem mapy
+func _set_map_large_state(is_large: bool) -> void:
+	if is_large:
+		scale = Vector2(full_view_scaller, full_view_scaller)
+		clip_contents = false
+		background_color.a = 0.8
+	else:
+		scale = Vector2(1.0, 1.0)
+		clip_contents = true
+		background_color = original_bg_color
+		
+	queue_redraw()
 
 # Ta funkcja odpala się ZAWSZE, gdy w grze doda się, usunie lub odkryje pokój
 func _on_map_state_changed(_room = null) -> void:
@@ -58,8 +96,17 @@ func _draw() -> void:
 			# ---------------------------------
 				
 			draw_rect(box_rect, draw_color)
-
-			# --- NOWA LOGIKA: Rysowanie litery S ---
+			
+			# --- NOWA LOGIKA: Rysowanie Ikony Pokoju ---
+			#match room.room_type:
+				#Room.RoomType.TREASURE:
+					#icon_to_draw = icon_treasure
+				#Room.RoomType.SHOP:
+					#icon_to_draw = icon_shop
+				#Room.RoomType.BOSS:
+					#icon_to_draw = icon_boss
+					
+			# --- Rysowanie litery S ---
 			if room == level_manager.starting_room:
 				var text = "S"
 				# Obliczamy rozmiar tekstu, aby go wyśrodkować
@@ -69,3 +116,56 @@ func _draw() -> void:
 				text_pos.y += text_size.y / 4.0 # Mała korekta pionowa dla lepszego wyglądu
 				
 				draw_string(font, text_pos - Vector2(text_size.x / 2.0, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color)
+			# Jeśli przypisano ikonkę dla tego typu pokoju, narysuj ją!
+			#elif icon_to_draw != null:
+				## Zmniejszamy prostokąt, żeby ikonka miała margines (nie dotykała krawędzi)
+				#var icon_rect = box_rect.grow(-4) 
+				## Rysujemy teksturę na minimapie
+				#draw_texture_rect(icon_to_draw, icon_rect, false)
+			
+			
+			# --- Sprawdzanie czy na ziemi leżą itemy (ItemPickup) ---
+			# W the Binding of Isaac widzimy itemy tylko w pokojach, które już odwiedziliśmy
+			if level_manager.visited_rooms.has(room):
+				
+				# Szukamy miejsca, w którym LevelManager ładuje przedmioty
+				var target_parent = room
+				
+				# Tworzymy listę oryginalnych tekstur do narysowania w tym pokoju
+				var loot_icons_to_draw : Array[Texture2D] = []
+				
+				# Przeszukujemy dzieci w poszukiwaniu rzuconych itemów
+				for child in target_parent.get_children():
+					if child is ItemPickup and child.item_data != null and child.item_data.item_icon != null:
+						var item_tex = child.item_data.item_icon
+						
+						# Zabezpieczenie: Jeśli leżą 3 takie same miecze, rysujemy tylko jedną ikonę
+						if not loot_icons_to_draw.has(item_tex):
+							loot_icons_to_draw.append(item_tex)
+				
+				# Rysujemy zebrane ikony
+				var loot_icon_size = Vector2(10, 10) # Rozmiar miniatury na mapie (np. 10x10 px)
+				var current_x_offset = 0
+				var current_y_offset = 0
+				
+				for tex in loot_icons_to_draw:
+					# Zabezpieczenie X: Jeśli ikona wyszłaby poza lewą krawędź pokoju, przenieś ją do wyższego rzędu
+					if current_x_offset + loot_icon_size.x + 2 > cell_size:
+						current_x_offset = 0
+						current_y_offset += loot_icon_size.y + 1
+						
+					# Zabezpieczenie Y: Jeśli ikony wyszłyby poza górną krawędź pokoju, po prostu przestań je rysować (pokój jest pełny)
+					if current_y_offset + loot_icon_size.y + 2 > cell_size:
+						break
+					
+					# Obliczamy pozycję (prawy dolny róg, przesuwany w lewo i w górę)
+					var loot_icon_pos = box_pos + Vector2(
+						cell_size - loot_icon_size.x - 2 - current_x_offset, 
+						cell_size - loot_icon_size.y - 2 - current_y_offset
+					)
+					
+					# Rysujemy oryginalną ikonę ze skalowaniem do rozmiaru loot_icon_size
+					draw_texture_rect(tex, Rect2(loot_icon_pos, loot_icon_size), false)
+					
+					# Zwiększamy offset, aby kolejna ikona narysowała się obok
+					current_x_offset += loot_icon_size.x + 1

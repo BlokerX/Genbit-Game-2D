@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://bfy4qopem0gtu"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_m0y63"]
+[ext_resource type="Script" uid="uid://chlfbfwe1orr8" path="res://assets/scripts/entities/effects/active_effects/liliput_effect.gd" id="2_m0y63"]
+[ext_resource type="Texture2D" uid="uid://bv7176plr3gkb" path="res://assets/textures/samples_examples/purple_potion.png" id="3_m0y63"]
+[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_m0y63"]
+
+[sub_resource type="Resource" id="Resource_xxcbq"]
+script = ExtResource("2_m0y63")
+metadata/_custom_type_script = "uid://chlfbfwe1orr8"
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("4_m0y63")
+effects = Array[ExtResource("1_m0y63")]([SubResource("Resource_xxcbq")])
+use_cooldown = 0.25
+item_id = 9
+item_name = "Liliput Potioon"
+item_type = "Consumable"
+item_description = "It makes you a little."
+item_is_stackable = true
+item_stack_count = 12
+item_max_stack_count = 12
+item_icon = ExtResource("3_m0y63")

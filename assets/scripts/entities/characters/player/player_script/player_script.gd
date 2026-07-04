@@ -30,6 +30,9 @@ const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
+## Sygnał wykonywany po skończonej inicjalizacji gracza
+#signal setup_complete
+
 #endregion
 
 #region Podłączone komponenty indywidualne dla gracza
@@ -87,12 +90,13 @@ func _ready():
 	# moveSpeed = 450
 	# accelerationMultiplayer = 5.0
 	# decelerationMultiplayer = 0.825
-	
-	# Inicjalizacja MonitoredStatsComponent
+	# Inicjalizacja MonitoredLifeStatsComponent
 	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-	
 	# Inicjalizacja InteractionAndAttackStatsComponent
 	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	
+	# Gracz nie umiera na zawsze
+	destroy_entity_after_die = false 
 	
 	# Health points bar initialization
 	super()
@@ -103,6 +107,8 @@ func _ready():
 		on_inventory_update()
 		inventory.item_dropped.connect(_on_inventory_item_dropped)
 	#endregion
+	
+	#setup_complete.emit()
 
 func _process(delta):
 	# Update health gui data.
@@ -218,7 +224,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Użycie przedmiotu (Tylko Leczenie/Konsumpcja)
 	if event.is_action_pressed(INPUT_USE_ITEM) and interaction_and_attack_stats_script.can_attack():
 		var _item = inventory.get_current_item()
-		if _item is HealingItem:
+		if _item is EatableItem:
 			if _item.affect_target(self):
 				inventory.consume_current_item()
 				interaction_and_attack_stats_script.reset_cooldown()
@@ -385,6 +391,22 @@ func _on_item_broken(broken_item_name: String):
 	print("Twój przedmiot zniszczył się: ", broken_item_name)
 	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
 
+# Nadpisanie bazowej funkcji z CharacterEntity
+func respawn_sequence() -> void:
+	# 1. Odpalamy całą logikę bazową (leczenie, zerowanie prędkości, usuwanie efektów)
+	super() 
+	
+	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
+	
+	# 2. Przekazanie obsługi położenia do LevelManagera, 
+	# abyśmy przenieśli się też wewnątrz węzłów pokoi, a nie tylko wizualnie
+	var level_manager = get_tree().get_first_node_in_group("LevelManager")
+	if level_manager:
+		if level_manager.has_method("handle_player_respawn"):
+			level_manager.handle_player_respawn(self)
+	else:
+		push_warning("Nie znaleziono LevelManagera podczas respawnu!")
+
 #endregion
 
 #region System ataku
@@ -409,7 +431,7 @@ func perform_attack() -> void:
 				
 			if _item is ItemWeapon:
 				# Różnicowanie logiki na podstawie typu broni
-				if _item.is_ranged:
+				if _item is ItemDistanceWeapon:
 					print("Strzał z broni dystansowej!")
 					if projectile_scene != null:
 						# Zbieramy efekty
@@ -424,6 +446,21 @@ func perform_attack() -> void:
 						var shoot_dir = global_position.direction_to(target_enemy.global_position)
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
+						
+						# Przekazujemy prędkość i czas życia. Zakładam, że w pliku 'projectile.gd'
+						# masz zmienne np. 'speed' i 'lifetime'. Jeśli nazywają się inaczej, zmień je poniżej.
+						if "speed" in new_projectile:
+							new_projectile.speed = _item.projectile_speed
+						elif "projectile_speed" in new_projectile:
+							new_projectile.projectile_speed = _item.projectile_speed
+					
+						if "lifetime" in new_projectile:
+							new_projectile.lifetime = _item.projectile_lifetime
+				
+						# Przekazujemy teksturę do Sprite2D wewnątrz pocisku
+						var sprite = new_projectile.get_node_or_null("Sprite2D")
+						if sprite != null and _item.projectile_texture != null:
+							sprite.texture = _item.projectile_texture
 						
 						# EMISJA SYGNAŁU ZAMIAST LEVEL_MANAGERA
 						entity_spawn_requested.emit(new_projectile, global_position)

@@ -1,6 +1,6 @@
 extends LifeStatsComponent
 
-class_name MonitoredStatsComponent
+class_name MonitoredLifeStatsComponent
 
 signal health_updated(current_health: int, maximum_health: int)
 signal max_health_changed(new_max_health: int)

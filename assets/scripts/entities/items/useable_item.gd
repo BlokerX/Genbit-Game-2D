@@ -37,10 +37,10 @@ func _init(
 
 # Zwykła, pusta wirtualna funkcja (bez żadnego sprawdzania cooldownu czy super())
 func affect_target(_target : CharacterEntity) -> bool:
-	# Tu przedmioty (np. HealingItem) będą po prostu nakładać efekty
+	# Tu przedmioty (np. EatableItem) będą po prostu nakładać efekty
 	return true
 
-# NOWA METODA: Nakłada wszystkie przypisane efekty na cel
+# Nakłada wszystkie przypisane efekty na cel
 func apply_all_effects(target: CharacterEntity) -> bool:
 	var any_effect_applied = false
 	for effect in effects:

@@ -10,15 +10,15 @@ script = ExtResource("2_dxp2a")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("1_cboiq")
 allow_overheal = true
 effects = Array[ExtResource("1_sx258")]([SubResource("Resource_8ngts")])
 use_cooldown = 0.25
-item_id = 3
+item_id = 6
 item_name = "Health Potioon"
 item_type = "Consumable"
 item_description = "It revials 15 hp instantly by bootle."
 item_is_stackable = true
-item_stack_count = 12
 item_max_stack_count = 12
 item_icon = ExtResource("3_8ngts")

@@ -1,29 +1,25 @@
-[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://d26ydrnx3wo6w"]
+[gd_resource type="Resource" script_class="ItemDistanceWeapon" format=3 uid="uid://d26ydrnx3wo6w"]
 
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_myym0"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="2_qf0ew"]
 [ext_resource type="Texture2D" uid="uid://lktk0wf8t75a" path="res://assets/textures/samples_examples/gun_shape01.png" id="3_myym0"]
-[ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/active_effects/freeze_effect.gd" id="3_qf0ew"]
-[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="4_jp8f5"]
+[ext_resource type="Texture2D" uid="uid://uooe1hbaklrt" path="res://assets/textures/samples_examples/yellow_potion_v2.png" id="4_qf0ew"]
+[ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="5_d4pv6"]
 
 [sub_resource type="Resource" id="Resource_14dwk"]
 script = ExtResource("1_myym0")
-damage = 2
 max_range = 1000.0
-stun_time = 0.15
+stun_time = 0.17
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_d4pv6"]
-script = ExtResource("3_qf0ew")
-metadata/_custom_type_script = "uid://byffpv3e7benb"
-
 [resource]
-script = ExtResource("4_jp8f5")
+resource_local_to_scene = true
+script = ExtResource("5_d4pv6")
+projectile_texture = ExtResource("4_qf0ew")
 attack_data = SubResource("Resource_14dwk")
 is_ranged = true
 weapon_type = "Gun"
-effects = Array[ExtResource("2_qf0ew")]([SubResource("Resource_d4pv6")])
-item_id = 10
+item_id = 5
 item_name = "Gun"
 item_type = "Weapon"
 item_description = "A gun machine."

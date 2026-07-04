@@ -3,11 +3,17 @@ extends Node2D
 ## Pokój
 class_name Room
 
+const ENEMY_GROUP = "Enemy"
+
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
 @export var map_position : Vector2i = Vector2i.ZERO
 ## Jeśli prawda, pokój pojawi się na mapie dopiero po wejściu do niego
 @export var is_secret : bool = false
+
+#@export_group("Typ Pokoju")
+#enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS }
+#@export var room_type: RoomType = RoomType.NORMAL
 
 @export_group("Wymiary Pokoju")
 @export var room_size_tiles : Vector2i = Vector2i(30, 17):
@@ -37,6 +43,10 @@ class_name Room
 @export_group("Drzwi")
 var doors : Array[Door] = []
 
+# Sygnał, gdy pokój zostanie oczyszczony
+signal room_cleared 
+var active_enemies_count : int = 0
+
 @export_group("Elementy Pokoju")
 @onready var tile_map : TileMapLayer = $TileMap
 @onready var navigation_region_2d : NavigationRegion2D = $NavigationRegion2D
@@ -52,6 +62,7 @@ func _ready() -> void:
 	# Ignorujemy działanie w edytorze, jeśli nie jest nam tam potrzebne do logiki
 	if not Engine.is_editor_hint():
 		_auto_fetch_doors()
+		_auto_fetch_spawn_points()
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
@@ -70,6 +81,23 @@ func _find_doors_recursive(node: Node) -> void:
 		# Pozwala to trzymać drzwi w "folderach" np. Node2D o nazwie "Doors".
 		if child.get_child_count() > 0:
 			_find_doors_recursive(child)
+
+## Automatycznie szuka wewnątrz pokoju węzłów typu Marker2D przypisanych do grupy "RespawnPoint"
+func _auto_fetch_spawn_points() -> void:
+	spawn_points.clear()
+	_find_spawn_points_recursive(self)
+	print("Pokój " + name + " znalazł automatycznie " + str(spawn_points.size()) + " punktów respawnu z grupy.")
+
+## Rekurencyjne przeszukiwanie drzewa węzłów pokoju
+func _find_spawn_points_recursive(node: Node) -> void:
+	for child in node.get_children():
+		# Sprawdzamy czy to Marker2D oraz czy należy do grupy RespawnPoint
+		if child is Marker2D and child.is_in_group("RespawnPoint"):
+			spawn_points.append(child)
+		
+		# Jeśli węzeł ma własne dzieci, szukamy głębiej
+		if child.get_child_count() > 0:
+			_find_spawn_points_recursive(child)
 
 ## Generowanie pokoju
 func generate_room() -> void:
@@ -125,3 +153,43 @@ func _draw() -> void:
 			var tile_size = tile_map.tile_set.tile_size
 			var rect = Rect2(Vector2.ZERO, Vector2(room_size_tiles * tile_size))
 			draw_rect(rect, Color(0, 1, 0, 0.2), false, 2.0)
+
+#region Logika stanu walki
+
+## Sprawdza, czy w pokoju są wrogowie i odpowiednio zarządza drzwiami
+func check_and_lock_room() -> void:
+	active_enemies_count = 0
+	_find_enemies_recursive(self)
+	
+	if active_enemies_count > 0:
+		print("Wrogowie wykryci! Liczba: " + str(active_enemies_count) + ". Zamykam drzwi w pokoju: " + name)
+		for door in doors:
+			door.lock_door()
+	else:
+		for door in doors:
+			door.unlock_door()
+
+## Szuka rekurencyjnie przeciwników pośród wszystkich dzieci pokoju
+func _find_enemies_recursive(node: Node) -> void:
+	for child in node.get_children():
+		# Zakładamy, że przeciwnicy znajdują się w grupie "Enemy"
+		if child.is_in_group(ENEMY_GROUP):
+			active_enemies_count += 1
+			
+			# Nasłuchujemy, kiedy przeciwnik zniknie (zginie)
+			if not child.tree_exited.is_connected(_on_enemy_died):
+				child.tree_exited.connect(_on_enemy_died)
+				
+		if child.get_child_count() > 0:
+			_find_enemies_recursive(child)
+
+## Reaguje na śmierć (usunięcie) przeciwnika
+func _on_enemy_died() -> void:
+	active_enemies_count -= 1
+	if active_enemies_count <= 0:
+		print("Pokój oczyszczony! Odblokowuję drzwi.")
+		for door in doors:
+			door.unlock_door()
+		room_cleared.emit()
+
+#endregion
