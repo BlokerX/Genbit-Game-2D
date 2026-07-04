@@ -18,6 +18,6 @@ item_id = 15
 item_name = "Simple Potioon"
 item_type = "Consumable"
 item_description = "It is potion."
+item_icon = ExtResource("3_6snh5")
 item_is_stackable = true
 item_max_stack_count = 12
-item_icon = ExtResource("3_6snh5")

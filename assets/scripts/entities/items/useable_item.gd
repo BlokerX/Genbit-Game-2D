@@ -19,17 +19,15 @@ func _init(
  _item_type : String = "Useable",
  _item_description : String = "",
  _item_is_stackable : bool = false,
- _item_stack_count : int = 1,
  _item_max_stack_count : int = 1,
  _item_sprite : Texture2D = null,
- _durable : int = -1,
  _max_durable : int = -1,
 # Argumenty dla aktualnego obiektu:
  _effects : Array[Effect] = [], # NOWY ARGUMENT
  _use_cooldown : float = 1.0
 ) :
 	# Inicjalizacja dla klasy bazowej
-	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_max_stack_count, _item_sprite, _durable, _max_durable)
+	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_max_stack_count, _item_sprite, _max_durable)
 	
 	# Inicjalizacja dla aktualnej klasy
 	effects = _effects

@@ -1,24 +1,24 @@
 extends Resource
-class_name ItemData
+#class_name ItemData
 
 # ==========================================
 # TYLKO STAŁE DANE - ZABRONIONE ZMIENNE STANU!
 # ==========================================
 
-#@export_group("Informacje Ogólne")
+@export_group("Informacje Ogólne")
 @export var item_id : int = 1
 @export var item_name : String = "Item"
 @export var item_type : String = "Item"
 @export var item_description : String = ""
 @export var item_icon : Texture2D 
 
-#@export_group("Stosowanie (Stackowanie)")
+@export_group("Stosowanie (Stackowanie)")
 ## Czy przedmiot jest stakowalny?
 @export var item_is_stackable : bool = false
 ## Maksymalna ilość w JEDNYM slocie
 @export var item_max_stack_count : int = 1
 
-#@export_group("Wytrzymałość")
+@export_group("Wytrzymałość")
 ## Maksymalna wytrzymałość (-1 oznacza przedmiot niezniszczalny)
 @export var max_durable : int = -1
 

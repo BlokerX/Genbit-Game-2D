@@ -293,6 +293,7 @@ func on_inventory_update() :
 	#
 	##endregion
 	
+	var current_slot = inventory.get_current_slot()
 	var current_item = inventory.get_current_item()
 	
 	# Aktualizacja ręki gracza (itemu w ręce)
@@ -306,8 +307,9 @@ func on_inventory_update() :
 		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
 	
 	# Podłączamy sygnał zepsucia do aktywnego przedmiotu
-	if current_item != null and not current_item.item_broken.is_connected(_on_item_broken):
-		current_item.item_broken.connect(_on_item_broken)
+	if current_slot != null and not current_slot.is_empty():
+		if not current_slot.item_broken.is_connected(_on_item_broken):
+			current_slot.item_broken.connect(_on_item_broken)
 	
 	# Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
 	if current_item is UseableItem:
@@ -328,13 +330,14 @@ func on_inventory_update() :
 		interaction_and_attack_stats_script.actual_extra_effects = []
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
-func _on_inventory_item_dropped(dropped_item_data: ItemData):
+func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int):
 	if item_pickup_scene == null:
 		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
 		return
 	
 	var drop = item_pickup_scene.instantiate()
 	drop.item_data = dropped_item_data
+	drop.amount = drop_amount
 	
 	entity_spawn_requested.emit(drop, global_position)
 	

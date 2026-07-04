@@ -19,6 +19,6 @@ item_id = 6
 item_name = "Health Potioon"
 item_type = "Consumable"
 item_description = "It revials 15 hp instantly by bootle."
+item_icon = ExtResource("3_8ngts")
 item_is_stackable = true
 item_max_stack_count = 12
-item_icon = ExtResource("3_8ngts")

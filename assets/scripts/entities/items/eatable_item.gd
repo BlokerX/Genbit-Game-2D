@@ -9,16 +9,14 @@ func _init(
 	_item_type : String = "Eatable",
 	_item_description : String = "It is possible to be eaten.",
 	_item_is_stackable : bool = true, # Przedmioty leczące zazwyczaj można stackować
-	_item_stack_count : int = 1,
 	_item_max_stack_count : int = 1,
 	_item_sprite : Texture2D = null,
-	_durable : int = -1, # Przedmioty jednorazowe zazwyczaj nie mają wytrzymałości (-1)
 	_max_durable : int = -1,
 	_effects : Array[Effect] = [], # Przekazujemy dodatkowe efekty
 	_use_cooldown : float = 0.5 # Zabezpieczenie przed wypiciem 10 mikstur w sekundę
 ) :
 	# Inicjalizacja dla klasy bazowej
-	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_stack_count, _item_max_stack_count, _item_sprite, _durable, _max_durable, _effects, _use_cooldown)
+	super(_item_id, _item_name, _item_type, _item_description, _item_is_stackable, _item_max_stack_count, _item_sprite, _max_durable, _effects, _use_cooldown)
 
 func affect_target(target : CharacterEntity) -> bool :
 	print("Gracz konsumuje przedmiot!")
