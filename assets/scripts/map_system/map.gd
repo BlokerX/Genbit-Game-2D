@@ -16,6 +16,15 @@ signal map_updated()
 ## Pokój startowy
 @export var starting_room: Room
 
+
+@export_group("Ustawienia Respawnu")
+## Czy po respawnie wyczyścić historię odkrytych i odwiedzonych pokoi na minimapie?
+@export var reset_map_history_on_respawn: bool = true
+
+## Czy całkowicie zresetować poziom (przeładować aktualną scenę gry)?
+## UWAGA: Przeładowanie sceny zresetuje też statystyki/ekwipunek gracza do wartości początkowych.
+@export var reload_entire_scene_on_respawn: bool = false
+
 ## Obecny pokój na scenie
 var current_room: Room
 ## Wszystkie pokoje
@@ -173,6 +182,43 @@ func _on_door_entered(door: Door) -> void:
 			push_warning("Map: Drzwi docelowe nie znajdują się w żadnym węźle Room!")
 	else:
 		push_warning("Map: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
+
+## Funkcja wywoływana, gdy gracz zostanie zrespawnowany
+func handle_player_respawn(player: PlayerCharacter) -> void:
+	# OPCJA 1: Pełny, twardy reset (Najwygodniejszy dla gier typu Roguelike)
+	if reload_entire_scene_on_respawn:
+		print("Menedżer Mapy: Włączony pełny reset. Przeładowuję aktualną scenę gry...")
+		get_tree().reload_current_scene()
+		return # Kod poniżej się nie wykona, ponieważ gra buduje się na nowo od zera
+	
+	# OPCJA 2: Miękki reset (Gracz zachowuje swój obiekt, np. zdobyty ekwipunek w inventory)
+	if starting_room:
+		# Przenosimy gracza z powrotem do pokoju startowego za pomocą istniejącej logiki
+		change_room(starting_room)
+		
+		# Pozycjonowanie gracza w pokoju
+		if starting_room.spawn_points.size() > 0:
+			player.global_position = starting_room.spawn_points[0].global_position
+			print("Menedżer Mapy: Gracz zrespawnował się w punkcie 'spawn_points' pokoju startowego.")
+		else:
+			var room_center_offset = starting_room.size_px / 2.0
+			player.global_position = starting_room.global_position + room_center_offset
+			push_warning("Menedżer Mapy: Pokój startowy nie ma zdefiniowanych spawn_points. Użyto środka pokoju.")
+		
+		# Obsługa flagi historii mapy (odkryte/odwiedzone pokoje)
+		if reset_map_history_on_respawn:
+			discovered_rooms.clear()
+			visited_rooms.clear()
+			discover_room(starting_room)
+			print("Menedżer Mapy: Wyczyszczono historię minimapy (Reset historii pokoi).")
+		else:
+			print("Menedżer Mapy: Zachowano historię minimapy.")
+			# Upewniamy się tylko, że pokój startowy jest oznaczony jako odkryty i odwiedzony
+			discover_room(starting_room)
+			
+		map_updated.emit()
+	else:
+		push_warning("Menedżer Mapy: Brak zdefiniowanego starting_room dla respawnu.")
 
 ## Zwrócenie gracza ze sceny
 func get_player() -> PlayerCharacter :

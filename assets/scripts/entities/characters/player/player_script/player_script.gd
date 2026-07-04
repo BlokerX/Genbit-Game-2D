@@ -90,12 +90,13 @@ func _ready():
 	# moveSpeed = 450
 	# accelerationMultiplayer = 5.0
 	# decelerationMultiplayer = 0.825
-	
 	# Inicjalizacja MonitoredLifeStatsComponent
 	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-	
 	# Inicjalizacja InteractionAndAttackStatsComponent
 	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	
+	# Gracz nie umiera na zawsze
+	destroy_entity_after_die = false 
 	
 	# Health points bar initialization
 	super()
@@ -389,6 +390,22 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData):
 func _on_item_broken(broken_item_name: String):
 	print("Twój przedmiot zniszczył się: ", broken_item_name)
 	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
+
+# Nadpisanie bazowej funkcji z CharacterEntity
+func respawn_sequence() -> void:
+	# 1. Odpalamy całą logikę bazową (leczenie, zerowanie prędkości, usuwanie efektów)
+	super() 
+	
+	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
+	
+	# 2. Przekazanie obsługi położenia do LevelManagera, 
+	# abyśmy przenieśli się też wewnątrz węzłów pokoi, a nie tylko wizualnie
+	var level_manager = get_tree().get_first_node_in_group("LevelManager")
+	if level_manager:
+		if level_manager.has_method("handle_player_respawn"):
+			level_manager.handle_player_respawn(self)
+	else:
+		push_warning("Nie znaleziono LevelManagera podczas respawnu!")
 
 #endregion
 

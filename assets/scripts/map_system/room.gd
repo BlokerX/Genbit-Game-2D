@@ -62,6 +62,7 @@ func _ready() -> void:
 	# Ignorujemy działanie w edytorze, jeśli nie jest nam tam potrzebne do logiki
 	if not Engine.is_editor_hint():
 		_auto_fetch_doors()
+		_auto_fetch_spawn_points()
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
@@ -80,6 +81,23 @@ func _find_doors_recursive(node: Node) -> void:
 		# Pozwala to trzymać drzwi w "folderach" np. Node2D o nazwie "Doors".
 		if child.get_child_count() > 0:
 			_find_doors_recursive(child)
+
+## Automatycznie szuka wewnątrz pokoju węzłów typu Marker2D przypisanych do grupy "RespawnPoint"
+func _auto_fetch_spawn_points() -> void:
+	spawn_points.clear()
+	_find_spawn_points_recursive(self)
+	print("Pokój " + name + " znalazł automatycznie " + str(spawn_points.size()) + " punktów respawnu z grupy.")
+
+## Rekurencyjne przeszukiwanie drzewa węzłów pokoju
+func _find_spawn_points_recursive(node: Node) -> void:
+	for child in node.get_children():
+		# Sprawdzamy czy to Marker2D oraz czy należy do grupy RespawnPoint
+		if child is Marker2D and child.is_in_group("RespawnPoint"):
+			spawn_points.append(child)
+		
+		# Jeśli węzeł ma własne dzieci, szukamy głębiej
+		if child.get_child_count() > 0:
+			_find_spawn_points_recursive(child)
 
 ## Generowanie pokoju
 func generate_room() -> void:

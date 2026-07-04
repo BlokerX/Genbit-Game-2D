@@ -49,6 +49,7 @@ Rooms=""
 LevelManager=""
 ItemPickup=""
 Door=""
+RespawnPoint=""
 
 [input]
 

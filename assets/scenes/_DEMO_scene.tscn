@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="8_gr8ix"]
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="9_ww3fo"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="10_7o2d0"]
-[ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/level_manager.gd" id="11_iv1w6"]
+[ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="11_iv1w6"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="12_jjq1y"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="13_obi6l"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="14_d8532"]
@@ -890,9 +890,9 @@ destroy_entity_after_die = null
 position = Vector2(960, 544)
 item_data = SubResource("Resource_wxccy")
 
-[node name="Room13_StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("12_jjq1y")]
-visible = false
+[node name="Room13_StartRoom" parent="Map" unique_id=1187411125 node_paths=PackedStringArray("spawn_points") instance=ExtResource("12_jjq1y")]
 map_position = Vector2i(3, 1)
+spawn_points = [NodePath("RespawnPoint")]
 
 [node name="DoorLeft" parent="Map/Room13_StartRoom" unique_id=1555798131 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
 position = Vector2(32, 544)
@@ -903,6 +903,9 @@ destination_door = NodePath("../../Room12/DoorRight")
 position = Vector2(1888, 544)
 rotation = 1.5707964
 destination_door = NodePath("../../Room14/DoorLeft")
+
+[node name="RespawnPoint" type="Marker2D" parent="Map/Room13_StartRoom" unique_id=491320201 groups=["RespawnPoint"]]
+position = Vector2(960, 540)
 
 [node name="RoomLabel" type="Label" parent="Map/Room13_StartRoom" unique_id=1778539474]
 texture_filter = 5
