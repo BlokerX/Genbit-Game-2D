@@ -1,15 +1,11 @@
 extends Node2D
 
-
 func _ready() -> void:
 	pass
 
-
+# Zostaw to całkowicie puste lub usuń logikę Input z _physics_process
 func _physics_process(_delta: float) -> void:
-	if Input.is_action_just_pressed("Game_Pause"):
-		back_to_main_menu()
-	
+	pass
 
-func back_to_main_menu() -> void:
-	get_parent().to_main_menu()
-	self.queue_free()
+# Tę funkcję możesz też usunąć, bo PauseMenu odwołuje się teraz
+# bezpośrednio do main_node.to_main_menu() !

@@ -1,13 +1,17 @@
 [gd_resource type="Resource" script_class="LootDropComponent" format=3 uid="uid://ckvgekjro1wv1"]
 
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="1_nntlg"]
-[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="1_ntnjv"]
+[ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="2_3ccnh"]
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="2_nntlg"]
 [ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="3_3ccnh"]
+
+[sub_resource type="Resource" id="Resource_88ujk"]
+script = ExtResource("2_3ccnh")
+item_data = ExtResource("3_3ccnh")
+metadata/_custom_type_script = "uid://1f2qvv7y72gg"
 
 [resource]
 script = ExtResource("2_nntlg")
 item_pickup_scene = ExtResource("1_nntlg")
-loot_table = Array[ExtResource("1_ntnjv")]([ExtResource("3_3ccnh")])
-drop_chance = 1.0
+loot_table = Array[ExtResource("2_3ccnh")]([SubResource("Resource_88ujk")])
 metadata/_custom_type_script = "uid://brgrsjbml6fve"

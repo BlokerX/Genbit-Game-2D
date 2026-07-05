@@ -7,8 +7,6 @@ class_name CraftingRecipe
 ## Czego potrzebujemy do wytworzenia
 @export var ingredients: Array[RecipeIngredient] = []
 
-@export_group("Wynik")
-## Co otrzymamy po wytworzeniu
-@export var result_item: ItemData
-## Ile sztuk otrzymamy za jednym razem
-@export var result_amount: int = 1
+@export_group("Wyniki")
+## Lista WSZYSTKICH przedmiotów, które gracz otrzyma
+@export var results: Array[RecipeResult] = []

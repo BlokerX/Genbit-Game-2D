@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://codwj82kk8yp2"]
+
+[ext_resource type="Script" uid="uid://exsxq65s7avl" path="res://assets/scripts/scene_scripts/pause_menu.gd" id="1_8ekew"]
+
+[node name="PauseMenu" type="CanvasLayer" unique_id=1986430408]
+process_mode = 3
+script = ExtResource("1_8ekew")
+
+[node name="Background" type="Panel" parent="." unique_id=1788703932]
+custom_minimum_size = Vector2(800, 500)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=547241061]
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=699230360]
+process_mode = 3
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" unique_id=721242808]
+texture_filter = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "PAUSE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1733273907]
+process_mode = 3
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Resume Game"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1201002737]
+process_mode = 3
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Back to Menu"

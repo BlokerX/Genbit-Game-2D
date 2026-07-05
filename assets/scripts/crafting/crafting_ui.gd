@@ -1,11 +1,9 @@
 extends Control
 class_name CraftingUI
 
-# Definiujemy stałą z nazwą naszej akcji z Input Map
 const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
 
 @export var player: PlayerCharacter
-## Tutaj w Inspektorze wrzuć wszystkie swoje pliki przepisów (.tres)
 @export var available_recipes: Array[CraftingRecipe] = []
 
 @onready var recipe_list = $BackgroundPanel/HBoxContainer/LeftPanel/ScrollContainer/RecipeList
@@ -18,9 +16,7 @@ const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
 var selected_recipe: CraftingRecipe = null
 
 func _ready() -> void:
-	# 1. Chowamy CAŁE okno craftingu na starcie gry
 	hide() 
-	
 	right_panel.hide() 
 	_populate_recipe_list()
 	
@@ -28,49 +24,59 @@ func _ready() -> void:
 		player.inventory.inventory_updated.connect(_update_details_panel)
 		craft_button.pressed.connect(_on_craft_button_pressed)
 
-# --- NOWOŚĆ: Funkcja wyłapująca wciśnięcie klawisza ---
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(INPUT_TOGGLE_CRAFTING):
-		# Zmienia widoczność na przeciwną (jak jest otwarte to zamknie, jak zamknięte - otworzy)
 		visible = !visible
-		
-		# Kiedy otwieramy okno, odświeżamy surowce (bo gracz mógł w międzyczasie coś zebrać)
 		if visible:
 			_update_details_panel()
 
-## Tworzy przyciski dla każdego przepisu po lewej stronie
 func _populate_recipe_list() -> void:
-	# Czyścimy starą listę
 	for child in recipe_list.get_children():
 		child.queue_free()
 		
 	for recipe in available_recipes:
-		if recipe == null or recipe.result_item == null:
+		# ZABEZPIECZENIE: Sprawdzamy czy receptura ma zdefiniowane jakieś wyniki (results)
+		if recipe == null or recipe.results.is_empty() or recipe.results[0].item_data == null:
 			continue
 			
 		var btn = Button.new()
 		btn.text = recipe.recipe_name
-		btn.icon = recipe.result_item.item_icon # Opcjonalnie: mała ikonka na przycisku
-		# Kiedy gracz kliknie przepis, wywołujemy funkcję pokazującą detale
+		# Pobieramy ikonę z PIERWSZEGO przedmiotu na liście nagród
+		btn.icon = recipe.results[0].item_data.item_icon 
+		
 		btn.pressed.connect(func(): _select_recipe(recipe))
 		recipe_list.add_child(btn)
 
-## Reakcja na kliknięcie przepisu z listy
 func _select_recipe(recipe: CraftingRecipe) -> void:
 	selected_recipe = recipe
 	right_panel.show()
 	_update_details_panel()
 
-## Odświeża prawe okno (wymagania, kolory, przycisk)
 func _update_details_panel() -> void:
-	if selected_recipe == null:
+	if selected_recipe == null or selected_recipe.results.is_empty():
 		return
 		
-	result_icon.texture = selected_recipe.result_item.item_icon
-	result_name.text = selected_recipe.result_item.item_name
+	# Główna ikona to ikona pierwszego z nagród
+	result_icon.texture = selected_recipe.results[0].item_data.item_icon
+	# Tytuł to nazwa przepisu (np. "Rozbicie butelki" albo "Kucie miecza")
+	result_name.text = selected_recipe.recipe_name
 	
 	var inventory = player.inventory
-	var ingredients_text = "[center]Wymagane składniki:[/center]\n"
+	
+	# --- SEKCJA 1: OTRZYMASZ (CO DAJE PRZEPIS) ---
+	var details_text = "[center][b]Otrzymasz:[/b][/center]\n"
+	
+	for result in selected_recipe.results:
+		if result.item_data:
+			# Formatowanie ilości (np. "x2" albo "x1-3", jeśli jest to losowe)
+			var amount_str = str(result.min_amount)
+			if result.min_amount != result.max_amount:
+				amount_str += "-" + str(result.max_amount)
+				
+			details_text += "[color=yellow]✦ " + result.item_data.item_name + " x" + amount_str + "[/color]\n"
+	
+	# --- SEKCJA 2: WYMAGANIA ---
+	details_text += "\n[center][b]Wymagane składniki:[/b][/center]\n"
 	var can_afford_all = true
 	
 	for ingredient in selected_recipe.ingredients:
@@ -78,23 +84,17 @@ func _update_details_panel() -> void:
 		var required_amount = ingredient.required_amount
 		var item_name = ingredient.item_data.item_name
 		
-		# Kolorowanie w stylu AAA (Czerwony brak, Zielony/Biały OK)
 		if owned_amount >= required_amount:
-			ingredients_text += "[color=green]✔ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
+			details_text += "[color=green]✔ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
 		else:
-			ingredients_text += "[color=red]✖ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
-			can_afford_all = false # Brakuje nam chociaż jednego surowca
+			details_text += "[color=red]✖ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
+			can_afford_all = false 
 			
-	ingredients_label.text = ingredients_text
-	
-	# Zablokowanie przycisku, jeśli gracza nie stać
+	ingredients_label.text = details_text
 	craft_button.disabled = !can_afford_all
 
-## Akcja samego wytwarzania
 func _on_craft_button_pressed() -> void:
 	if selected_recipe != null and player != null:
-		# Używamy naszego bezpętlowego, szybkiego systemu!
 		var success = CraftingSystem.craft(player.inventory, selected_recipe)
 		if success:
-			print("CraftingUI: Wytworzono przedmiot!")
-			# UI zaktualizuje się samo, bo zużycie surowców odpali `inventory_updated`!
+			print("CraftingUI: Pomyślnie użyto receptury!")
