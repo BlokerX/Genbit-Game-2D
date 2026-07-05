@@ -36,6 +36,8 @@ func _ready() -> void:
 	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
+	if not item_data == null:
+		prompt_label.text = item_data.item_name + "\n" + prompt_label.text
 	prompt_label.hide() # Na starcie ukrywamy napis
 
 

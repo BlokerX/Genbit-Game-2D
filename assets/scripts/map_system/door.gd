@@ -13,8 +13,10 @@ const PLAYER_GROUP = "Player"
 ## Wymagane przypisanie w Inspektorze (inaczej drzwi nie zadziałają!)
 @export var destination_door : Door = null 
 @export var opening_time : float = 0.1 # Czas otwierania w sekundach
+@export var is_door_visible : bool = true
 
 @onready var spawn_point : Marker2D = $Spawnpoint
+@onready var door_sprite : Sprite2D = $Sprite2D
 
 var current_state : State = State.CLOSED
 
@@ -22,6 +24,7 @@ var current_state : State = State.CLOSED
 var is_locked : bool = false
 
 func _ready() -> void:
+	door_sprite.visible = is_door_visible
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
