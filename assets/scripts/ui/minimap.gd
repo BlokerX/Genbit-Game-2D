@@ -26,8 +26,7 @@ var is_map_toggled_large: bool = false # Przechowuje informację, czy mapa jest 
 func _ready() -> void:
 	original_bg_color = background_color
 	
-	# Ustawiamy punkt skalowania na prawy górny róg.
-	# Dzięki temu mapa przy powiększaniu rozleje się w dół i w lewo (do środka ekranu)
+	# Ustawiamy punkt skalowania na prawy dolny róg
 	pivot_offset = size
 	
 	if level_manager:
@@ -71,20 +70,56 @@ func _draw() -> void:
 	var current_room = level_manager.current_room
 	var center_pos = size / 2.0
 	
-	# Pobieramy czcionkę do narysowania litery
-	var font = get_theme_default_font()
-	var font_size = int(cell_size * 0.8) # Skalujemy tekst do rozmiaru komórki
-	
 	draw_rect(Rect2(Vector2.ZERO, size), background_color)
+
+	var reference_pos = current_room.map_position
+	var current_zoom = 1.0 # NOWA ZMIENNA: Domyślny mnożnik skalowania
+	
+	# --- NOWA LOGIKA: CENTROWANIE I DYNAMICZNE SKALOWANIE MAPY ---
+	if is_map_toggled_large and level_manager.discovered_rooms.size() > 0:
+		var min_pos = Vector2(INF, INF)
+		var max_pos = Vector2(-INF, -INF)
+		
+		# Szukamy skrajnych współrzędnych odkrytej mapy
+		for r in level_manager.discovered_rooms:
+			min_pos.x = min(min_pos.x, r.map_position.x)
+			min_pos.y = min(min_pos.y, r.map_position.y)
+			max_pos.x = max(max_pos.x, r.map_position.x)
+			max_pos.y = max(max_pos.y, r.map_position.y)
+			
+		reference_pos = (min_pos + max_pos) / 2.0
+		
+		# Obliczanie fizycznego rozmiaru całej odkrytej siatki w pikselach
+		var grid_w = max_pos.x - min_pos.x + 1
+		var grid_h = max_pos.y - min_pos.y + 1
+		
+		var map_pixel_w = grid_w * (cell_size + cell_spacing)
+		var map_pixel_h = grid_h * (cell_size + cell_spacing)
+		
+		# Jeśli mapa jest większa niż tło, pomniejszamy ją tak, by się zmieściła
+		if map_pixel_w > size.x or map_pixel_h > size.y:
+			# Wybieramy mniejszy współczynnik (by cała mapa się zmieściła) i mnożymy przez 0.9 dla 10% marginesu na krawędziach
+			current_zoom = min(size.x / map_pixel_w, size.y / map_pixel_h) * 0.9
+	# -------------------------------------
+
+	# Aplikujemy nasz wyliczony "zoom" do rozmiaru komórek i odstępów
+	var actual_cell_size = cell_size * current_zoom
+	var actual_spacing = cell_spacing * current_zoom
+
+	# Pobieramy czcionkę i adaptujemy jej wielkość, zapobiegając błędowi wielkości < 1
+	var font = get_theme_default_font()
+	var font_size = max(1, int(actual_cell_size * 0.8)) 
 
 	for room in level_manager.all_rooms:
 		if level_manager.discovered_rooms.has(room):
-			var diff_x = room.map_position.x - current_room.map_position.x
-			var diff_y = room.map_position.y - current_room.map_position.y
 			
-			var offset = Vector2(diff_x, diff_y) * (cell_size + cell_spacing)
-			var box_pos = center_pos + offset - Vector2(cell_size / 2.0, cell_size / 2.0)
-			var box_rect = Rect2(box_pos, Vector2(cell_size, cell_size))
+			var diff_x = room.map_position.x - reference_pos.x
+			var diff_y = room.map_position.y - reference_pos.y
+			
+			# Używamy przeskalowanych wartości do ułożenia siatki
+			var offset = Vector2(diff_x, diff_y) * (actual_cell_size + actual_spacing)
+			var box_pos = center_pos + offset - Vector2(actual_cell_size / 2.0, actual_cell_size / 2.0)
+			var box_rect = Rect2(box_pos, Vector2(actual_cell_size, actual_cell_size))
 			
 			# --- NAPRAWIONA LOGIKA KOLORÓW ---
 			var draw_color = discovered_not_visited_color # Domyślnie pokój jest tylko odkryty
@@ -97,75 +132,48 @@ func _draw() -> void:
 				
 			draw_rect(box_rect, draw_color)
 			
-			# --- NOWA LOGIKA: Rysowanie Ikony Pokoju ---
-			#match room.room_type:
-				#Room.RoomType.TREASURE:
-					#icon_to_draw = icon_treasure
-				#Room.RoomType.SHOP:
-					#icon_to_draw = icon_shop
-				#Room.RoomType.BOSS:
-					#icon_to_draw = icon_boss
-					
 			# --- Rysowanie litery S ---
 			if room == level_manager.starting_room:
 				var text = "S"
-				# Obliczamy rozmiar tekstu, aby go wyśrodkować
 				var text_size = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-				# Wyśrodkowanie tekstu wewnątrz kwadratu pokoju
-				var text_pos = box_pos + (Vector2(cell_size, cell_size) / 2.0)
-				text_pos.y += text_size.y / 4.0 # Mała korekta pionowa dla lepszego wyglądu
+				var text_pos = box_pos + (Vector2(actual_cell_size, actual_cell_size) / 2.0)
+				text_pos.y += text_size.y / 4.0 
 				
 				draw_string(font, text_pos - Vector2(text_size.x / 2.0, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color)
-			# Jeśli przypisano ikonkę dla tego typu pokoju, narysuj ją!
-			#elif icon_to_draw != null:
-				## Zmniejszamy prostokąt, żeby ikonka miała margines (nie dotykała krawędzi)
-				#var icon_rect = box_rect.grow(-4) 
-				## Rysujemy teksturę na minimapie
-				#draw_texture_rect(icon_to_draw, icon_rect, false)
-			
 			
 			# --- Sprawdzanie czy na ziemi leżą itemy (ItemPickup) ---
-			# W the Binding of Isaac widzimy itemy tylko w pokojach, które już odwiedziliśmy
 			if level_manager.visited_rooms.has(room):
-				
-				# Szukamy miejsca, w którym LevelManager ładuje przedmioty
 				var target_parent = room
-				
-				# Tworzymy listę oryginalnych tekstur do narysowania w tym pokoju
 				var loot_icons_to_draw : Array[Texture2D] = []
 				
-				# Przeszukujemy dzieci w poszukiwaniu rzuconych itemów
 				for child in target_parent.get_children():
 					if child is ItemPickup and child.item_data != null and child.item_data.item_icon != null:
 						var item_tex = child.item_data.item_icon
-						
-						# Zabezpieczenie: Jeśli leżą 3 takie same miecze, rysujemy tylko jedną ikonę
 						if not loot_icons_to_draw.has(item_tex):
 							loot_icons_to_draw.append(item_tex)
 				
-				# Rysujemy zebrane ikony
-				var loot_icon_size = Vector2(10, 10) # Rozmiar miniatury na mapie (np. 10x10 px)
-				var current_x_offset = 0
-				var current_y_offset = 0
+				# Skalujemy również rozmiar ikonek i ich padding wewnątrz pokoju
+				var base_icon_size = Vector2(10, 10) 
+				var loot_icon_size = base_icon_size * current_zoom
+				var spacing = 2.0 * current_zoom
+				var padding = 1.0 * current_zoom
+				
+				var current_x_offset = 0.0
+				var current_y_offset = 0.0
 				
 				for tex in loot_icons_to_draw:
-					# Zabezpieczenie X: Jeśli ikona wyszłaby poza lewą krawędź pokoju, przenieś ją do wyższego rzędu
-					if current_x_offset + loot_icon_size.x + 2 > cell_size:
-						current_x_offset = 0
-						current_y_offset += loot_icon_size.y + 1
+					# Zabezpieczenie przed wychodzeniem ikonek poza aktualny obszar komórki
+					if current_x_offset + loot_icon_size.x + spacing > actual_cell_size:
+						current_x_offset = 0.0
+						current_y_offset += loot_icon_size.y + padding
 						
-					# Zabezpieczenie Y: Jeśli ikony wyszłyby poza górną krawędź pokoju, po prostu przestań je rysować (pokój jest pełny)
-					if current_y_offset + loot_icon_size.y + 2 > cell_size:
+					if current_y_offset + loot_icon_size.y + spacing > actual_cell_size:
 						break
 					
-					# Obliczamy pozycję (prawy dolny róg, przesuwany w lewo i w górę)
 					var loot_icon_pos = box_pos + Vector2(
-						cell_size - loot_icon_size.x - 2 - current_x_offset, 
-						cell_size - loot_icon_size.y - 2 - current_y_offset
+						actual_cell_size - loot_icon_size.x - spacing - current_x_offset, 
+						actual_cell_size - loot_icon_size.y - spacing - current_y_offset
 					)
 					
-					# Rysujemy oryginalną ikonę ze skalowaniem do rozmiaru loot_icon_size
 					draw_texture_rect(tex, Rect2(loot_icon_pos, loot_icon_size), false)
-					
-					# Zwiększamy offset, aby kolejna ikona narysowała się obok
-					current_x_offset += loot_icon_size.x + 1
+					current_x_offset += loot_icon_size.x + padding
