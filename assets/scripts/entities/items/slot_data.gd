@@ -3,7 +3,7 @@ class_name SlotData
 
 ## Sygnał pęknięcia
 signal item_broken(item_name : String)
-signal slot_emptied() # todo usunąć to
+#signal slot_emptied()
 
 # Wskaźnik na nasz plik z bazą danych (szablon)
 @export var item_data: ItemData

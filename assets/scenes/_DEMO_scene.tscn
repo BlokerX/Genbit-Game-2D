@@ -1,9 +1,12 @@
 [gd_scene format=3 uid="uid://is353qmp4irh"]
 
 [ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_megpf"]
+[ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="2_7ttlc"]
 [ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/pause_menu.tscn" id="2_ix51x"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="2_lh5g3"]
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="3_tdiry"]
+[ext_resource type="Script" uid="uid://b0ps68vr8aav7" path="res://assets/scripts/ui/playtime_monitor.gd" id="3_vamu6"]
+[ext_resource type="Script" uid="uid://by75yrn6lcipi" path="res://assets/scripts/ui/active_effects_ui.gd" id="5_0krbe"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="5_wsqjt"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="6_7hw8a"]
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="7_oh07v"]
@@ -973,6 +976,74 @@ hand_attack_data = SubResource("Resource_nkt6r")
 
 [node name="DemoScene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_megpf")
+
+[node name="PlayerHUD" type="CanvasLayer" parent="." unique_id=1618965773]
+
+[node name="UI_Layout" type="Control" parent="PlayerHUD" unique_id=725686003]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlaytimeLabel" type="Label" parent="PlayerHUD/UI_Layout" unique_id=726032964]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -944.0
+offset_right = 944.0
+offset_bottom = 23.0
+grow_horizontal = 2
+horizontal_alignment = 1
+script = ExtResource("3_vamu6")
+
+[node name="MarginContainer" type="MarginContainer" parent="PlayerHUD/UI_Layout" unique_id=435628434]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 88
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PlayerHUD/UI_Layout/MarginContainer" unique_id=1983183050]
+layout_mode = 2
+
+[node name="StatsPanel" type="VBoxContainer" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer" unique_id=795723000 node_paths=PackedStringArray("player", "damage_label", "crit_rate_label", "range_label", "speed_label")]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("2_7ttlc")
+player = NodePath("../../../../../Map/Room13_StartRoom/Player")
+damage_label = NodePath("DamageLabel")
+crit_rate_label = NodePath("CritLabel")
+range_label = NodePath("RangeLabel")
+speed_label = NodePath("SpeedLabel")
+
+[node name="DamageLabel" type="Label" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=2014525515]
+layout_mode = 2
+
+[node name="CritLabel" type="Label" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1361970591]
+layout_mode = 2
+
+[node name="RangeLabel" type="Label" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1722019231]
+layout_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=617311985]
+layout_mode = 2
+
+[node name="AcriveEffectsPanel" type="VBoxContainer" parent="PlayerHUD/UI_Layout/MarginContainer/VBoxContainer" unique_id=515517333 node_paths=PackedStringArray("player")]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("5_0krbe")
+player = NodePath("../../../../../Map/Room13_StartRoom/Player")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 

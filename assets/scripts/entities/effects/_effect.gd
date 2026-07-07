@@ -4,6 +4,7 @@ extends Resource
 class_name Effect
 
 @export var effect_name : String = "Effect"
+@export var icon : Texture2D
 
 ## Metoda wirtualna do nadpisania przez konkretne efekty.
 ## Zwraca true, jeśli efekt został pomyślnie nałożony na cel.
