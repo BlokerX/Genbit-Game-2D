@@ -1,67 +1,39 @@
 extends Resource
 class_name ItemData
 
-signal item_broken(item_name) # Dodajemy sygnał pęknięcia
+# ==========================================
+# TYLKO STAŁE DANE - ZABRONIONE ZMIENNE STANU!
+# ==========================================
 
-#region General informations and sprite
+#@export_group("Informacje Ogólne")
 @export var item_id : int = 1
 @export var item_name : String = "Item"
-
 @export var item_type : String = "Item"
-
 @export var item_description : String = ""
+@export var item_icon : Texture2D 
 
+#@export_group("Stosowanie (Stackowanie)")
+## Czy przedmiot jest stakowalny?
 @export var item_is_stackable : bool = false
-@export var item_stack_count : int = 1
+## Maksymalna ilość w JEDNYM slocie
 @export var item_max_stack_count : int = 1
 
-# Używamy Texture2D zamiast Sprite2D do przechowywania grafiki w danych
-@export var item_icon : Texture2D 
-#endregion
-
-#region Durability
-@export var durable : int = -1
+#@export_group("Wytrzymałość")
+## Maksymalna wytrzymałość (-1 oznacza przedmiot niezniszczalny)
 @export var max_durable : int = -1
-
-func reduce_durability(points : int = 1) -> void:
-	if max_durable == 0:
-		return # Przedmiot nie ma wytrzymałości
-		
-	durable -= points
-	
-	## Jeśli obecny miecz się zepsuł, ale mamy jeszcze inne w stacku
-	#if durable <= 0 and item_stack_count > 1:
-		#item_stack_count -= 1
-		#durable = max_durable # Wyciągamy nowy, świeży miecz!
-		#print("Jeden miecz się zepsuł! Zostało: ", item_stack_count)
-	
-	if is_broken():
-		item_broken.emit(item_name) # Informujemy, że OSTATNIA sztuka pękła
-
-func repair_item() -> void:
-	durable = max_durable
-
-func is_broken() -> bool:
-	# Zwracamy true TYLKO wtedy, gdy zepsuł się OSTATNI miecz w stacku
-	if max_durable > 0 and durable == 0 and item_stack_count <= 1:
-		return true
-	return false
-	
-#endregion
 
 # Constructor
 # Wszystkie zmienne MUSZĄ mieć wartości domyślne, aby edytor Godota 
 # mógł tworzyć pliki .tres bez błędów.
+# UWAGA: Usunięto sygnały, item_stack_count, durable oraz funkcje naprawy/niszczenia!
 func _init(
 	_item_id : int = 1,
 	_item_name : String = "Item",
 	_item_type : String = "Item",
 	_item_description : String = "",
 	_item_is_stackable : bool = false,
-	_item_stack_count : int = 1,
 	_item_max_stack_count : int = 1,
 	_item_icon : Texture2D = null,
-	_durable : int = -1,
 	_max_durable : int = -1
 ):
 	item_id = _item_id
@@ -69,8 +41,6 @@ func _init(
 	item_type = _item_type
 	item_description = _item_description
 	item_is_stackable = _item_is_stackable
-	item_stack_count = _item_stack_count
 	item_max_stack_count = _item_max_stack_count
 	item_icon = _item_icon
-	durable = _durable
 	max_durable = _max_durable

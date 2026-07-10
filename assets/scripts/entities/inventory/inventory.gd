@@ -4,13 +4,13 @@ class_name Inventory
 
 #region Inventory stats
 ## Rozmiar ekwipunku
-@export var max_items: int = 9 
+@export var slots_amount: int = 9 
 
 ## Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
-@export var items: Array[ItemData] = []
+@export var slots: Array[SlotData] = []
 
 ## Aktualnie wybrany indeks slotu
-@export var current_item_index : int = 0
+@export var current_slot_index : int = 0
 
 #endregion
 
@@ -20,93 +20,34 @@ class_name Inventory
 ## Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
 
-signal item_dropped(item_data: ItemData)
+signal item_dropped(item_data: ItemData, drop_amount: int)
 
 #endregion
+
+## PAMIĘĆ PODRĘCZNA DO CRAFTINGU (Format: { ID : Ilość })
+var _item_count_cache: Dictionary = {}
 
 ## Constructor
 func _init() -> void :
 	# Wszystkie miejsca będą na start miały wartość 'null' (pusty slot).
-	items.resize(max_items)
+	slots.resize(slots_amount)
+	for i in range(slots_amount):
+		slots[i] = SlotData.new() # Przygotowanie pustych pojemników
 
-
-## Zwraca aktualnie wybrany przedmiot
-func get_current_item() -> ItemData :
-	# Sprawdzamy, czy indeks jest bezpieczny (nie jest na minusie i jest mniejszy niż rozmiar tablicy)
-	if current_item_index >= 0 and current_item_index < items.size():
-		return items[current_item_index]
-	
-	# Jeśli indeks jest zły, zwracamy null (brak przedmiotu), zamiast crashować grę
-	#debug
-	print("Błąd: Próba pobrania przedmiotu spoza zakresu ekwipunku!")
-	#endif
-	return null
-
-
-## Pobranie itemu do ekwipunku
-func add_item(item: ItemData) -> int:
-	# Nic nie dodaliśmy, zwracamy 0
-	if item == null:
-		return 0
-	
-	# Duplikacja itemu ponieważ fizyczny egzemplarz będzie niszczony
-	var item_to_add = item.duplicate()
-	
-	# 1. Upchanie do stacków
-	if item_to_add.item_is_stackable:
-		for i in range(items.size()):
-			if items[i] != null and items[i].item_id == item_to_add.item_id:
-				var available_space = items[i].item_max_stack_count - items[i].item_stack_count
-				
-				if available_space > 0:
-					if item_to_add.item_stack_count <= available_space:
-						items[i].item_stack_count += item_to_add.item_stack_count
-						inventory_updated.emit()
-						return 0 # Zmieściło się wszystko, zostaje 0 reszty na ziemi!
-					else:
-						items[i].item_stack_count = items[i].item_max_stack_count
-						item_to_add.item_stack_count -= available_space
-	
-	# 2. Szukanie pustych slotów dla reszty
-	
-	# Jeśli wybrana wolna ręka to przedmiot wskoczy prosto do wolnej ręki!
-	if items[current_item_index] == null:
-		items[current_item_index] = item_to_add
-		inventory_updated.emit()
-		return 0 
-
-	# Jeśli slot w ręce był jednak zajęty, szukamy pierwszego wolnego slota w plecaku od lewej
-	for i in range(items.size()):
-		if items[i] == null:
-			items[i] = item_to_add 
-			inventory_updated.emit()
-			return 0
-
-	# 3. Zabrakło miejsca! Ekwipunek pełny.
-	# Ale UWAGA: Mogliśmy dodać część przedmiotów w ETAPIE 1, więc musimy odświeżyć UI!
-	inventory_updated.emit()
-	print("Ekwipunek jest pełny! Na ziemi zostało sztuk: ", item_to_add.item_stack_count)
-	
-	# Zwracamy ile sztuk przedmiotu fizycznie nie zmieściło się do plecaka
-	return item_to_add.item_stack_count
-
-## Usuwanie przedmiotu z ekwipunku
-func remove_item(index: int) -> void:
-	if index >= 0 and index < items.size():
-		items[index] = null # Zamiast remove_at(index), zostawia slot tylko z null zamiast usuwać go z listy
-		inventory_updated.emit()
-
+## Zbudowanie cache na start gry
+func _ready() -> void:
+	_rebuild_cache()
 
 ## Konsumpcja wytrzymałości itemu (zmniejszenie wytrzymałości)
 func consume_durability_of_the_item() -> void:
-	var item = get_current_item()
+	var slot = get_current_slot()
 	
-	if item != null:
+	if not slot.is_empty():
 		# Zmniejszamy wytrzymałość o 1 użycie
-		item.reduce_durability()
+		slot.reduce_durability()
 		
 		# Jeśli to był ostatni użytek, konsumujemy sztukę
-		if item.durable <= 0:
+		if slot.current_durability <= 0:
 			consume_current_item()
 			return
 			
@@ -115,60 +56,170 @@ func consume_durability_of_the_item() -> void:
 
 ## Konsumpcja sztuki itemu (zmniejszenie ilości w staku)
 func consume_current_item() -> void:
-	var item = get_current_item()
+	var slot = get_current_slot()
 	
-	if item != null:
+	if not slot.is_empty():
+		var id = slot.item_data.item_id
+		
 		# Zmniejszamy ilość przedmiotów w stacku o 1
-		item.item_stack_count -= 1
+		slot.stack_amount -= 1
+		_update_cache(id, -1) # Odświeżenie systemu craftingu
 		
 		# Jeśli to był ostatni przedmiot w tym slocie, czyścimy slot
-		if item.item_stack_count <= 0:
-			items[current_item_index] = null
+		if slot.stack_amount <= 0:
+			slot.item_data = null # Czyszczenie
 		else :
-			item.repair_item()
+			slot.repair_item() # Mechanizm wyciągania nowego przedmiotu!
 			
 		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
 		inventory_updated.emit()
 
+## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
+func drop_current_item(drop_all: bool = false) -> void:
+	var slot = get_current_slot()
+	
+	if slot.is_empty(): return
+	
+	#Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
+	#stare #var dropped_item_data = item.duplicate()
+	var dropped_item = slot.item_data
+	var amount_to_drop = slot.stack_amount if drop_all else 1
+		
+	if drop_all:
+		_update_cache(dropped_item.item_id, -slot.stack_amount)
+		
+		# Jeśli wyrzucamy wszystko, przypisujemy pełną ilość i usuwamy cały stack ze slota
+		slot.item_data = null
+		slot.stack_amount = 0
+		inventory_updated.emit()
+	else:
+		# Skoro wyrzucamy jedną sztukę, zużywamy 1 sztukę ze slota (to odświeży też UI)
+		consume_current_item()
+		
+	# Informujemy świat (naszego gracza), że wyrzucono przedmiot, wysyłając mu dane
+	item_dropped.emit(dropped_item, amount_to_drop)
+
+
+
+func get_current_slot() -> SlotData :
+	if slots != null and slots.size() > 0 and current_slot_index < slots.size():
+		return slots[current_slot_index]
+	else: return null
+
+func get_current_item() -> ItemData :
+	var slot = get_current_slot()
+	if slot != null:
+		return slot.item_data
+	return null
+
+
+## Pobranie itemu do ekwipunku
+func add_item(item: ItemData, amount_to_add: int = 1) -> int:
+	# Nic nie dodaliśmy, zwracamy 0
+	if item == null or amount_to_add <= 0: return amount_to_add
+	var remaining = amount_to_add
+	
+	# 1. Szukanie w stosach
+	if item.item_is_stackable:
+		for slot in slots:
+			if not slot.is_empty() and slot.item_data.item_id == item.item_id and slot.item_data.item_name == item.item_name:
+				var available_space = item.item_max_stack_count - slot.stack_amount
+				
+				if available_space > 0:
+					var adding = min(remaining, available_space)
+					slot.stack_amount += adding
+					remaining -= adding
+					_update_cache(item.item_id, adding)
+					
+					if remaining == 0:
+						inventory_updated.emit()
+						return 0
+	
+	# 2. Szukanie pustych w wybranej ręce (jak w Twoim oryginale)
+	if slots[current_slot_index].is_empty():
+		var adding = min(remaining, item.item_max_stack_count)
+		slots[current_slot_index].set_item(item, adding)
+		remaining -= adding
+		_update_cache(item.item_id, adding)
+		if remaining == 0:
+			inventory_updated.emit()
+			return 0
+
+	# 3. Szukanie dowolnego pustego od lewej
+	for slot in slots:
+		if slot.is_empty():
+			var adding = min(remaining, item.item_max_stack_count)
+			slot.set_item(item, adding)
+			remaining -= adding
+			_update_cache(item.item_id, adding)
+			if remaining == 0:
+				inventory_updated.emit()
+				return 0
+				
+	inventory_updated.emit()
+	return remaining
+
+## Usuwanie przedmiotu z ekwipunku
+#func remove_item(index: int) -> void:
+	#if index >= 0 and index < items.size():
+		#items[index] = null # Zamiast remove_at(index), zostawia slot tylko z null zamiast usuwać go z listy
+		#inventory_updated.emit()
+
 
 ## Zmienia aktualnie wybrany indeks aktualnego itemu (zmiana wybranego itemu)
 func select_item(index) -> void :
-	current_item_index = index
+	current_slot_index = index
 	inventory_updated.emit()
 
 ## Obsługa wybierania poprzedniego i następnego indeksu
 func scroll_inventory(direction: int) -> void:
-	var new_index = current_item_index + direction
+	var new_index = current_slot_index + direction
 	
 	# Jeśli wyjdziemy poza prawo, wracamy na początek (0)
-	if new_index >= items.size():
+	if new_index >= slots.size():
 		new_index = 0
 	# Jeśli wyjdziemy poza lewo, idziemy na koniec
 	elif new_index < 0:
-		new_index = items.size() - 1
+		new_index = slots.size() - 1
 		
 	select_item(new_index)
 
 
 
-## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
-func drop_current_item(drop_all: bool = false) -> void:
-	var item = get_current_item()
-	
-	if item != null:
-		#Kopiujemy dane przedmiotu, żeby przekazać je do obiektu na ziemi
-		var dropped_item_data = item.duplicate()
-		
-		if drop_all:
-			# Jeśli wyrzucamy wszystko, przypisujemy pełną ilość i usuwamy cały stack ze slota
-			dropped_item_data.item_stack_count = item.item_stack_count
-			items[current_item_index] = null
-			inventory_updated.emit()
-		else:
-			# Wyrzucamy tylko 1 sztukę na raz
-			dropped_item_data.item_stack_count = 1 
-			# Skoro wyrzucamy jedną sztukę, zużywamy 1 sztukę ze slota (to odświeży też UI)
-			consume_current_item()
-		
-		# Informujemy świat (naszego gracza), że wyrzucono przedmiot, wysyłając mu dane
-		item_dropped.emit(dropped_item_data)
+# ----------------------------------------------------
+# --- BEZPĘTLOWY SYSTEM CRAFTINGU O(1) ---
+# ----------------------------------------------------
+
+func get_item_amount(item_id: int) -> int:
+	return _item_count_cache.get(item_id, 0)
+
+func has_items(item_id: int, required_amount: int) -> bool:
+	return get_item_amount(item_id) >= required_amount
+
+func consume_ingredients(item_id: int, required_amount: int) -> void:
+	var remaining = required_amount
+	for slot in slots:
+		if not slot.is_empty() and slot.item_data.item_id == item_id:
+			var taking = min(slot.stack_amount, remaining)
+			slot.stack_amount -= taking
+			remaining -= taking
+			_update_cache(item_id, -taking)
+			
+			if slot.stack_amount <= 0:
+				slot.item_data = null
+				
+			if remaining <= 0: break
+			
+	inventory_updated.emit()
+
+func _update_cache(item_id: int, diff: int) -> void:
+	if not _item_count_cache.has(item_id):
+		_item_count_cache[item_id] = 0
+	_item_count_cache[item_id] += diff
+
+## Funkcja odbudowująca cache po ręcznym załadowaniu przedmiotów
+func _rebuild_cache() -> void:
+	_item_count_cache.clear()
+	for slot in slots:
+		if not slot.is_empty():
+			_update_cache(slot.item_data.item_id, slot.stack_amount)

@@ -12,14 +12,14 @@ class_name InventorySlot
 # Pobieramy nasz nowy węzeł z cyferką
 @onready var amount_label: Label = $AmountLabel
 
-func update_slot(item: ItemData) -> void:
-	if item:
-		icon_rect.texture = item.item_icon
+func update_slot(slot: SlotData) -> void:
+	if slot and not slot.is_empty():
+		icon_rect.texture = slot.item_data.item_icon
 		icon_rect.show()
 		# Wyświetlamy ilość tylko wtedy, gdy jest więcej niż 1 sztuka
 		# (zazwyczaj nie chcemy widzieć "1" na pojedynczym mieczu)
-		if item.item_stack_count > 1:
-			amount_label.text = str(item.item_stack_count)
+		if slot.stack_amount > 1:
+			amount_label.text = str(slot.stack_amount)
 			amount_label.show()
 		else:
 			amount_label.hide()

@@ -2,6 +2,7 @@ extends RigidBody2D
 class_name ItemPickup
 
 @export var item_data: ItemData 
+@export var amount: int = 1
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var prompt_label: Label = $PromptLabel
@@ -10,11 +11,9 @@ class_name ItemPickup
 var can_pick_up: bool = false
 
 func _ready() -> void:
-	if item_data != null:
-		item_data = item_data.duplicate()
-		if item_data.item_icon != null:
-			sprite.texture = item_data.item_icon
-			
+	if item_data != null and item_data.item_icon != null:
+		sprite.texture = item_data.item_icon
+	
 	pickup_area.area_entered.connect(_on_area_entered)
 	
 	# Szukamy naszego czujnika podświetlania (InteractableComponent) i podłączamy sygnały!
@@ -37,6 +36,8 @@ func _ready() -> void:
 	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
+	if not item_data == null:
+		prompt_label.text = item_data.item_name + "\n" + prompt_label.text
 	prompt_label.hide() # Na starcie ukrywamy napis
 
 
@@ -54,7 +55,7 @@ func _on_untargeted() -> void:
 		prompt_label.hide()
 
 
-# 1. Funkcja obsługująca wchłanianie innych przedmiotów z ziemi (BEZ ZMIAN)
+## Funkcja obsługująca wchłanianie innych przedmiotów z ziemi (BEZ ZMIAN)
 func _on_area_entered(area: Area2D) -> void:
 	var other_pickup = area.get_parent()
 	if other_pickup is ItemPickup and other_pickup != self:
@@ -69,18 +70,23 @@ func _on_area_entered(area: Area2D) -> void:
 			return
 			
 		var other_item = other_pickup.item_data
+		
+		if item_data == null or other_item == null:
+			return
+		
+		# Porównujemy ID i używamy 'amount' zamiast item_stack_count
 		if item_data.item_id == other_item.item_id and item_data.item_is_stackable:
-			var available_space = item_data.item_max_stack_count - item_data.item_stack_count
+			var available_space = item_data.item_max_stack_count - amount
 			if available_space > 0:
-				var amount_to_take = min(available_space, other_item.item_stack_count)
-				item_data.item_stack_count += amount_to_take
-				other_item.item_stack_count -= amount_to_take
-				if other_item.item_stack_count <= 0:
+				var amount_to_take = min(available_space, other_pickup.amount)
+				amount += amount_to_take
+				other_pickup.amount -= amount_to_take
+				if other_pickup.amount <= 0:
 					other_pickup.queue_free()
 
-# 2. NOWE: Funkcja wywoływana, gdy Gracz celuje w przedmiot i wciska "Interact" (lub klika myszką)
+## Funkcja wywoływana, gdy Gracz celuje w przedmiot i wciska "Interact" (lub klika myszką)
 func _on_interacted(interactor: Node) -> void:
-	if not can_pick_up or is_queued_for_deletion():
+	if not can_pick_up or is_queued_for_deletion() or item_data == null: 
 		return
 		
 	# Duck Typing: Nieważne czy to gracz, czy NPC. Ważne czy ma metodę get_inventory()!
@@ -89,11 +95,11 @@ func _on_interacted(interactor: Node) -> void:
 		
 		if inventory != null:
 			# Próbujemy dodać przedmiot do ekwipunku postaci
-			var leftover = inventory.add_item(item_data)
+			var leftover = inventory.add_item(item_data, amount)
 			
 			if leftover == 0:
 				# Całość się zmieściła - usuwamy z ziemi
 				queue_free()
 			else:
 				# Plecak jest pełny, reszta zostaje na ziemi
-				item_data.item_stack_count = leftover
+				amount = leftover

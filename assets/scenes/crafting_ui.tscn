@@ -1,0 +1,260 @@
+[gd_scene format=3 uid="uid://bnkqheaf4pghv"]
+
+[ext_resource type="Script" uid="uid://bmyf7elwyv8up" path="res://assets/scripts/crafting/crafting_ui.gd" id="1_3a5og"]
+[ext_resource type="Script" uid="uid://crevd6m1abpfw" path="res://assets/scripts/crafting/crafting_recipe.gd" id="2_77p83"]
+[ext_resource type="Script" uid="uid://qsxdqtacj8cm" path="res://assets/scripts/crafting/recipe_ingridient.gd" id="3_kl38u"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="4_bj1ji"]
+[ext_resource type="Script" uid="uid://d1uphj5nbc5yk" path="res://assets/scripts/crafting/recipe_result.gd" id="5_3a5og"]
+[ext_resource type="Resource" uid="uid://bxr06u6ayl4mb" path="res://assets/data/items/freezing_potion.tres" id="5_aa4ru"]
+[ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="6_6qfpg"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_tctd7"]
+[ext_resource type="Resource" uid="uid://1w0yjy4ykkyp" path="res://assets/data/items/escape_potion.tres" id="8_kysok"]
+[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/stone_cross.png" id="9_jo8vf"]
+[ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="10_bj1ji"]
+[ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="11_aa4ru"]
+[ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="12_tctd7"]
+[ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="13_kysok"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="14_jo8vf"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="15_jo8vf"]
+[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/giantic_potion.tres" id="16_c4uhj"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="17_wp3sr"]
+[ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="18_bawxu"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="19_bawxu"]
+
+[sub_resource type="Resource" id="Resource_ftyar"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("15_jo8vf")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_rrbuv"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("16_c4uhj")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_dc5qk"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("17_wp3sr")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_tx4wq"]
+script = ExtResource("2_77p83")
+recipe_name = "Big Sword"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_ftyar"), SubResource("Resource_rrbuv")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_dc5qk")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_b2a41"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("4_bj1ji")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_x38i0"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("5_aa4ru")
+required_amount = 2
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_77p83"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("6_6qfpg")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_3f1qw"]
+script = ExtResource("2_77p83")
+recipe_name = "Freezing gun"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_b2a41"), SubResource("Resource_x38i0")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_77p83")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_jrfy2"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("7_tctd7")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_kl38u"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("8_kysok")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_dh7nh"]
+script = ExtResource("2_77p83")
+recipe_name = "Escape potion"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_jrfy2")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_kl38u")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_6qfpg"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("10_bj1ji")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_bj1ji"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("5_aa4ru")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_tctd7"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("11_aa4ru")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_kysok"]
+script = ExtResource("2_77p83")
+recipe_name = "Mikstura spowolnienia"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_6qfpg"), SubResource("Resource_bj1ji")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_tctd7")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_c4uhj"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("12_tctd7")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_wp3sr"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("13_kysok")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_bawxu"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("14_jo8vf")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_7yxti"]
+script = ExtResource("2_77p83")
+recipe_name = "Nothing"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_c4uhj"), SubResource("Resource_wp3sr")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_bawxu")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_kfq8w"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("17_wp3sr")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_3ebe4"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("18_bawxu")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_psfnt"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("15_jo8vf")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_e3x4f"]
+script = ExtResource("2_77p83")
+recipe_name = "Sword"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_kfq8w"), SubResource("Resource_3ebe4")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_psfnt")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_eld5r"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("19_bawxu")
+required_amount = 2
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_jhdvl"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("16_c4uhj")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_2di5x"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("15_jo8vf")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_4av44"]
+script = ExtResource("2_77p83")
+recipe_name = "Sword"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_eld5r"), SubResource("Resource_jhdvl")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_2di5x")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[node name="CraftingUI" type="Control" unique_id=101420674]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("1_3a5og")
+available_recipes = Array[ExtResource("2_77p83")]([SubResource("Resource_tx4wq"), SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh"), SubResource("Resource_kysok"), SubResource("Resource_7yxti"), SubResource("Resource_e3x4f"), SubResource("Resource_4av44")])
+
+[node name="BackgroundPanel" type="Panel" parent="." unique_id=595898844]
+custom_minimum_size = Vector2(800, 500)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BackgroundPanel" unique_id=767873963]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeftPanel" type="VBoxContainer" parent="BackgroundPanel/HBoxContainer" unique_id=1905947958]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="BackgroundPanel/HBoxContainer/LeftPanel" unique_id=2009583644]
+texture_filter = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Dostępne Receptury"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="BackgroundPanel/HBoxContainer/LeftPanel" unique_id=848462276]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RecipeList" type="VBoxContainer" parent="BackgroundPanel/HBoxContainer/LeftPanel/ScrollContainer" unique_id=1456705201]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightPanel" type="VBoxContainer" parent="BackgroundPanel/HBoxContainer" unique_id=1133802206]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 15
+
+[node name="ResultIcon" type="TextureRect" parent="BackgroundPanel/HBoxContainer/RightPanel" unique_id=2079679796]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("9_jo8vf")
+stretch_mode = 5
+
+[node name="ResultName" type="Label" parent="BackgroundPanel/HBoxContainer/RightPanel" unique_id=6903430]
+texture_filter = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Przedmiot do wytworzenia"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IngredientsLabel" type="RichTextLabel" parent="BackgroundPanel/HBoxContainer/RightPanel" unique_id=1054024104]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="CraftButton" type="Button" parent="BackgroundPanel/HBoxContainer/RightPanel" unique_id=313180070]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Wytwórz"

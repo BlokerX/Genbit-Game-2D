@@ -7,10 +7,11 @@ class_name FreezeEffect
 @export var freeze_modulate: Color = Color(0.337, 0.341, 1.0, 0.502)
 
 func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
+	effect_name = "Freeze"
+	effect_color = Color.CYAN
 	duration = _duration
 	apply_blue_tint = _apply_blue_tint
 	tick_interval = 0.0 # 0, ponieważ nie potrzebujemy "tików", działa to jako twardy stan
-	effect_name = "Freeze"
 
 func on_effect_start(target : Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")

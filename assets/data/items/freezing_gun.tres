@@ -9,9 +9,8 @@
 
 [sub_resource type="Resource" id="Resource_hnsvy"]
 script = ExtResource("1_opd0k")
-damage = 5
-max_range = 1000.0
-stun_time = 0.15
+damage = 1
+max_range = 100.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [sub_resource type="Resource" id="Resource_d4pv6"]
@@ -22,11 +21,13 @@ metadata/_custom_type_script = "uid://byffpv3e7benb"
 resource_local_to_scene = true
 script = ExtResource("6_q4a0c")
 projectile_texture = ExtResource("5_v43kk")
+projectile_speed = 600.0
+projectile_lifetime = 0.5
 attack_data = SubResource("Resource_hnsvy")
 is_ranged = true
 weapon_type = "Gun"
 effects = Array[ExtResource("2_v43kk")]([SubResource("Resource_d4pv6")])
-use_cooldown = 0.5
+use_cooldown = 0.15
 item_id = 3
 item_name = "Freezing Gun"
 item_type = "Weapon"

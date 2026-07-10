@@ -5,6 +5,7 @@ class_name RegenerationEffect
 
 func _init():
 	effect_name = "Regeneration"
+	effect_color = Color.GREEN
 	duration = 10.0
 	tick_interval = 2.0 # Leczy co 2 sekundy
 

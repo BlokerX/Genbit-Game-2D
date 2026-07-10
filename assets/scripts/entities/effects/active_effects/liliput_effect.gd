@@ -7,3 +7,4 @@ func _init(_duration: float = 30.0, _liliput_scaler: float = 0.8) -> void:
 	
 	# Nadpisujemy tylko nazwę efektu
 	effect_name = "Liliput"
+	effect_color = Color.MEDIUM_PURPLE

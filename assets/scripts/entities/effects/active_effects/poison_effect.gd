@@ -5,6 +5,7 @@ class_name PoisonEffect
 
 func _init():
 	effect_name = "Poison"
+	effect_color = Color.DARK_RED
 	duration = 5.0
 	tick_interval = 1.0 # Zadaje obrażenia co 1 sekundę
 
