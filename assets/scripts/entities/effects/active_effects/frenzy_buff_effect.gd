@@ -6,6 +6,7 @@ class_name FrenzyBuffEffect
 
 func _init():
 	effect_name = "Frenzy Buff"
+	effect_color = Color.GOLDENROD
 	duration = 8.0
 	tick_interval = 0.0 # Brak tików, to tylko buff statystyk
 

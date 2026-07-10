@@ -25,19 +25,36 @@ func _ready() -> void:
 		craft_button.pressed.connect(_on_craft_button_pressed)
 
 func _input(event: InputEvent) -> void:
+	# Otwieranie/zamykanie przypisanym przyciskiem craftingu
 	if event.is_action_pressed(INPUT_TOGGLE_CRAFTING):
 		visible = !visible
 		if visible:
 			_update_details_panel()
+		# Opcjonalnie: 'zjadasz' ten sygnał, żeby nic pod spodem na niego nie zareagowało
+		get_viewport().set_input_as_handled()
+			
+	# Zamykanie klawiszem Escape (Game_Pause), jeśli okno jest otwarte
+	elif event.is_action_pressed("Game_Pause") and visible:
+		hide() # Ukrywa panel craftingu
+		# BARDZO WAŻNE: Zjadamy sygnał! 
+		# Dzięki temu event nie dotrze do _unhandled_input w pause_menu.gd
+		get_viewport().set_input_as_handled()
 
 func _populate_recipe_list() -> void:
 	for child in recipe_list.get_children():
 		child.queue_free()
 		
+	# Zmienna do zapamiętania pierwszej poprawnej receptury
+	var first_valid_recipe: CraftingRecipe = null
+		
 	for recipe in available_recipes:
 		# ZABEZPIECZENIE: Sprawdzamy czy receptura ma zdefiniowane jakieś wyniki (results)
 		if recipe == null or recipe.results.is_empty() or recipe.results[0].item_data == null:
 			continue
+			
+		# Jeśli to pierwszy poprawny przepis na liście, zapamiętujemy go
+		if first_valid_recipe == null:
+			first_valid_recipe = recipe
 			
 		var btn = Button.new()
 		btn.text = recipe.recipe_name
@@ -46,6 +63,13 @@ func _populate_recipe_list() -> void:
 		
 		btn.pressed.connect(func(): _select_recipe(recipe))
 		recipe_list.add_child(btn)
+
+	# Gdy skończymy tworzyć przyciski, automatycznie wybieramy pierwszy przepis z listy
+	if first_valid_recipe != null:
+		_select_recipe(first_valid_recipe)
+	else:
+		# Jeśli gracz nie ma żadnych dostępnych przepisów, upewniamy się, że panel jest ukryty
+		right_panel.hide()
 
 func _select_recipe(recipe: CraftingRecipe) -> void:
 	selected_recipe = recipe

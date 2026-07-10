@@ -5,6 +5,7 @@ class_name MaxHealthBuffEffect
 
 func _init():
 	effect_name = "Max Health Buff"
+	effect_color = Color.YELLOW_GREEN
 	duration = 30.0
 	tick_interval = 0.0 # Nie potrzebujemy tików
 

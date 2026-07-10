@@ -6,3 +6,4 @@ func _init(_duration: float = 10.0, _slow_multiplier: float = 0.5) -> void:
 	super(_duration, _slow_multiplier)
 	
 	effect_name = "Slow"
+	effect_color = Color.NAVY_BLUE

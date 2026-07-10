@@ -23,4 +23,4 @@ item_name = "Sword"
 item_type = "Weapon"
 item_description = "It has 20 hp damage and new one's durable is 30."
 item_icon = ExtResource("2_16hix")
-max_durable = 30
+max_durable = 25

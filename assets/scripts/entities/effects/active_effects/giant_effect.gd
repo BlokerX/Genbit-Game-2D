@@ -6,3 +6,4 @@ func _init(_duration: float = 30.0, _giant_scaler: float = 1.25) -> void:
 	super(_duration, _giant_scaler)
 	
 	effect_name = "Giant"
+	effect_color = Color.SADDLE_BROWN
