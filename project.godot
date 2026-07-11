@@ -27,6 +27,8 @@ SceneCollectionManager="*uid://6ewiy3em0bmv"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/resizable=false
+window/size/borderless=true
 window/stretch/mode="viewport"
 
 [file_customization]

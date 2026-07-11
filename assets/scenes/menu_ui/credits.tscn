@@ -1,0 +1,227 @@
+[gd_scene format=3 uid="uid://uuss2dodm1na"]
+
+[ext_resource type="Theme" uid="uid://d1gmln142ngjl" path="res://assets/themes/menu_ui.tres" id="1_0i4vh"]
+[ext_resource type="Script" uid="uid://iwhfwtbge6rm" path="res://assets/scripts/scene_scripts/credits/credits.gd" id="1_otvjv"]
+[ext_resource type="Script" uid="uid://dkuf5f1il8a23" path="res://assets/scenes/rich_text_label.gd" id="2_og43b"]
+[ext_resource type="Shader" uid="uid://dw5fmx14fary1" path="res://assets/shaders/menu_ui/blur_backdrop.gdshader" id="4_jps8i"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mn3uw"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.980392, 0.380392, 0.172549, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u8ubb"]
+bg_color = Color(0.979119, 0.379857, 0.174398, 1)
+
+[sub_resource type="FontVariation" id="FontVariation_0i4vh"]
+variation_embolden = 1.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_0la8h"]
+font = SubResource("FontVariation_0i4vh")
+font_size = 32
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="InputEventJoypadButton" id="InputEventJoypadButton_x7m8g"]
+button_index = 1
+pressed = true
+
+[sub_resource type="InputEventKey" id="InputEventKey_mrsh3"]
+device = -1
+keycode = 4194305
+
+[sub_resource type="Shortcut" id="Shortcut_mrsh3"]
+events = [SubResource("InputEventJoypadButton_x7m8g"), SubResource("InputEventKey_mrsh3")]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lj8af"]
+bg_color = Color(0.589142, 0.325051, 0, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.31, 0.1705, 0, 1)
+border_blend = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cvhdb"]
+shader = ExtResource("4_jps8i")
+shader_parameter/blur_strength = 2.0
+shader_parameter/use_nearest = true
+
+[node name="Credits" type="Control" unique_id=243076823]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_0i4vh")
+script = ExtResource("1_otvjv")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=898397882]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"HBoxNoSep"
+
+[node name="CreditsPanel" type="PanelContainer" parent="HBoxContainer" unique_id=945182451]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_mn3uw")
+
+[node name="CreditsVBox" type="VBoxContainer" parent="HBoxContainer/CreditsPanel" unique_id=523244574]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="CreditsHeaderPanel" type="PanelContainer" parent="HBoxContainer/CreditsPanel/CreditsVBox" unique_id=185180474]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_u8ubb")
+
+[node name="CreditsHeaderHBox" type="HBoxContainer" parent="HBoxContainer/CreditsPanel/CreditsVBox/CreditsHeaderPanel" unique_id=1080403607]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="CreditsLabel" type="Label" parent="HBoxContainer/CreditsPanel/CreditsVBox/CreditsHeaderPanel/CreditsHeaderHBox" unique_id=1997471311]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "CREDITS"
+label_settings = SubResource("LabelSettings_0la8h")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CreditsCloseButton" type="Button" parent="HBoxContainer/CreditsPanel/CreditsVBox/CreditsHeaderPanel/CreditsHeaderHBox" unique_id=783665541]
+custom_minimum_size = Vector2(38, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"CreditsExitButton"
+shortcut = SubResource("Shortcut_mrsh3")
+text = "X"
+
+[node name="CreditsContentPanel" type="PanelContainer" parent="HBoxContainer/CreditsPanel/CreditsVBox" unique_id=1519412724]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_lj8af")
+
+[node name="CreditsContent" type="RichTextLabel" parent="HBoxContainer/CreditsPanel/CreditsVBox/CreditsContentPanel" unique_id=1395240601]
+layout_mode = 2
+theme_type_variation = &"CreditsRichTextLabel"
+bbcode_enabled = true
+text = "Created by:
+[b]Jakub Mchalik ([i]BlokerX[/i])[/b]
+[i]Dawid Zawadka (WaitB)[/i]
+[code]Michalak Albert (Abez)[/code]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ASA"
+shortcut_keys_enabled = false
+script = ExtResource("2_og43b")
+
+[node name="BlurBackdrop" type="ColorRect" parent="HBoxContainer" unique_id=207633863]
+material = SubResource("ShaderMaterial_cvhdb")
+layout_mode = 2
+size_flags_horizontal = 3
