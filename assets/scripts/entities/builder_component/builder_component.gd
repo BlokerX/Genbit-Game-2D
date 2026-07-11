@@ -1,94 +1,174 @@
 extends Node
 class_name BuilderComponent
 
-@export var player_inventory: Inventory # Podepnij węzeł Inventory gracza w Inspektorze!
+@export_category("Builder Settings")
+## Rozmiar siatki, do której przyciągany jest obiekt (np. 16 lub 32 piksele). 
+## Jeśli ustawisz na 0, obiekt będzie poruszał się płynnie piksel po pikselu.
+@export var grid_size: float = 64.0 
+## Odległość od gracza, w jakiej pojawia się obiekt, gdy gracz używa pada (zamiast myszki).
+@export var build_range: float = 50.0 
 
+# --- ZMIENNE WEWNĘTRZNE SYSTEMU ---
+## Przechowuje aktualną scenę (prefab), którą próbujemy postawić (np. skrzynię).
 var current_build_scene: PackedScene = null
-var refund_item: ItemData = null
+## Referencja do "ducha" (półprzezroczystego hologramu), który podąża za celownikiem/kursorem.
 var ghost_instance: Node2D = null
-var is_building: bool = false
 
+## Flaga określająca, czy gracz aktualnie znajduje się w trybie budowania.
+var is_building: bool = false
+## Flaga określająca, czy aktualne miejsce podświetlone przez ducha jest wolne (nie koliduje ze ścianami).
+var can_place_here: bool = true
+
+## Przechowuje aktualny obrót obiektu (0, 90, 180, 270)
+var current_rotation_degrees: float = 0.0
+
+## Pobiera referencję do rodzica, którym powinien być skrypt gracza (PlayerCharacter).
+@onready var player: PlayerCharacter = get_parent()
+
+# Funkcja _process wywołuje się co każdą klatkę gry (np. 60 razy na sekundę).
 func _process(_delta: float) -> void:
+	# Jeśli nie budujemy lub duch z jakiegoś powodu zniknął, przerywamy działanie.
 	if not is_building or not is_instance_valid(ghost_instance):
 		return
 		
-	# Duch płynnie podąża za kursorem myszy
-	ghost_instance.global_position = ghost_instance.get_global_mouse_position()
+	var target_pos = Vector2.ZERO
+	
+	# --- 1. OBLICZANIE POZYCJI DUCHA ---
+	if player.is_using_mouse:
+		# Jeśli gracz używa myszki, duch po prostu leci do kursora.
+		target_pos = ghost_instance.get_global_mouse_position()
+	else:
+		# Jeśli gracz używa pada, pobieramy kierunek z jego skanera (celownika).
+		var aim_dir = Vector2.DOWN
+		if player.aim_controller and player.aim_controller.aim_scanner:
+			aim_dir = player.aim_controller.aim_scanner.target_position.normalized()
+			# Zabezpieczenie: jeśli gracz stoi w miejscu i nie wychyla gałki, celujemy w dół.
+			if aim_dir == Vector2.ZERO:
+				aim_dir = Vector2.DOWN
+		# Ustawiamy ducha w konkretnej odległości (build_range) w stronę, w którą patrzy gracz.
+		target_pos = player.global_position + (aim_dir * build_range)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not is_building:
-		return
+	# --- 2. PRZYCIĄGANIE DO ŚRODKA KAFELKA (SNAP TO CENTER) ---
+	if grid_size > 0:
+		# KROK A: Obliczamy, w którym kafelku (komórce siatki) aktualnie znajduje się nasz cel.
+		# Funkcja floor() zaokrągla w dół. Np. pozycja 100 / 64 daje kafelek nr 1.
+		var cell_x = floor(target_pos.x / grid_size)
+		var cell_y = floor(target_pos.y / grid_size)
 		
-	if event is InputEventMouseButton and event.is_pressed():
-		# Lewy Przycisk Myszy - POSTAW OBIEKT
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			_place_object()
-			get_viewport().set_input_as_handled()
-			
-		# Prawy Przycisk Myszy - ANULUJ
-		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			_cancel_building()
-			get_viewport().set_input_as_handled()
-			
-	# Klawisz Escape (Twoja akcja Game_Pause) - ANULUJ
-	elif event.is_action_pressed("Game_Pause"):
-		_cancel_building()
-		get_viewport().set_input_as_handled()
+		# KROK B: Mnożymy numer kafelka przez jego rozmiar (np. 1 * 64 = 64) 
+		# i dodajemy połowę kafelka (np. 32), aby ustawić ducha idealnie w jego środku.
+		target_pos = Vector2(
+			(cell_x * grid_size) + (grid_size / 2.0),
+			(cell_y * grid_size) + (grid_size / 2.0)
+		)
+	
+	# Aktualizujemy pozycję naszego ducha na mapie.
+	ghost_instance.global_position = target_pos
+	
+	# Sprawdzamy, czy nowa pozycja ducha z niczym nie koliduje.
+	_validate_placement()
 
-func start_building(scene_to_build: PackedScene, item_to_refund: ItemData) -> void:
-	if is_building:
-		_cancel_building() # Zabezpieczenie przed jednoczesnym budowaniem 2 rzeczy
+
+# Funkcja wywoływana przez gracza, gdy wciśnie przycisk wejścia w tryb budowy.
+func start_building(scene_to_build: PackedScene) -> void:
+	# Jeśli gracz już coś budował (np. stary duch "wisi" w pamięci), niszczymy go dla bezpieczeństwa.
+	if is_instance_valid(ghost_instance):
+		ghost_instance.queue_free()
 		
+	# Zapisujemy, co chcemy zbudować i włączamy tryb budowy.
 	current_build_scene = scene_to_build
-	refund_item = item_to_refund
 	is_building = true
 	
-	# Tworzymy "ducha"
+	# Resetujemy obrót do domyślnego przy wyciągnięciu nowego przedmiotu
+	current_rotation_degrees = 0.0
+	
+	# Tworzymy instancję ducha ze sceny przedmiotu.
 	ghost_instance = current_build_scene.instantiate()
 	
-	# Zmieniamy przezroczystość (modulate) na 50%, żeby wyglądał jak hologram
-	if "modulate" in ghost_instance:
-		var color = ghost_instance.modulate
-		color.a = 0.5
-		ghost_instance.modulate = color
-		
-	# BARDZO WAŻNE: Wyłączamy kolizje ducha, by nie odpychał/blokował gracza
+	# Aplikujemy zresetowany obrót
+	ghost_instance.rotation_degrees = current_rotation_degrees
+	
+	# BARDZO WAŻNE: Wyłączamy duchowi kolizje fizyczne, żeby nie odpychał gracza jak prawdziwa skrzynia.
 	_disable_collisions(ghost_instance)
 	
-	# Dodajemy ducha do głównej sceny gry (świata)
+	# Dodajemy ducha do głównego drzewa sceny (na mapę).
 	get_tree().current_scene.add_child(ghost_instance)
 
-func _place_object() -> void:
-	# Tworzymy właściwy, fizyczny obiekt
-	var final_instance = current_build_scene.instantiate()
-	final_instance.global_position = ghost_instance.global_position
-	
-	get_tree().current_scene.add_child(final_instance)
-	print("BuilderComponent: Obiekt pomyślnie postawiony!")
-	
-	_cleanup()
 
-func _cancel_building() -> void:
-	# Skoro gracz anulował budowę, a ekwipunek "zjadł" przedmiot, musimy mu go oddać
-	if player_inventory and refund_item:
-		# Zakładam, że Twoje Inventory ma funkcję dodawania (np. add_item)
-		# Jeśli u Ciebie nazywa się inaczej (np. insert_item), zmień poniższą linijkę
-		player_inventory.add_item(refund_item, 1) 
-		print("BuilderComponent: Anulowano budowę, zwrócono przedmiot.")
+# --- OBRACANIE ---
+func rotate_object() -> void:
+	if not is_building or not is_instance_valid(ghost_instance):
+		return
 		
-	_cleanup()
+	# Dodajemy 90 stopni
+	current_rotation_degrees += 90.0
+	
+	# Zapętlamy z powrotem do zera, jeśli zrobimy pełne koło
+	if current_rotation_degrees >= 360.0:
+		current_rotation_degrees = 0.0
+		
+	# Aplikujemy nowy obrót do ducha
+	ghost_instance.rotation_degrees = current_rotation_degrees
+	
+	# Ponownie sprawdzamy kolizję (po obrocie obiekt mógł uderzyć w ścianę!)
+	_validate_placement()
 
-func _cleanup() -> void:
+
+# Funkcja wywoływana, gdy gracz anuluje budowę lub zmieni broń.
+func stop_building() -> void:
+	# Usuwamy ducha z mapy, czyścimy zmienne i wyłączamy tryb budowy.
 	if is_instance_valid(ghost_instance):
 		ghost_instance.queue_free()
 	ghost_instance = null
 	current_build_scene = null
-	refund_item = null
 	is_building = false
 
-# Rekurencyjna funkcja wyłączająca wszystkie kolizje w drzewie "ducha"
+
+# Funkcja wywoływana przez gracza (przyciskiem Ataku), by postawić obiekt.
+func try_place_object() -> bool:
+	# Zwraca TRUE, jeśli udało się postawić, FALSE, jeśli miejsce jest zablokowane.
+	if not can_place_here or current_build_scene == null:
+		print("BuilderComponent: Miejsce zablokowane!")
+		return false
+		
+	# Skoro miejsce jest wolne, tworzymy WŁAŚCIWY obiekt.
+	var final_instance = current_build_scene.instantiate()
+	
+	# Kopiujemy obrót z ducha do docelowego obiektu!
+	final_instance.rotation_degrees = current_rotation_degrees
+	
+	# Zamiast wrzucać obiekt byle gdzie, wysyłamy sygnał do gracza/LevelManagera.
+	player.entity_spawn_requested.emit(final_instance, ghost_instance.global_position)
+	print("BuilderComponent: Postawiono obiekt (Obrót: " + str(current_rotation_degrees) + "°)")
+	return true
+
+
+# Wewnętrzna funkcja sprawdzająca kolizje (podświetla na zielono/czerwono).
+func _validate_placement() -> void:
+	var area = ghost_instance.get_node_or_null("BuildArea")
+	
+	if area and area is Area2D:
+		var overlapping_bodies = area.get_overlapping_bodies()
+		var overlapping_areas = area.get_overlapping_areas()
+		
+		if overlapping_bodies.size() > 0 or overlapping_areas.size() > 0:
+			can_place_here = false
+			_update_ghost_color(Color(1.0, 0.0, 0.0, 0.75))
+		else:
+			can_place_here = true
+			_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75))
+	else:
+		can_place_here = true 
+		_update_ghost_color(Color(1.0, 1.0, 1.0, 0.75))
+
+func _update_ghost_color(color: Color) -> void:
+	if "modulate" in ghost_instance:
+		ghost_instance.modulate = color
+
 func _disable_collisions(node: Node) -> void:
 	if node is CollisionShape2D or node is CollisionPolygon2D:
-		node.disabled = true
+		var parent = node.get_parent()
+		if parent == null or parent.name != "BuildArea":
+			node.disabled = true
 	for child in node.get_children():
 		_disable_collisions(child)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlaceableItem" format=3 uid="uid://cmjur4vr7urwj"]
+
+[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="1_hlhqm"]
+[ext_resource type="PackedScene" uid="uid://c4txjjfeoqbcr" path="res://assets/scenes/building_scene.tscn" id="2_2k7sc"]
+[ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="2_hlhqm"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("2_hlhqm")
+scene_to_build = ExtResource("2_2k7sc")
+item_id = 19
+item_icon = ExtResource("1_hlhqm")
+item_is_stackable = true
+item_max_stack_count = 99

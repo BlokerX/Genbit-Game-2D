@@ -10,16 +10,18 @@
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="8_2tf2h"]
 [ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="10_jf6n8"]
+[ext_resource type="Script" uid="uid://cpra3wi61tf27" path="res://assets/scripts/entities/builder_component/builder_component.gd" id="11_yfi7d"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
-[node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("inventory", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("1_hyvrl")
 inventory = NodePath("Inventory")
+builder_component = NodePath("BuilderComponent")
 projectile_scene = ExtResource("2_yfi7d")
 respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("3_hsamt")
@@ -64,3 +66,7 @@ texture_filter = 5
 position = Vector2(-0.5, 0)
 shape = SubResource("RectangleShape2D_p58j5")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
+
+[node name="BuilderComponent" type="Node" parent="." unique_id=542770768]
+script = ExtResource("11_yfi7d")
+metadata/_custom_type_script = "uid://cpra3wi61tf27"
