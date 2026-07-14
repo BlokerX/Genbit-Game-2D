@@ -420,7 +420,7 @@ func on_inventory_update() :
 			builder_component.stop_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
-func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int):
+func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int, is_thrown: bool):
 	if item_pickup_scene == null:
 		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
 		return
@@ -434,46 +434,44 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int):
 	var drop_direction = Vector2.ZERO
 	var drop_force = 0.0
 	
-	if is_using_mouse:
-		# --- WYRZUT MYSZKĄ ---
-		var mouse_global_pos = get_global_mouse_position()
-		var dist_to_mouse = global_position.distance_to(mouse_global_pos)
-		
-		# 1. Kierunek: idealnie w stronę kursora (0 rozrzutu!)
-		var aim_direction = global_position.direction_to(mouse_global_pos)
-		if aim_direction == Vector2.ZERO:
-			aim_direction = Vector2.DOWN
-		
-		drop_direction = aim_direction
-		
-		# 2. Siła: Ograniczamy maksymalny zasięg rzutu (np. do 150 pikseli)
-		var max_throw_range = 150.0
-		var actual_throw_distance = min(dist_to_mouse, max_throw_range)
-		
-		# Obliczamy siłę. Mnożnik zależy od fizyki przedmiotu. 
-		# Jeśli nadal rzuca za daleko, zmniejsz 3.0 na 2.0 itd.
-		drop_force = actual_throw_distance * throw_force_multiplier
-		
-		# Zabezpieczenie: minimalna siła, żeby przedmiot wyleciał spod nóg
-		if drop_force < 50.0:
-			drop_force = 50.0
-		
-		# Dodajemy bardzo minimalny rozrzut, żeby stacki ułożone w 1 miejscu nie nachodziły idealnie na siebie
-		var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
-		drop_direction = (aim_direction + spread).normalized()
-		
+	if is_thrown:
+		if is_using_mouse:
+			# --- WYRZUT MYSZKĄ ---
+			var mouse_global_pos = get_global_mouse_position()
+			var dist_to_mouse = global_position.distance_to(mouse_global_pos)
+			
+			var aim_direction = global_position.direction_to(mouse_global_pos)
+			if aim_direction == Vector2.ZERO:
+				aim_direction = Vector2.DOWN
+			
+			var max_throw_range = 150.0
+			var actual_throw_distance = min(dist_to_mouse, max_throw_range)
+			drop_force = actual_throw_distance * throw_force_multiplier
+			
+			if drop_force < 50.0:
+				drop_force = 50.0
+			
+			var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
+			drop_direction = (aim_direction + spread).normalized()
+			
+		else:
+			# --- WYRZUT PADEM / KLAWIATURĄ ---
+			var aim_direction = aim_controller.aim_scanner.target_position.normalized()
+			
+			if aim_direction == Vector2.ZERO:
+				aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+			
+			var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
+			drop_direction = (aim_direction + spread).normalized()
+			drop_force = randf_range(200.0, 300.0)
 	else:
-		# --- WYRZUT PADEM / KLAWIATURĄ ---
-		# Pobieramy bazowy kierunek z celownika
-		var aim_direction = aim_controller.aim_scanner.target_position.normalized()
-		
-		if aim_direction == Vector2.ZERO:
-			aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		
-		# W padzie rozrzut może być ciut większy i siła jest stała/losowa
-		var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
-		drop_direction = (aim_direction + spread).normalized()
-		drop_force = randf_range(200.0, 300.0)
+		# --- DELIKATNE UPUSZCZENIE Z CRAFTINGU ---
+		drop_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		drop_force = 20.0 # Ledwo zauważalne popchnięcie by odseparować leżące obiekty
+	
+	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
+	if drop is RigidBody2D:
+		drop.apply_central_impulse(drop_direction * drop_force)
 	
 	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
 	if drop is RigidBody2D:

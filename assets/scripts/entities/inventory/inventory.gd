@@ -20,7 +20,7 @@ class_name Inventory
 ## Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
 
-signal item_dropped(item_data: ItemData, drop_amount: int)
+signal item_dropped(item_data: ItemData, drop_amount: int, is_thrown: bool)
 
 #endregion
 
@@ -96,7 +96,7 @@ func drop_current_item(drop_all: bool = false) -> void:
 		consume_current_item()
 		
 	# Informujemy świat (naszego gracza), że wyrzucono przedmiot, wysyłając mu dane
-	item_dropped.emit(dropped_item, amount_to_drop)
+	item_dropped.emit(dropped_item, amount_to_drop, true)
 
 
 

@@ -27,9 +27,9 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 		var amount_to_give = randi_range(result.min_amount, result.max_amount)
 		var leftovers = inventory.add_item(result.item_data, amount_to_give)
 		
-		# Jeśli brakło miejsca, wyrzucamy nadmiar na ziemię
+		# Jeśli brakło miejsca, wyrzucamy nadmiar na ziemię (false = wypadnięcie bez użycia siły rzutu)
 		if leftovers > 0:
-			inventory.item_dropped.emit(result.item_data, leftovers)
+			inventory.item_dropped.emit(result.item_data, leftovers, false)
 			
 	print("Crafting: Przetworzono przepis: ", recipe.recipe_name)
 	return true
