@@ -93,16 +93,18 @@ var is_holding_attack: bool = false
 #region Główne funkcje silnikowe
 
 func _ready():
-	# Inicjalizacja MovementComponent
-	#movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
-	# Domyślne parametry:
-	# moveSpeed = 450
-	# accelerationMultiplayer = 5.0
-	# decelerationMultiplayer = 0.825
-	# Inicjalizacja MonitoredLifeStatsComponent
-	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-	# Inicjalizacja InteractionAndAttackStatsComponent
-	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	# ZABEZPIECZENIE (Fallback): Jeśli zapomniano dodać skrypty w Inspektorze, ładujemy je domyślnie.
+	if movement_universal_script == null:
+		push_warning("Brak movement_universal_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
+		movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
+		
+	if health_stats_script == null:
+		push_warning("Brak health_stats_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
+		health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
+		
+	if interaction_and_attack_stats_script == null:
+		push_warning("Brak interaction_and_attack_stats_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
+		interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
 	
 	# Gracz nie umiera na zawsze
 	destroy_entity_after_die = false 
@@ -132,8 +134,11 @@ func _physics_process(delta):
 	var horizontal := Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
 	var vertical := Input.get_axis(INPUT_UP, INPUT_DOWN)
 	
-	# Movement procedure
-	velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
+	# Movement procedure - bezpieczne wywołanie
+	if movement_universal_script != null:
+		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
+	else:
+		velocity = Vector2.ZERO # Jeśli z jakiegoś powodu komponentu nadal nie ma, po prostu stoimy
 	
 	# Set sprite orientation
 	if horizontal < 0 :
@@ -162,9 +167,13 @@ func _physics_process(delta):
 	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 	
-	# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
-	if is_holding_attack and interaction_and_attack_stats_script.can_attack():
-		perform_attack()
+	# Zawsze aktualizujemy licznik cooldownu (bezpieczne wywołanie)
+	if interaction_and_attack_stats_script != null:
+		interaction_and_attack_stats_script.interaction_cooldown_process(delta)
+		
+		# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
+		if is_holding_attack and interaction_and_attack_stats_script.can_attack():
+			perform_attack()
 
 func _handle_pushing() -> void:
 	for i in get_slide_collision_count():
