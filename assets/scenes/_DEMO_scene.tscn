@@ -57,8 +57,7 @@
 [ext_resource type="Texture2D" uid="uid://b8grgj8hph8s0" path="res://assets/textures/samples_examples/green_health_potion.png" id="44_wxccy"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="47_l4vby"]
 [ext_resource type="Texture2D" uid="uid://o3as3a0num1a" path="res://assets/textures/samples_examples/sword.png" id="47_ok3uq"]
-[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="57_wqqpu"]
-[ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="58_kl23m"]
+[ext_resource type="Resource" uid="uid://cybctusoi7i26" path="res://assets/data/items/placeable_item.tres" id="57_x5jnv"]
 [ext_resource type="Texture2D" uid="uid://cgk5oysyttlvb" path="res://assets/textures/samples_examples/freezing_gun_test.png" id="67_yg0s7"]
 [ext_resource type="Texture2D" uid="uid://dimqoakjir1ei" path="res://assets/textures/samples_examples/potion.png" id="69_ln31g"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="70_bkki6"]
@@ -399,14 +398,6 @@ item_id = 7
 item_name = "Nothing"
 item_description = "All is nothing."
 item_icon = ExtResource("69_ln31g")
-
-[sub_resource type="Resource" id="Resource_av66l"]
-resource_local_to_scene = true
-script = ExtResource("58_kl23m")
-item_id = 19
-item_icon = ExtResource("57_wqqpu")
-item_is_stackable = true
-item_max_stack_count = 99
 
 [sub_resource type="Resource" id="Resource_ycc2b"]
 script = ExtResource("15_vfc7k")
@@ -1374,7 +1365,7 @@ item_data = SubResource("Resource_wkiri")
 
 [node name="PlaceableItem" parent="Map/Room03_TestSecretRoom" unique_id=1663445108 instance=ExtResource("14_x51g6")]
 position = Vector2(1320, 448)
-item_data = SubResource("Resource_av66l")
+item_data = ExtResource("57_x5jnv")
 amount = 99
 
 [node name="Room11" parent="Map" unique_id=596254638 instance=ExtResource("12_jjq1y")]

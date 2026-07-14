@@ -71,6 +71,9 @@ var drop_hold_time: float = 0.0
 ## Czas w sekundach wymagany do wyrzucenia całego stacka
 var time_required_for_full_stack: float = 0.5 
 
+## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
+var last_connected_slot = null
+
 #endregion
 
 # Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
@@ -364,10 +367,23 @@ func on_inventory_update() :
 		held_item_visual.texture = null
 		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
 	
-	# Podłączamy sygnał zepsucia do aktywnego przedmiotu
+	
+	# 1. ODPINANIE STAREGO SYGNAŁU (Rozwiązanie błędu 4)
+	if last_connected_slot != null and last_connected_slot != current_slot:
+		if last_connected_slot.item_broken.is_connected(_on_item_broken):
+			last_connected_slot.item_broken.disconnect(_on_item_broken)
+
+	# 2. PODŁĄCZANIE NOWEGO SYGNAŁU
 	if current_slot != null and not current_slot.is_empty():
 		if not current_slot.item_broken.is_connected(_on_item_broken):
 			current_slot.item_broken.connect(_on_item_broken)
+		
+		# Zapamiętujemy obecny slot na wypadek kolejnej zmiany w ekwipunku
+		last_connected_slot = current_slot
+	else:
+		# Jeśli wzięliśmy "puste ręce", zapominamy stary slot
+		last_connected_slot = null
+	
 	
 	# Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
 	if current_item is UseableItem:

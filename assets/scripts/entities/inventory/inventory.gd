@@ -173,18 +173,8 @@ func select_item(index) -> void :
 
 ## Obsługa wybierania poprzedniego i następnego indeksu
 func scroll_inventory(direction: int) -> void:
-	var new_index = current_slot_index + direction
-	
-	# Jeśli wyjdziemy poza prawo, wracamy na początek (0)
-	if new_index >= slots.size():
-		new_index = 0
-	# Jeśli wyjdziemy poza lewo, idziemy na koniec
-	elif new_index < 0:
-		new_index = slots.size() - 1
-		
+	var new_index = wrapi(current_slot_index - direction, 0, slots.size())
 	select_item(new_index)
-
-
 
 # ----------------------------------------------------
 # --- BEZPĘTLOWY SYSTEM CRAFTINGU O(1) ---
