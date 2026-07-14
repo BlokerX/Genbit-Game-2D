@@ -51,6 +51,12 @@ func is_broken() -> bool:
 	
 #endregion
 
+## Kompleksowo czyści wszystkie informacje w slocie
+func clear_slot() -> void:
+	item_data = null
+	stack_amount = 0
+	current_durability = -1
+
 # Mały dodatek dla wygody
 func is_empty() -> bool:
 	return item_data == null or stack_amount <= 0

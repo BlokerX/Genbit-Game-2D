@@ -67,7 +67,7 @@ func consume_current_item() -> void:
 		
 		# Jeśli to był ostatni przedmiot w tym slocie, czyścimy slot
 		if slot.stack_amount <= 0:
-			slot.item_data = null # Czyszczenie
+			slot.clear_slot()
 		else :
 			slot.repair_item() # Mechanizm wyciągania nowego przedmiotu!
 			
@@ -88,9 +88,8 @@ func drop_current_item(drop_all: bool = false) -> void:
 	if drop_all:
 		_update_cache(dropped_item.item_id, -slot.stack_amount)
 		
-		# Jeśli wyrzucamy wszystko, przypisujemy pełną ilość i usuwamy cały stack ze slota
-		slot.item_data = null
-		slot.stack_amount = 0
+		# Jeśli wyrzucamy wszystko, czyścimy slot
+		slot.clear_slot()
 		inventory_updated.emit()
 	else:
 		# Skoro wyrzucamy jedną sztukę, zużywamy 1 sztukę ze slota (to odświeży też UI)
@@ -196,7 +195,7 @@ func consume_ingredients(item_id: int, required_amount: int) -> void:
 			_update_cache(item_id, -taking)
 			
 			if slot.stack_amount <= 0:
-				slot.item_data = null
+				slot.clear_slot()
 				
 			if remaining <= 0: break
 			
