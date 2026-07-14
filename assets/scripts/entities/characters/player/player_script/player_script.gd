@@ -252,9 +252,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _item is PlaceableItem:
 			print("DEBUG: Przedmiot JEST stawialny (PlaceableItem)!")
 			if builder_component:
-				var scene_resource = load(_item.scene_path)
-				builder_component.start_building(scene_resource)
-				print("DEBUG: Odpalono ducha!")
+				if _item is PlaceableItem:
+					if _item.scene_path == null or _item.scene_path.is_empty():
+						push_error("Przedmiot nie ma przypisanej sceny: ", _item.item_name)
+						return
+					var scene_resource = load(_item.scene_path)
+					builder_component.start_building(scene_resource)
+					print("DEBUG: Odpalono ducha!")
 			else:
 				push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
 			return # Przerywamy kod, żeby się nie leczyć skrzynią
