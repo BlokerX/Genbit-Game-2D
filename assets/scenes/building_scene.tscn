@@ -16,6 +16,8 @@ item_to_drop = ExtResource("2_s0d30")
 item_pickup_scene = ExtResource("3_5bbai")
 
 [node name="BuildingTexture" type="Sprite2D" parent="." unique_id=495175319]
+texture_filter = 5
+scale = Vector2(4, 4)
 texture = ExtResource("1_4mnot")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1261960958]
