@@ -43,16 +43,20 @@ flip_h = true
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
+[node name="EffectsCollector" type="Node" parent="." unique_id=768136432]
+
 [node name="Inventory" type="Node" parent="." unique_id=647434682]
 script = ExtResource("8_2tf2h")
 
-[node name="EffectsCollector" type="Node" parent="." unique_id=768136432]
+[node name="BuilderComponent" type="Node" parent="." unique_id=542770768]
+script = ExtResource("11_yfi7d")
+metadata/_custom_type_script = "uid://cpra3wi61tf27"
 
 [node name="AimController" type="Node2D" parent="." unique_id=236252994]
 script = ExtResource("10_jf6n8")
 
 [node name="AimScanner" type="RayCast2D" parent="AimController" unique_id=674220857]
-collision_mask = 12
+collision_mask = 13
 hit_from_inside = true
 
 [node name="HeldItemHandler" type="Node2D" parent="." unique_id=878024246]
@@ -66,7 +70,3 @@ texture_filter = 5
 position = Vector2(-0.5, 0)
 shape = SubResource("RectangleShape2D_p58j5")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
-
-[node name="BuilderComponent" type="Node" parent="." unique_id=542770768]
-script = ExtResource("11_yfi7d")
-metadata/_custom_type_script = "uid://cpra3wi61tf27"

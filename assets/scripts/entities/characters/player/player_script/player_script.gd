@@ -252,7 +252,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _item is PlaceableItem:
 			print("DEBUG: Przedmiot JEST stawialny (PlaceableItem)!")
 			if builder_component:
-				builder_component.start_building(_item.scene_to_build)
+				var scene_resource = load(_item.scene_path)
+				builder_component.start_building(scene_resource)
 				print("DEBUG: Odpalono ducha!")
 			else:
 				push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
@@ -386,7 +387,7 @@ func on_inventory_update() :
 	# Jeśli gracz zmieni slot lub wyrzuci przedmiot w trakcie trwania trybu budowy,
 	# musimy mu ten tryb natychmiast anulować, żeby "duch" nie został na ekranie.
 	if builder_component and builder_component.is_building:
-		if not current_item is PlaceableItem or current_item.scene_to_build != builder_component.current_build_scene:
+		if not current_item is PlaceableItem:
 			builder_component.stop_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
@@ -477,7 +478,7 @@ func respawn_sequence() -> void:
 # --- FUNKCJA WALKI Z DYSTANSEM ---
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
-	var target_enemy = aim_controller.get_enemy_target()
+	var target_enemy = aim_controller.get_target_node()
 	
 	if target_enemy != null:
 		

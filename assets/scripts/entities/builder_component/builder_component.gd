@@ -172,3 +172,9 @@ func _disable_collisions(node: Node) -> void:
 			node.disabled = true
 	for child in node.get_children():
 		_disable_collisions(child)
+	
+	# przypadek interactable_component
+	var interactable = node.get_node_or_null("InteractableComponent")
+	if interactable:
+		# Metoda 1: Wyłączenie całego węzła (najpewniejsza)
+		interactable.process_mode = Node.PROCESS_MODE_DISABLED

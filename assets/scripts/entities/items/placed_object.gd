@@ -5,7 +5,9 @@ class_name PlacedObject
 ## Przedmiot, który wypadnie po zniszczeniu (np. chest.tres)
 @export var item_to_drop: PlaceableItem 
 ## Scena przedmiotu leżącego na ziemi (ItemPickup)
-@export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
+@export var item_pickup_scene: PackedScene
+
+@onready var interactable_component : InteractableComponent = $InteractableComponent
 
 @export_category("Health Settings")
 ## Ile uderzeń z miecza wytrzyma obiekt?
@@ -14,24 +16,10 @@ var current_health: int
 
 func _ready() -> void:
 	current_health = max_health
+	interactable_component.interacted.connect(on_interact)
 
-# --- 1. ZNISZCZENIE PRZEZ ATAK (MIECZ/BROŃ) ---
-# UWAGA: Zmień nazwę tej funkcji na taką, jakiej używają przeciwnicy w Twojej grze
-# do przyjmowania obrażeń (np. "take_damage", "apply_damage", "hit")
-func take_damage(damage: int = 1) -> void:
-	current_health -= damage
-	
-	# Mały efekt wizualny: po uderzeniu skrzynia mruga na czerwono
-	modulate = Color(1.0, 0.5, 0.5)
-	var tween = create_tween()
-	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0), 0.2)
-	
-	if current_health <= 0:
-		_break_and_drop()
-
-# --- 2. (OPCJONALNIE) ZNISZCZENIE PRZEZ INTERAKCJĘ ---
-# Jeśli wolisz zbierać obiekty ręką bez bicia ich mieczem (klawiszem 'F')
-func interact(_player: Node) -> void:
+# ---  ZNISZCZENIE PRZEZ INTERAKCJĘ ---
+func on_interact(_player: Node) -> void:
 	_break_and_drop()
 
 
