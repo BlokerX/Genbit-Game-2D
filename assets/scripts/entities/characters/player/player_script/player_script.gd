@@ -260,27 +260,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		var _item = inventory.get_current_item()
 		print("DEBUG: Przedmiot w ręce to: ", _item)
 		
-		# 1. Sprawdzamy czy to przedmiot do postawienia
-		if _item is PlaceableItem:
-			print("DEBUG: Przedmiot JEST stawialny (PlaceableItem)!")
-			if builder_component:
-				if _item is PlaceableItem:
-					if _item.scene_path == null or _item.scene_path.is_empty():
-						push_error("Przedmiot nie ma przypisanej sceny: ", _item.item_name)
-						return
-					var scene_resource = load(_item.scene_path)
-					builder_component.start_building(scene_resource)
-					print("DEBUG: Odpalono ducha!")
-			else:
-				push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
-			return # Przerywamy kod, żeby się nie leczyć skrzynią
+		# Zabezpieczamy się i wyciągamy definicję (.data) z naszej instancji
+		if _item != null and _item.data != null:
+			var _item_data = _item.data 
 			
-		# 2. Sprawdzamy czy to mikstura/jedzenie (Zwykłe użycie)
-		if interaction_and_attack_stats_script.can_attack():
-			if _item is EatableItem or _item is UseableItem:
-				if _item.affect_target(self):
-					inventory.consume_current_item()
-					interaction_and_attack_stats_script.reset_cooldown()
+			# 1. Sprawdzamy czy to przedmiot do postawienia (używamy _item_data!)
+			if _item_data is PlaceableItem:
+				print("DEBUG: Przedmiot JEST stawialny (PlaceableItem)!")
+				if builder_component:
+					if _item_data is PlaceableItem:
+						if _item_data.scene_path == null or _item_data.scene_path.is_empty():
+							push_error("Przedmiot nie ma przypisanej sceny: ", _item_data.item_name)
+							return
+						var scene_resource = load(_item_data.scene_path)
+						builder_component.start_building(scene_resource)
+						print("DEBUG: Odpalono ducha!")
+				else:
+					push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
+				return # Przerywamy kod, żeby się nie leczyć skrzynią
+			
+			# 2. Sprawdzamy czy to mikstura/jedzenie (Zwykłe użycie)
+			if interaction_and_attack_stats_script.can_attack():
+				if _item_data is EatableItem or _item_data is UseableItem:
+					if _item_data.affect_target(self):
+						inventory.consume_current_item()
+						interaction_and_attack_stats_script.reset_cooldown()
 
 	# --- INTERAKCJA / ALTERNATYWNE ANULOWANIE BUDOWY ---
 	if event.is_action_pressed(INPUT_INTERACT):
@@ -331,45 +335,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Wywołuje się kiedy ekwipunek jest aktualizowany.
 func on_inventory_update() :
-	
-	##region debug log
-	#
-	#print("================")
-	#print("Inventory state:")
-	#print("---")
-	#var __item_name : String = "null"
-	#var __item_durable : String = "null"
-	#var __item_max_durable : String = "null"
-	#var __item_stack_count : String = "null"
-	#var __item_max_stack_count : String = "null"
-	#var __item_is_stackable : String = "null"
-	#if inventory.get_current_item() != null :
-		#__item_name = inventory.get_current_item().item_name
-		#__item_durable = str(inventory.get_current_item().durable)
-		#__item_max_durable = str(inventory.get_current_item().max_durable)
-		#__item_stack_count = str(inventory.get_current_item().item_stack_count)
-		#__item_max_stack_count = str(inventory.get_current_item().item_max_stack_count)
-		#__item_is_stackable = str(inventory.get_current_item().item_is_stackable)
-	#print("Current item (slot number = " + str(inventory.current_item_index + 1) + " / " + str(inventory.max_items) + "): " + __item_name)
-	#print("Durability of the item = " + __item_durable + " / " + __item_max_durable)
-	#print("Is item stackable = " + __item_is_stackable)
-	#print("Stack of the item = " + __item_stack_count + " / " + __item_max_stack_count)
-	#print("---")
-	#print("Items:")
-	#for item in inventory.items :
-		#if item != null :
-			#print(item.item_name)
-	#print("================")
-	#
-	##endregion
-	
 	var current_slot = inventory.get_current_slot()
 	var current_item = inventory.get_current_item()
 	
 	# Aktualizacja ręki gracza (itemu w ręce)
 	if current_item != null:
 		# Jeśli slot nie jest pusty, wkładamy przedmiot do dłoni rycerza.
-		held_item_visual.texture = current_item.item_icon
+		held_item_visual.texture = current_item.data.item_icon
 		held_item_visual.show() # Pokazujemy dłoń (item)
 	else:
 		# Jeśli slot jest pusty, czyścimy dłoń
@@ -377,34 +349,33 @@ func on_inventory_update() :
 		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
 	
 	
-	# 1. ODPINANIE STAREGO SYGNAŁU (Rozwiązanie błędu 4)
-	if last_connected_slot != null and last_connected_slot != current_slot:
-		if last_connected_slot.item_broken.is_connected(_on_item_broken):
-			last_connected_slot.item_broken.disconnect(_on_item_broken)
+	# 1. ODPINANIE STAREGO SYGNAŁU
+	if last_connected_slot != null and not last_connected_slot.is_empty():
+		if last_connected_slot.item.item_broken.is_connected(_on_item_broken):
+			last_connected_slot.item.item_broken.disconnect(_on_item_broken)
 
 	# 2. PODŁĄCZANIE NOWEGO SYGNAŁU
 	if current_slot != null and not current_slot.is_empty():
-		if not current_slot.item_broken.is_connected(_on_item_broken):
-			current_slot.item_broken.connect(_on_item_broken)
-		
-		# Zapamiętujemy obecny slot na wypadek kolejnej zmiany w ekwipunku
+		if not current_slot.item.item_broken.is_connected(_on_item_broken):
+			current_slot.item.item_broken.connect(_on_item_broken)
 		last_connected_slot = current_slot
 	else:
-		# Jeśli wzięliśmy "puste ręce", zapominamy stary slot
 		last_connected_slot = null
 	
 	
-	# Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
-	if current_item is UseableItem:
-		# Przekazujemy cooldown przedmiotu do statystyk gracza
-		interaction_and_attack_stats_script.actual_cooldown = current_item.use_cooldown
+	#Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
+	if current_item != null and current_item.data is UseableItem:
+		var useable_data = current_item.data as UseableItem
 		
-		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU (zakładam, że tablica nazywa się 'effects')
-		if "effects" in current_item:
-			interaction_and_attack_stats_script.actual_extra_effects = current_item.effects
+		# Teraz pobieramy statystyki bezpiecznie z useable_data
+		interaction_and_attack_stats_script.actual_cooldown = useable_data.use_cooldown
 		
-		if current_item is ItemWeapon:
-			interaction_and_attack_stats_script.actual_attack_data = (current_item as ItemWeapon).attack_data
+		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU
+		if "effects" in useable_data:
+			interaction_and_attack_stats_script.actual_extra_effects = useable_data.effects
+		
+		if useable_data is ItemWeapon:
+			interaction_and_attack_stats_script.actual_attack_data = useable_data.attack_data
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
 		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_cooldown
@@ -420,14 +391,13 @@ func on_inventory_update() :
 			builder_component.stop_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
-func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int, is_thrown: bool):
+func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
 	if item_pickup_scene == null:
 		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
 		return
 	
 	var drop = item_pickup_scene.instantiate()
-	drop.item_data = dropped_item_data
-	drop.amount = drop_amount
+	drop.item = dropped_instance # Przekazujemy paczkę do przedmiotu 3D/2D
 	
 	entity_spawn_requested.emit(drop, global_position)
 	
@@ -472,10 +442,6 @@ func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int, i
 	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
 	if drop is RigidBody2D:
 		drop.apply_central_impulse(drop_direction * drop_force)
-	
-	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
-	if drop is RigidBody2D:
-		drop.apply_central_impulse(drop_direction * drop_force)
 
 ## Wywołuje się gdy przedmiot jest niszczony.
 func _on_item_broken(broken_item_name: String):
@@ -505,73 +471,64 @@ func respawn_sequence() -> void:
 # --- FUNKCJA WALKI Z DYSTANSEM ---
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
+	# NOWOŚĆ: Wyciągamy dane z pudełka od razu na starcie
+	var _item_data = _item.data if _item != null else null 
+	
 	var target_enemy = aim_controller.get_target_node()
 	
 	if target_enemy != null:
 		
-		# Pobieramy dystans z naszej nowej funkcji
 		var max_attack_distance = get_current_attack_range()
 		if max_attack_distance <= 0.0:
-			return # Mamy w ręku np. miksturę, więc nie atakujemy
+			return 
 			
-		# --- Mierzenie dystansu do wroga ---
 		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
 		
-		# --- Właściwy atak ---
 		if distance_to_enemy <= max_attack_distance:
 				
-			if _item is ItemWeapon:
-				# Różnicowanie logiki na podstawie typu broni
-				if _item is ItemDistanceWeapon:
+			if _item_data is ItemWeapon: # Używamy _item_data!
+				if _item_data is ItemDistanceWeapon:
 					print("Strzał z broni dystansowej!")
 					if projectile_scene != null:
-						# Zbieramy efekty
 						var generated_effects = interaction_and_attack_stats_script.get_all_attack_effects()
 						
-						# Tworzymy pocisk
 						var new_projectile = projectile_scene.instantiate()
 						new_projectile.shooter = self
 						new_projectile.global_position = global_position
 						
-						# Kierunek strzału (w stronę celu lub punktu celownika)
 						var shoot_dir = global_position.direction_to(target_enemy.global_position)
 						new_projectile.direction = shoot_dir
 						new_projectile.effects_to_apply = generated_effects
 						
-						# Przekazujemy prędkość i czas życia. Zakładam, że w pliku 'projectile.gd'
-						# masz zmienne np. 'speed' i 'lifetime'. Jeśli nazywają się inaczej, zmień je poniżej.
+						# Przypisywanie statystyk bezpośrednio z definicji broni
 						if "speed" in new_projectile:
-							new_projectile.speed = _item.projectile_speed
+							new_projectile.speed = _item_data.projectile_speed
 						elif "projectile_speed" in new_projectile:
-							new_projectile.projectile_speed = _item.projectile_speed
+							new_projectile.projectile_speed = _item_data.projectile_speed
 					
 						if "lifetime" in new_projectile:
-							new_projectile.lifetime = _item.projectile_lifetime
+							new_projectile.lifetime = _item_data.projectile_lifetime
 				
-						# Przekazujemy teksturę do Sprite2D wewnątrz pocisku
 						var sprite = new_projectile.get_node_or_null("Sprite2D")
-						if sprite != null and _item.projectile_texture != null:
-							sprite.texture = _item.projectile_texture
+						if sprite != null and _item_data.projectile_texture != null:
+							sprite.texture = _item_data.projectile_texture
 						
-						# EMISJA SYGNAŁU ZAMIAST LEVEL_MANAGERA
 						entity_spawn_requested.emit(new_projectile, global_position)
+						
+						# Nasz dodany konsument wytrzymałości
+						inventory.consume_durability_of_the_item()
 					else:
 						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
 				else:
-					
-					# Sprawdzamy, czy ściana nie blokuje ataku
 					if not aim_controller.has_line_of_sight(target_enemy):
 						print("Atak zablokowany przez ścianę!")
 						return
 						
 					print("Cios z broni białej!")
 					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
-					# Zużywamy wytrzymałość broni po ataku
 					inventory.consume_durability_of_the_item()
 				
-			elif _item == null:
-				
-				# Sprawdzamy, czy ściana nie blokuje ataku
+			elif _item_data == null:
 				if not aim_controller.has_line_of_sight(target_enemy):
 					print("Atak zablokowany przez ścianę!")
 					return
@@ -581,16 +538,18 @@ func perform_attack() -> void:
 		else:
 			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
 
+
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
-	if _item is ItemWeapon:
-		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
-		return aim_controller.aim_distance * _item.attack_data.max_range
-	elif _item == null:
-		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
+	# NOWOŚĆ: Wyciągamy dane z pudełka
+	var _item_data = _item.data if _item != null else null
+	
+	if _item_data is ItemWeapon: # Używamy _item_data!
+		return aim_controller.aim_distance * _item_data.attack_data.max_range
+	elif _item_data == null:
 		return float(interaction_and_attack_stats_script.get_total_range())
 	else:
-		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
+		return 0.0
 
 #endregion

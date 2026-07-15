@@ -37,12 +37,16 @@ func perform_drop(spawner: Node2D) -> void:
 			push_error("LootDropComponent: Zła scena! Przypisana scena nie posiada skryptu ItemPickup!")
 			continue
 			
-		# Przypisujemy dane
-		pickup_instance.item_data = loot_item.item_data
+		# Losujemy ilość i generujemy CAŁKOWICIE NOWĄ instancję przedmiotu w momencie wypadnięcia!
+		var dropped_amount = randi_range(loot_item.min_amount, loot_item.max_amount)
+		var new_instance = ItemInstance.new(loot_item.item_data, dropped_amount)
+		
+		# Przypisujemy gotową, spakowaną instancję do zmiennej na ziemi
+		pickup_instance.item = new_instance
 		
 		# --- LOSOWANIE ILOŚCI (AMOUNT) ---
 		# Losujemy liczbę całkowitą pomiędzy min_amount a max_amount
-		pickup_instance.amount = randi_range(loot_item.min_amount, loot_item.max_amount)
+		pickup_instance.item.amount = randi_range(loot_item.min_amount, loot_item.max_amount)
 		
 		var random_offset = Vector2(randf_range(-25, 25), randf_range(-25, 25))
 		pickup_instance.global_position = spawner.global_position + random_offset

@@ -29,17 +29,17 @@ func _break_and_drop() -> void:
 		# Tworzymy instancję leżącego przedmiotu (dokładnie jak przy wyrzucaniu z ekwipunku)
 		var drop = item_pickup_scene.instantiate()
 		
-		# Wstrzykujemy do pickupa dane naszej skrzynki, by na ziemi pojawiła się jej ikonka
-		if "item_data" in drop:
-			drop.item_data = item_to_drop
-		if "amount" in drop:
-			drop.amount = 1
+		# Pakujemy zdefiniowany przedmiot (z Inspektora) do nowej instancji o ilości 1
+		var drop_instance = ItemInstance.new(item_to_drop, 1)
+		
+		# Bezpiecznie wstrzykujemy wygenerowaną instancję do pickupa na ziemi
+		drop.set("item", drop_instance)
 			
 		# Ustawiamy go idealnie w miejscu zniszczonej budowli
 		drop.global_position = global_position
 		
-		# Bezpiecznie dodajemy wyrzucony przedmiot na mapę
-		get_tree().current_scene.call_deferred("add_child", drop)
+		# Bezpiecznie dodajemy wyrzucony przedmiot do tego samego pokoju, w którym była skrzynia
+		get_parent().call_deferred("add_child", drop)
 		
 		# Jeśli Twój item_pickup to obiekt fizyczny (RigidBody2D), zróbmy mu mały "podskok" z ziemi!
 		if drop is RigidBody2D:

@@ -134,6 +134,15 @@ func try_place_object() -> bool:
 	# Skoro miejsce jest wolne, tworzymy WŁAŚCIWY obiekt.
 	var final_instance = current_build_scene.instantiate()
 	
+	# --- NOWOŚĆ: Przekazanie Duszy (ItemInstance) ---
+	# Jeżeli nasz nowy obiekt wspiera zapisywanie stanu przedmiotu (PlacedObject)
+	if final_instance is PlacedObject:
+		# Pobieramy tę jedną konkretną instancję, którą gracz trzyma w ręce
+		var hand_item = player.get_inventory().get_current_item()
+		
+		# Używamy bezpiecznej metody set(), która ignoruje błędy starego cache'u Godota
+		final_instance.set("item_instance", hand_item)
+	
 	# Kopiujemy obrót z ducha do docelowego obiektu!
 	final_instance.rotation_degrees = current_rotation_degrees
 	

@@ -10,4 +10,3 @@ scene_path = "uid://c4txjjfeoqbcr"
 item_id = 19
 item_icon = ExtResource("1_hlhqm")
 item_is_stackable = true
-item_max_stack_count = 99

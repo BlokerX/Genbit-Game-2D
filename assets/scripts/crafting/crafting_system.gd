@@ -29,7 +29,8 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 		
 		# Jeśli brakło miejsca, wyrzucamy nadmiar na ziemię (false = wypadnięcie bez użycia siły rzutu)
 		if leftovers > 0:
-			inventory.item_dropped.emit(result.item_data, leftovers, false)
+			var leftover_instance = ItemInstance.new(result.item_data, leftovers)
+			inventory.item_dropped.emit(leftover_instance, false)
 			
 	print("Crafting: Przetworzono przepis: ", recipe.recipe_name)
 	return true
