@@ -471,7 +471,7 @@ func respawn_sequence() -> void:
 # --- FUNKCJA WALKI Z DYSTANSEM ---
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
-	# NOWOŚĆ: Wyciągamy dane z pudełka od razu na starcie
+	# Wyciągamy dane z pudełka od razu na starcie
 	var _item_data = _item.data if _item != null else null 
 	
 	var target_enemy = aim_controller.get_target_node()
@@ -542,7 +542,7 @@ func perform_attack() -> void:
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
-	# NOWOŚĆ: Wyciągamy dane z pudełka
+	# Wyciągamy dane z pudełka
 	var _item_data = _item.data if _item != null else null
 	
 	if _item_data is ItemWeapon: # Używamy _item_data!

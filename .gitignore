@@ -16,3 +16,4 @@ mono_crash.*.json
 
 # Owner's decision
 Builds
+/assets/scripts/.vs
