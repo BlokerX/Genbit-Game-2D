@@ -108,18 +108,12 @@ var current_state: PlayerState = PlayerState.DEFAULT
 #region Główne funkcje silnikowe
 
 func _ready():
-	# ZABEZPIECZENIE (Fallback): Jeśli zapomniano dodać skrypty w Inspektorze, ładujemy je domyślnie.
-	if movement_universal_script == null:
-		push_warning("Brak movement_universal_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
-		movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
-		
-	if health_stats_script == null:
-		push_warning("Brak health_stats_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
-		health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-		
-	if interaction_and_attack_stats_script == null:
-		push_warning("Brak interaction_and_attack_stats_script w Inspektorze Gracza! Ładuję domyślny plik .tres")
-		interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	# ZABEZPIECZENIE
+	# Jeśli zapomniano dodać skrypty w Inspektorze.
+	# Jeśli coś jest null, to znaczy, że zapomniałeś podpiąć w edytorze
+	assert(movement_universal_script != null, "Brak komponentu ruchu!")
+	assert(health_stats_script != null, "Brak komponentu statystyk życia!")
+	assert(interaction_and_attack_stats_script != null, "Brak komponentu interakcji i ataku!")
 	
 	# Gracz nie umiera na zawsze
 	destroy_entity_after_die = false 
@@ -226,7 +220,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_handle_default_inputs(event)
 		PlayerState.BUILDING:
 			_handle_building_inputs(event)
-	
+
+#region Methods sections
 
 func _detect_input_device(event: InputEvent) -> void:
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
@@ -360,6 +355,8 @@ func _cancel_building() -> void:
 	# POWRÓT DO STANU DOMYŚLNEGO
 	current_state = PlayerState.DEFAULT
 	print("DEBUG: Anulowano budowę, wróciłem do stanu DEFAULT.")
+
+#endregion
 
 #endregion
 
