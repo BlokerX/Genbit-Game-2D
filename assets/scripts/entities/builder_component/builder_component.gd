@@ -69,14 +69,25 @@ func _process(_delta: float) -> void:
 	_validate_placement()
 
 
-# Funkcja wywoływana przez gracza, gdy wciśnie przycisk wejścia w tryb budowy.
-func start_building(scene_to_build: PackedScene) -> void:
-	# Jeśli gracz już coś budował (np. stary duch "wisi" w pamięci), niszczymy go dla bezpieczeństwa.
+## Funkcja wywoływana przez gracza, gdy wciśnie przycisk wejścia w tryb budowy.
+func start_building(item_data: PlaceableItem) -> bool:
+	# Sprawdzamy czy przedmiot w ogóle ma przypisaną scenę
+	if item_data.scene_path == null or item_data.scene_path.is_empty():
+		push_error("BuilderComponent: Przedmiot nie ma przypisanej sceny: ", item_data.item_name)
+		return false
+	
+	# Builder sam ładuje scenę z dysku!
+	var loaded_scene = load(item_data.scene_path) as PackedScene
+	if not loaded_scene:
+		push_error("BuilderComponent: Nie udało się załadować sceny ze ścieżki: ", item_data.scene_path)
+		return false
+
+	# Jeśli gracz już coś budował, niszczymy starego ducha dla bezpieczeństwa.
 	if is_instance_valid(ghost_instance):
 		ghost_instance.queue_free()
 		
-	# Zapisujemy, co chcemy zbudować i włączamy tryb budowy.
-	current_build_scene = scene_to_build
+	# Zapisujemy załadowaną scenę i włączamy tryb budowy.
+	current_build_scene = loaded_scene
 	is_building = true
 	
 	# Resetujemy obrót do domyślnego przy wyciągnięciu nowego przedmiotu
@@ -88,11 +99,13 @@ func start_building(scene_to_build: PackedScene) -> void:
 	# Aplikujemy zresetowany obrót
 	ghost_instance.rotation_degrees = current_rotation_degrees
 	
-	# BARDZO WAŻNE: Wyłączamy duchowi kolizje fizyczne, żeby nie odpychał gracza jak prawdziwa skrzynia.
+	# BARDZO WAŻNE: Wyłączamy duchowi kolizje fizyczne, żeby nie odpychał gracza.
 	_disable_collisions(ghost_instance)
 	
 	# Dodajemy ducha do głównego drzewa sceny (na mapę).
 	get_tree().current_scene.add_child(ghost_instance)
+	
+	return true # Zwracamy true, bo udało się odpalić tryb budowania!
 
 
 # --- OBRACANIE ---

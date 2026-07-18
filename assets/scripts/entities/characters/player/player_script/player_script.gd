@@ -343,17 +343,13 @@ func _start_building(item_data: PlaceableItem) -> void:
 	if not builder_component:
 		push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
 		return
-	if item_data.scene_path == null or item_data.scene_path.is_empty():
-		push_error("Przedmiot nie ma przypisanej sceny: ", item_data.item_name)
-		return
 		
-	var scene_resource = load(item_data.scene_path)
-	builder_component.start_building(scene_resource)
-	
-	# ZMIANA STANU GRACZA NA BUDOWANIE
-	current_state = PlayerState.BUILDING
-	is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
-	print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
+	# Zlecenie budowy bezpośrednio do Buildera (przekazujemy cały obiekt item_data)
+	# Jeśli Builder zwróci true, to znaczy że pomyślnie załadował scenę i wywołał "ducha"
+	if builder_component.start_building(item_data):
+		current_state = PlayerState.BUILDING
+		is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
+		print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
 
 func _cancel_building() -> void:
 	if builder_component:
