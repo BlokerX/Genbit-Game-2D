@@ -41,6 +41,9 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 
 #region Podłączone komponenty indywidualne dla gracza
 
+## Komponent obsługujący wykonywanie ataków
+@export var attack_component: AttackComponent
+
 ## Komponent ekwipunku gracza
 @export var inventory : Inventory
 
@@ -81,18 +84,15 @@ var last_connected_slot = null
 @export var pad_throw_force_min: float = 200.0
 @export var pad_throw_force_max: float = 300.0
 @export var drop_push_force: float = 20.0
+@export var throw_force_multiplier: float = 3.0
 
 #endregion
 
 # Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
 var is_holding_attack: bool = false
 
-#region Pociski
+#region Pchnięcie
 
-## Scena pocisku dla broni dystansowej
-@export var projectile_scene: PackedScene
-## Mnożnik siły wyrzucania przedmiotów
-@export var throw_force_multiplier: float = 3.0
 ## Siła z jaką gracz popycha obiekty fizyczne
 @export var push_force: float = 10.0
 
@@ -120,6 +120,12 @@ func _ready():
 	
 	# Health points bar initialization
 	super()
+	
+	# Przekazywanie sygnału spawnowania pocisku wyżej, do menedżera mapy
+	if attack_component:
+		attack_component.spawn_projectile_requested.connect(
+			func(node, pos): entity_spawn_requested.emit(node, pos)
+		)
 	
 	#region Linkowanie zdarzeń
 	if inventory:
@@ -495,76 +501,37 @@ func respawn_sequence() -> void:
 
 #region System ataku
 
-# --- FUNKCJA WALKI Z DYSTANSEM ---
+## Obsługa ataku
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
-	# Wyciągamy dane z pudełka od razu na starcie
 	var _item_data = _item.data if _item != null else null 
 	
 	var target_enemy = aim_controller.get_target_node()
-	
-	if target_enemy != null:
+	if target_enemy == null:
+		return
 		
-		var max_attack_distance = get_current_attack_range()
-		if max_attack_distance <= 0.0:
-			return 
-			
-		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+	var max_attack_distance = get_current_attack_range()
+	if max_attack_distance <= 0.0:
+		return 
 		
-		if distance_to_enemy <= max_attack_distance:
-				
-			if _item_data is ItemWeapon: # Używamy _item_data!
-				if _item_data is ItemDistanceWeapon:
-					print("Strzał z broni dystansowej!")
-					if projectile_scene != null:
-						var generated_effects = interaction_and_attack_stats_script.get_all_attack_effects()
-						
-						var new_projectile = projectile_scene.instantiate()
-						new_projectile.shooter = self
-						new_projectile.global_position = global_position
-						
-						var shoot_dir = global_position.direction_to(target_enemy.global_position)
-						new_projectile.direction = shoot_dir
-						new_projectile.effects_to_apply = generated_effects
-						
-						# Przypisywanie statystyk bezpośrednio z definicji broni
-						if "speed" in new_projectile:
-							new_projectile.speed = _item_data.projectile_speed
-						elif "projectile_speed" in new_projectile:
-							new_projectile.projectile_speed = _item_data.projectile_speed
-					
-						if "lifetime" in new_projectile:
-							new_projectile.lifetime = _item_data.projectile_lifetime
-				
-						var sprite = new_projectile.get_node_or_null("Sprite2D")
-						if sprite != null and _item_data.projectile_texture != null:
-							sprite.texture = _item_data.projectile_texture
-						
-						entity_spawn_requested.emit(new_projectile, global_position)
-						
-						# Nasz dodany konsument wytrzymałości
-						inventory.consume_durability_of_the_item()
-					else:
-						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
-				else:
-					if not aim_controller.has_line_of_sight(target_enemy):
-						print("Atak zablokowany przez ścianę!")
-						return
-						
-					print("Cios z broni białej!")
-					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
-					inventory.consume_durability_of_the_item()
-				
-			elif _item_data == null:
-				if not aim_controller.has_line_of_sight(target_enemy):
-					print("Atak zablokowany przez ścianę!")
-					return
-					
-				print("Gracz trafia z pięści!")
-				interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
-		else:
-			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
+	var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+	var has_los = aim_controller.has_line_of_sight(target_enemy)
 
+	if attack_component:
+		# Zlecamy brudną robotę komponentowi
+		var attack_successful = attack_component.execute_attack(
+			self,
+			target_enemy,
+			_item_data,
+			interaction_and_attack_stats_script,
+			distance_to_enemy,
+			max_attack_distance,
+			has_los
+		)
+		
+		# Jeśli atak się udał fizycznie i używaliśmy broni, konsumujemy wytrzymałość
+		if attack_successful and _item_data != null and _item_data is ItemWeapon:
+			inventory.consume_durability_of_the_item()
 
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
