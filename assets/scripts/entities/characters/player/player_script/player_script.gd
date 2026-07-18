@@ -220,80 +220,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _handle_global_inputs(event):
 		return
 	
-	
-	
-	#region Sterowanie zależne od PlayerState
-	
-	# --- ATAK / STAWIANIE OBIEKTU (LPM / Trigger na padzie) ---
-	if event.is_action_pressed(INPUT_ATTACK):
-		if builder_component and builder_component.is_building:
-			# Jesteśmy w trybie budowy - próbujemy postawić obiekt
-			if builder_component.try_place_object():
-				inventory.consume_current_item() # Odejmujemy z ekwipunku
-				builder_component.stop_building() # Wychodzimy z trybu budowy po postawieniu
-		else:
-			# Zwykły ciągły atak (jeśli nie budujemy)
-			is_holding_attack = true
-			
-	elif event.is_action_released(INPUT_ATTACK):
-		is_holding_attack = false
-		
-	# --- UŻYCIE PRZEDMIOTU / WEJŚCIE W TRYB BUDOWY ---
-	if event.is_action_pressed(INPUT_USE_ITEM):
-		print("--- DEBUG: Wciśnięto przycisk Użycia ---")
-		
-		# Jeśli już budujemy, ponowne wciśnięcie "Użyj" anuluje budowę
-		if builder_component and builder_component.is_building:
-			print("DEBUG: Anuluję budowę.")
-			builder_component.stop_building()
-			return 
-			
-		var _item = inventory.get_current_item()
-		print("DEBUG: Przedmiot w ręce to: ", _item)
-		
-		# Zabezpieczamy się i wyciągamy definicję (.data) z naszej instancji
-		if _item != null and _item.data != null:
-			var _item_data = _item.data 
-			
-			# 1. Sprawdzamy czy to przedmiot do postawienia (używamy _item_data!)
-			if _item_data is PlaceableItem:
-				print("DEBUG: Przedmiot JEST stawialny (PlaceableItem)!")
-				if builder_component:
-					if _item_data is PlaceableItem:
-						if _item_data.scene_path == null or _item_data.scene_path.is_empty():
-							push_error("Przedmiot nie ma przypisanej sceny: ", _item_data.item_name)
-							return
-						var scene_resource = load(_item_data.scene_path)
-						builder_component.start_building(scene_resource)
-						print("DEBUG: Odpalono ducha!")
-				else:
-					push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
-				return # Przerywamy kod, żeby się nie leczyć skrzynią
-			
-			# 2. Sprawdzamy czy to mikstura/jedzenie (Zwykłe użycie)
-			if interaction_and_attack_stats_script.can_attack():
-				if _item_data is EatableItem or _item_data is UseableItem:
-					if _item_data.affect_target(self):
-						inventory.consume_current_item()
-						interaction_and_attack_stats_script.reset_cooldown()
-
-	# --- INTERAKCJA / ALTERNATYWNE ANULOWANIE BUDOWY ---
-	if event.is_action_pressed(INPUT_INTERACT):
-		if builder_component and builder_component.is_building:
-			# Anulujemy budowę (jeśli gracz wolał wcisnąć PPM zamiast "Użyj")
-			builder_component.stop_building()
-			return 
-			
-		# Zwykła interakcja z otoczeniem
-		if aim_controller.current_target != null:
-			aim_controller.current_target.interact(self)
-	
-	# --- OBRACANIE OBIEKTU W TRYBIE BUDOWY ---
-	if event.is_action_pressed(INPUT_ROTATE):
-		if builder_component and builder_component.is_building:
-			builder_component.rotate_object()
-	
-	#endregion
+	# 2. Inputy zależne od tego, co gracz aktualnie robi
+	match current_state:
+		PlayerState.DEFAULT:
+			_handle_default_inputs(event)
+		PlayerState.BUILDING:
+			_handle_building_inputs(event)
 	
 
 func _detect_input_device(event: InputEvent) -> void:
@@ -314,7 +246,7 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 	if event.is_action_pressed("Game_Pause"):
 		if current_state == PlayerState.BUILDING:
 			_cancel_building()
-		get_viewport().set_input_as_handled()
+			get_viewport().set_input_as_handled()
 		return true
 		
 	# RESPAWN
@@ -363,7 +295,64 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 	
 	# w przypadku nieodczytania sygnału wejścia z listy
 	return false
+
+func _handle_default_inputs(event: InputEvent) -> void:
+	# ATAK
+	if event.is_action_pressed(INPUT_ATTACK):
+		is_holding_attack = true
+	elif event.is_action_released(INPUT_ATTACK):
+		is_holding_attack = false
+		
+	# INTERAKCJA
+	if event.is_action_pressed(INPUT_INTERACT):
+		if aim_controller.current_target != null:
+			aim_controller.current_target.interact(self)
+
+	# UŻYCIE PRZEDMIOTU (lub wejście w tryb budowy)
+	if event.is_action_pressed(INPUT_USE_ITEM):
+		var _item = inventory.get_current_item()
+		if _item != null and _item.data != null:
+			var _item_data = _item.data 
+			# Sprawdzamy czy to przedmiot do postawienia
+			if _item_data is PlaceableItem:
+				_start_building(_item_data)
+			# Zwykłe użycie
+			elif interaction_and_attack_stats_script.can_attack():
+				if _item_data is EatableItem:
+					if _item_data.affect_target(self):
+						inventory.consume_current_item()
+						interaction_and_attack_stats_script.reset_cooldown()
+
+func _handle_building_inputs(event: InputEvent) -> void:
+	# W trybie budowy atak = postawienie obiektu
+	if event.is_action_pressed(INPUT_ATTACK):
+		if builder_component.try_place_object():
+			inventory.consume_current_item()
+			_cancel_building() # Wychodzimy z trybu budowy po udanym postawieniu
 	
+	# Obracanie obiektu
+	if event.is_action_pressed(INPUT_ROTATE):
+		builder_component.rotate_object()
+
+	# Anulowanie budowy (PPM lub ponowne wciśnięcie przycisku użycia)
+	if event.is_action_pressed(INPUT_INTERACT) or event.is_action_pressed(INPUT_USE_ITEM):
+		_cancel_building()
+
+func _start_building(item_data: PlaceableItem) -> void:
+	if not builder_component:
+		push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
+		return
+	if item_data.scene_path == null or item_data.scene_path.is_empty():
+		push_error("Przedmiot nie ma przypisanej sceny: ", item_data.item_name)
+		return
+		
+	var scene_resource = load(item_data.scene_path)
+	builder_component.start_building(scene_resource)
+	
+	# ZMIANA STANU GRACZA NA BUDOWANIE
+	current_state = PlayerState.BUILDING
+	is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
+	print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
 
 func _cancel_building() -> void:
 	if builder_component:
@@ -427,11 +416,10 @@ func on_inventory_update() :
 		interaction_and_attack_stats_script.actual_extra_effects = []
 	
 	# --- ZABEZPIECZENIE TRYBU BUDOWANIA ---
-	# Jeśli gracz zmieni slot lub wyrzuci przedmiot w trakcie trwania trybu budowy,
-	# musimy mu ten tryb natychmiast anulować, żeby "duch" nie został na ekranie.
-	if builder_component and builder_component.is_building:
-		if not current_item is PlaceableItem:
-			builder_component.stop_building()
+	# Jeśli gracz zmieni slot lub wyrzuci przedmiot w trakcie trwania trybu budowy
+	if current_state == PlayerState.BUILDING:
+		if current_item == null or not current_item.data is PlaceableItem:
+			_cancel_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
