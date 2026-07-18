@@ -180,7 +180,7 @@ func _validate_placement() -> void:
 			can_place_here = true
 			_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75))
 	else:
-		can_place_here = true 
+		can_place_here = true
 		_update_ghost_color(Color(1.0, 1.0, 1.0, 0.75))
 
 func _update_ghost_color(color: Color) -> void:
