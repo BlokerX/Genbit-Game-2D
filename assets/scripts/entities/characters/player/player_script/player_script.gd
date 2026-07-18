@@ -2,9 +2,8 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
-#region Zmienne i Stałe Globalne
+#region STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów)
 
-# --- STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów) ---
 const INPUT_LEFT = "Left"
 const INPUT_RIGHT = "Right"
 const INPUT_UP = "Up"
@@ -28,12 +27,14 @@ const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
 
 ## Przycisk obracania obiektów budowlanych (musisz go dodać w Input Map!)
 const INPUT_ROTATE = "RotateBuilding"
-# ----------------------------------------------------------
+#endregion
+
+#region Signals
 
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
-## Sygnał wykonywany po skończonej inicjalizacji gracza
+# ## Sygnał wykonywany po skończonej inicjalizacji gracza
 #signal setup_complete
 
 #endregion
@@ -43,21 +44,21 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 ## Komponent ekwipunku gracza
 @export var inventory : Inventory
 
-func get_inventory() -> Inventory:
-	return inventory # Zwraca wyeksportowaną zmienną inventory
-
 ## Komponent budowania
 @export var builder_component: BuilderComponent
 
-#region Celownik / Skaner
+func get_inventory() -> Inventory:
+	return inventory # Zwraca wyeksportowaną zmienną inventory
+
+#endregion
+
+#region Komponent Celownik / Skaner
 
 ### Aim component
 @onready var aim_controller: PlayerAimController = $AimController
 
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
 var is_using_mouse: bool = true
-
-#endregion
 
 #endregion
 
@@ -74,6 +75,13 @@ var time_required_for_full_stack: float = 0.5
 ## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
 var last_connected_slot = null
 
+@export_group("Throw Settings")
+@export var max_throw_range: float = 150.0
+@export var min_throw_force: float = 50.0
+@export var pad_throw_force_min: float = 200.0
+@export var pad_throw_force_max: float = 300.0
+@export var drop_push_force: float = 20.0
+
 #endregion
 
 # Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
@@ -87,6 +95,13 @@ var is_holding_attack: bool = false
 @export var throw_force_multiplier: float = 3.0
 ## Siła z jaką gracz popycha obiekty fizyczne
 @export var push_force: float = 10.0
+
+#endregion
+
+#region System Stanów Gracza
+
+enum PlayerState { DEFAULT, BUILDING}
+var current_state: PlayerState = PlayerState.DEFAULT
 
 #endregion
 
@@ -198,40 +213,16 @@ func _handle_dropping(delta: float) -> void:
 # --- WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
 func _unhandled_input(event: InputEvent) -> void:
 	
-	#region Nasłuchiwanie urządzenia wejścia
+	# Detekcja typu urządzenia wejściowego
+	_detect_input_device(event)
 	
-	# 1. Przełączanie urządzeń
-	if event is InputEventMouseMotion or event is InputEventMouseButton:
-		is_using_mouse = true
-	elif event is InputEventJoypadMotion and abs(event.axis_value) > 0.2:
-		is_using_mouse = false
-	elif event is InputEventJoypadButton:
-		is_using_mouse = false
-	elif event is InputEventKey and event.is_pressed():
-		if event.is_action(INPUT_AIM_LEFT) or event.is_action(INPUT_AIM_RIGHT) or event.is_action(INPUT_AIM_UP) or event.is_action(INPUT_AIM_DOWN):
-			is_using_mouse = false
+	# 1. Globalne inputy (pauza, ekwipunek, priorytety) - działają zawsze, niezależnie od stanu
+	if _handle_global_inputs(event):
+		return
 	
-	#endregion
 	
-	#region Ustawienia celownika
 	
-	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
-	if event.is_action_pressed(INPUT_TOGGLE_ENEMY_PRIO):
-		aim_controller.auto_enemy_selector = !aim_controller.auto_enemy_selector
-		aim_controller.auto_lock_closest_enemy = !aim_controller.auto_lock_closest_enemy
-		
-		# Opcjonalnie: Wyświetlamy informację w konsoli (później możesz to podpiąć pod jakiś napis na ekranie/UI)
-		if aim_controller.auto_enemy_selector:
-			print("Auto-Enemy Selector With Locking Closest Enemy: WŁĄCZONY")
-		else:
-			print("Auto-Enemy Selector With Locking Closest Enemy: WYŁĄCZONY")
-			
-			# Jeśli wyłączyliśmy tryb, a celownik trzymał wroga "na siłę", warto zresetować celownik:
-			aim_controller.clear_gamepad_target()
-	
-	#endregion
-	
-	#region Obsługa interakcji i wydarzeń
+	#region Sterowanie zależne od PlayerState
 	
 	# --- ATAK / STAWIANIE OBIEKTU (LPM / Trigger na padzie) ---
 	if event.is_action_pressed(INPUT_ATTACK):
@@ -302,16 +293,54 @@ func _unhandled_input(event: InputEvent) -> void:
 		if builder_component and builder_component.is_building:
 			builder_component.rotate_object()
 	
-	# --- PAUZA ---
-	if event.is_action_pressed("Game_Pause"):
-		if builder_component and builder_component.is_building:
-			builder_component.stop_building()
-			get_viewport().set_input_as_handled() 
+	#endregion
 	
-	# Respawn
+
+func _detect_input_device(event: InputEvent) -> void:
+	if event is InputEventMouseMotion or event is InputEventMouseButton:
+		is_using_mouse = true
+	elif event is InputEventJoypadMotion and abs(event.axis_value) > 0.2:
+		is_using_mouse = false
+	elif event is InputEventJoypadButton:
+		is_using_mouse = false
+	elif event is InputEventKey and event.is_pressed():
+		if event.is_action(INPUT_AIM_LEFT) or event.is_action(INPUT_AIM_RIGHT) or event.is_action(INPUT_AIM_UP) or event.is_action(INPUT_AIM_DOWN):
+			is_using_mouse = false
+
+func _handle_global_inputs(event: InputEvent) -> bool:
+	#region Sterowanie priorytetowe
+	
+	# PAUZA
+	if event.is_action_pressed("Game_Pause"):
+		if current_state == PlayerState.BUILDING:
+			_cancel_building()
+		get_viewport().set_input_as_handled()
+		return true
+		
+	# RESPAWN
 	if event.is_action_pressed(INPUT_RESPAWN):
 		call_deferred("respawn_sequence")
 		print("Gracz się odrodził!")
+		return true
+	
+	#endregion
+	
+	#region Zarządzanie zachowaniem celownika
+	
+	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
+	if event.is_action_pressed(INPUT_TOGGLE_ENEMY_PRIO):
+		aim_controller.auto_enemy_selector = !aim_controller.auto_enemy_selector
+		aim_controller.auto_lock_closest_enemy = !aim_controller.auto_lock_closest_enemy
+		
+		# Opcjonalnie: Wyświetlamy informację w konsoli (później możesz to podpiąć pod jakiś napis na ekranie/UI)
+		if aim_controller.auto_enemy_selector:
+			print("Auto-Enemy Selector With Locking Closest Enemy: WŁĄCZONY")
+		else:
+			print("Auto-Enemy Selector With Locking Closest Enemy: WYŁĄCZONY")
+			
+			# Jeśli wyłączyliśmy tryb, a celownik trzymał wroga "na siłę", warto zresetować celownik:
+			aim_controller.clear_gamepad_target()
+		return true
 	
 	#endregion
 	
@@ -321,13 +350,27 @@ func _unhandled_input(event: InputEvent) -> void:
 	for i in range(1, 10):
 		if event.is_action_pressed(INPUT_INV_SLOT_PREFIX + str(i)):
 			inventory.select_item(i - 1)
+			return true
 		
 	if event.is_action_pressed(INPUT_INV_SCROLL_DOWN):
 		inventory.scroll_inventory(1)
+		return true
 	elif event.is_action_pressed(INPUT_INV_SCROLL_UP):
 		inventory.scroll_inventory(-1)
+		return true
 		
 	#endregion
+	
+	# w przypadku nieodczytania sygnału wejścia z listy
+	return false
+	
+
+func _cancel_building() -> void:
+	if builder_component:
+		builder_component.stop_building()
+	# POWRÓT DO STANU DOMYŚLNEGO
+	current_state = PlayerState.DEFAULT
+	print("DEBUG: Anulowano budowę, wróciłem do stanu DEFAULT.")
 
 #endregion
 
@@ -414,12 +457,11 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 			if aim_direction == Vector2.ZERO:
 				aim_direction = Vector2.DOWN
 			
-			var max_throw_range = 150.0
 			var actual_throw_distance = min(dist_to_mouse, max_throw_range)
 			drop_force = actual_throw_distance * throw_force_multiplier
 			
-			if drop_force < 50.0:
-				drop_force = 50.0
+			if drop_force < min_throw_force:
+				drop_force = min_throw_force
 			
 			var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
 			drop_direction = (aim_direction + spread).normalized()
@@ -433,11 +475,11 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 			
 			var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
 			drop_direction = (aim_direction + spread).normalized()
-			drop_force = randf_range(200.0, 300.0)
+			drop_force = randf_range(pad_throw_force_min, pad_throw_force_max)
 	else:
 		# --- DELIKATNE UPUSZCZENIE Z CRAFTINGU ---
 		drop_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		drop_force = 20.0 # Ledwo zauważalne popchnięcie by odseparować leżące obiekty
+		drop_force = drop_push_force # Ledwo zauważalne popchnięcie by odseparować leżące obiekty
 	
 	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
 	if drop is RigidBody2D:
