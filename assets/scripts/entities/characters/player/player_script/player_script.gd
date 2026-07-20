@@ -47,6 +47,9 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 ## Komponent ekwipunku gracza
 @export var inventory : Inventory
 
+## Komponent odpowiedzialny za wyrzucanie przedmiotów
+@export var item_thrower_component: ItemThrowerComponent
+
 ## Komponent budowania
 @export var builder_component: BuilderComponent
 
@@ -69,22 +72,12 @@ var is_using_mouse: bool = true
 
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
 
-@export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
-
 var drop_hold_time: float = 0.0
 ## Czas w sekundach wymagany do wyrzucenia całego stacka
 var time_required_for_full_stack: float = 0.5 
 
 ## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
 var last_connected_slot = null
-
-@export_group("Throw Settings")
-@export var max_throw_range: float = 150.0
-@export var min_throw_force: float = 50.0
-@export var pad_throw_force_min: float = 200.0
-@export var pad_throw_force_max: float = 300.0
-@export var drop_push_force: float = 20.0
-@export var throw_force_multiplier: float = 3.0
 
 #endregion
 
@@ -124,6 +117,12 @@ func _ready():
 	# Przekazywanie sygnału spawnowania pocisku wyżej, do menedżera mapy
 	if attack_component:
 		attack_component.spawn_projectile_requested.connect(
+			func(node, pos): entity_spawn_requested.emit(node, pos)
+		)
+	
+	# Przekazywanie sygnału spawnowania z wyrzucania przedmiotów wyżej
+	if item_thrower_component:
+		item_thrower_component.entity_spawn_requested.connect(
 			func(node, pos): entity_spawn_requested.emit(node, pos)
 		)
 	
@@ -422,55 +421,16 @@ func on_inventory_update() :
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
-	if item_pickup_scene == null:
-		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
-		return
-	
-	var drop = item_pickup_scene.instantiate()
-	drop.item = dropped_instance # Przekazujemy paczkę do przedmiotu 3D/2D
-	
-	entity_spawn_requested.emit(drop, global_position)
-	
-	var drop_direction = Vector2.ZERO
-	var drop_force = 0.0
-	
-	if is_thrown:
-		if is_using_mouse:
-			# --- WYRZUT MYSZKĄ ---
-			var mouse_global_pos = get_global_mouse_position()
-			var dist_to_mouse = global_position.distance_to(mouse_global_pos)
+	if item_thrower_component:
+		# Zabezpieczamy pobranie kierunku z pada
+		var aim_target = Vector2.ZERO
+		if aim_controller and aim_controller.aim_scanner:
+			aim_target = aim_controller.aim_scanner.target_position
 			
-			var aim_direction = global_position.direction_to(mouse_global_pos)
-			if aim_direction == Vector2.ZERO:
-				aim_direction = Vector2.DOWN
-			
-			var actual_throw_distance = min(dist_to_mouse, max_throw_range)
-			drop_force = actual_throw_distance * throw_force_multiplier
-			
-			if drop_force < min_throw_force:
-				drop_force = min_throw_force
-			
-			var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
-			drop_direction = (aim_direction + spread).normalized()
-			
-		else:
-			# --- WYRZUT PADEM / KLAWIATURĄ ---
-			var aim_direction = aim_controller.aim_scanner.target_position.normalized()
-			
-			if aim_direction == Vector2.ZERO:
-				aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-			
-			var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
-			drop_direction = (aim_direction + spread).normalized()
-			drop_force = randf_range(pad_throw_force_min, pad_throw_force_max)
+		# Delegujemy całą resztę do komponentu
+		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, aim_target)
 	else:
-		# --- DELIKATNE UPUSZCZENIE Z CRAFTINGU ---
-		drop_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		drop_force = drop_push_force # Ledwo zauważalne popchnięcie by odseparować leżące obiekty
-	
-	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
-	if drop is RigidBody2D:
-		drop.apply_central_impulse(drop_direction * drop_force)
+		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 
 ## Wywołuje się gdy przedmiot jest niszczony.
 func _on_item_broken(broken_item_name: String):

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="InteractionAndAttackStatsComponent" format=3 uid="uid://dbliy2ar7a3k7"]
 
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_em6k5"]
-[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/entities/stats/interaction_and_attack_stats_component.gd" id="1_rtxb7"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="1_rtxb7"]
 
 [sub_resource type="Resource" id="Resource_jnda7"]
 script = ExtResource("1_em6k5")
