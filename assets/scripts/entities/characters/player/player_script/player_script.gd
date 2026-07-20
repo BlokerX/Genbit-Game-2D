@@ -27,6 +27,7 @@ const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
 
 ## Przycisk obracania obiektów budowlanych (musisz go dodać w Input Map!)
 const INPUT_ROTATE = "RotateBuilding"
+
 #endregion
 
 #region Signals
@@ -56,12 +57,12 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 func get_inventory() -> Inventory:
 	return inventory # Zwraca wyeksportowaną zmienną inventory
 
+### Aim component
+@onready var aim_controller: PlayerAimController = $AimController
+
 #endregion
 
 #region Komponent Celownik / Skaner
-
-### Aim component
-@onready var aim_controller: PlayerAimController = $AimController
 
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
 var is_using_mouse: bool = true
@@ -81,8 +82,12 @@ var last_connected_slot = null
 
 #endregion
 
+#region Atak
+
 # Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
 var is_holding_attack: bool = false
+
+#endregion
 
 #region Pchnięcie
 
@@ -93,7 +98,7 @@ var is_holding_attack: bool = false
 
 #region System Stanów Gracza
 
-enum PlayerState { DEFAULT, BUILDING}
+enum PlayerState { DEFAULT, BUILDING }
 var current_state: PlayerState = PlayerState.DEFAULT
 
 #endregion
