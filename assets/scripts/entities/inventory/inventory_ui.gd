@@ -2,7 +2,7 @@ extends Node
 
 @export var player : PlayerCharacter
 # Zmieniamy Sprite2D na naszą nową klasę InventorySlot:
-@onready var slots_ui = $InventorySlotHandle.get_children()
+@onready var slots_ui = $HotbarPanel.get_children()
 
 # Referencja do naszego tekstu (przeciągniesz go tu w Inspektorze)
 @export var info_label: Label
