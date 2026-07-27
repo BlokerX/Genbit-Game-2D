@@ -330,14 +330,25 @@ func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: b
 					last_target = current_target
 				clear_gamepad_target()
 
-## Zwraca namierzonego wroga lub tego, z którym się zderzamy. Zwraca null, jeśli brak wroga.
-func get_enemy_target() -> Node2D:
-	# 1. Sprawdzamy celownik (RayCast/Myszka)
+## Zwraca namierzony obiekt (wroga LUB budynek)
+func get_target_node() -> Node2D:
 	if current_target != null:
-		var potential_enemy = current_target.get_parent()
-		if potential_enemy.is_in_group("Enemy"):
-			return potential_enemy
-			
+		var potential_target = current_target.get_parent()
+		# Sprawdzamy, czy to wróg LUB obiekt typu PlacedObject
+		if potential_target.is_in_group("Enemy") or potential_target is PlacedObject:
+			return potential_target
 	return null
+
+func is_target_enemy() -> bool :
+	var potential_target = current_target.get_parent()
+	if potential_target != null and potential_target.is_in_group("Enemy") :
+		return true
+	return false
+
+func is_target_building() -> bool :
+	var potential_target = current_target.get_parent()
+	if potential_target is PlacedObject :
+		return true
+	return false
 
 #endregion

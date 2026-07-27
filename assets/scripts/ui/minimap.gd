@@ -147,8 +147,12 @@ func _draw() -> void:
 				var loot_icons_to_draw : Array[Texture2D] = []
 				
 				for child in target_parent.get_children():
-					if child is ItemPickup and child.item_data != null and child.item_data.item_icon != null:
-						var item_tex = child.item_data.item_icon
+					# Sprawdzamy, czy to podnoszony przedmiot i czy nowa instancja (item) oraz jej dane (data) istnieją
+					if child is ItemPickup and child.item != null and child.item.data != null and child.item.data.item_icon != null:
+		
+						# Pobieramy ikonę ze zaktualizowanej ścieżki
+						var item_tex = child.item.data.item_icon
+		
 						if not loot_icons_to_draw.has(item_tex):
 							loot_icons_to_draw.append(item_tex)
 				

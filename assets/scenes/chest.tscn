@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://bnk5e152g3104"]
+
+[ext_resource type="Script" uid="uid://bwf60qgdq3hgr" path="res://assets/scripts/entities/items/placed_object.gd" id="1_y0uk3"]
+[ext_resource type="Resource" uid="uid://b8exeqhxd52o2" path="res://assets/data/items/chest.tres" id="2_0ipb0"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="3_d2r8r"]
+[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="4_ebv6y"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="5_0ipb0"]
+[ext_resource type="Script" uid="uid://dx1iulhd4f44r" path="res://assets/scripts/components/storage_component.gd" id="6_ne1cg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vamu6"]
+size = Vector2(63, 63)
+
+[node name="BuildingScene" type="StaticBody2D" unique_id=1382818356]
+collision_mask = 31
+script = ExtResource("1_y0uk3")
+item_to_drop = ExtResource("2_0ipb0")
+item_pickup_scene = ExtResource("3_d2r8r")
+
+[node name="BuildingTexture" type="Sprite2D" parent="." unique_id=495175319]
+texture_filter = 5
+scale = Vector2(4, 4)
+texture = ExtResource("4_ebv6y")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1261960958]
+shape = SubResource("RectangleShape2D_vamu6")
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("5_0ipb0")]
+target_sprite = NodePath("../BuildingTexture")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="BuildArea" type="Area2D" parent="." unique_id=1487926389]
+collision_mask = 31
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BuildArea" unique_id=120805492]
+shape = SubResource("RectangleShape2D_vamu6")
+
+[node name="StorageComponent" type="Node" parent="." unique_id=687521106]
+script = ExtResource("6_ne1cg")
+slots_amount = 27

@@ -2,7 +2,7 @@ extends Node
 
 @export var player : PlayerCharacter
 # Zmieniamy Sprite2D na naszą nową klasę InventorySlot:
-@onready var slots_ui = $InventorySlotHandle.get_children()
+@onready var slots_ui = $HotbarPanel.get_children()
 
 # Referencja do naszego tekstu (przeciągniesz go tu w Inspektorze)
 @export var info_label: Label
@@ -39,21 +39,21 @@ func update_info_panel() -> void:
 	var slot = player.inventory.get_current_slot()
 	
 	if slot != null and not slot.is_empty():
-		var item = slot.item_data
+		var item = slot.item
 		
 		# Budujemy tekst
-		var text = "Nazwa: " + item.item_name + "\n"
+		var text = "Nazwa: " + item.data.item_name + "\n"
 		
 		# Ilość w slocie (stack_amount z Twojego SlotData)
-		if item.item_is_stackable:
-			text += "Ilość: " + str(slot.stack_amount) + " / " + str(item.item_max_stack_count) + "\n"
+		if item.data.item_is_stackable:
+			text += "Ilość: " + str(item.amount) + " / " + str(item.data.item_max_stack_count) + "\n"
 			
 		# Wytrzymałość (current_durability z Twojego SlotData)
-		if item.max_durable > 0:
-			text += "Wytrzymałość: " + str(slot.current_durability) + " / " + str(item.max_durable) + "\n"
+		if item.data.max_durable > 0:
+			text += "Wytrzymałość: " + str(item.durability) + " / " + str(item.data.max_durable) + "\n"
 			
-		if item.item_description != "":
-			text += "\n" + item.item_description
+		if item.data.item_description != "":
+			text += "\n" + item.data.item_description
 			
 		info_label.text = text
 		info_label.get_parent().show()

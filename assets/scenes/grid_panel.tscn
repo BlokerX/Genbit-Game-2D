@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://b0ilctyponhhu"]
+
+[ext_resource type="Script" uid="uid://d3klmuh1wjrqs" path="res://assets/scripts/ui/grid_panel.gd" id="1_q4s0c"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_q4s0c"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+
+[node name="GridPanel" type="PanelContainer" unique_id=186742539]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_q4s0c")
+script = ExtResource("1_q4s0c")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=376032009]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer" unique_id=882671277]
+layout_mode = 2
+columns = 9

@@ -2,9 +2,8 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
-#region Zmienne i Stałe Globalne
+#region STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów)
 
-# --- STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów) ---
 const INPUT_LEFT = "Left"
 const INPUT_RIGHT = "Right"
 const INPUT_UP = "Up"
@@ -19,39 +18,55 @@ const INPUT_DROP_ITEM = "DropItem"
 const INPUT_ATTACK = "Attack"
 const INPUT_USE_ITEM = "UseItemButton"
 const INPUT_INTERACT = "Interact"
+const INPUT_COLLECT = "Collect"
 const INPUT_RESPAWN = "RespawnButton"
 const INPUT_TOGGLE_ENEMY_PRIO = "ToggleEnemyPriority"
 
 const INPUT_INV_SLOT_PREFIX = "InventorySlot"
 const INPUT_INV_SCROLL_UP = "InventoryScrollUp"
 const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
-# ----------------------------------------------------------
+
+## Przycisk obracania obiektów budowlanych (musisz go dodać w Input Map!)
+const INPUT_ROTATE = "RotateBuilding"
+
+#endregion
+
+#region Signals
 
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
-## Sygnał wykonywany po skończonej inicjalizacji gracza
+# ## Sygnał wykonywany po skończonej inicjalizacji gracza
 #signal setup_complete
 
 #endregion
 
 #region Podłączone komponenty indywidualne dla gracza
 
+## Komponent obsługujący wykonywanie ataków
+@export var attack_component: AttackComponent
+
 ## Komponent ekwipunku gracza
 @export var inventory : Inventory
 
+## Komponent odpowiedzialny za wyrzucanie przedmiotów
+@export var item_thrower_component: ItemThrowerComponent
+
+## Komponent budowania
+@export var builder_component: BuilderComponent
+
 func get_inventory() -> Inventory:
 	return inventory # Zwraca wyeksportowaną zmienną inventory
-	
-#region Celownik / Skaner
 
 ### Aim component
 @onready var aim_controller: PlayerAimController = $AimController
 
+#endregion
+
+#region Komponent Celownik / Skaner
+
 # Pamięta, z jakiego kontrolera gracz ostatnio korzystał
 var is_using_mouse: bool = true
-
-#endregion
 
 #endregion
 
@@ -59,47 +74,63 @@ var is_using_mouse: bool = true
 
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
 
-@export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
-
 var drop_hold_time: float = 0.0
 ## Czas w sekundach wymagany do wyrzucenia całego stacka
 var time_required_for_full_stack: float = 0.5 
 
+## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
+var last_connected_slot = null
+
 #endregion
+
+#region Atak
 
 # Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
 var is_holding_attack: bool = false
 
-#region Pociski
+#endregion
 
-## Scena pocisku dla broni dystansowej
-@export var projectile_scene: PackedScene
-## Mnożnik siły wyrzucania przedmiotów
-@export var throw_force_multiplier: float = 3.0
+#region Pchnięcie
+
 ## Siła z jaką gracz popycha obiekty fizyczne
 @export var push_force: float = 10.0
+
+#endregion
+
+#region System Stanów Gracza
+
+enum PlayerState { DEFAULT, BUILDING }
+var current_state: PlayerState = PlayerState.DEFAULT
 
 #endregion
 
 #region Główne funkcje silnikowe
 
 func _ready():
-	# Inicjalizacja MovementComponent
-	#movement_universal_script = preload("res://assets/scripts/entities/movement/special_instations/player_movement_component.tres")
-	# Domyślne parametry:
-	# moveSpeed = 450
-	# accelerationMultiplayer = 5.0
-	# decelerationMultiplayer = 0.825
-	# Inicjalizacja MonitoredLifeStatsComponent
-	#health_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres")
-	# Inicjalizacja InteractionAndAttackStatsComponent
-	#interaction_and_attack_stats_script = preload("res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres")
+	# ZABEZPIECZENIE
+	# Jeśli zapomniano dodać skrypty w Inspektorze.
+	# Jeśli coś jest null, to znaczy, że zapomniałeś podpiąć w edytorze
+	assert(movement_universal_script != null, "Brak komponentu ruchu!")
+	assert(health_stats_script != null, "Brak komponentu statystyk życia!")
+	assert(interaction_and_attack_stats_script != null, "Brak komponentu interakcji i ataku!")
 	
 	# Gracz nie umiera na zawsze
 	destroy_entity_after_die = false 
 	
 	# Health points bar initialization
 	super()
+	
+	# Przekazywanie sygnału spawnowania pocisku wyżej, do menedżera mapy
+	if attack_component:
+		attack_component.spawn_projectile_requested.connect(
+			func(node, pos): entity_spawn_requested.emit(node, pos)
+		)
+	
+	# Przekazywanie sygnału spawnowania z wyrzucania przedmiotów wyżej
+	if item_thrower_component:
+		item_thrower_component.entity_spawn_requested.connect(
+			func(node, pos): entity_spawn_requested.emit(node, pos)
+		)
 	
 	#region Linkowanie zdarzeń
 	if inventory:
@@ -123,8 +154,11 @@ func _physics_process(delta):
 	var horizontal := Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
 	var vertical := Input.get_axis(INPUT_UP, INPUT_DOWN)
 	
-	# Movement procedure
-	velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
+	# Movement procedure - bezpieczne wywołanie
+	if movement_universal_script != null:
+		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
+	else:
+		velocity = Vector2.ZERO # Jeśli z jakiegoś powodu komponentu nadal nie ma, po prostu stoimy
 	
 	# Set sprite orientation
 	if horizontal < 0 :
@@ -153,9 +187,13 @@ func _physics_process(delta):
 	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
 	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 	
-	# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
-	if is_holding_attack and interaction_and_attack_stats_script.can_attack():
-		perform_attack()
+	# Zawsze aktualizujemy licznik cooldownu (bezpieczne wywołanie)
+	if interaction_and_attack_stats_script != null:
+		interaction_and_attack_stats_script.interaction_cooldown_process(delta)
+		
+		# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
+		if is_holding_attack and interaction_and_attack_stats_script.can_attack():
+			perform_attack()
 
 func _handle_pushing() -> void:
 	for i in get_slide_collision_count():
@@ -180,9 +218,23 @@ func _handle_dropping(delta: float) -> void:
 # --- WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
 func _unhandled_input(event: InputEvent) -> void:
 	
-	#region Nasłuchiwanie urządzenia wejścia
+	# Detekcja typu urządzenia wejściowego
+	_detect_input_device(event)
 	
-	# 1. Przełączanie urządzeń
+	# 1. Globalne inputy (pauza, ekwipunek, priorytety) - działają zawsze, niezależnie od stanu
+	if _handle_global_inputs(event):
+		return
+	
+	# 2. Inputy zależne od tego, co gracz aktualnie robi
+	match current_state:
+		PlayerState.DEFAULT:
+			_handle_default_inputs(event)
+		PlayerState.BUILDING:
+			_handle_building_inputs(event)
+
+#region Methods sections
+
+func _detect_input_device(event: InputEvent) -> void:
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
 		is_using_mouse = true
 	elif event is InputEventJoypadMotion and abs(event.axis_value) > 0.2:
@@ -192,10 +244,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.is_pressed():
 		if event.is_action(INPUT_AIM_LEFT) or event.is_action(INPUT_AIM_RIGHT) or event.is_action(INPUT_AIM_UP) or event.is_action(INPUT_AIM_DOWN):
 			is_using_mouse = false
+
+func _handle_global_inputs(event: InputEvent) -> bool:
+	#region Sterowanie priorytetowe
+	
+	# PAUZA
+	if event.is_action_pressed("Game_Pause"):
+		if current_state == PlayerState.BUILDING:
+			_cancel_building()
+			get_viewport().set_input_as_handled()
+		return true
+		
+	# RESPAWN
+	if event.is_action_pressed(INPUT_RESPAWN):
+		call_deferred("respawn_sequence")
+		print("Gracz się odrodził!")
+		return true
 	
 	#endregion
 	
-	#region Ustawienia celownika
+	#region Zarządzanie zachowaniem celownika
 	
 	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
 	if event.is_action_pressed(INPUT_TOGGLE_ENEMY_PRIO):
@@ -210,34 +278,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 			# Jeśli wyłączyliśmy tryb, a celownik trzymał wroga "na siłę", warto zresetować celownik:
 			aim_controller.clear_gamepad_target()
-	
-	#endregion
-	
-	#region Obsługa interakcji i wydarzeń
-	
-	# Akcja ataku (Pamiętamy, czy wciśnięto przycisk)
-	if event.is_action_pressed(INPUT_ATTACK):
-		is_holding_attack = true
-	elif event.is_action_released(INPUT_ATTACK):
-		is_holding_attack = false
-		
-	# Użycie przedmiotu (Tylko Leczenie/Konsumpcja)
-	if event.is_action_pressed(INPUT_USE_ITEM) and interaction_and_attack_stats_script.can_attack():
-		var _item = inventory.get_current_item()
-		if _item is EatableItem:
-			if _item.affect_target(self):
-				inventory.consume_current_item()
-				interaction_and_attack_stats_script.reset_cooldown()
-
-	# Interakcja
-	if event.is_action_pressed(INPUT_INTERACT):
-		if aim_controller.current_target != null:
-			aim_controller.current_target.interact(self)
-	
-	# Respawn
-	if event.is_action_pressed(INPUT_RESPAWN):
-		call_deferred("respawn_sequence")
-		print("Gracz się odrodził!")
+		return true
 	
 	#endregion
 	
@@ -247,13 +288,89 @@ func _unhandled_input(event: InputEvent) -> void:
 	for i in range(1, 10):
 		if event.is_action_pressed(INPUT_INV_SLOT_PREFIX + str(i)):
 			inventory.select_item(i - 1)
+			return true
 		
 	if event.is_action_pressed(INPUT_INV_SCROLL_DOWN):
 		inventory.scroll_inventory(1)
+		return true
 	elif event.is_action_pressed(INPUT_INV_SCROLL_UP):
 		inventory.scroll_inventory(-1)
+		return true
 		
 	#endregion
+	
+	# w przypadku nieodczytania sygnału wejścia z listy
+	return false
+
+func _handle_default_inputs(event: InputEvent) -> void:
+	# ATAK
+	if event.is_action_pressed(INPUT_ATTACK):
+		is_holding_attack = true
+	elif event.is_action_released(INPUT_ATTACK):
+		is_holding_attack = false
+		
+# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
+	if event.is_action_pressed(INPUT_INTERACT):
+		if aim_controller.current_target != null:
+			aim_controller.current_target.interact(self)
+			
+	# --- NOWOŚĆ: ZBIERANIE (Klawisz F - Zwijanie budowli) ---
+	if event.is_action_pressed(INPUT_COLLECT):
+		if aim_controller.current_target != null:
+			# Wywołujemy naszą nową funkcję na celowniku
+			if aim_controller.current_target.has_method("collect_interaction"):
+				aim_controller.current_target.collect_interaction(self)
+
+	# UŻYCIE PRZEDMIOTU (lub wejście w tryb budowy)
+	if event.is_action_pressed(INPUT_USE_ITEM):
+		var _item = inventory.get_current_item()
+		if _item != null and _item.data != null:
+			var _item_data = _item.data 
+			# Sprawdzamy czy to przedmiot do postawienia
+			if _item_data is PlaceableItem:
+				_start_building(_item_data)
+			# Zwykłe użycie
+			elif interaction_and_attack_stats_script.can_attack():
+				if _item_data is EatableItem:
+					if _item_data.affect_target(self):
+						inventory.consume_current_item()
+						interaction_and_attack_stats_script.reset_cooldown()
+
+func _handle_building_inputs(event: InputEvent) -> void:
+	# W trybie budowy atak = postawienie obiektu
+	if event.is_action_pressed(INPUT_ATTACK):
+		if builder_component.try_place_object():
+			inventory.consume_current_item()
+			_cancel_building() # Wychodzimy z trybu budowy po udanym postawieniu
+	
+	# Obracanie obiektu
+	if event.is_action_pressed(INPUT_ROTATE):
+		builder_component.rotate_object()
+
+	# Anulowanie budowy (PPM lub ponowne wciśnięcie przycisku użycia)
+	if event.is_action_pressed(INPUT_INTERACT) or event.is_action_pressed(INPUT_USE_ITEM):
+		_cancel_building()
+
+func _start_building(item_data: PlaceableItem) -> void:
+	if not builder_component:
+		push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
+		return
+		
+	# Zlecenie budowy bezpośrednio do Buildera (przekazujemy cały obiekt item_data)
+	# Jeśli Builder zwróci true, to znaczy że pomyślnie załadował scenę i wywołał "ducha"
+	if builder_component.start_building(item_data):
+		current_state = PlayerState.BUILDING
+		is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
+		print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
+
+func _cancel_building() -> void:
+	if builder_component:
+		builder_component.stop_building()
+	# POWRÓT DO STANU DOMYŚLNEGO
+	current_state = PlayerState.DEFAULT
+	print("DEBUG: Anulowano budowę, wróciłem do stanu DEFAULT.")
+
+#endregion
 
 #endregion
 
@@ -261,133 +378,72 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Wywołuje się kiedy ekwipunek jest aktualizowany.
 func on_inventory_update() :
-	
-	##region debug log
-	#
-	#print("================")
-	#print("Inventory state:")
-	#print("---")
-	#var __item_name : String = "null"
-	#var __item_durable : String = "null"
-	#var __item_max_durable : String = "null"
-	#var __item_stack_count : String = "null"
-	#var __item_max_stack_count : String = "null"
-	#var __item_is_stackable : String = "null"
-	#if inventory.get_current_item() != null :
-		#__item_name = inventory.get_current_item().item_name
-		#__item_durable = str(inventory.get_current_item().durable)
-		#__item_max_durable = str(inventory.get_current_item().max_durable)
-		#__item_stack_count = str(inventory.get_current_item().item_stack_count)
-		#__item_max_stack_count = str(inventory.get_current_item().item_max_stack_count)
-		#__item_is_stackable = str(inventory.get_current_item().item_is_stackable)
-	#print("Current item (slot number = " + str(inventory.current_item_index + 1) + " / " + str(inventory.max_items) + "): " + __item_name)
-	#print("Durability of the item = " + __item_durable + " / " + __item_max_durable)
-	#print("Is item stackable = " + __item_is_stackable)
-	#print("Stack of the item = " + __item_stack_count + " / " + __item_max_stack_count)
-	#print("---")
-	#print("Items:")
-	#for item in inventory.items :
-		#if item != null :
-			#print(item.item_name)
-	#print("================")
-	#
-	##endregion
-	
 	var current_slot = inventory.get_current_slot()
 	var current_item = inventory.get_current_item()
 	
 	# Aktualizacja ręki gracza (itemu w ręce)
 	if current_item != null:
 		# Jeśli slot nie jest pusty, wkładamy przedmiot do dłoni rycerza.
-		held_item_visual.texture = current_item.item_icon
+		held_item_visual.texture = current_item.data.item_icon
 		held_item_visual.show() # Pokazujemy dłoń (item)
 	else:
 		# Jeśli slot jest pusty, czyścimy dłoń
 		held_item_visual.texture = null
 		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
 	
-	# Podłączamy sygnał zepsucia do aktywnego przedmiotu
-	if current_slot != null and not current_slot.is_empty():
-		if not current_slot.item_broken.is_connected(_on_item_broken):
-			current_slot.item_broken.connect(_on_item_broken)
 	
-	# Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
-	if current_item is UseableItem:
-		# Przekazujemy cooldown przedmiotu do statystyk gracza
-		interaction_and_attack_stats_script.actual_cooldown = current_item.use_cooldown
+	# 1. ODPINANIE STAREGO SYGNAŁU
+	if last_connected_slot != null and not last_connected_slot.is_empty():
+		if last_connected_slot.item.item_broken.is_connected(_on_item_broken):
+			last_connected_slot.item.item_broken.disconnect(_on_item_broken)
+
+	# 2. PODŁĄCZANIE NOWEGO SYGNAŁU
+	if current_slot != null and not current_slot.is_empty():
+		if not current_slot.item.item_broken.is_connected(_on_item_broken):
+			current_slot.item.item_broken.connect(_on_item_broken)
+		last_connected_slot = current_slot
+	else:
+		last_connected_slot = null
+	
+	
+	#Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
+	if current_item != null and current_item.data is UseableItem:
+		var useable_data = current_item.data as UseableItem
 		
-		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU (zakładam, że tablica nazywa się 'effects')
-		if "effects" in current_item:
-			interaction_and_attack_stats_script.actual_extra_effects = current_item.effects
+		# Teraz pobieramy statystyki bezpiecznie z useable_data
+		interaction_and_attack_stats_script.actual_cooldown = useable_data.use_cooldown
 		
-		if current_item is ItemWeapon:
-			interaction_and_attack_stats_script.actual_attack_data = (current_item as ItemWeapon).attack_data
+		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU
+		if "effects" in useable_data:
+			interaction_and_attack_stats_script.actual_extra_effects = useable_data.effects
+		
+		if useable_data is ItemWeapon:
+			interaction_and_attack_stats_script.actual_attack_data = useable_data.attack_data
 	else:
 		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
 		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_cooldown
 		interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data
 		# Puste ręce nie mają dodatkowych efektów
 		interaction_and_attack_stats_script.actual_extra_effects = []
+	
+	# --- ZABEZPIECZENIE TRYBU BUDOWANIA ---
+	# Jeśli gracz zmieni slot lub wyrzuci przedmiot w trakcie trwania trybu budowy
+	if current_state == PlayerState.BUILDING:
+		if current_item == null or not current_item.data is PlaceableItem:
+			_cancel_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
-func _on_inventory_item_dropped(dropped_item_data: ItemData, drop_amount: int):
-	if item_pickup_scene == null:
-		print("Błąd: Brak przypisanej sceny item_pickup_scene w Graczu!")
-		return
-	
-	var drop = item_pickup_scene.instantiate()
-	drop.item_data = dropped_item_data
-	drop.amount = drop_amount
-	
-	entity_spawn_requested.emit(drop, global_position)
-	
-	var drop_direction = Vector2.ZERO
-	var drop_force = 0.0
-	
-	if is_using_mouse:
-		# --- WYRZUT MYSZKĄ ---
-		var mouse_global_pos = get_global_mouse_position()
-		var dist_to_mouse = global_position.distance_to(mouse_global_pos)
-		
-		# 1. Kierunek: idealnie w stronę kursora (0 rozrzutu!)
-		var aim_direction = global_position.direction_to(mouse_global_pos)
-		if aim_direction == Vector2.ZERO:
-			aim_direction = Vector2.DOWN
-		
-		drop_direction = aim_direction
-		
-		# 2. Siła: Ograniczamy maksymalny zasięg rzutu (np. do 150 pikseli)
-		var max_throw_range = 150.0
-		var actual_throw_distance = min(dist_to_mouse, max_throw_range)
-		
-		# Obliczamy siłę. Mnożnik zależy od fizyki przedmiotu. 
-		# Jeśli nadal rzuca za daleko, zmniejsz 3.0 na 2.0 itd.
-		drop_force = actual_throw_distance * throw_force_multiplier
-		
-		# Zabezpieczenie: minimalna siła, żeby przedmiot wyleciał spod nóg
-		if drop_force < 50.0:
-			drop_force = 50.0
-		
-		# Dodajemy bardzo minimalny rozrzut, żeby stacki ułożone w 1 miejscu nie nachodziły idealnie na siebie
-		var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
-		drop_direction = (aim_direction + spread).normalized()
-		
+func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
+	if item_thrower_component:
+		# Zabezpieczamy pobranie kierunku z pada
+		var aim_target = Vector2.ZERO
+		if aim_controller and aim_controller.aim_scanner:
+			aim_target = aim_controller.aim_scanner.target_position
+			
+		# Delegujemy całą resztę do komponentu
+		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, aim_target)
 	else:
-		# --- WYRZUT PADEM / KLAWIATURĄ ---
-		# Pobieramy bazowy kierunek z celownika
-		var aim_direction = aim_controller.aim_scanner.target_position.normalized()
-		
-		if aim_direction == Vector2.ZERO:
-			aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		
-		# W padzie rozrzut może być ciut większy i siła jest stała/losowa
-		var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
-		drop_direction = (aim_direction + spread).normalized()
-		drop_force = randf_range(200.0, 300.0)
-	
-	# Ponieważ nasz upuszczany przedmiot to RigidBody2D, traktujemy go fizycznie
-	if drop is RigidBody2D:
-		drop.apply_central_impulse(drop_direction * drop_force)
+		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 
 ## Wywołuje się gdy przedmiot jest niszczony.
 func _on_item_broken(broken_item_name: String):
@@ -414,95 +470,49 @@ func respawn_sequence() -> void:
 
 #region System ataku
 
-# --- FUNKCJA WALKI Z DYSTANSEM ---
+## Obsługa ataku
 func perform_attack() -> void:
 	var _item = inventory.get_current_item()
-	var target_enemy = aim_controller.get_enemy_target()
+	var _item_data = _item.data if _item != null else null 
 	
-	if target_enemy != null:
+	var target_enemy = aim_controller.get_target_node()
+	if target_enemy == null:
+		return
 		
-		# Pobieramy dystans z naszej nowej funkcji
-		var max_attack_distance = get_current_attack_range()
-		if max_attack_distance <= 0.0:
-			return # Mamy w ręku np. miksturę, więc nie atakujemy
-			
-		# --- Mierzenie dystansu do wroga ---
-		var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+	var max_attack_distance = get_current_attack_range()
+	if max_attack_distance <= 0.0:
+		return 
 		
-		# --- Właściwy atak ---
-		if distance_to_enemy <= max_attack_distance:
-				
-			if _item is ItemWeapon:
-				# Różnicowanie logiki na podstawie typu broni
-				if _item is ItemDistanceWeapon:
-					print("Strzał z broni dystansowej!")
-					if projectile_scene != null:
-						# Zbieramy efekty
-						var generated_effects = interaction_and_attack_stats_script.get_all_attack_effects()
-						
-						# Tworzymy pocisk
-						var new_projectile = projectile_scene.instantiate()
-						new_projectile.shooter = self
-						new_projectile.global_position = global_position
-						
-						# Kierunek strzału (w stronę celu lub punktu celownika)
-						var shoot_dir = global_position.direction_to(target_enemy.global_position)
-						new_projectile.direction = shoot_dir
-						new_projectile.effects_to_apply = generated_effects
-						
-						# Przekazujemy prędkość i czas życia. Zakładam, że w pliku 'projectile.gd'
-						# masz zmienne np. 'speed' i 'lifetime'. Jeśli nazywają się inaczej, zmień je poniżej.
-						if "speed" in new_projectile:
-							new_projectile.speed = _item.projectile_speed
-						elif "projectile_speed" in new_projectile:
-							new_projectile.projectile_speed = _item.projectile_speed
-					
-						if "lifetime" in new_projectile:
-							new_projectile.lifetime = _item.projectile_lifetime
-				
-						# Przekazujemy teksturę do Sprite2D wewnątrz pocisku
-						var sprite = new_projectile.get_node_or_null("Sprite2D")
-						if sprite != null and _item.projectile_texture != null:
-							sprite.texture = _item.projectile_texture
-						
-						# EMISJA SYGNAŁU ZAMIAST LEVEL_MANAGERA
-						entity_spawn_requested.emit(new_projectile, global_position)
-					else:
-						print("BŁĄD: Gracz próbuje strzelać, ale nie przypisano 'projectile_scene'!")
-				else:
-					
-					# Sprawdzamy, czy ściana nie blokuje ataku
-					if not aim_controller.has_line_of_sight(target_enemy):
-						print("Atak zablokowany przez ścianę!")
-						return
-						
-					print("Cios z broni białej!")
-					interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
-					# Zużywamy wytrzymałość broni po ataku
-					inventory.consume_durability_of_the_item()
-				
-			elif _item == null:
-				
-				# Sprawdzamy, czy ściana nie blokuje ataku
-				if not aim_controller.has_line_of_sight(target_enemy):
-					print("Atak zablokowany przez ścianę!")
-					return
-					
-				print("Gracz trafia z pięści!")
-				interaction_and_attack_stats_script.execute_attack_on_target(target_enemy)
-		else:
-			print("Pudło! Wróg poza zasięgiem broni. (Dystans: ", distance_to_enemy, " / Max: ", max_attack_distance, ")")
+	var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+	var has_los = aim_controller.has_line_of_sight(target_enemy)
+
+	if attack_component:
+		# Zlecamy brudną robotę komponentowi
+		var attack_successful = attack_component.execute_attack(
+			self,
+			target_enemy,
+			_item_data,
+			interaction_and_attack_stats_script,
+			distance_to_enemy,
+			max_attack_distance,
+			has_los
+		)
+		
+		# Jeśli atak się udał fizycznie i używaliśmy broni, konsumujemy wytrzymałość
+		if attack_successful and _item_data != null and _item_data is ItemWeapon:
+			inventory.consume_durability_of_the_item()
 
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
-	if _item is ItemWeapon:
-		# Broń posiada mnożnik zasięgu (np. 1.0, 1.5) względem bazowego celownika (aim_distance)
-		return aim_controller.aim_distance * _item.attack_data.max_range
-	elif _item == null:
-		# Puste ręce (pięści) posiadają swój własny zasięg w pikselach (np. 50), nie mnożymy tego!
+	# Wyciągamy dane z pudełka
+	var _item_data = _item.data if _item != null else null
+	
+	if _item_data is ItemWeapon: # Używamy _item_data!
+		return aim_controller.aim_distance * _item_data.attack_data.max_range
+	elif _item_data == null:
 		return float(interaction_and_attack_stats_script.get_total_range())
 	else:
-		return 0.0 # Przedmioty konsumpcyjne nie mają zasięgu ataku
+		return 0.0
 
 #endregion

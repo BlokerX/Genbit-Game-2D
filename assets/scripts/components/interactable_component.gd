@@ -4,11 +4,12 @@ class_name InteractableComponent
 signal targeted
 signal untargeted
 signal interacted(interactor: Node)
-
-@export var is_targeted: bool = false
+signal collected(interactor: Node)
 
 # Możesz tu dodać np. Sprite "celownika", który jest domyślnie ukryty
 @onready var highlight_sprite: Sprite2D = $HighlightSprite 
+
+@export var is_targeted: bool = false
 
 @export var outline_material: ShaderMaterial
 
@@ -68,6 +69,10 @@ func untarget():
 		if parent_sprite != null:
 			parent_sprite.material = null # Czyścimy shader
 
-# Ktoś nas wcisnął/użył
+## Ktoś nas wcisnął/użył
 func interact(interactor: Node):
 	interacted.emit(interactor)
+
+## Funkcja wywoływana przez gracza przy wciśnięciu F
+func collect_interaction(interactor: Node):
+	collected.emit(interactor)

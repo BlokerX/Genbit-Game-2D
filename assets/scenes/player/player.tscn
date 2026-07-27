@@ -8,19 +8,24 @@
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="6_q3ml6"]
 [ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="6_yfi7d"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
-[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/entities/inventory/inventory.gd" id="8_2tf2h"]
-[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/entities/aim_controller/player_aim_controller.gd" id="10_jf6n8"]
+[ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/components/inventory.gd" id="8_2tf2h"]
+[ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="8_hsamt"]
+[ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/components/player_aim_controller.gd" id="10_jf6n8"]
+[ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="11_b3dqe"]
+[ext_resource type="Script" uid="uid://cpra3wi61tf27" path="res://assets/scripts/components/builder_component.gd" id="11_yfi7d"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
 size = Vector2(59, 100)
 
-[node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("attack_component", "inventory", "item_thrower_component", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
 collision_mask = 7
 script = ExtResource("1_hyvrl")
+attack_component = NodePath("AttackComponent")
 inventory = NodePath("Inventory")
-projectile_scene = ExtResource("2_yfi7d")
+item_thrower_component = NodePath("ItemThrowerComponent")
+builder_component = NodePath("BuilderComponent")
 respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("3_hsamt")
 health_stats_script = ExtResource("4_b3dqe")
@@ -41,16 +46,29 @@ flip_h = true
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
+[node name="EffectsCollector" type="Node" parent="." unique_id=768136432]
+
+[node name="AttackComponent" type="Node" parent="." unique_id=1270719908]
+script = ExtResource("8_hsamt")
+projectile_scene = ExtResource("2_yfi7d")
+metadata/_custom_type_script = "uid://bf6qleyepnwwy"
+
 [node name="Inventory" type="Node" parent="." unique_id=647434682]
 script = ExtResource("8_2tf2h")
 
-[node name="EffectsCollector" type="Node" parent="." unique_id=768136432]
+[node name="ItemThrowerComponent" type="Node" parent="." unique_id=1321460381]
+script = ExtResource("11_b3dqe")
+metadata/_custom_type_script = "uid://70mdhpj1lg2d"
+
+[node name="BuilderComponent" type="Node" parent="." unique_id=542770768]
+script = ExtResource("11_yfi7d")
+metadata/_custom_type_script = "uid://cpra3wi61tf27"
 
 [node name="AimController" type="Node2D" parent="." unique_id=236252994]
 script = ExtResource("10_jf6n8")
 
 [node name="AimScanner" type="RayCast2D" parent="AimController" unique_id=674220857]
-collision_mask = 12
+collision_mask = 13
 hit_from_inside = true
 
 [node name="HeldItemHandler" type="Node2D" parent="." unique_id=878024246]
