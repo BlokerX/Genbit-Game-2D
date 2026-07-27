@@ -29,7 +29,7 @@ func _ready() -> void:
 	for child in get_children():
 		if child is InteractableComponent:
 			# Reakcja na kliknięcie/użycie:
-			child.interacted.connect(_on_interacted)
+			child.collected.connect(_on_interacted)
 			
 			# Reakcja na namierzenie i odznaczenie celownikiem:
 			child.targeted.connect(_on_targeted)

@@ -18,6 +18,7 @@ const INPUT_DROP_ITEM = "DropItem"
 const INPUT_ATTACK = "Attack"
 const INPUT_USE_ITEM = "UseItemButton"
 const INPUT_INTERACT = "Interact"
+const INPUT_COLLECT = "Collect"
 const INPUT_RESPAWN = "RespawnButton"
 const INPUT_TOGGLE_ENEMY_PRIO = "ToggleEnemyPriority"
 
@@ -308,10 +309,17 @@ func _handle_default_inputs(event: InputEvent) -> void:
 	elif event.is_action_released(INPUT_ATTACK):
 		is_holding_attack = false
 		
-	# INTERAKCJA
+# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
 	if event.is_action_pressed(INPUT_INTERACT):
 		if aim_controller.current_target != null:
 			aim_controller.current_target.interact(self)
+			
+	# --- NOWOŚĆ: ZBIERANIE (Klawisz F - Zwijanie budowli) ---
+	if event.is_action_pressed(INPUT_COLLECT):
+		if aim_controller.current_target != null:
+			# Wywołujemy naszą nową funkcję na celowniku
+			if aim_controller.current_target.has_method("collect_interaction"):
+				aim_controller.current_target.collect_interaction(self)
 
 	# UŻYCIE PRZEDMIOTU (lub wejście w tryb budowy)
 	if event.is_action_pressed(INPUT_USE_ITEM):

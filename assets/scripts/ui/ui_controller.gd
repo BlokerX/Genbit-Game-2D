@@ -1,8 +1,8 @@
 class_name UIController
 extends CanvasLayer
 
-@onready var chest_panel: GridPanel = $ChestPanel
-@onready var player_panel: GridPanel = $PlayerPanel 
+@export var chest_panel: GridPanel
+@export var player_panel: GridPanel
 
 @export var hotbar_panel: Control
 @export var cursor_item_rect: TextureRect
@@ -56,7 +56,6 @@ func _process(_delta: float) -> void:
 	if item_in_hand != null:
 		# Używamy get_viewport().get_mouse_position() zamiast get_global_mouse_position()
 		cursor_item_rect.global_position = get_viewport().get_mouse_position() + Vector2(5, 5)
-		print("Pozycja kursora: ", cursor_item_rect.global_position) # <-- DODAJ TO
 
 func toggle_player_inventory() -> void:
 	if is_player_inventory_open:
@@ -99,6 +98,50 @@ func _input(event: InputEvent) -> void:
 		if is_player_inventory_open or current_open_chest != null:
 			_close_all_ui()
 			get_viewport().set_input_as_handled() # Zjadamy sygnał, Pauza się nie włączy!
+	
+	# --- WYRZUCANIE PRZEDMIOTU POZA OKNO PRZY PUSZCZENIU MYSZKI ---
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		if item_in_hand != null and is_player_inventory_open:
+			# Sprawdzamy, czy kursor myszy znajduje się POZA głównym panelem UI ekwipunku
+			if not _is_mouse_over_inventory_panels():
+				_drop_item_from_cursor()
+
+# Pomocnicza funkcja sprawdzająca, czy kursor jest nad okienkiem ekwipunku
+func _is_mouse_over_inventory_panels() -> bool:
+	var mouse_pos = get_viewport().get_mouse_position()
+	
+	# Sprawdzamy panel gracza
+	if player_panel and player_panel.visible:
+		if player_panel.get_global_rect().has_point(mouse_pos):
+			return true
+			
+	# Sprawdzamy panel skrzyni (jeśli jest otwarta)
+	if chest_panel and chest_panel.visible:
+		if chest_panel.get_global_rect().has_point(mouse_pos):
+			return true
+			
+	return false
+
+# Funkcja wyrzucająca trzymany przedmiot na ziemię
+func _drop_item_from_cursor() -> void:
+	var dropped_instance = item_in_hand
+	item_in_hand = null
+	_update_cursor_visuals()
+	
+	# Zlecamy graczowi wyrzucenie przedmiotu przez jego ItemThrowerComponent
+	var player = get_tree().get_first_node_in_group("Player")
+	if player and player.has_node("ItemThrowerComponent"):
+		var thrower = player.get_node("ItemThrowerComponent")
+		var aim_target = Vector2.ZERO
+		if player.has_node("AimController") and player.get_node("AimController").aim_scanner:
+			aim_target = player.get_node("AimController").aim_scanner.target_position
+			
+		thrower.handle_item_drop(player, dropped_instance, true, true, aim_target)
+	else:
+		# Fallback awaryjny, gdyby komponentu zabrakło
+		player_inventory.item_dropped.emit(dropped_instance, true)
+		
+	print("UIController: Wyrzucono przedmiot poza ramkę interfejsu!")
 
 # ZMIENIAMY _unhandled_input TAK, ŻEBY OTWIERAŁO TYLKO EKWIPUNEK:
 func _unhandled_input(event: InputEvent) -> void:

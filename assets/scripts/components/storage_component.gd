@@ -20,7 +20,7 @@ signal storage_opened(storage_reference: StorageComponent)
 
 #endregion
 
-@onready var interactable_comp: Node = $"../InteractableComp"
+@onready var interactable_comp: Node = $"../InteractableComponent"
 
 ## Inicjalizacja pustych slotów wzorowana na inventory.gd
 func _init() -> void:
@@ -29,7 +29,16 @@ func _init() -> void:
 		slots[i] = SlotData.new()
 
 func _ready() -> void:
-	# Podpinamy się pod komponent interakcji
+	# --- NOWOŚĆ: Naprawa rozmiaru tablicy po nadpisaniu przez Inspektor ---
+	if slots.size() < slots_amount:
+		slots.resize(slots_amount)
+		
+	# Upewniamy się, że żaden slot nie jest "null"
+	for i in range(slots_amount):
+		if slots[i] == null:
+			slots[i] = SlotData.new()
+
+	# Podpinamy się pod komponent interakcji (ten kod już tu miałeś)
 	if interactable_comp and interactable_comp.has_signal("interacted"):
 		interactable_comp.interacted.connect(_on_interacted)
 

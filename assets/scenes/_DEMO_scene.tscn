@@ -912,17 +912,39 @@ metadata/_edit_group_ = true
 visible = false
 player = NodePath("../../Map/Room13_StartRoom/Player")
 
-[node name="Inventory_Panels" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("hotbar_panel", "cursor_item_rect", "cursor_amount_label")]
+[node name="Inventory_Panels" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label")]
 script = ExtResource("14_ok3uq")
+chest_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/ChestPanel")
+player_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/PlayerPanel")
 hotbar_panel = NodePath("../CanvasLayer/InventoryUIGroup/HotbarPanel")
 cursor_item_rect = NodePath("CursorItem")
 cursor_amount_label = NodePath("CursorItem/Label")
 
-[node name="PlayerPanel" parent="Inventory_Panels" unique_id=79221513 instance=ExtResource("15_wqqpu")]
-visible = false
+[node name="CenterContainer" type="CenterContainer" parent="Inventory_Panels" unique_id=1788338789]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 240.0
+offset_top = 135.0
+offset_right = -240.0
+offset_bottom = -135.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="ChestPanel" parent="Inventory_Panels" unique_id=122015874 instance=ExtResource("15_wqqpu")]
+[node name="PanelContainer" type="PanelContainer" parent="Inventory_Panels/CenterContainer" unique_id=1136116868]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Inventory_Panels/CenterContainer/PanelContainer" unique_id=1263793803]
+layout_mode = 2
+theme_override_constants/separation = 200
+
+[node name="ChestPanel" parent="Inventory_Panels/CenterContainer/PanelContainer/VBoxContainer" unique_id=1069289126 instance=ExtResource("15_wqqpu")]
 visible = false
+layout_mode = 2
+
+[node name="PlayerPanel" parent="Inventory_Panels/CenterContainer/PanelContainer/VBoxContainer" unique_id=1892079471 instance=ExtResource("15_wqqpu")]
+visible = false
+layout_mode = 2
 
 [node name="CursorItem" type="TextureRect" parent="Inventory_Panels" unique_id=62955625]
 custom_minimum_size = Vector2(16, 16)

@@ -49,4 +49,5 @@ shape = SubResource("RectangleShape2D_vamu6")
 
 [node name="StorageComponent" type="Node" parent="." unique_id=687521106]
 script = ExtResource("6_ne1cg")
+slots_amount = 27
 slots = Array[ExtResource("7_0ipb0")]([SubResource("Resource_qy0l4")])
