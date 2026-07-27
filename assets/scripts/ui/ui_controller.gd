@@ -1,6 +1,10 @@
 class_name UIController
 extends CanvasLayer
 
+const INPUT_TOGGLE_INVENTORY = "ToggleInventory"
+const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
+const INPUT_GAME_PAUSE = "Game_Pause"
+
 @export var chest_panel: GridPanel
 @export var player_panel: GridPanel
 
@@ -8,12 +12,15 @@ extends CanvasLayer
 @export var cursor_item_rect: TextureRect
 @export var cursor_amount_label: Label
 
+@export var crafting_ui: Control
+
 # Zmienna na ekwipunek gracza - znajdziemy ją automatycznie!
 var player_inventory: Inventory = null
 
 var item_in_hand: ItemInstance = null
 var current_open_chest: Node = null
 var is_player_inventory_open: bool = false
+var is_crafting_open: bool = false
 
 func _ready() -> void:
 	# Automatycznie szukamy gracza w scenie po grupie "player"
@@ -51,6 +58,10 @@ func _ready() -> void:
 		push_warning("Nie znaleziono węzła InventorySlotHandle!")
 	
 	_update_cursor_visuals()
+	
+	# Upewniamy się, że crafting jest domyślnie ukryty
+	if crafting_ui:
+		crafting_ui.hide()
 
 func _process(_delta: float) -> void:
 	if item_in_hand != null:
@@ -61,12 +72,32 @@ func toggle_player_inventory() -> void:
 	if is_player_inventory_open:
 		_close_all_ui()
 	else:
+		_close_all_ui() # Zamknij wszystko inne (np. crafting), zanim otworzysz ekwipunek
+		
 		is_player_inventory_open = true
 		player_panel.open_panel(player_inventory)
 		if hotbar_panel:
-			hotbar_panel.hide() # Ukrywa hotbar
+			hotbar_panel.hide()
+
+## Funkcja do otwierania/zamykania Craftingu
+# (Wywołaj ją z miejsca, w którym włączasz crafting, np. po naciśnięciu "C" lub użyciu stołu)
+func toggle_crafting_ui() -> void:
+	if is_crafting_open:
+		_close_all_ui()
+	else:
+		_close_all_ui() # Zamknij ekwipunki i skrzynie, żeby zrobić czyste miejsce
+		
+		is_crafting_open = true
+		if crafting_ui:
+			crafting_ui.show()
+		
+		# Zostawiamy hotbar widoczny podczas craftingu!
+		if hotbar_panel:
+			hotbar_panel.show()
 
 func _on_storage_opened(storage_ref: Node) -> void:
+	_close_all_ui() # Zamknij crafting, jeśli był otwarty
+	
 	current_open_chest = storage_ref
 	is_player_inventory_open = true
 	player_panel.open_panel(player_inventory)
@@ -78,6 +109,7 @@ func _on_storage_closed() -> void:
 	_close_all_ui()
 
 func _close_all_ui() -> void:
+	# 1. Odkładanie przedmiotu z ręki
 	if item_in_hand != null and player_inventory != null:
 		var remainder = player_inventory.add_instance(item_in_hand)
 		if remainder != null:
@@ -85,24 +117,32 @@ func _close_all_ui() -> void:
 		item_in_hand = null
 		
 	_update_cursor_visuals()
+	
+	# 2. Reset zmiennych i ukrywanie paneli
 	current_open_chest = null
 	is_player_inventory_open = false
+	is_crafting_open = false # Zamykamy też crafting
+	
 	player_panel.close_panel()
 	chest_panel.close_panel()
+	
+	if crafting_ui:
+		crafting_ui.hide()
+		
 	if hotbar_panel:
-		hotbar_panel.show() # Przywraca hotbar
+		hotbar_panel.show()
 
 # DODAJEMY NOWĄ FUNKCJĘ _input, KTÓRA JEST PIERWSZA W KOLEJCE:
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("Game_Pause"):
-		if is_player_inventory_open or current_open_chest != null:
+	# Obsługa Pauzy (Zamykanie aktywnych okien)
+	if event.is_action_pressed(INPUT_GAME_PAUSE):
+		if is_player_inventory_open or current_open_chest != null or is_crafting_open:
 			_close_all_ui()
-			get_viewport().set_input_as_handled() # Zjadamy sygnał, Pauza się nie włączy!
+			get_viewport().set_input_as_handled() 
 	
-	# --- WYRZUCANIE PRZEDMIOTU POZA OKNO PRZY PUSZCZENIU MYSZKI ---
+	# Wyrzucanie przedmiotu poza okno
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		if item_in_hand != null and is_player_inventory_open:
-			# Sprawdzamy, czy kursor myszy znajduje się POZA głównym panelem UI ekwipunku
 			if not _is_mouse_over_inventory_panels():
 				_drop_item_from_cursor()
 
@@ -145,11 +185,18 @@ func _drop_item_from_cursor() -> void:
 
 # ZMIENIAMY _unhandled_input TAK, ŻEBY OTWIERAŁO TYLKO EKWIPUNEK:
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("Inventory"):
+	# Otwieranie/Zamykanie ekwipunku
+	if event.is_action_pressed(INPUT_TOGGLE_INVENTORY):
 		if current_open_chest == null:
 			toggle_player_inventory()
 		else:
 			_close_all_ui()
+		get_viewport().set_input_as_handled()
+		
+	# --- TUTAJ OBSŁUGUJEMY KLAWISZ CRAFTINGU ---
+	# Wpisz tu dokładną nazwę swojej akcji z Input Map (np. "ToggleCrafting" lub "Crafting")
+	elif event.is_action_pressed(INPUT_TOGGLE_CRAFTING): 
+		toggle_crafting_ui()
 		get_viewport().set_input_as_handled()
 
 # --- LOGIKA MINECRAFTOWA (KLIKNIĘCIA) ---

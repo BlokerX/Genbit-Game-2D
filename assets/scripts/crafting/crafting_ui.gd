@@ -1,8 +1,6 @@
 extends Control
 class_name CraftingUI
 
-const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
-
 @export var player: PlayerCharacter
 @export var available_recipes: Array[CraftingRecipe] = []
 
@@ -23,22 +21,9 @@ func _ready() -> void:
 	if player and player.inventory:
 		player.inventory.inventory_updated.connect(_update_details_panel)
 		craft_button.pressed.connect(_on_craft_button_pressed)
-
-func _input(event: InputEvent) -> void:
-	# Otwieranie/zamykanie przypisanym przyciskiem craftingu
-	if event.is_action_pressed(INPUT_TOGGLE_CRAFTING):
-		visible = !visible
-		if visible:
-			_update_details_panel()
-		# Opcjonalnie: 'zjadasz' ten sygnał, żeby nic pod spodem na niego nie zareagowało
-		get_viewport().set_input_as_handled()
-			
-	# Zamykanie klawiszem Escape (Game_Pause), jeśli okno jest otwarte
-	elif event.is_action_pressed("Game_Pause") and visible:
-		hide() # Ukrywa panel craftingu
-		# BARDZO WAŻNE: Zjadamy sygnał! 
-		# Dzięki temu event nie dotrze do _unhandled_input w pause_menu.gd
-		get_viewport().set_input_as_handled()
+	
+	# Odśwież dane, gdy UIController pokaże to okno
+	visibility_changed.connect(func(): if visible: _update_details_panel())
 
 func _populate_recipe_list() -> void:
 	for child in recipe_list.get_children():
