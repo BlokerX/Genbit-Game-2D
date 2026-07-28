@@ -37,16 +37,18 @@ func _process(_delta: float) -> void:
 	if player.is_using_mouse:
 		# Jeśli gracz używa myszki, duch po prostu leci do kursora.
 		target_pos = ghost_instance.get_global_mouse_position()
+		
+		# --- NOWOŚĆ: Zabezpieczenie promienia budowy również dla myszki ---
+		var max_range = player.get_current_attack_range()
+		if max_range > 0 and player.global_position.distance_to(target_pos) > max_range:
+			var dir = player.global_position.direction_to(target_pos)
+			target_pos = player.global_position + (dir * max_range)
 	else:
-		# Jeśli gracz używa pada, pobieramy kierunek z jego skanera (celownika).
-		var aim_dir = Vector2.DOWN
-		if player.aim_controller and player.aim_controller.aim_scanner:
-			aim_dir = player.aim_controller.aim_scanner.target_position.normalized()
-			# Zabezpieczenie: jeśli gracz stoi w miejscu i nie wychyla gałki, celujemy w dół.
-			if aim_dir == Vector2.ZERO:
-				aim_dir = Vector2.DOWN
-		# Ustawiamy ducha w konkretnej odległości (build_range) w stronę, w którą patrzy gracz.
-		target_pos = player.global_position + (aim_dir * build_range)
+		# Jeśli gracz używa pada, pobieramy pozycję wirtualnego kursora ze skanera!
+		if player.aim_controller:
+			target_pos = player.aim_controller.virtual_cursor_pos
+		else:
+			target_pos = player.global_position
 
 	# --- 2. PRZYCIĄGANIE DO ŚRODKA KAFELKA (SNAP TO CENTER) ---
 	if grid_size > 0:
@@ -92,6 +94,10 @@ func start_building(item_data: PlaceableItem) -> bool:
 	
 	# Resetujemy obrót do domyślnego przy wyciągnięciu nowego przedmiotu
 	current_rotation_degrees = 0.0
+	
+	# --- NOWOŚĆ: Resetujemy wirtualny kursor pada, żeby budynek zaczął się na postaci ---
+	if player.aim_controller:
+		player.aim_controller.reset_virtual_cursor()
 	
 	# Tworzymy instancję ducha ze sceny przedmiotu.
 	ghost_instance = current_build_scene.instantiate()

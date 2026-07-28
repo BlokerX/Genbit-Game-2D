@@ -14,6 +14,10 @@ const INPUT_GAME_PAUSE = "Game_Pause"
 
 @export var crafting_ui: Control
 
+@export_category("Gamepad UI")
+## Szybkość poruszania kursorem myszy za pomocą lewej gałki
+@export var gamepad_cursor_speed: float = 700.0
+
 # Zmienna na ekwipunek gracza - znajdziemy ją automatycznie!
 var player_inventory: Inventory = null
 
@@ -63,9 +67,27 @@ func _ready() -> void:
 	if crafting_ui:
 		crafting_ui.hide()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	# --- 1. WIRTUALNY KURSOR DLA PADA ---
+	if is_any_ui_open():
+		# Odczytujemy lewą gałkę (używamy akcji ruchu Gracza)
+		var move_dir = Input.get_vector("Left", "Right", "Up", "Down")
+		
+		if move_dir != Vector2.ZERO:
+			# Pobieramy aktualną pozycję prawdziwej myszki
+			var current_pos = get_viewport().get_mouse_position()
+			var new_pos = current_pos + (move_dir * gamepad_cursor_speed * delta)
+			
+			# Zabezpieczenie, żeby kursor nie wyleciał poza krawędzie ekranu
+			var screen_size = get_viewport().get_visible_rect().size
+			new_pos.x = clamp(new_pos.x, 0, screen_size.x)
+			new_pos.y = clamp(new_pos.y, 0, screen_size.y)
+			
+			# Magia silnika: Przesuwamy systemową myszkę!
+			get_viewport().warp_mouse(new_pos)
+
+	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem (Twój stary kod) ---
 	if item_in_hand != null:
-		# Używamy get_viewport().get_mouse_position() zamiast get_global_mouse_position()
 		cursor_item_rect.global_position = get_viewport().get_mouse_position() + Vector2(5, 5)
 
 func toggle_player_inventory() -> void:
@@ -156,11 +178,29 @@ func _input(event: InputEvent) -> void:
 			_close_all_ui()
 			get_viewport().set_input_as_handled() 
 	
-	# Wyrzucanie przedmiotu poza okno
+	# Wyrzucanie przedmiotu poza okno dla myszki
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		if item_in_hand != null and is_player_inventory_open:
 			if not _is_mouse_over_inventory_panels():
 				_drop_item_from_cursor()
+
+	# --- NOWOŚĆ: SYMULACJA KLIKNIĘĆ PADEM ---
+	if is_any_ui_open():
+		# Akcja "Interact" symuluje LEWY Przycisk Myszy (Podnoszenie przedmiotu)
+		if event.is_action_pressed("Interact"):
+			_simulate_mouse_click(MOUSE_BUTTON_LEFT, true)
+			get_viewport().set_input_as_handled()
+		elif event.is_action_released("Interact"):
+			_simulate_mouse_click(MOUSE_BUTTON_LEFT, false)
+			get_viewport().set_input_as_handled()
+			
+		# Akcja "RotateBuilding" symuluje PRAWY Przycisk Myszy (Dzielenie przedmiotów na pół)
+		if event.is_action_pressed("RotateBuilding"):
+			_simulate_mouse_click(MOUSE_BUTTON_RIGHT, true)
+			get_viewport().set_input_as_handled()
+		elif event.is_action_released("RotateBuilding"):
+			_simulate_mouse_click(MOUSE_BUTTON_RIGHT, false)
+			get_viewport().set_input_as_handled()
 
 # Pomocnicza funkcja sprawdzająca, czy kursor jest nad okienkiem ekwipunku
 func _is_mouse_over_inventory_panels() -> bool:
@@ -327,3 +367,17 @@ func _update_cursor_visuals() -> void:
 # Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
 func is_any_ui_open() -> bool:
 	return is_player_inventory_open or current_open_chest != null or is_crafting_open
+
+# Wstrzykuje wirtualne kliknięcie myszką prosto do silnika Godot
+func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
+	var ev = InputEventMouseButton.new()
+	ev.button_index = button_idx
+	ev.pressed = is_pressed
+	
+	# Pobieramy pozycję na której aktualnie stoi wirtualna myszka
+	var mouse_pos = get_viewport().get_mouse_position()
+	ev.global_position = mouse_pos
+	ev.position = mouse_pos
+	
+	# Odpalamy symulację
+	Input.parse_input_event(ev)

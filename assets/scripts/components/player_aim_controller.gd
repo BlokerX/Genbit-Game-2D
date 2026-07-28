@@ -23,6 +23,11 @@ class_name PlayerAimController
 ## Maska kolizji dla ścian. Ustaw w Inspektorze warstwy (Layers), na których są Twoje ściany/przeszkody!
 @export_flags_2d_physics var obstacles_mask: int = 1
 
+# --- ZMIENNE WIRTUALNEGO KURSORA (PAD) ---
+var virtual_cursor_pos: Vector2 = Vector2.ZERO
+@export var virtual_cursor_speed: float = 450.0
+# ------------------------------------------------
+
 ## Lokalna pamięć wrogów w pobliżu. Oszczędza 99% zużycia procesora!
 var nearby_enemies: Array[Node2D] = []
 
@@ -47,6 +52,9 @@ func _ready() -> void:
 	
 	detection_area.body_entered.connect(_on_enemy_entered)
 	detection_area.body_exited.connect(_on_enemy_exited)
+	
+	# Reset kursora na starcie
+	reset_virtual_cursor()
 
 func _on_enemy_entered(body: Node2D) -> void:
 	if body.is_in_group("Enemy") and not nearby_enemies.has(body):
@@ -57,6 +65,10 @@ func _on_enemy_exited(body: Node2D) -> void:
 		nearby_enemies.erase(body)
 
 #region System celowania
+
+## Funkcja resetująca pozycję kursora na graczu ---
+func reset_virtual_cursor() -> void:
+	virtual_cursor_pos = global_position
 
 # ==========================================
 # GŁÓWNY SYSTEM CELOWANIA
@@ -91,26 +103,41 @@ func handle_gamepad_aiming(current_attack_range: float):
 	var final_aim_dir = Vector2.ZERO
 	var is_pad_aiming = false 
 	
-	# 1. Odczyt wychylenia gałki/strzałek
+	# --- 1. AKTUALIZACJA WIRTUALNEGO KURSORA ---
 	var aim_vector = Input.get_vector("AimLeft", "AimRight", "AimUp", "AimDown")
+	
 	if aim_vector != Vector2.ZERO:
 		is_pad_aiming = true
+		# Pobieramy deltę dla płynnego ruchu
+		var delta = get_physics_process_delta_time()
+		virtual_cursor_pos += aim_vector.normalized() * virtual_cursor_speed * delta
+		
 		var raw_aim_dir = aim_vector.normalized()
 		final_aim_dir = raw_aim_dir
 		
-		# Magnetyzm celownika
+		# Magnetyzm celownika dla strzelania
 		if current_target != null and is_instance_valid(current_target):
 			var target_parent = current_target.get_parent()
 			if target_parent != null:
 				var dir_to_target = global_position.direction_to(target_parent.global_position)
 				if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
 					final_aim_dir = dir_to_target
-		
+					
 		aim_scanner.target_position = final_aim_dir * aim_distance
 	else:
 		if not continuous_gamepad_aiming:
 			aim_scanner.target_position = Vector2.ZERO
-			
+
+	# --- SMYCZ WIRTUALNEGO KURSORA (Zabezpieczenie przed ucieczką) ---
+	var limit_range = current_attack_range if current_attack_range > 0 else aim_distance
+	if global_position.distance_to(virtual_cursor_pos) > limit_range:
+		var dir_to_cursor = global_position.direction_to(virtual_cursor_pos)
+		# Zabezpieczenie przed błędem matematycznym gdy gracz i kursor są w tym samym miejscu
+		if dir_to_cursor == Vector2.ZERO: 
+			dir_to_cursor = Vector2.DOWN
+		virtual_cursor_pos = global_position + (dir_to_cursor * limit_range)
+	# -----------------------------------------------------------------
+
 	# 2. Aktualizacja Raycastu
 	aim_scanner.force_raycast_update()
 	var found_target = _get_raycast_target()
@@ -121,12 +148,11 @@ func handle_gamepad_aiming(current_attack_range: float):
 		if tp and tp.is_in_group("Enemy"):
 			found_is_enemy = true
 
-	# --- NOWY SYSTEM PAMIĘCI I AUTO-CELOWANIA WROGÓW ---
+	# --- SYSTEM PAMIĘCI I AUTO-CELOWANIA WROGÓW ---
 	if auto_lock_closest_enemy and not found_is_enemy:
 		var best_enemy = null
 		var best_dist = current_attack_range
 		
-		# KROK 1: Sprawdźmy, czy gałka jest aktywnie wychylana. Jeśli tak, priorytet ma cel w kierunku wychylenia.
 		if is_pad_aiming:
 			var best_angle = 0.6 
 			for enemy in nearby_enemies:
@@ -139,27 +165,22 @@ func handle_gamepad_aiming(current_attack_range: float):
 						best_angle = angle
 						best_enemy = enemy
 		
-		# KROK 2: Jeśli nie używamy gałki (albo nikt nie stał na drodze promienia z KROKU 1), skanujemy otoczenie!
 		if best_enemy == null and not is_pad_aiming:
-			# a) Sprawdzamy "pamięć" (czyli last_target - wroga z którym walczyliśmy, ale uciekł na chwilę z zasięgu)
 			if last_target != null and is_instance_valid(last_target):
 				var lp = last_target.get_parent()
 				if lp and lp.is_in_group("Enemy"):
 					var dist = global_position.distance_to(lp.global_position)
 					if dist <= best_dist and has_line_of_sight(lp):
 						best_enemy = lp
-						best_dist = dist # Ustawiamy jego dystans jako punkt odniesienia
+						best_dist = dist 
 			
-			# b) Skanujemy wszystkich wrogów. Jeśli znajdziemy jakiegoś wroga BLIŻEJ niż zapamiętany (lub jeśli pamięć jest pusta), obieramy nowy cel
 			for enemy in nearby_enemies:
 				if not is_instance_valid(enemy): continue
 				var dist = global_position.distance_to(enemy.global_position)
-				# Zwróć uwagę na znak mniejszości (<). Nowy wróg musi być wyraźnie bliżej, aby nadpisać pamięć starego celu.
 				if dist < best_dist and has_line_of_sight(enemy):
 					best_dist = dist
 					best_enemy = enemy
 					
-		# Aplikowanie wybranego wroga do zmiennych
 		if best_enemy != null:
 			for child in best_enemy.get_children():
 				if child is InteractableComponent:
@@ -167,7 +188,6 @@ func handle_gamepad_aiming(current_attack_range: float):
 					found_is_enemy = true
 					break
 
-	# --- FALLBACK dla starszego ustawienia (opcjonalny, jeśli wyłączysz nową flagę) ---
 	elif is_pad_aiming and auto_enemy_selector and not found_is_enemy and not auto_lock_closest_enemy:
 		var best_enemy = null
 		var best_angle = 0.6 
@@ -188,7 +208,6 @@ func handle_gamepad_aiming(current_attack_range: float):
 					break
 
 	# --- ZAMROŻENIE CELU (Hard Sticky Target) ---
-	# Podtrzymujemy fokus tak długo, jak cel żyje, jest w zasięgu i nie jest zasłonięty ścianą.
 	if (continuous_gamepad_aiming or auto_lock_closest_enemy) and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
 		var is_current_reachable = false
 		var target_parent = current_target.get_parent()
@@ -202,7 +221,6 @@ func handle_gamepad_aiming(current_attack_range: float):
 				is_current_reachable = true
 				
 		var allow_sticky = true
-		# Odepnij obecny podniesiony cel (np. przedmiot), jeśli mamy wroga na radarze i włączony priorytet
 		if auto_enemy_selector and not current_is_enemy and found_is_enemy:
 			allow_sticky = false 
 			
@@ -213,7 +231,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 	# 3. Zabezpieczenie fizyczne dystansu
 	found_target = _enforce_distance_check(found_target, current_attack_range)
 
-	# 4. Zarządzanie podświetlaniem (i uzupełnianie last_target gdy cel się oddala!)
+	# 4. Zarządzanie podświetlaniem 
 	_manage_target_highlight(found_target, true, current_attack_range, is_pad_aiming)
 
 ## Oczyszcza aktualny cel i usuwa obrysowanie
