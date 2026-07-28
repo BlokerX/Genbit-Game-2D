@@ -61,6 +61,9 @@ func _ready() -> void:
 	else:
 		push_warning("Nie znaleziono węzła InventorySlotHandle!")
 	
+	# [NOWOŚĆ] Nasłuchujemy zmiany fokusu (gdy gracz nawiguje D-Padem)
+	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
+	
 	_update_cursor_visuals()
 	
 	# Upewniamy się, że crafting jest domyślnie ukryty
@@ -74,6 +77,12 @@ func _process(delta: float) -> void:
 		var move_dir = Input.get_vector("Left", "Right", "Up", "Down")
 		
 		if move_dir != Vector2.ZERO:
+			# [NOWOŚĆ] Resetujemy klasyczny focus Godota, gdy ruszamy gałką!
+			# Zapobiega to "podwójnemu klikaniu" i uciekaniu podświetlenia.
+			var focus_owner = get_viewport().gui_get_focus_owner()
+			if focus_owner:
+				focus_owner.release_focus()
+			
 			# Pobieramy aktualną pozycję prawdziwej myszki
 			var current_pos = get_viewport().get_mouse_position()
 			var new_pos = current_pos + (move_dir * gamepad_cursor_speed * delta)
@@ -83,8 +92,15 @@ func _process(delta: float) -> void:
 			new_pos.x = clamp(new_pos.x, 0, screen_size.x)
 			new_pos.y = clamp(new_pos.y, 0, screen_size.y)
 			
-			# Magia silnika: Przesuwamy systemową myszkę!
+			# Przesuwamy systemową myszkę
 			get_viewport().warp_mouse(new_pos)
+			
+			# --- KLUCZOWA NAPRAWKA: Wstrzykujemy zdarzenie ruchu myszy ---
+			# To sprawia, że Godot natychmiast "widzi", nad jakim slotem jesteśmy
+			var motion_event = InputEventMouseMotion.new()
+			motion_event.global_position = new_pos
+			motion_event.position = new_pos
+			Input.parse_input_event(motion_event)
 
 	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem (Twój stary kod) ---
 	if item_in_hand != null:
@@ -368,16 +384,35 @@ func _update_cursor_visuals() -> void:
 func is_any_ui_open() -> bool:
 	return is_player_inventory_open or current_open_chest != null or is_crafting_open
 
-# Wstrzykuje wirtualne kliknięcie myszką prosto do silnika Godot
+# Bezpieczna symulacja kliknięcia uwzględniająca zarówno przyciski, jak i sloty
 func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
-	var ev = InputEventMouseButton.new()
-	ev.button_index = button_idx
-	ev.pressed = is_pressed
-	
-	# Pobieramy pozycję na której aktualnie stoi wirtualna myszka
-	var mouse_pos = get_viewport().get_mouse_position()
-	ev.global_position = mouse_pos
-	ev.position = mouse_pos
-	
-	# Odpalamy symulację
-	Input.parse_input_event(ev)
+	var hovered = get_viewport().gui_get_hovered_control()
+	if hovered == null:
+		return
+
+	var target = hovered
+	while target != null:
+		# 1. Jeśli to natywny przycisk (np. w menu craftingu / interfejsie)
+		if target is BaseButton:
+			if is_pressed and button_idx == MOUSE_BUTTON_LEFT:
+				target.emit_signal("pressed")
+			return
+		
+		# 2. Jeśli to nasz customowy element ze skryptem (np. InventorySlot)
+		if target.has_method("_gui_input"):
+			var ev = InputEventMouseButton.new()
+			ev.button_index = button_idx
+			ev.pressed = is_pressed
+			ev.position = target.get_local_mouse_position()
+			target._gui_input(ev)
+			return
+			
+		target = target.get_parent()
+
+# [NOWOŚĆ] Magnetyczne przyciąganie wirtualnej myszki do przycisków
+func _on_gui_focus_changed(control: Control) -> void:
+	if is_any_ui_open() and control != null:
+		# Obliczamy środek zaznaczonego elementu
+		var center_pos = control.get_global_rect().get_center()
+		# Teleportujemy systemową myszkę idealnie na środek przycisku
+		get_viewport().warp_mouse(center_pos)
