@@ -75,6 +75,10 @@ func toggle_player_inventory() -> void:
 		_close_all_ui() # Zamknij wszystko inne (np. crafting), zanim otworzysz ekwipunek
 		
 		is_player_inventory_open = true
+		
+		# Wysyłamy sygnał, że okno się otworzyło
+		EventBus.ui_state_changed.emit(true)
+		
 		player_panel.open_panel(player_inventory)
 		if hotbar_panel:
 			hotbar_panel.hide()
@@ -88,6 +92,10 @@ func toggle_crafting_ui() -> void:
 		_close_all_ui() # Zamknij ekwipunki i skrzynie, żeby zrobić czyste miejsce
 		
 		is_crafting_open = true
+		
+		# Wysyłamy sygnał, że okno się otworzyło
+		EventBus.ui_state_changed.emit(true)
+		
 		if crafting_ui:
 			crafting_ui.show()
 		
@@ -100,6 +108,11 @@ func _on_storage_opened(storage_ref: Node) -> void:
 	
 	current_open_chest = storage_ref
 	is_player_inventory_open = true
+	
+	# Upewnij się, że ta linijka tu jest! To ona mrozi gracza.
+	# Wysyłamy sygnał, że okno się otworzyło
+	EventBus.ui_state_changed.emit(true)
+	
 	player_panel.open_panel(player_inventory)
 	chest_panel.open_panel(storage_ref)
 	if hotbar_panel:
@@ -131,6 +144,9 @@ func _close_all_ui() -> void:
 		
 	if hotbar_panel:
 		hotbar_panel.show()
+	
+	# Wysyłamy sygnał, że wszystkie okna są zamknięte
+	EventBus.ui_state_changed.emit(false)
 
 # DODAJEMY NOWĄ FUNKCJĘ _input, KTÓRA JEST PIERWSZA W KOLEJCE:
 func _input(event: InputEvent) -> void:
@@ -307,3 +323,7 @@ func _update_cursor_visuals() -> void:
 		cursor_item_rect.texture = null
 		cursor_item_rect.hide()
 		cursor_amount_label.hide()
+
+# Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
+func is_any_ui_open() -> bool:
+	return is_player_inventory_open or current_open_chest != null or is_crafting_open

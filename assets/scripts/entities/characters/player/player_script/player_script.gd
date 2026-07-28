@@ -102,6 +102,9 @@ var is_holding_attack: bool = false
 enum PlayerState { DEFAULT, BUILDING }
 var current_state: PlayerState = PlayerState.DEFAULT
 
+# Blokada wejścia z interfejsu UI
+var is_input_locked: bool = false
+
 #endregion
 
 #region Główne funkcje silnikowe
@@ -140,6 +143,11 @@ func _ready():
 	#endregion
 	
 	#setup_complete.emit()
+	
+	# Nasłuch na zamykanie/otwieranie interfejsu
+	EventBus.ui_state_changed.connect(
+		func(is_open: bool): is_input_locked = is_open
+	)
 
 func _process(delta):
 	# Update health gui data.
@@ -147,6 +155,13 @@ func _process(delta):
 
 func _physics_process(delta):
 	super(delta)
+	
+	# --- NOWOŚĆ: Tarcza blokująca ruch przy otwartym UI ---
+	if is_input_locked:
+		velocity = Vector2.ZERO # Błyskawiczny hamulec
+		move_and_slide()        # Aplikujemy zatrzymanie
+		return                  # Odcinamy funkcję, gracz nic nie robi
+	# ------------------------------------------------------
 	
 	#region Move Procedure
 	
@@ -225,6 +240,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _handle_global_inputs(event):
 		return
 	
+	# --- NOWOŚĆ: Tarcza blokująca kliknięcia/ataki przy otwartym UI ---
+	# Jeśli okno jest otwarte (a klawisz nie był np. Pauzą z Global Inputs), ignorujemy akcję
+	if is_input_locked:
+		return
+	# -------------------------------------------------------------------
+	
 	# 2. Inputy zależne od tego, co gracz aktualnie robi
 	match current_state:
 		PlayerState.DEFAULT:
@@ -246,6 +267,12 @@ func _detect_input_device(event: InputEvent) -> void:
 			is_using_mouse = false
 
 func _handle_global_inputs(event: InputEvent) -> bool:
+	# --- NOWOŚĆ: Tarcza odcinająca sterowanie! ---
+	# Jeśli menu (skrzynia/crafting) jest otwarte, ignorujemy wszystko poniżej.
+	if is_input_locked:
+		return false
+	# -------------------------------------------------------------
+	
 	#region Sterowanie priorytetowe
 	
 	# PAUZA
@@ -314,7 +341,7 @@ func _handle_default_inputs(event: InputEvent) -> void:
 		if aim_controller.current_target != null:
 			aim_controller.current_target.interact(self)
 			
-	# --- NOWOŚĆ: ZBIERANIE (Klawisz F - Zwijanie budowli) ---
+	# --- ZBIERANIE (Klawisz F - Zwijanie budowli) ---
 	if event.is_action_pressed(INPUT_COLLECT):
 		if aim_controller.current_target != null:
 			# Wywołujemy naszą nową funkcję na celowniku

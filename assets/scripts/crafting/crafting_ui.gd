@@ -22,8 +22,16 @@ func _ready() -> void:
 		player.inventory.inventory_updated.connect(_update_details_panel)
 		craft_button.pressed.connect(_on_craft_button_pressed)
 	
-	# Odśwież dane, gdy UIController pokaże to okno
-	visibility_changed.connect(func(): if visible: _update_details_panel())
+	# Łapanie focusu dla pada przy otwarciu ---
+	visibility_changed.connect(func():
+		if visible:
+			_update_details_panel()
+			# Czekamy klatkę, aż przyciski na pewno się wygenerują
+			await get_tree().process_frame
+			if recipe_list.get_child_count() > 0:
+				# Zaznacza pierwszy przycisk z listy przepisów
+				recipe_list.get_child(0).grab_focus()
+	)
 
 func _populate_recipe_list() -> void:
 	for child in recipe_list.get_children():

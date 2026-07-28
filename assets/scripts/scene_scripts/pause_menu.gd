@@ -12,6 +12,12 @@ func _ready() -> void:
 	# Podłączamy sygnały z przycisków
 	resume_button.pressed.connect(_on_resume_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+	
+	visibility_changed.connect(func():
+		if visible:
+			# Kiedy menu pauzy staje się widoczne, automatycznie podświetlamy przycisk "Wznów"
+			resume_button.grab_focus()
+	)
 
 # Używamy _unhandled_input! Łapie klawisz tylko wtedy, 
 # gdy nie został zjedzony przez _input() (np. przez CraftingUI)
