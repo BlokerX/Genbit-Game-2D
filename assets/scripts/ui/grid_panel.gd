@@ -72,7 +72,17 @@ func _setup_slots(amount: int) -> void:
 			slot_ui.setup_as_player_slot(i, current_source)
 
 func _update_all_slots() -> void:
-	if not current_source: return
-	for i in range(current_source.slots_amount):
+	if not current_source:
+		return
+		
+	# Sprawdzamy RZECZYWISTY rozmiar tablicy na zapleczu
+	var actual_slots_count = current_source.slots.size()
+	
+	# Jeśli ilość na zapleczu nie zgadza się z ilością wyświetlanych grafik, 
+	# przebudowujemy siatkę!
+	if ui_slots.size() != actual_slots_count:
+		_setup_slots(actual_slots_count)
+		
+	for i in range(actual_slots_count):
 		if ui_slots[i].has_method("update_slot"):
 			ui_slots[i].update_slot(current_source.slots[i])

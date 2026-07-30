@@ -14,6 +14,8 @@ const INPUT_GAME_PAUSE = "Game_Pause"
 
 @export var crafting_ui: Control
 
+@export var backpack_slot_ui: InventorySlot
+
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
 @export var gamepad_cursor_speed: float = 700.0
@@ -60,6 +62,14 @@ func _ready() -> void:
 				index += 1
 	else:
 		push_warning("Nie znaleziono węzła InventorySlotHandle!")
+	
+	# Inicjalizacja i wizualne odświeżanie slotu na plecak
+	if backpack_slot_ui and player_inventory:
+		backpack_slot_ui.setup_as_backpack_slot(player_inventory)
+		# Wymuszamy aktualizację od razu na starcie (czyści to "99")
+		backpack_slot_ui.update_slot(player_inventory.backpack_slot)
+		# Kiedy ekwipunek wyśle sygnał, odśwież też wizualnie sam slot plecaka
+		player_inventory.inventory_updated.connect(func(): backpack_slot_ui.update_slot(player_inventory.backpack_slot))
 	
 	# [NOWOŚĆ] Nasłuchujemy zmiany fokusu (gdy gracz nawiguje D-Padem)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
@@ -118,6 +128,10 @@ func toggle_player_inventory() -> void:
 		EventBus.ui_state_changed.emit(true)
 		
 		player_panel.open_panel(player_inventory)
+		
+		# Pokazujemy slot plecaka ---
+		_set_backpack_ui_visible(true)
+		
 		if hotbar_panel:
 			hotbar_panel.hide()
 
@@ -175,6 +189,8 @@ func _close_all_ui() -> void:
 	is_crafting_open = false # Zamykamy też crafting
 	
 	player_panel.close_panel()
+	_set_backpack_ui_visible(false)
+	
 	chest_panel.close_panel()
 	
 	if crafting_ui:
@@ -225,6 +241,11 @@ func _is_mouse_over_inventory_panels() -> bool:
 	# Sprawdzamy panel gracza
 	if player_panel and player_panel.visible:
 		if player_panel.get_global_rect().has_point(mouse_pos):
+			return true
+			
+	# --- Sprawdzamy obszar slotu plecaka! ---
+	if backpack_slot_ui and backpack_slot_ui.visible:
+		if backpack_slot_ui.get_global_rect().has_point(mouse_pos):
 			return true
 			
 	# Sprawdzamy panel skrzyni (jeśli jest otwarta)
@@ -279,16 +300,26 @@ func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> 
 	if parent_node is StorageComponent:
 		target_slot = parent_node.slots[slot_index]
 	elif parent_node is Inventory:
-		target_slot = parent_node.slots[slot_index]
+		# Przechwytywanie kliknięcia w plecak
+		if slot_index == -2:
+			target_slot = parent_node.backpack_slot
+		else:
+			target_slot = parent_node.slots[slot_index]
 	else:
 		return
 
 	if button_index == MOUSE_BUTTON_LEFT:
 		_handle_left_click(target_slot)
 	elif button_index == MOUSE_BUTTON_RIGHT:
-		_handle_right_click(target_slot)
+		# Prawy klik na plecak go ignoruje (nie dzielimy plecaka na pół)
+		if slot_index == -2:
+			_handle_left_click(target_slot) 
+		else:
+			_handle_right_click(target_slot)
 	elif button_index == -1: 
-		_handle_quick_transfer(parent_node, slot_index)
+		# Jeśli to szybki transfer (Shift + klik), omijamy go na ten moment dla plecaka
+		if slot_index != -2:
+			_handle_quick_transfer(parent_node, slot_index)
 
 	_update_cursor_visuals()
 	
@@ -298,6 +329,39 @@ func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> 
 		parent_node.inventory_updated.emit()
 
 func _handle_left_click(slot: SlotData) -> void:
+	# --- SPECJALNA LOGIKA: SLOT PLECACA ---
+	if player_inventory != null and slot == player_inventory.backpack_slot:
+		if item_in_hand == null:
+			if not slot.is_empty():
+				# Zdejmujemy plecak i bierzemy pod kursor
+				item_in_hand = player_inventory.unequip_backpack()
+		else:
+			# Kładziemy przedmiot ze wskaźnika w slot plecaka
+			if item_in_hand.data is BackpackItem:
+				# --- NOWOŚĆ: Zabezpieczenie przed stackami ---
+				if item_in_hand.amount > 1:
+					# Odrywamy tylko 1 sztukę
+					var single_bp = ItemInstance.new(item_in_hand.data, 1)
+					single_bp.durability = item_in_hand.durability
+					item_in_hand.amount -= 1
+					
+					# Podmieniamy plecak
+					var old_bp = player_inventory.equip_backpack(single_bp)
+					
+					# Stary plecak (jeśli był) idzie z powrotem do ekwipunku lub na ziemię
+					if old_bp != null:
+						var remainder = player_inventory.add_instance(old_bp)
+						if remainder != null:
+							player_inventory.item_dropped.emit(remainder, false)
+				else:
+					# Jeśli trzymamy na myszce dokładnie 1 sztukę
+					var leftover = player_inventory.equip_backpack(item_in_hand)
+					item_in_hand = leftover
+			else:
+				print("W to miejsce można założyć tylko plecak!")
+		return # PRZERYWAMY, ignorując resztę kodu!
+
+	# --- ZWYKŁA LOGIKA DLA INNYCH SLOTÓW ---
 	if item_in_hand == null:
 		if not slot.is_empty():
 			item_in_hand = slot.item
@@ -416,3 +480,12 @@ func _on_gui_focus_changed(control: Control) -> void:
 		var center_pos = control.get_global_rect().get_center()
 		# Teleportujemy systemową myszkę idealnie na środek przycisku
 		get_viewport().warp_mouse(center_pos)
+
+# Pomocnicza funkcja do pokazywania/ukrywania slotu na plecak
+func _set_backpack_ui_visible(show_slot: bool) -> void:
+	if backpack_slot_ui:
+		backpack_slot_ui.visible = show_slot
+		var parent = backpack_slot_ui.get_parent()
+		# Ukrywamy również CenterContainer, w który zapakowaliśmy slot
+		if parent is CenterContainer or parent is MarginContainer:
+			parent.visible = show_slot

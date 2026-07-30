@@ -30,6 +30,11 @@ func setup_as_player_slot(index: int, inventory_ref: Node) -> void:
 	slot_index = index
 	parent_reference = inventory_ref
 
+func setup_as_backpack_slot(inventory_ref: Node) -> void:
+	is_storage_slot = false
+	slot_index = -2 # Celowo ujemny, aby odróżnić go od zwykłych slotów (0, 1, 2...)
+	parent_reference = inventory_ref
+
 func update_slot(slot: SlotData) -> void:
 	if slot and not slot.is_empty():
 		icon_rect.texture = slot.item.data.item_icon
