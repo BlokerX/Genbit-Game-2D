@@ -3,18 +3,22 @@ extends CanvasLayer
 
 const INPUT_TOGGLE_INVENTORY = "ToggleInventory"
 const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
+const INPUT_TOGGLE_MAP = "ToggleMap"
 const INPUT_GAME_PAUSE = "Game_Pause"
+
+const SLOT_SCENE = preload("res://assets/scenes/inventory_slot.tscn")
 
 @export var chest_panel: GridPanel
 @export var player_panel: GridPanel
+@export var backpack_panel: GridPanel
 
 @export var hotbar_panel: Control
 @export var cursor_item_rect: TextureRect
 @export var cursor_amount_label: Label
 
 @export var crafting_ui: Control
-
-@export var backpack_slot_ui: InventorySlot
+@export var minimap_ui: Minimap
+var backpack_slot_ui: InventorySlot
 
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
@@ -24,9 +28,11 @@ const INPUT_GAME_PAUSE = "Game_Pause"
 var player_inventory: Inventory = null
 
 var item_in_hand: ItemInstance = null
+
 var current_open_chest: Node = null
 var is_player_inventory_open: bool = false
 var is_crafting_open: bool = false
+var is_map_open: bool = false
 
 func _ready() -> void:
 	# Automatycznie szukamy gracza w scenie po grupie "player"
@@ -44,34 +50,25 @@ func _ready() -> void:
 	EventBus.close_storage_ui.connect(_on_storage_closed)
 	EventBus.slot_clicked.connect(_on_slot_clicked)
 	
-	var slot_handle = find_child("InventorySlotHandle", true, true)
-	if slot_handle:
-		var index: int = 0
-		for child in slot_handle.get_children():
-			if child is InventorySlot:
-				child.setup_as_player_slot(index, player_inventory)
-				index += 1
-	else:
-		push_warning("Nie znaleziono węzła InventorySlotHandle w interfejsie gracza!")
+	# --- NOWOŚĆ: Automatyczne GENEROWANIE slotu plecaka ---
+	if backpack_panel:
+		# 1. Czyścimy panel ze starych śmieci (jeśli jakieś zostały w Edytorze)
+		for child in backpack_panel.get_children():
+			backpack_panel.remove_child(child)
+			child.queue_free()
+			
+		# 2. Generujemy IDEALNIE JEDEN nowy slot i wrzucamy do panelu
+		backpack_slot_ui = SLOT_SCENE.instantiate()
+		backpack_panel.add_child(backpack_slot_ui)
 		
-	if slot_handle:
-		var index: int = 0
-		for child in slot_handle.get_children():
-			if child is InventorySlot:
-				child.setup_as_player_slot(index, player_inventory)
-				index += 1
-	else:
-		push_warning("Nie znaleziono węzła InventorySlotHandle!")
-	
-	# Inicjalizacja i wizualne odświeżanie slotu na plecak
-	if backpack_slot_ui and player_inventory:
+		# 3. Konfigurujemy go do działania z plecakiem
 		backpack_slot_ui.setup_as_backpack_slot(player_inventory)
-		# Wymuszamy aktualizację od razu na starcie (czyści to "99")
 		backpack_slot_ui.update_slot(player_inventory.backpack_slot)
-		# Kiedy ekwipunek wyśle sygnał, odśwież też wizualnie sam slot plecaka
 		player_inventory.inventory_updated.connect(func(): backpack_slot_ui.update_slot(player_inventory.backpack_slot))
-	
-	# [NOWOŚĆ] Nasłuchujemy zmiany fokusu (gdy gracz nawiguje D-Padem)
+	else:
+		push_warning("Brak przypisanego 'backpack_panel' w Inspektorze UIController'a!")
+		
+	# Nasłuchujemy zmiany fokusu (gdy gracz nawiguje D-Padem)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
 	
 	_update_cursor_visuals()
@@ -79,6 +76,9 @@ func _ready() -> void:
 	# Upewniamy się, że crafting jest domyślnie ukryty
 	if crafting_ui:
 		crafting_ui.hide()
+	
+	# Upewniamy się, że plecak jest schowany na starcie gry
+	_set_backpack_ui_visible(false)
 
 func _process(delta: float) -> void:
 	# --- 1. WIRTUALNY KURSOR DLA PADA ---
@@ -155,6 +155,22 @@ func toggle_crafting_ui() -> void:
 		if hotbar_panel:
 			hotbar_panel.show()
 
+func toggle_map_ui() -> void:
+	if is_map_open:
+		_close_all_ui()
+	else:
+		_close_all_ui() # Zamyka ekwipunek/crafting
+		is_map_open = true
+		
+		# Wysyłamy sygnał zamrożenia gracza
+		EventBus.ui_state_changed.emit(true)
+		
+		if minimap_ui:
+			minimap_ui.toggle_large_map(true)
+			
+		if hotbar_panel:
+			hotbar_panel.hide()
+
 func _on_storage_opened(storage_ref: Node) -> void:
 	_close_all_ui() # Zamknij crafting, jeśli był otwarty
 	
@@ -186,7 +202,11 @@ func _close_all_ui() -> void:
 	# 2. Reset zmiennych i ukrywanie paneli
 	current_open_chest = null
 	is_player_inventory_open = false
-	is_crafting_open = false # Zamykamy też crafting
+	is_crafting_open = false
+	is_map_open = false
+	
+	if minimap_ui:
+		minimap_ui.toggle_large_map(false)
 	
 	player_panel.close_panel()
 	_set_backpack_ui_visible(false)
@@ -206,9 +226,9 @@ func _close_all_ui() -> void:
 func _input(event: InputEvent) -> void:
 	# Obsługa Pauzy (Zamykanie aktywnych okien)
 	if event.is_action_pressed(INPUT_GAME_PAUSE):
-		if is_player_inventory_open or current_open_chest != null or is_crafting_open:
+		if is_any_ui_open(): # <--- Skrócone i obejmujące mapę!
 			_close_all_ui()
-			get_viewport().set_input_as_handled() 
+			get_viewport().set_input_as_handled()
 	
 	# Wyrzucanie przedmiotu poza okno dla myszki
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
@@ -244,8 +264,8 @@ func _is_mouse_over_inventory_panels() -> bool:
 			return true
 			
 	# --- Sprawdzamy obszar slotu plecaka! ---
-	if backpack_slot_ui and backpack_slot_ui.visible:
-		if backpack_slot_ui.get_global_rect().has_point(mouse_pos):
+	if backpack_panel and backpack_panel.visible:
+		if backpack_panel.get_global_rect().has_point(mouse_pos):
 			return true
 			
 	# Sprawdzamy panel skrzyni (jeśli jest otwarta)
@@ -291,6 +311,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(INPUT_TOGGLE_CRAFTING): 
 		toggle_crafting_ui()
 		get_viewport().set_input_as_handled()
+	
+	# --- Otwieranie Mapy ---
+	elif event.is_action_pressed(INPUT_TOGGLE_MAP):
+		toggle_map_ui()
+		get_viewport().set_input_as_handled()
 
 # --- LOGIKA MINECRAFTOWA (KLIKNIĘCIA) ---
 
@@ -317,9 +342,14 @@ func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> 
 		else:
 			_handle_right_click(target_slot)
 	elif button_index == -1: 
-		# Jeśli to szybki transfer (Shift + klik), omijamy go na ten moment dla plecaka
-		if slot_index != -2:
-			_handle_quick_transfer(parent_node, slot_index)
+		# --- NOWOŚĆ: Logika dla Shift + Klik ---
+		if slot_index == -2:
+			# Zdejmujemy plecak
+			_handle_quick_unequip_backpack()
+		else:
+			# Próbujemy najpierw założyć plecak. Jeśli to nie plecak (lub slot jest zajęty), robimy zwykły transfer do skrzyni
+			if not _try_quick_equip_backpack(parent_node, slot_index):
+				_handle_quick_transfer(parent_node, slot_index)
 
 	_update_cursor_visuals()
 	
@@ -430,6 +460,50 @@ func _handle_quick_transfer(from_node: Node, slot_index: int) -> void:
 			if remainder != null:
 				player_inventory.add_instance(remainder)
 
+func _handle_quick_unequip_backpack() -> void:
+	if not player_inventory or player_inventory.backpack_slot.is_empty():
+		return
+		
+	# Zdejmujemy plecak do zmiennej.
+	# UWAGA: Ta funkcja w inventory.gd z miejsca uetnie ekwipunek i WYRZUCI nadmiar przedmiotów na ziemię
+	var backpack_to_unequip = player_inventory.unequip_backpack()
+	
+	# Teraz próbujemy dodać ściągnięty plecak w wolne miejsce pomniejszonego już ekwipunku
+	var remainder = player_inventory.add_instance(backpack_to_unequip)
+	
+	# Jeśli z jakiegoś powodu w ekwipunku bazowym (np. w Twoich domyślnych 4 slotach) 
+	# nie ma miejsca, ściągnięty plecak musi upaść na ziemię.
+	if remainder != null:
+		player_inventory.item_dropped.emit(remainder, false)
+		print("Brak miejsca w ekwipunku! Ściągnięty plecak upada na ziemię.")
+
+func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
+	if not player_inventory: 
+		return false
+		
+	# Sprawdzamy, czy kliknęliśmy na przedmiot będący w naszym ekwipunku
+	if from_node is Inventory:
+		var slot_data = from_node.slots[slot_index]
+		
+		# Jeśli przedmiot to plecak LUB sakiewka (dziedziczy po BackpackItem) 
+		# ORAZ slot na plecy jest wolny
+		if not slot_data.is_empty() and slot_data.item.data is BackpackItem:
+			if player_inventory.backpack_slot.is_empty():
+				# Tworzymy instancję jednej sztuki (gdyby sakiewki były stackowalne)
+				var single_bp = ItemInstance.new(slot_data.item.data, 1)
+				single_bp.durability = slot_data.item.durability
+				
+				# Odejmujemy sztukę z aktualnego slota
+				slot_data.item.amount -= 1
+				if slot_data.item.amount <= 0:
+					slot_data.clear_slot()
+					
+				# Zakładamy na plecy
+				player_inventory.equip_backpack(single_bp)
+				return true
+				
+	return false
+
 func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
 		cursor_item_rect.texture = item_in_hand.data.item_icon
@@ -446,7 +520,7 @@ func _update_cursor_visuals() -> void:
 
 # Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
 func is_any_ui_open() -> bool:
-	return is_player_inventory_open or current_open_chest != null or is_crafting_open
+	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open
 
 # Bezpieczna symulacja kliknięcia uwzględniająca zarówno przyciski, jak i sloty
 func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
@@ -483,9 +557,5 @@ func _on_gui_focus_changed(control: Control) -> void:
 
 # Pomocnicza funkcja do pokazywania/ukrywania slotu na plecak
 func _set_backpack_ui_visible(show_slot: bool) -> void:
-	if backpack_slot_ui:
-		backpack_slot_ui.visible = show_slot
-		var parent = backpack_slot_ui.get_parent()
-		# Ukrywamy również CenterContainer, w który zapakowaliśmy slot
-		if parent is CenterContainer or parent is MarginContainer:
-			parent.visible = show_slot
+	if backpack_panel:
+		backpack_panel.visible = show_slot

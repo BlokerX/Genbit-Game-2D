@@ -140,6 +140,7 @@ func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
 			return null
 			
 	# Brak miejsca - zwracamy instancję z powrotem
+	inventory_updated.emit()
 	return instance_to_add
 
 ## Klasyczne tworzenie nowego przedmiotu z definicji (przydatne np. w rzemiośle)

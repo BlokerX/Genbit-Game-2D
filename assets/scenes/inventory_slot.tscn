@@ -7,6 +7,8 @@
 [node name="Slot" type="TextureRect" unique_id=1315751759]
 texture_filter = 5
 custom_minimum_size = Vector2(64, 64)
+offset_right = 64.0
+offset_bottom = 64.0
 texture = ExtResource("1_pke63")
 script = ExtResource("2_yoomp")
 texture_normal = ExtResource("1_pke63")
