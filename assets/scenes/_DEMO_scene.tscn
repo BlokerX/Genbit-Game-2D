@@ -1432,7 +1432,7 @@ position = Vector2(1726, 688)
 test_item_data = SubResource("Resource_7xak8")
 
 [node name="PlaceableItem" parent="Map/Room03_TestSecretRoom" unique_id=1663445108 instance=ExtResource("14_x51g6")]
-position = Vector2(1320, 448)
+position = Vector2(1504, 800)
 test_item_data = SubResource("Resource_6w1ys")
 test_amount = 2
 
