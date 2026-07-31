@@ -4,13 +4,19 @@ class_name Inventory
 
 #region Inventory stats
 ## Rozmiar ekwipunku
-@export var slots_amount: int = 9 
+@export var slots_amount: int = 4
+
+## Maksymalna liczba slotów w pasku szybkiego dostępu (Hotbar)
+@export var hotbar_limit: int = 9
 
 ## Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
 @export var slots: Array[SlotData] = []
 
 ## Aktualnie wybrany indeks slotu
 @export var current_slot_index : int = 0
+
+## Specjalny slot przechowujący założony plecak
+@export var backpack_slot: SlotData = SlotData.new()
 
 #endregion
 
@@ -134,6 +140,7 @@ func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
 			return null
 			
 	# Brak miejsca - zwracamy instancję z powrotem
+	inventory_updated.emit()
 	return instance_to_add
 
 ## Klasyczne tworzenie nowego przedmiotu z definicji (przydatne np. w rzemiośle)
@@ -182,6 +189,57 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 	return remaining
 
 
+## Próba założenia lub wymiany plecaka w dedykowanym slocie
+func equip_backpack(new_backpack_instance: ItemInstance) -> ItemInstance:
+	var old_backpack = backpack_slot.item
+	backpack_slot.item = new_backpack_instance
+	
+	_recalculate_slots_size()
+	inventory_updated.emit()
+	
+	return old_backpack # Zwraca stary plecak (jeśli jakiś był założony), żeby wrócił do myszki/ekwipunku
+
+func unequip_backpack() -> ItemInstance:
+	var backpack = backpack_slot.item
+	backpack_slot.clear_slot()
+	
+	_recalculate_slots_size()
+	inventory_updated.emit()
+	
+	return backpack
+
+## Przelicza rozmiar ekwipunku bazowego + bonus z plecaka
+func _recalculate_slots_size() -> void:
+	var base_slots = slots_amount
+	var bonus_slots = 0
+	
+	if not backpack_slot.is_empty() and backpack_slot.item.data is BackpackItem:
+		bonus_slots = (backpack_slot.item.data as BackpackItem).extra_slots_count
+	
+	var target_total_size = base_slots + bonus_slots
+	
+	if slots.size() != target_total_size:
+		# --- NOWOŚĆ: Zabezpieczenie przed utratą itemów ---
+		# Jeśli ekwipunek się zmniejsza, przed ucięciem tablicy wyrzucamy przedmioty na ziemię
+		if target_total_size < slots.size():
+			for i in range(target_total_size, slots.size()):
+				if slots[i] != null and not slots[i].is_empty():
+					# Zlecenie wyrzucenia przedmiotu pod nogi gracza
+					item_dropped.emit(slots[i].item, false) 
+		
+		# Dopasowanie rozmiaru
+		slots.resize(target_total_size)
+		for i in range(target_total_size):
+			if slots[i] == null:
+				slots[i] = SlotData.new()
+		
+		# Ściągamy kursor zaznaczenia w dół, jeśli po zdjęciu plecaka znalazł się "w powietrzu"
+		if current_slot_index >= slots.size():
+			current_slot_index = max(0, slots.size() - 1)
+		
+		_rebuild_cache()
+
+
 # ----------------------------------------------------
 # --- NAWIGACJA ---
 # ----------------------------------------------------
@@ -198,14 +256,21 @@ func get_current_item() -> ItemInstance :
 	return null
 
 ## Zmienia aktualnie wybrany indeks aktualnego itemu (zmiana wybranego itemu)
-func select_item(index) -> void :
-	current_slot_index = index
-	inventory_updated.emit()
+func select_item(index: int) -> void:
+	# Ignoruje wciśnięcie klawisza przypisanego do slotu, którego fizycznie nie ma
+	if index >= 0 and index < slots.size():
+		current_slot_index = index
+		inventory_updated.emit()
 
 ## Obsługa wybierania poprzedniego i następnego indeksu
 func scroll_inventory(direction: int) -> void:
-	var new_index = wrapi(current_slot_index - direction, 0, slots.size())
-	select_item(new_index)
+	# Scrollujemy tylko po widocznym hotbarze (bierzemy mniejszą wartość)
+	var scrollable_amount = min(slots.size(), hotbar_limit)
+	
+	# Zabezpieczenie przed błędem dzielenia przez zero, jeśli slotów nie ma
+	if scrollable_amount > 0:
+		var new_index = wrapi(current_slot_index - direction, 0, scrollable_amount)
+		select_item(new_index)
 
 # ----------------------------------------------------
 # --- BEZPĘTLOWY SYSTEM CRAFTINGU O(1) ---

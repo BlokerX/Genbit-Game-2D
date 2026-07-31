@@ -36,14 +36,10 @@ func _ready() -> void:
 	else:
 		push_warning("Minimap: Brak Map'a!")
 
-# Wychwytywanie wciśnięcia i puszczenia klawisza TAB
-func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.keycode == KEY_M:
-		
-		# Klawisz TAB ZOSTANIE WCIŚNIĘTY
-		if event.is_pressed() and not event.is_echo():
-			is_map_toggled_large = not is_map_toggled_large
-			_set_map_large_state(is_map_toggled_large)
+# --- ZMIENIONO: Usunięto _input. Mapa jest teraz sterowana przez UIController! ---
+func toggle_large_map(is_large: bool) -> void:
+	is_map_toggled_large = is_large
+	_set_map_large_state(is_large)
 
 # Nowa funkcja pomocnicza zarządzająca wyglądem mapy
 func _set_map_large_state(is_large: bool) -> void:
