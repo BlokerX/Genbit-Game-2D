@@ -122,7 +122,9 @@ func _physics_process(delta):
 			
 		# --- Użycie komponentu z obliczonym wektorem kierunku do ruchu ---
 		velocity = movement_universal_script.movement_procedure(delta, velocity, direction)
+	else:
+		# Wytracanie prędkości, gdy pająk ma stać w miejscu
+		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2.ZERO)
 			
-		move_and_slide()
-		return
+	move_and_slide()
 	#endregion

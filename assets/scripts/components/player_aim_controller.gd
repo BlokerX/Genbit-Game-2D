@@ -268,7 +268,8 @@ func _enforce_distance_check(target: InteractableComponent, current_attack_range
 				is_reachable = true
 		else:
 			var dist_to_object = global_position.distance_to(target.global_position)
-			if dist_to_object <= interaction_distance:
+			# Sprawdzanie czy ściana nie blokuje skrzyni/przedmiotu ---
+			if dist_to_object <= interaction_distance and has_line_of_sight(target):
 				is_reachable = true
 				
 		if not is_reachable:
