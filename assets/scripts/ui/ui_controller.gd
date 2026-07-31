@@ -34,6 +34,10 @@ var is_player_inventory_open: bool = false
 var is_crafting_open: bool = false
 var is_map_open: bool = false
 
+# --- NOWOŚĆ: Liczniki do auto-wyrzucania przedmiotów ---
+var _drop_hold_time: float = 0.0
+var _drop_tick_time: float = 0.0
+
 func _ready() -> void:
 	# Automatycznie szukamy gracza w scenie po grupie "player"
 	var player = get_tree().get_first_node_in_group("Player")
@@ -111,7 +115,23 @@ func _process(delta: float) -> void:
 			motion_event.global_position = new_pos
 			motion_event.position = new_pos
 			Input.parse_input_event(motion_event)
-
+		
+		# --- NOWOŚĆ: AUTO-FIRE WYRZUCANIA (Przytrzymanie klawisza) ---
+		# Jeśli trzymamy "Q", ale NIE trzymamy Ctrl/Shift (bo to by wyrzucało całe stacki)
+		if Input.is_action_pressed("DropItem") and not (Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_SHIFT)):
+			_drop_hold_time += delta
+			# Jeśli trzymamy klawisz dłużej niż 0.4 sekundy (tzw. opóźnienie startowe / initial delay)
+			if _drop_hold_time > 0.4:
+				_drop_tick_time += delta
+				# Wyrzucaj jedną sztukę co 0.1 sekundy (szybkość karabinu)
+				if _drop_tick_time > 0.1:
+					_try_drop_hovered_slot(false)
+					_drop_tick_time = 0.0 # resetujemy tylko czas "strzału", żeby strzelił znowu za 0.1s
+		else:
+			# Natychmiast resetujemy wszystko po puszczeniu klawisza
+			_drop_hold_time = 0.0
+			_drop_tick_time = 0.0
+	
 	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem (Twój stary kod) ---
 	if item_in_hand != null:
 		cursor_item_rect.global_position = get_viewport().get_mouse_position() + Vector2(5, 5)
@@ -236,7 +256,7 @@ func _input(event: InputEvent) -> void:
 			if not _is_mouse_over_inventory_panels():
 				_drop_item_from_cursor()
 
-	# --- NOWOŚĆ: SYMULACJA KLIKNIĘĆ PADEM ---
+	# --- SYMULACJA KLIKNIĘĆ PADEM I INNE AKCJE (w _input) ---
 	if is_any_ui_open():
 		# Akcja "Interact" symuluje LEWY Przycisk Myszy (Podnoszenie przedmiotu)
 		if event.is_action_pressed("Interact"):
@@ -252,6 +272,16 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif event.is_action_released("RotateBuilding"):
 			_simulate_mouse_click(MOUSE_BUTTON_RIGHT, false)
+			get_viewport().set_input_as_handled()
+		
+		# --- WYRZUCANIE ITEMÓW (Pierwsze kliknięcie lub cała sterta) ---
+		if event.is_action_pressed("DropItem"):
+			# Używamy Ctrl LUB Shift, żeby wyrzucić od razu całą stertę
+			if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_SHIFT):
+				_try_drop_hovered_slot(true)
+			else:
+				# Natychmiastowe wyrzucenie 1 sztuki po pierwszym kliknięciu
+				_try_drop_hovered_slot(false)
 			get_viewport().set_input_as_handled()
 
 # Pomocnicza funkcja sprawdzająca, czy kursor jest nad okienkiem ekwipunku
@@ -275,13 +305,17 @@ func _is_mouse_over_inventory_panels() -> bool:
 			
 	return false
 
-# Funkcja wyrzucająca trzymany przedmiot na ziemię
+# Funkcja wyrzucająca trzymany przedmiot z kursora
 func _drop_item_from_cursor() -> void:
 	var dropped_instance = item_in_hand
 	item_in_hand = null
 	_update_cursor_visuals()
+	_execute_drop_in_world(dropped_instance)
+
+# Uniwersalna funkcja fizycznie wyrzucająca przedmioty na świat gry
+func _execute_drop_in_world(dropped_instance: ItemInstance) -> void:
+	if dropped_instance == null: return
 	
-	# Zlecamy graczowi wyrzucenie przedmiotu przez jego ItemThrowerComponent
 	var player = get_tree().get_first_node_in_group("Player")
 	if player and player.has_node("ItemThrowerComponent"):
 		var thrower = player.get_node("ItemThrowerComponent")
@@ -291,10 +325,75 @@ func _drop_item_from_cursor() -> void:
 			
 		thrower.handle_item_drop(player, dropped_instance, true, true, aim_target)
 	else:
-		# Fallback awaryjny, gdyby komponentu zabrakło
-		player_inventory.item_dropped.emit(dropped_instance, true)
+		# Fallback awaryjny
+		if player_inventory:
+			player_inventory.item_dropped.emit(dropped_instance, true)
+			
+	print("UIController: Pomyślnie wyrzucono przedmiot (" + dropped_instance.data.item_name + ")!")
+
+func _try_drop_hovered_slot(drop_all: bool) -> void:
+	# 1. Priorytet 1: Jeśli mamy coś w ręku (kursorze), to najpierw wyrzucamy z kursora
+	if item_in_hand != null:
+		var amount_to_drop = item_in_hand.amount if drop_all else 1
+		var dropped_instance = ItemInstance.new(item_in_hand.data, amount_to_drop)
+		dropped_instance.durability = item_in_hand.durability
 		
-	print("UIController: Wyrzucono przedmiot poza ramkę interfejsu!")
+		item_in_hand.amount -= amount_to_drop
+		if item_in_hand.amount <= 0:
+			item_in_hand = null
+			
+		_update_cursor_visuals()
+		_execute_drop_in_world(dropped_instance)
+		return
+
+	# 2. Priorytet 2: Sprawdzamy, na jaki element interfejsu najechał kursor
+	var hovered = get_viewport().gui_get_hovered_control()
+	var target_slot_ui: InventorySlot = null
+	
+	# Szukamy po strukturze węzłów w górę, czy trafiliśmy w InventorySlot
+	while hovered != null:
+		if hovered is InventorySlot:
+			target_slot_ui = hovered
+			break
+		hovered = hovered.get_parent()
+		
+	# Jeśli kursor jest nad slotem
+	if target_slot_ui != null:
+		var parent_node = target_slot_ui.parent_reference
+		var slot_idx = target_slot_ui.slot_index
+		
+		# -- ZABEZPIECZENIE: WYRZUCANIE ZAŁOŻONEGO PLECAKA --
+		# Używamy unequip_backpack, bo inaczej ekwipunek by się nie zmniejszył!
+		if slot_idx == -2 and parent_node is Inventory:
+			if not parent_node.backpack_slot.is_empty():
+				var backpack_to_drop = parent_node.unequip_backpack()
+				_execute_drop_in_world(backpack_to_drop)
+			return
+		
+		# Wyszukiwanie normalnego slotu z ekwipunku lub skrzyni
+		var target_slot: SlotData
+		if parent_node is StorageComponent:
+			target_slot = parent_node.slots[slot_idx]
+		elif parent_node is Inventory:
+			target_slot = parent_node.slots[slot_idx]
+			
+		# Odrywanie przedmiotu ze slota i rzut
+		if target_slot and not target_slot.is_empty():
+			var amount_to_drop = target_slot.item.amount if drop_all else 1
+			var dropped_instance = ItemInstance.new(target_slot.item.data, amount_to_drop)
+			dropped_instance.durability = target_slot.item.durability
+			
+			target_slot.item.amount -= amount_to_drop
+			if target_slot.item.amount <= 0:
+				target_slot.clear_slot()
+				
+			# Aktualizacja wyglądu skrzynek
+			if parent_node is StorageComponent:
+				parent_node.storage_updated.emit()
+			elif parent_node is Inventory:
+				parent_node.inventory_updated.emit()
+				
+			_execute_drop_in_world(dropped_instance)
 
 # ZMIENIAMY _unhandled_input TAK, ŻEBY OTWIERAŁO TYLKO EKWIPUNEK:
 func _unhandled_input(event: InputEvent) -> void:
@@ -342,14 +441,18 @@ func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> 
 		else:
 			_handle_right_click(target_slot)
 	elif button_index == -1: 
-		# --- NOWOŚĆ: Logika dla Shift + Klik ---
+		# --- ZAKTUALIZOWANA Logika dla Shift + Klik ---
 		if slot_index == -2:
 			# Zdejmujemy plecak
 			_handle_quick_unequip_backpack()
 		else:
-			# Próbujemy najpierw założyć plecak. Jeśli to nie plecak (lub slot jest zajęty), robimy zwykły transfer do skrzyni
-			if not _try_quick_equip_backpack(parent_node, slot_index):
+			# Jeśli skrzynia JEST otwarta, priorytetem jest zawsze przerzucenie przedmiotu do niej
+			if current_open_chest != null:
 				_handle_quick_transfer(parent_node, slot_index)
+			else:
+				# Jeśli jesteśmy tylko w swoim ekwipunku, próbujemy założyć plecak
+				if not _try_quick_equip_backpack(parent_node, slot_index):
+					_handle_quick_transfer(parent_node, slot_index)
 
 	_update_cursor_visuals()
 	
