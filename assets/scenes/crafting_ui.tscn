@@ -16,7 +16,7 @@
 [ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="13_kysok"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="14_jo8vf"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="15_jo8vf"]
-[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/giantic_potion.tres" id="16_c4uhj"]
+[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="16_c4uhj"]
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="17_wp3sr"]
 [ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="18_bawxu"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="19_bawxu"]

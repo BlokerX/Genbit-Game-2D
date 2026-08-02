@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BackpackItem" format=3 uid="uid://1ill1kife1mh"]
+
+[ext_resource type="Texture2D" uid="uid://ddovyjgmvao5e" path="res://assets/textures/samples_examples/black_backpack.png" id="1_uugvb"]
+[ext_resource type="Script" uid="uid://bx57ryojee8n2" path="res://assets/scripts/entities/items/backpack_item.gd" id="2_8g1pa"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("2_8g1pa")
+extra_slots_count = 23
+item_id = 3
+item_name = "Big Backpack"
+item_type = "BackpackItem"
+item_description = "Big backpack."
+item_icon = ExtResource("1_uugvb")

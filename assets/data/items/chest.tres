@@ -7,7 +7,7 @@
 resource_local_to_scene = true
 script = ExtResource("2_rymd2")
 scene_path = "uid://bnk5e152g3104"
-item_id = 20
+item_id = 21
 item_name = "Chest"
 item_type = "Placeable Item"
 item_description = "A buildable chest."
