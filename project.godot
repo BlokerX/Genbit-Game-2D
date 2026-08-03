@@ -282,3 +282,7 @@ ToggleMap={
 2d_physics/layer_3="NPC's"
 2d_physics/layer_4="Items (pick up)"
 2d_physics/layer_5="Itemy (self absorbtion)"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

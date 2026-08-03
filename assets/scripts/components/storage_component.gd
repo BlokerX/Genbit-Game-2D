@@ -69,7 +69,8 @@ func insert_instance(instance_to_add: ItemInstance) -> ItemInstance:
 	# 1. Próbujemy uzupełnić istniejące stosy
 	if instance_to_add.data.item_is_stackable:
 		for slot in slots:
-			if not slot.is_empty() and slot.item.data.item_id == instance_to_add.data.item_id:
+			# Używamy potężnego can_stack_with zamiast głupiego sprawdzania item_id
+			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
 				var available_space = instance_to_add.data.item_max_stack_count - slot.item.amount
 				if available_space > 0:
 					var adding = min(instance_to_add.amount, available_space)
@@ -145,10 +146,11 @@ func remove_instance(slot_index: int, amount_to_remove: int = -1) -> ItemInstanc
 		
 	# Scenariusz 2: Zabieramy tylko część sztuk (np. Shift+Click lub prawy przycisk myszy)
 	# Tworzymy nową instancję na bazie starej
-	extracted_instance = ItemInstance.new(slot.item.data, amount_to_remove)
+	# GŁĘBOKA KOPIA ABY ODCIAĆ NOWY STOS OD STAREGO
+	var unique_data = slot.item.data.duplicate(true)
+	extracted_instance = ItemInstance.new(unique_data, amount_to_remove)
 	extracted_instance.durability = slot.item.durability # Klonujemy zużycie
 	
 	slot.item.amount -= amount_to_remove
 	storage_updated.emit()
-	
 	return extracted_instance

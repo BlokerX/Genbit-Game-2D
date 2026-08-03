@@ -110,7 +110,9 @@ func drop_current_item(drop_all: bool = false) -> void:
 		inventory_updated.emit()
 	else:
 		# Klonujemy instancję dla jednej sztuki, by zachować jej stan (durability itp.)
-		instance_to_drop = ItemInstance.new(slot.item.data, 1)
+		#ZABEZPIECZENIE PRZED WSPÓŁDZIELENIEM DANYCH PO WYRZUCENIU 1 SZTUKI
+		var unique_data = slot.item.data.duplicate(true)
+		instance_to_drop = ItemInstance.new(unique_data, 1)
 		instance_to_drop.durability = slot.item.durability
 		consume_current_item()
 		
