@@ -66,7 +66,13 @@ func _are_objects_equal(obj1: Object, obj2: Object) -> bool:
 	
 	# Jeśli to dwa różne typy skryptów (np. ItemWeapon vs ItemDistanceWeapon)
 	if obj1.get_script() != obj2.get_script(): return false
-
+	
+	# Jeśli oba obiekty nie mają skryptu, oznacza to, że są natywnymi klasami Godota (np. Texture2D, ShaderMaterial).
+	# Skoro dotarliśmy tutaj, to wiemy już, że nie są tym samym miejscem w pamięci (obj1 == obj2 zwróciło false wyżej).
+	# Natywne zasoby porównujemy po referencji - jeśli są różne, odrzucamy je.
+	if obj1.get_script() == null and obj2.get_script() == null:
+		return false
+	
 	# Pobieramy pełną listę właściwości obiektu
 	var properties = obj1.get_property_list()
 	
