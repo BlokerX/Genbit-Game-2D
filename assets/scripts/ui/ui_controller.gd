@@ -504,7 +504,7 @@ func _handle_left_click(slot: SlotData) -> void:
 			slot.item = item_in_hand
 			item_in_hand = null
 		else:
-			if slot.item.data.item_id == item_in_hand.data.item_id and item_in_hand.data.item_is_stackable:
+			if slot.item.can_stack_with(item_in_hand):
 				var available_space = slot.item.data.item_max_stack_count - slot.item.amount
 				if available_space > 0:
 					var amount_to_add = min(available_space, item_in_hand.amount)
@@ -536,7 +536,7 @@ func _handle_right_click(slot: SlotData) -> void:
 			item_in_hand.amount -= 1
 			if item_in_hand.amount <= 0:
 				item_in_hand = null
-		elif slot.item.data.item_id == item_in_hand.data.item_id and item_in_hand.data.item_is_stackable:
+		elif slot.item.can_stack_with(item_in_hand):
 			if slot.item.amount < slot.item.data.item_max_stack_count:
 				slot.item.amount += 1
 				item_in_hand.amount -= 1

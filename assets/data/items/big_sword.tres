@@ -15,7 +15,6 @@ stun_time = 1.2
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_r625p")
 attack_data = SubResource("Resource_joohm")
 use_cooldown = 2.5

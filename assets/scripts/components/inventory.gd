@@ -42,7 +42,20 @@ func _init() -> void :
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
+	# ZABEZPIECZENIE: Odklejamy referencje startowych przedmiotów dodanych w Edytorze
+	for i in range(slots.size()):
+		if slots[i] != null:
+			slots[i] = slots[i].duplicate(true)
+			if not slots[i].is_empty():
+				slots[i].item = slots[i].item.duplicate(true)
+				slots[i].item.data = slots[i].item.data.duplicate(true)
+		else:
+			slots[i] = SlotData.new()
+			
 	_rebuild_cache()
+	# Zmuszamy pamięć podręczną do odświeżania się za każdym razem, 
+	# gdy w ekwipunku nastąpi jakakolwiek zmiana (np. przełożenie przedmiotu kursorem)!
+	inventory_updated.connect(_rebuild_cache)
 
 
 # ----------------------------------------------------
@@ -112,7 +125,7 @@ func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
 	# Jeśli przedmiot z ziemi jest stackowalny, próbujemy uzupełnić istniejące stosy
 	if instance_to_add.data.item_is_stackable:
 		for slot in slots:
-			if not slot.is_empty() and slot.item.data.item_id == instance_to_add.data.item_id:
+			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
 				var available_space = instance_to_add.data.item_max_stack_count - slot.item.amount
 				if available_space > 0:
 					var adding = min(instance_to_add.amount, available_space)
@@ -150,8 +163,10 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 	
 	# 1. Szukanie w stosach
 	if item.item_is_stackable:
+		# Pomocnicza instancja tylko do porównania
+		var temp_instance = ItemInstance.new(item, 1) 
 		for slot in slots:
-			if not slot.is_empty() and slot.item.data.item_id == item.item_id and slot.item.data.item_name == item.item_name:
+			if not slot.is_empty() and slot.item.can_stack_with(temp_instance):
 				var available_space = item.item_max_stack_count - slot.item.amount
 				
 				if available_space > 0:

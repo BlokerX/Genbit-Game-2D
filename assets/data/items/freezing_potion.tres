@@ -10,7 +10,6 @@ script = ExtResource("2_qc45f")
 metadata/_custom_type_script = "uid://byffpv3e7benb"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("4_fmpv2")
 effects = Array[ExtResource("1_qc45f")]([SubResource("Resource_tijpp")])
 use_cooldown = 0.25

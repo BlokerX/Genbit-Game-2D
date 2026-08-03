@@ -10,7 +10,6 @@ script = ExtResource("2_p7alj")
 metadata/_custom_type_script = "uid://bucrmdkvkkry5"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_1d7vr")
 heal_amount = 49
 effects = Array[ExtResource("1_btncl")]([SubResource("Resource_htw1r")])

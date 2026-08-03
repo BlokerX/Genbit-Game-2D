@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="2_hlhqm"]
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("2_hlhqm")
 scene_path = "uid://c4txjjfeoqbcr"
 item_id = 22

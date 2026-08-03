@@ -50,7 +50,11 @@ func _break_and_drop(return_chest_item: bool) -> void:
 	# 1. Jeśli gracz zebrał ją kulturalnie (F), wyrzucamy przedmiot skrzyni na ziemię
 	if return_chest_item and item_to_drop != null and item_pickup_scene != null:
 		var drop = item_pickup_scene.instantiate()
-		var drop_instance = ItemInstance.new(item_to_drop, 1)
+		
+		# TWORZYMY GŁĘBOKĄ KOPIĘ ZWRACANEGO SZABLONU
+		var unique_drop_data = item_to_drop.duplicate(true)
+		var drop_instance = ItemInstance.new(unique_drop_data, 1)
+		
 		drop.set("item", drop_instance)
 		drop.global_position = global_position
 		get_parent().call_deferred("add_child", drop)

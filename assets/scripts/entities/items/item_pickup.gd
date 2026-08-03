@@ -15,9 +15,11 @@ class_name ItemPickup
 var can_pick_up: bool = false
 
 func _ready() -> void:
-	# FALLBACK: Jeśli postawiliśmy obiekt ręcznie w edytorze bez gotowej instancji, tworzymy ją!
-	if item == null and test_item_data != null:
-		item = ItemInstance.new(test_item_data, test_amount)
+	# FALLBACK: Jeśli postawiliśmy obiekt ręcznie w edytorze bez gotowej instancji
+	if (item == null or item.data == null) and test_item_data != null:
+		# TWORZYMY GŁĘBOKĄ KOPIĘ SZABLONU:
+		var unique_data = test_item_data.duplicate(true)
+		item = ItemInstance.new(unique_data, test_amount)
 		
 	# Odwołujemy się do grafiki poprzez item.data
 	if item != null and item.data != null and item.data.item_icon != null:
@@ -83,7 +85,7 @@ func _on_area_entered(area: Area2D) -> void:
 			return
 		
 		# Porównujemy ID i używamy 'item.amount'
-		if item.data.item_id == other_pickup.item.data.item_id and item.data.item_is_stackable:
+		if item.can_stack_with(other_pickup.item):
 			var available_space = item.data.item_max_stack_count - item.amount
 			if available_space > 0:
 				var amount_to_take = min(available_space, other_pickup.item.amount)

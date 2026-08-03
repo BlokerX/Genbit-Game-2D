@@ -29,14 +29,23 @@ func _init() -> void:
 		slots[i] = SlotData.new()
 
 func _ready() -> void:
-	# --- NOWOŚĆ: Naprawa rozmiaru tablicy po nadpisaniu przez Inspektor ---
+	# Naprawa rozmiaru tablicy po nadpisaniu przez Inspektor
 	if slots.size() < slots_amount:
 		slots.resize(slots_amount)
 		
-	# Upewniamy się, że żaden slot nie jest "null"
+	# Upewniamy się, że żaden slot nie jest "null" i ODKLEJAMY referencje
 	for i in range(slots_amount):
 		if slots[i] == null:
 			slots[i] = SlotData.new()
+		else:
+			# ZABEZPIECZENIE: Odróżniamy od siebie sloty sklonowane w edytorze
+			slots[i] = slots[i].duplicate(true)
+			
+			# Jeśli w slocie startowym jest przedmiot, upewniamy się, 
+			# że jego instancja i dane również są unikalne
+			if not slots[i].is_empty():
+				slots[i].item = slots[i].item.duplicate(true)
+				slots[i].item.data = slots[i].item.data.duplicate(true)
 
 	# Podpinamy się pod komponent interakcji (ten kod już tu miałeś)
 	if interactable_comp and interactable_comp.has_signal("interacted"):
@@ -96,7 +105,7 @@ func insert_instance_at(instance_to_add: ItemInstance, slot_index: int) -> ItemI
 		return null
 		
 	# Jeśli w slocie jest ten sam przedmiot i można go stackować
-	if slot.item.data.item_id == instance_to_add.data.item_id and instance_to_add.data.item_is_stackable:
+	if slot.item.can_stack_with(instance_to_add):
 		var available_space = slot.item.data.item_max_stack_count - slot.item.amount
 		if available_space > 0:
 			var adding = min(instance_to_add.amount, available_space)

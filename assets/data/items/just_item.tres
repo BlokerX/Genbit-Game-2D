@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="1_tdj3y"]
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_tdj3y")
 item_name = "Nothing"
 item_description = "All is nothing."

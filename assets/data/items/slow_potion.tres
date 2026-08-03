@@ -10,7 +10,6 @@ script = ExtResource("2_uncvn")
 metadata/_custom_type_script = "uid://bmbnddjayowv6"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("4_uncvn")
 effects = Array[ExtResource("1_uncvn")]([SubResource("Resource_msb2i")])
 use_cooldown = 0.25

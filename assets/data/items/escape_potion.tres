@@ -10,7 +10,6 @@ script = ExtResource("2_0yuyv")
 metadata/_custom_type_script = "uid://blbmtjd4674n5"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("4_5n5r6")
 effects = Array[ExtResource("1_0yuyv")]([SubResource("Resource_07t2i")])
 use_cooldown = 0.25

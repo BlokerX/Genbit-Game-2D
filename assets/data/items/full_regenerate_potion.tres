@@ -10,7 +10,6 @@ script = ExtResource("2_jlayc")
 metadata/_custom_type_script = "uid://c7l5kqe6qpcqt"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("4_nliqv")
 effects = Array[ExtResource("1_jlayc")]([SubResource("Resource_dpgun")])
 use_cooldown = 0.25

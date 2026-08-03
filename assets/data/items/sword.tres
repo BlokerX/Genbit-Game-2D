@@ -15,7 +15,6 @@ stun_time = null
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_w0gi6")
 attack_data = SubResource("Resource_14dwk")
 item_id = 6
@@ -23,4 +22,4 @@ item_name = "Sword"
 item_type = "Weapon"
 item_description = "It deals 20 damage and its maximum durability is 25."
 item_icon = ExtResource("2_16hix")
-max_durable = 25
+max_durable = 20

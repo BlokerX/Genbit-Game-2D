@@ -10,7 +10,6 @@ script = ExtResource("2_dxp2a")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_cboiq")
 allow_overheal = true
 effects = Array[ExtResource("1_sx258")]([SubResource("Resource_8ngts")])
