@@ -1001,6 +1001,7 @@ test_item_data = ExtResource("26_yg0s7")
 test_amount = 6
 
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 node_paths=PackedStringArray("spawn_points") instance=ExtResource("12_jjq1y")]
+visible = false
 map_position = Vector2i(3, 1)
 spawn_points = [NodePath("RespawnPoint")]
 

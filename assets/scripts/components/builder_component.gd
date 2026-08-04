@@ -184,7 +184,7 @@ func _validate_placement() -> void:
 	if area and area is Area2D:
 		var col_shape = area.get_node_or_null("CollisionShape2D")
 		if col_shape and col_shape.shape:
-			# NATYCHMIASTOWE ZAPYTANIE DO SILNIKA FIZYKI (Naprawa błędu 1-ticka)
+			# NATYCHMIASTOWE ZAPYTANIE DO SILNIKA FIZYKI
 			var space_state = ghost_instance.get_world_2d().direct_space_state
 			var query = PhysicsShapeQueryParameters2D.new()
 			query.shape = col_shape.shape
@@ -198,21 +198,38 @@ func _validate_placement() -> void:
 			for res in results:
 				var collider = res.collider
 				
-				# Ignorujemy samego ducha i jego własne pola
-				if collider == ghost_instance or collider.get_parent() == ghost_instance:
-					continue
+				# --- WSPINACZKA PO DRZEWIE ---
+				# Sprawdzamy, czy uderzyliśmy w sam obiekt, czy w jakieś jego dziecko (np. Area2D)
+				var current_node = collider
+				var should_ignore = false
+				
+				while current_node != null:
+					# Ignorujemy samego ducha i przedmioty leżące na ziemi
+					if current_node == ghost_instance or current_node is ItemPickup:
+						should_ignore = true
+						break
+					current_node = current_node.get_parent()
 					
-				# --- UX TIP: Ignorujemy leżące na ziemi przedmioty ---
-				if collider is ItemPickup:
+				if should_ignore:
 					continue
+				# -----------------------------
 					
-				# Jeśli trafiliśmy na jakąkolwiek inną ścianę, wroga lub skrzynię - BLOKUJEMY
+				# Jeśli dotarliśmy tutaj, to trafiliśmy na inną ścianę, wroga lub skrzynię - BLOKUJEMY
 				is_blocked = true
 				break
 		else:
 			# Fallback, jeśli nie ma CollisionShape2D
 			for body in area.get_overlapping_bodies():
-				if not body is ItemPickup and body != ghost_instance:
+				var current_node = body
+				var should_ignore = false
+				
+				while current_node != null:
+					if current_node == ghost_instance or current_node is ItemPickup:
+						should_ignore = true
+						break
+					current_node = current_node.get_parent()
+					
+				if not should_ignore:
 					is_blocked = true
 					break
 
