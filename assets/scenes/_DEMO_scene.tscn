@@ -991,15 +991,9 @@ destination_door = NodePath("../../Room13_StartRoom/DoorLeft")
 
 [node name="Spider" parent="Map/Room12" unique_id=864791343 instance=ExtResource("14_ndhn8")]
 position = Vector2(958, 544)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_vamu6")
 health_stats_script = SubResource("Resource_0krbe")
 interaction_and_attack_stats_script = SubResource("Resource_ok3uq")
-destroy_entity_after_die = null
 
 [node name="HastePotion" parent="Map/Room12" unique_id=808550624 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 544)
@@ -1007,12 +1001,11 @@ test_item_data = ExtResource("26_yg0s7")
 test_amount = 6
 
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 node_paths=PackedStringArray("spawn_points") instance=ExtResource("12_jjq1y")]
-visible = false
 map_position = Vector2i(3, 1)
 spawn_points = [NodePath("RespawnPoint")]
 
 [node name="DoorUp" parent="Map/Room13_StartRoom" unique_id=528772335 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
-position = Vector2(1888, 24)
+position = Vector2(1864, 48)
 destination_door = NodePath("../../Room03_TestSecretRoom/DoorDown")
 is_door_visible = false
 
@@ -1092,27 +1085,15 @@ destination_door = NodePath("../../Room25/DoorUp")
 
 [node name="Spider" parent="Map/Room15" unique_id=1401249178 instance=ExtResource("14_ndhn8")]
 position = Vector2(1288, 184)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_wpun4")
 health_stats_script = SubResource("Resource_oc3gg")
 interaction_and_attack_stats_script = SubResource("Resource_w3dgf")
-destroy_entity_after_die = null
 
 [node name="Spider2" parent="Map/Room15" unique_id=895289693 instance=ExtResource("14_ndhn8")]
 position = Vector2(600, 864)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_g8hlt")
 health_stats_script = SubResource("Resource_2psgk")
 interaction_and_attack_stats_script = SubResource("Resource_6i6mq")
-destroy_entity_after_die = null
 
 [node name="Chest" parent="Map/Room15" unique_id=1282373756 instance=ExtResource("62_6i6mq")]
 position = Vector2(952, 520)
@@ -1149,51 +1130,27 @@ destination_door = NodePath("../../Room35/DoorUp")
 
 [node name="Spider" parent="Map/Room25" unique_id=871961312 instance=ExtResource("14_ndhn8")]
 position = Vector2(312, 200)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_wtvjn")
 health_stats_script = SubResource("Resource_ln31g")
 interaction_and_attack_stats_script = SubResource("Resource_v7si3")
-destroy_entity_after_die = null
 
 [node name="Spider2" parent="Map/Room25" unique_id=144696867 instance=ExtResource("14_ndhn8")]
 position = Vector2(1288, 184)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_ray5m")
 health_stats_script = SubResource("Resource_1twjm")
 interaction_and_attack_stats_script = SubResource("Resource_wkiri")
-destroy_entity_after_die = null
 
 [node name="Spider3" parent="Map/Room25" unique_id=984517003 instance=ExtResource("14_ndhn8")]
 position = Vector2(264, 808)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_av66l")
 health_stats_script = SubResource("Resource_e41jd")
 interaction_and_attack_stats_script = SubResource("Resource_22q3c")
-destroy_entity_after_die = null
 
 [node name="Spider4" parent="Map/Room25" unique_id=1734148899 instance=ExtResource("14_ndhn8")]
 position = Vector2(1680, 880)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_r55e4")
 health_stats_script = SubResource("Resource_qrinu")
 interaction_and_attack_stats_script = SubResource("Resource_6o3jn")
-destroy_entity_after_die = null
 
 [node name="Room31" parent="Map" unique_id=1898943010 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1319,27 +1276,15 @@ destination_door = NodePath("../../Room45/DoorLeft")
 
 [node name="Spider" parent="Map/Room44" unique_id=1935206072 instance=ExtResource("14_ndhn8")]
 position = Vector2(1472, 256)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_hnsvy")
 health_stats_script = SubResource("Resource_6w1ys")
 interaction_and_attack_stats_script = SubResource("Resource_ho5d1")
-destroy_entity_after_die = null
 
 [node name="Spider2" parent="Map/Room44" unique_id=1345406238 instance=ExtResource("14_ndhn8")]
 position = Vector2(1472, 904)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_6w18y")
 health_stats_script = SubResource("Resource_bah5s")
 interaction_and_attack_stats_script = SubResource("Resource_bh8qg")
-destroy_entity_after_die = null
 
 [node name="ItemPickup" parent="Map/Room44" unique_id=1572277518 instance=ExtResource("14_x51g6")]
 position = Vector2(256, 200)
@@ -1367,16 +1312,10 @@ destination_door = NodePath("../../Room44/DoorRight")
 [node name="MegaSpider" parent="Map/Room45" unique_id=2004969902 instance=ExtResource("14_ndhn8")]
 position = Vector2(960, 544)
 scale = Vector2(2, 2)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_t5fan")
 health_stats_script = SubResource("Resource_x5jnv")
 interaction_and_attack_stats_script = SubResource("Resource_rw6de")
 loot_drop_script = SubResource("Resource_wxccy")
-destroy_entity_after_die = null
 
 [node name="Room51" parent="Map" unique_id=186025939 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1562,40 +1501,25 @@ destination_door = NodePath("../../Room74/DoorRight")
 [node name="MegaSpider" parent="Map/Room75" unique_id=1258055663 instance=ExtResource("14_ndhn8")]
 position = Vector2(1496, 544)
 scale = Vector2(4, 4)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
+min_stopping_distance = 220.0
+attack_reach = 265.0
 movement_universal_script = SubResource("Resource_orv6l")
 health_stats_script = SubResource("Resource_la40l")
 interaction_and_attack_stats_script = SubResource("Resource_m46o3")
 loot_drop_script = SubResource("Resource_hpgrf")
-destroy_entity_after_die = null
+combat_radius = 160.0
 
 [node name="Spider" parent="Map/Room75" unique_id=1345325751 instance=ExtResource("14_ndhn8")]
 position = Vector2(704, 200)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_rtpo8")
 health_stats_script = SubResource("Resource_bc7dr")
 interaction_and_attack_stats_script = SubResource("Resource_krtsk")
-destroy_entity_after_die = null
 
 [node name="Spider2" parent="Map/Room75" unique_id=404036365 instance=ExtResource("14_ndhn8")]
 position = Vector2(704, 896)
-wanderRadius = null
-wanderIntervalMin = null
-wanderIntervalMax = null
-rotationSpeed = null
-detectionDistance = null
 movement_universal_script = SubResource("Resource_i16qa")
 health_stats_script = SubResource("Resource_gy1ms")
 interaction_and_attack_stats_script = SubResource("Resource_886dt")
-destroy_entity_after_die = null
 
 [editable path="Map/Room03_TestSecretRoom/Chest(Building)"]
 [editable path="Map/Room15/Chest"]

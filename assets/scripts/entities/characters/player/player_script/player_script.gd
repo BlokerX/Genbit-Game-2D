@@ -92,7 +92,7 @@ var is_holding_attack: bool = false
 
 #region Pchnięcie
 
-## Siła z jaką gracz popycha obiekty fizyczne
+## Siła z jaką gracz popycha obiekty fizyczne (5.0-ciężki tłum, 10.0-standard, 20.0-taran)
 @export var push_force: float = 10.0
 
 #endregion
@@ -215,8 +215,16 @@ func _handle_pushing() -> void:
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
 		
+		# 1. Popychanie zwykłych obiektów fizycznych (upuszczony loot, skrzynki fizyczne)
 		if collider is RigidBody2D:
 			collider.apply_central_impulse(-collision.get_normal() * push_force)
+			
+		# 2. Popychanie Wrogów (np. pająków) - NATURALNE PRZEPYCHANIE
+		elif collider is EnemyEntity:
+			# Zamiast wstrzykiwać prędkość, wymuszamy gładkie przesunięcie o ułamek piksela.
+			# Mnożnik 0.2 przy push_force (10.0) przesuwa wroga o 2 piksele na klatkę.
+			# Dzięki użyciu move_and_collide pająk nie przejdzie przez ścianę, jeśli go do niej dociśniesz!
+			collider.move_and_collide(-collision.get_normal() * (push_force * 0.2))
 
 func _handle_dropping(delta: float) -> void:
 	if Input.is_action_pressed(INPUT_DROP_ITEM):
@@ -510,7 +518,13 @@ func perform_attack() -> void:
 	if max_attack_distance <= 0.0:
 		return 
 		
-	var distance_to_enemy = global_position.distance_to(target_enemy.global_position)
+	# Mierzymy pustą przestrzeń między krawędziami (Edge-to-Edge)
+	var target_radius = 40.0
+	if "combat_radius" in target_enemy:
+		target_radius = target_enemy.combat_radius
+		
+	var distance_to_enemy = max(0.0, global_position.distance_to(target_enemy.global_position) - (combat_radius + target_radius))
+	
 	var has_los = aim_controller.has_line_of_sight(target_enemy)
 
 	if attack_component:
@@ -532,12 +546,10 @@ func perform_attack() -> void:
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	var _item = inventory.get_current_item()
-	# Wyciągamy dane z pudełka
 	var _item_data = _item.data if _item != null else null
 	
-	if _item_data is ItemWeapon: # Używamy _item_data!
-		return aim_controller.aim_distance * _item_data.attack_data.max_range
-	elif _item_data == null:
+	# --- NAPRAWA: Zasięg pobierany bezpośrednio ze statystyk, bez kosmicznych mnożników! ---
+	if _item_data is ItemWeapon or _item_data == null:
 		return float(interaction_and_attack_stats_script.get_total_range())
 	else:
 		return 0.0

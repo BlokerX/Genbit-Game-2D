@@ -28,6 +28,9 @@ var wanderTarget: Vector2 = Vector2.ZERO
 var lastKnownPos : Vector2 = Vector2.ZERO
 var hasLastKnownPos : bool = false
 
+# --- ZABEZPIECZENIE PRZED PRZYKLEJANIEM: Pająk zatrzymuje się 40 pikseli przed graczem ---
+@export var min_stopping_distance : float = 95.0
+
 enum State {IDLE, CHASING, SEARCHING}
 var state: State = State.IDLE
 #endregion
@@ -104,27 +107,27 @@ func _physics_process(delta):
 				wanderTimer = randf_range(wanderIntervalMin, wanderIntervalMax)
 				state = State.IDLE
 	#endregion
-
+	
 	#region Obrót i ruch
-	var should_move = (state == State.CHASING or state == State.SEARCHING) and not navigation_agent.is_navigation_finished()
-
+	
+	# Używamy ujednoliconej funkcji z EnemyEntity!
+	var edge_distance = get_edge_distance_to_target()
+	
+	# Pająk rusza się tylko, gdy odległość między krawędziami jest większa niż min_stopping_distance
+	var should_move = (state == State.CHASING or state == State.SEARCHING) and not navigation_agent.is_navigation_finished() and edge_distance > min_stopping_distance
+	
 	# Obraca się na bieżąco w stronę gracza, ale tylko w stanie gonitwy (CHASING)
 	if state == State.CHASING and can_see:
 		var target_angle = global_position.angle_to_point(target.global_position)
 		rotation = lerp_angle(rotation, target_angle, rotationSpeed * delta)
-		
+	
 	if should_move:
-		# Get the next position in the path
 		var next_path_position = navigation_agent.get_next_path_position()
-
-		# Calculate direction to next waypoint
 		var direction = global_position.direction_to(next_path_position)
-			
-		# --- Użycie komponentu z obliczonym wektorem kierunku do ruchu ---
 		velocity = movement_universal_script.movement_procedure(delta, velocity, direction)
 	else:
-		# Wytracanie prędkości, gdy pająk ma stać w miejscu
+		# Wytracanie prędkości, gdy pająk ma stać w miejscu przed celem
 		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2.ZERO)
-			
+	
 	move_and_slide()
 	#endregion

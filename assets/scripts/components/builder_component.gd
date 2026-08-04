@@ -177,21 +177,51 @@ func try_place_object() -> bool:
 
 # Wewnętrzna funkcja sprawdzająca kolizje (podświetla na zielono/czerwono).
 func _validate_placement() -> void:
+	can_place_here = true
+	var is_blocked = false
 	var area = ghost_instance.get_node_or_null("BuildArea")
 	
 	if area and area is Area2D:
-		var overlapping_bodies = area.get_overlapping_bodies()
-		var overlapping_areas = area.get_overlapping_areas()
-		
-		if overlapping_bodies.size() > 0 or overlapping_areas.size() > 0:
-			can_place_here = false
-			_update_ghost_color(Color(1.0, 0.0, 0.0, 0.75))
+		var col_shape = area.get_node_or_null("CollisionShape2D")
+		if col_shape and col_shape.shape:
+			# NATYCHMIASTOWE ZAPYTANIE DO SILNIKA FIZYKI (Naprawa błędu 1-ticka)
+			var space_state = ghost_instance.get_world_2d().direct_space_state
+			var query = PhysicsShapeQueryParameters2D.new()
+			query.shape = col_shape.shape
+			query.transform = col_shape.global_transform
+			query.collision_mask = area.collision_mask
+			query.collide_with_bodies = true
+			query.collide_with_areas = true # Sprawdzamy też obszary innych budynków
+			
+			var results = space_state.intersect_shape(query)
+			
+			for res in results:
+				var collider = res.collider
+				
+				# Ignorujemy samego ducha i jego własne pola
+				if collider == ghost_instance or collider.get_parent() == ghost_instance:
+					continue
+					
+				# --- UX TIP: Ignorujemy leżące na ziemi przedmioty ---
+				if collider is ItemPickup:
+					continue
+					
+				# Jeśli trafiliśmy na jakąkolwiek inną ścianę, wroga lub skrzynię - BLOKUJEMY
+				is_blocked = true
+				break
 		else:
-			can_place_here = true
-			_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75))
+			# Fallback, jeśli nie ma CollisionShape2D
+			for body in area.get_overlapping_bodies():
+				if not body is ItemPickup and body != ghost_instance:
+					is_blocked = true
+					break
+
+	if is_blocked:
+		can_place_here = false
+		_update_ghost_color(Color(1.0, 0.0, 0.0, 0.75)) # Czerwony - Zablokowane
 	else:
 		can_place_here = true
-		_update_ghost_color(Color(1.0, 1.0, 1.0, 0.75))
+		_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75)) # Zielony - Wolne
 
 func _update_ghost_color(color: Color) -> void:
 	if "modulate" in ghost_instance:
