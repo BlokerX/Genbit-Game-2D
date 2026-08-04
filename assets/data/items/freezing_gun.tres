@@ -3,14 +3,14 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_opd0k"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="2_v43kk"]
 [ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/active_effects/freeze_effect.gd" id="3_q4a0c"]
-[ext_resource type="Texture2D" uid="uid://cgk5oysyttlvb" path="res://assets/textures/samples_examples/freezing_gun_test.png" id="4_opd0k"]
-[ext_resource type="Texture2D" uid="uid://dh0frexf3gfjw" path="res://assets/textures/samples_examples/blue_potion.png" id="5_v43kk"]
+[ext_resource type="Texture2D" uid="uid://cgk5oysyttlvb" path="res://assets/textures/samples_examples/items/freezing_gun_test.png" id="4_v43kk"]
+[ext_resource type="Texture2D" uid="uid://drjwe3l8bsy5y" path="res://assets/textures/samples_examples/iced_bullet.png" id="5_q4a0c"]
 [ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="6_q4a0c"]
 
 [sub_resource type="Resource" id="Resource_hnsvy"]
 script = ExtResource("1_opd0k")
 damage = 1
-max_range = 100.0
+max_range = 150.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [sub_resource type="Resource" id="Resource_d4pv6"]
@@ -19,9 +19,9 @@ metadata/_custom_type_script = "uid://byffpv3e7benb"
 
 [resource]
 script = ExtResource("6_q4a0c")
-projectile_texture = ExtResource("5_v43kk")
+projectile_texture = ExtResource("5_q4a0c")
 projectile_speed = 600.0
-projectile_lifetime = 0.5
+projectile_lifetime = 1.0
 attack_data = SubResource("Resource_hnsvy")
 is_ranged = true
 weapon_type = "Gun"
@@ -31,4 +31,4 @@ item_id = 9
 item_name = "Freezing Gun"
 item_type = "Weapon"
 item_description = "A freezing machine."
-item_icon = ExtResource("4_opd0k")
+item_icon = ExtResource("4_v43kk")

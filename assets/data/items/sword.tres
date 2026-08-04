@@ -3,15 +3,15 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_5ah6c"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jqv1w"]
 [ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_w0gi6"]
-[ext_resource type="Texture2D" uid="uid://c2minq0svvhxc" path="res://assets/textures/samples_examples/other_sword.png" id="2_16hix"]
+[ext_resource type="Texture2D" uid="uid://c2minq0svvhxc" path="res://assets/textures/samples_examples/items/other_sword.png" id="3_5ah6c"]
 
 [sub_resource type="Resource" id="Resource_14dwk"]
 script = ExtResource("1_5ah6c")
 damage = 20
 critical_damage = 5
 critical_rate = 0.3
-max_range = 1.5
-stun_time = null
+max_range = 95.0
+stun_time = 0.7
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]
@@ -21,5 +21,5 @@ item_id = 6
 item_name = "Sword"
 item_type = "Weapon"
 item_description = "It deals 20 damage and its maximum durability is 25."
-item_icon = ExtResource("2_16hix")
+item_icon = ExtResource("3_5ah6c")
 max_durable = 20

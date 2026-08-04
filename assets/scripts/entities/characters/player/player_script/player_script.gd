@@ -445,8 +445,8 @@ func on_inventory_update() :
 	if current_item != null and current_item.data is UseableItem:
 		var useable_data = current_item.data as UseableItem
 		
-		# Teraz pobieramy statystyki bezpiecznie z useable_data
-		interaction_and_attack_stats_script.actual_cooldown = useable_data.use_cooldown
+		# --- UŻYWAMY NOWEJ FUNKCJI DO BEZPIECZNEJ ZMIANY COOLDOWNU! ---
+		interaction_and_attack_stats_script.change_item_cooldown(useable_data.use_cooldown)
 		
 		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU
 		if "effects" in useable_data:
@@ -455,8 +455,9 @@ func on_inventory_update() :
 		if useable_data is ItemWeapon:
 			interaction_and_attack_stats_script.actual_attack_data = useable_data.attack_data
 	else:
-		# Jeśli to zwykły ItemData bez cooldownu, wracamy do limitu z pustych rąk
-		interaction_and_attack_stats_script.actual_cooldown = interaction_and_attack_stats_script.hand_attack_cooldown
+		# --- UŻYWAMY NOWEJ FUNKCJI RÓWNIEŻ DLA PUSTYCH RĄK! ---
+		interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
+		
 		interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data
 		# Puste ręce nie mają dodatkowych efektów
 		interaction_and_attack_stats_script.actual_extra_effects = []

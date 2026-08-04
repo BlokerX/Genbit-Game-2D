@@ -9,7 +9,7 @@
 [ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="6_6qfpg"]
 [ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_tctd7"]
 [ext_resource type="Resource" uid="uid://1w0yjy4ykkyp" path="res://assets/data/items/escape_potion.tres" id="8_kysok"]
-[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/stone_cross.png" id="9_jo8vf"]
+[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/items/stone_cross.png" id="9_jo8vf"]
 [ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="10_bj1ji"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="11_aa4ru"]
 [ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="12_tctd7"]

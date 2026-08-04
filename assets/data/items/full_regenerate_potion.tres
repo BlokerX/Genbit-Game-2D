@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jlayc"]
 [ext_resource type="Script" uid="uid://c7l5kqe6qpcqt" path="res://assets/scripts/entities/effects/full_restore_effect.gd" id="2_jlayc"]
-[ext_resource type="Texture2D" uid="uid://b8grgj8hph8s0" path="res://assets/textures/samples_examples/green_health_potion.png" id="3_6rf7q"]
+[ext_resource type="Texture2D" uid="uid://b8grgj8hph8s0" path="res://assets/textures/samples_examples/items/green_health_potion.png" id="3_6rf7q"]
 [ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_nliqv"]
 
 [sub_resource type="Resource" id="Resource_dpgun"]

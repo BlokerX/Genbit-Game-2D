@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="BackpackItem" format=3 uid="uid://1ill1kife1mh"]
 
-[ext_resource type="Texture2D" uid="uid://ddovyjgmvao5e" path="res://assets/textures/samples_examples/black_backpack.png" id="1_uugvb"]
+[ext_resource type="Texture2D" uid="uid://ddovyjgmvao5e" path="res://assets/textures/samples_examples/items/black_backpack.png" id="1_uugvb"]
 [ext_resource type="Script" uid="uid://bx57ryojee8n2" path="res://assets/scripts/entities/items/backpack_item.gd" id="2_8g1pa"]
 
 [resource]

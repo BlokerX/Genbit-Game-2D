@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://by75yrn6lcipi" path="res://assets/scripts/ui/active_effects_ui.gd" id="5_0krbe"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="5_wsqjt"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="6_7hw8a"]
-[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="7_oh07v"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="7_oh07v"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="8_gr8ix"]
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="9_ww3fo"]
 [ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/crafting_ui.tscn" id="10_1xjul"]
@@ -25,6 +25,8 @@
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="16_tdd8s"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="17_2seqv"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="18_jwwkk"]
+[ext_resource type="Texture2D" uid="uid://da1fo61w5i54r" path="res://assets/textures/samples_examples/door/black_door.png" id="20_6c7pm"]
+[ext_resource type="Texture2D" uid="uid://cadftf52v2b8n" path="res://assets/textures/samples_examples/door/white_door.png" id="20_7ttlc"]
 [ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="26_yg0s7"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="27_ln31g"]
 [ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="28_bkki6"]
@@ -42,9 +44,11 @@
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="38_nkt6r"]
 [ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="40_wkiri"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="47_l4vby"]
-[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="57_vamu6"]
+[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="57_vamu6"]
+[ext_resource type="Texture2D" uid="uid://d3kfsdewvs8fp" path="res://assets/textures/samples_examples/door/light_blue_door.png" id="57_wxccy"]
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="58_0krbe"]
 [ext_resource type="Resource" uid="uid://b8exeqhxd52o2" path="res://assets/data/items/chest.tres" id="59_6i6mq"]
+[ext_resource type="Texture2D" uid="uid://7fas83p0mjp3" path="res://assets/textures/samples_examples/door/red_door.png" id="59_l4vby"]
 [ext_resource type="Resource" uid="uid://da8e3nm1q40f6" path="res://assets/data/items/backpack.tres" id="60_fesh0"]
 [ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="61_wtvjn"]
 [ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/chest.tscn" id="62_6i6mq"]
@@ -764,6 +768,9 @@ position = Vector2(958, 1056)
 rotation = -3.1415925
 destination_door = NodePath("../../Room13_StartRoom/DoorUp")
 
+[node name="Sprite2D" parent="Map/Room03_TestSecretRoom/DoorDown" index="0" unique_id=338021962]
+texture = ExtResource("20_7ttlc")
+
 [node name="InfinitySpider" parent="Map/Room03_TestSecretRoom" unique_id=1198211542 instance=ExtResource("14_ndhn8")]
 position = Vector2(960, 156)
 rotation = 1.5707964
@@ -1184,6 +1191,9 @@ position = Vector2(960, 1056)
 rotation = -3.1415925
 destination_door = NodePath("../../Room45/DoorUp")
 
+[node name="Sprite2D" parent="Map/Room35/DoorDown" index="0" unique_id=338021962]
+texture = ExtResource("20_6c7pm")
+
 [node name="ItemPickup" parent="Map/Room35" unique_id=269641304 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 576)
 test_item_data = ExtResource("36_nadtx")
@@ -1275,6 +1285,9 @@ position = Vector2(1888, 544)
 rotation = 1.5707964
 destination_door = NodePath("../../Room45/DoorLeft")
 
+[node name="Sprite2D" parent="Map/Room44/DoorRight" index="0" unique_id=338021962]
+texture = ExtResource("20_6c7pm")
+
 [node name="Spider" parent="Map/Room44" unique_id=1935206072 instance=ExtResource("14_ndhn8")]
 position = Vector2(1472, 256)
 movement_universal_script = SubResource("Resource_hnsvy")
@@ -1305,10 +1318,16 @@ map_position = Vector2i(5, 4)
 position = Vector2(960, 32)
 destination_door = NodePath("../../Room35/DoorDown")
 
+[node name="Sprite2D" parent="Map/Room45/DoorUp" index="0" unique_id=338021962]
+texture = ExtResource("20_6c7pm")
+
 [node name="DoorLeft" parent="Map/Room45" unique_id=1060170890 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
 position = Vector2(32, 544)
 rotation = -1.5707964
 destination_door = NodePath("../../Room44/DoorRight")
+
+[node name="Sprite2D" parent="Map/Room45/DoorLeft" index="0" unique_id=338021962]
+texture = ExtResource("20_6c7pm")
 
 [node name="MegaSpider" parent="Map/Room45" unique_id=2004969902 instance=ExtResource("14_ndhn8")]
 position = Vector2(960, 544)
@@ -1390,6 +1409,9 @@ position = Vector2(960, 1056)
 rotation = -3.1415925
 destination_door = NodePath("../../Room71/DoorUp")
 
+[node name="Sprite2D" parent="Map/Room61/DoorDown" index="0" unique_id=338021962]
+texture = ExtResource("57_wxccy")
+
 [node name="SimplePotion" parent="Map/Room61" unique_id=2101736203 instance=ExtResource("14_x51g6")]
 position = Vector2(960, 544)
 test_item_data = ExtResource("34_1gk60")
@@ -1435,10 +1457,16 @@ map_position = Vector2i(1, 7)
 position = Vector2(960, 32)
 destination_door = NodePath("../../Room61/DoorDown")
 
+[node name="Sprite2D" parent="Map/Room71/DoorUp" index="0" unique_id=338021962]
+texture = ExtResource("57_wxccy")
+
 [node name="DoorRight" parent="Map/Room71" unique_id=1859156537 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
 position = Vector2(1888, 544)
 rotation = 1.5707964
 destination_door = NodePath("../../Room74/DoorLeft")
+
+[node name="Sprite2D" parent="Map/Room71/DoorRight" index="0" unique_id=338021962]
+texture = ExtResource("57_wxccy")
 
 [node name="RoomLabel" type="Label" parent="Map/Room71" unique_id=1835707532]
 texture_filter = 6
@@ -1473,7 +1501,6 @@ item_to_drop = SubResource("Resource_8bv4t")
 slots = Array[ExtResource("63_fesh0")]([SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t")])
 
 [node name="Room74" parent="Map" unique_id=1643355136 instance=ExtResource("12_jjq1y")]
-visible = false
 map_position = Vector2i(4, 7)
 
 [node name="DoorUp" parent="Map/Room74" unique_id=131744984 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
@@ -1485,10 +1512,16 @@ position = Vector2(32, 544)
 rotation = -1.5707964
 destination_door = NodePath("../../Room71/DoorRight")
 
+[node name="Sprite2D" parent="Map/Room74/DoorLeft" index="0" unique_id=338021962]
+texture = ExtResource("57_wxccy")
+
 [node name="DoorRight" parent="Map/Room74" unique_id=27173218 node_paths=PackedStringArray("destination_door") instance=ExtResource("13_obi6l")]
 position = Vector2(1888, 544)
 rotation = 1.5707964
 destination_door = NodePath("../../Room75/DoorLeft")
+
+[node name="Sprite2D" parent="Map/Room74/DoorRight" index="0" unique_id=338021962]
+texture = ExtResource("59_l4vby")
 
 [node name="Room75" parent="Map" unique_id=1303196059 instance=ExtResource("12_jjq1y")]
 visible = false
@@ -1498,6 +1531,9 @@ map_position = Vector2i(5, 7)
 position = Vector2(32, 544)
 rotation = -1.5707964
 destination_door = NodePath("../../Room74/DoorRight")
+
+[node name="Sprite2D" parent="Map/Room75/DoorLeft" index="0" unique_id=338021962]
+texture = ExtResource("59_l4vby")
 
 [node name="MegaSpider" parent="Map/Room75" unique_id=1258055663 instance=ExtResource("14_ndhn8")]
 position = Vector2(1496, 544)
@@ -1522,7 +1558,18 @@ movement_universal_script = SubResource("Resource_i16qa")
 health_stats_script = SubResource("Resource_gy1ms")
 interaction_and_attack_stats_script = SubResource("Resource_886dt")
 
+[editable path="Map/Room03_TestSecretRoom/DoorDown"]
 [editable path="Map/Room03_TestSecretRoom/Chest(Building)"]
 [editable path="Map/Room15/Chest"]
+[editable path="Map/Room35/DoorDown"]
 [editable path="Map/Room43/Chest"]
+[editable path="Map/Room44/DoorRight"]
+[editable path="Map/Room45/DoorUp"]
+[editable path="Map/Room45/DoorLeft"]
+[editable path="Map/Room61/DoorDown"]
+[editable path="Map/Room71/DoorUp"]
+[editable path="Map/Room71/DoorRight"]
 [editable path="Map/Room71/Chest"]
+[editable path="Map/Room74/DoorLeft"]
+[editable path="Map/Room74/DoorRight"]
+[editable path="Map/Room75/DoorLeft"]

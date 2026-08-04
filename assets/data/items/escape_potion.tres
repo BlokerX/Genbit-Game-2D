@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_0yuyv"]
 [ext_resource type="Script" uid="uid://blbmtjd4674n5" path="res://assets/scripts/entities/effects/insta_kill_effect.gd" id="2_0yuyv"]
-[ext_resource type="Texture2D" uid="uid://c7t6q4tmeydge" path="res://assets/textures/samples_examples/black_potion.png" id="3_0yuyv"]
+[ext_resource type="Texture2D" uid="uid://c7t6q4tmeydge" path="res://assets/textures/samples_examples/items/black_potion.png" id="3_0yuyv"]
 [ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_5n5r6"]
 
 [sub_resource type="Resource" id="Resource_07t2i"]

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cly3qdibifi7w" path="res://assets/scripts/entities/items/item_pickup.gd" id="1_wtsmv"]
 [ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="2_pethx"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="3_6y1va"]
-[ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/_blank_item.png" id="3_pethx"]
+[ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/items/_blank_item.png" id="3_pethx"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_wtsmv"]
 friction = 0.1

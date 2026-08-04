@@ -146,17 +146,34 @@ func get_all_attack_effects() -> Array[Effect]:
 	reset_cooldown()
 	return all_effects
 
+# --- NOWA FUNKCJA ZMIANY PRZEDMIOTU ---
+func change_item_cooldown(new_cooldown: float) -> void:
+	actual_cooldown = new_cooldown
+	
+	# Natychmiastowe odświeżenie UI przy zmianie slotu
+	if cooldown_timer >= get_total_actual_cooldown():
+		cooldown_ready.emit()
+	else:
+		cooldown_started.emit()
+
+
+# --- ZAKTUALIZOWANA FUNKCJA ODLICZANIA (GLOBALNY ZEGAR) ---
 func interaction_cooldown_process(delta : float) -> void :
 	var max_cooldown = get_total_actual_cooldown()
+	var was_ready = cooldown_timer >= max_cooldown
 	
-	# Jeśli timer jest mniejszy niż max, to znaczy, że odnawiamy atak
-	if cooldown_timer < max_cooldown:
+	# MAGIA: Czas płynie zawsze, niezależnie od tego, co trzymasz w dłoni!
+	# Nie ucinamy go już do 'max_cooldown' obecnej broni.
+	# Zabezpieczamy go tylko bezpiecznym limitem (np. 60 sekund), żeby 
+	# zmienna nie rosła w nieskończoność, gdy gracz stoi w miejscu przez godzinę.
+	if cooldown_timer < 60.0:
 		cooldown_timer += delta
 		
-		# Jeśli po dodaniu czasu z tej klatki właśnie osiągnęliśmy lub przekroczyliśmy max...
-		if cooldown_timer >= max_cooldown:
-			cooldown_timer = max_cooldown # Wyrównujemy do równego maksimum
-			cooldown_ready.emit() # ...wysyłamy sygnał gotowości TYLKO RAZ!
+	var is_ready = cooldown_timer >= max_cooldown
+	
+	# Wysyłamy sygnał gotowości do UI TYLKO W MOMENCIE przejścia paska
+	if not was_ready and is_ready:
+		cooldown_ready.emit()
 
 ## Ustawia cooldown timer aby odliczał od początku.
 func reset_cooldown() -> void:

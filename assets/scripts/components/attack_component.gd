@@ -50,8 +50,14 @@ func _handle_ranged_attack(shooter: CharacterEntity, target: Node2D, weapon_data
 	new_projectile.shooter = shooter
 	new_projectile.global_position = shooter.global_position
 	
+	# Obliczenie wektora kierunku
 	var shoot_dir = shooter.global_position.direction_to(target.global_position)
 	new_projectile.direction = shoot_dir
+	
+	# --- NOWOŚĆ: Korekta rotacji pocisku ---
+	# shoot_dir.angle() oblicza kąt do celu, a PI / 2.0 (90 stopni) koryguje fakt,
+	# że oryginalna grafika pocisku patrzy domyślnie w górę zamiast w prawo.
+	new_projectile.rotation = shoot_dir.angle() + (PI / 2.0)
 	
 	if "effects_to_apply" in new_projectile:
 		new_projectile.effects_to_apply = generated_effects

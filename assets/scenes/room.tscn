@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://vp0vroyyx208" path="res://assets/scripts/map_system/room.gd" id="1_l3nri"]
 [ext_resource type="Shader" uid="uid://dhdace02w454n" path="res://assets/shaders/wood.gdshader" id="2_pl0hj"]
-[ext_resource type="Texture2D" uid="uid://dg1csp7v0jbrm" path="res://assets/textures/samples_examples/wood_planks_big_single.png" id="3_yursh"]
-[ext_resource type="Texture2D" uid="uid://cres07hr3d2gp" path="res://assets/textures/samples_examples/concrete_tiles_big.png" id="4_l852n"]
-[ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/test_tileset.png" id="5_8jlt0"]
+[ext_resource type="Texture2D" uid="uid://dg1csp7v0jbrm" path="res://assets/textures/samples_examples/tilesets/wood_planks_big_single.png" id="3_yursh"]
+[ext_resource type="Texture2D" uid="uid://cres07hr3d2gp" path="res://assets/textures/samples_examples/tilesets/concrete_tiles_big.png" id="4_l852n"]
+[ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/tilesets/test_tileset.png" id="5_8jlt0"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_r7ala"]
 shader = ExtResource("2_pl0hj")
