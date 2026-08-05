@@ -7,15 +7,19 @@
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="5_u84jc"]
 [ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="6_yfi7d"]
 [ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="7_2tf2h"]
+[ext_resource type="Texture2D" uid="uid://d2bmsjlmavcat" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_right.png" id="7_f0e17"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/components/inventory.gd" id="8_2tf2h"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="8_hsamt"]
 [ext_resource type="Texture2D" uid="uid://c4bw7p50ib1ff" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_right.png" id="8_rrkuk"]
 [ext_resource type="Texture2D" uid="uid://cgcrhsef8d5pn" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back.png" id="9_jf6n8"]
+[ext_resource type="Texture2D" uid="uid://xkgbe5eaic1s" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_right.png" id="9_xflxm"]
 [ext_resource type="Texture2D" uid="uid://clte5xhfgckqh" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_left.png" id="10_f0e17"]
 [ext_resource type="Script" uid="uid://b0q3xpan0bpxk" path="res://assets/scripts/components/player_aim_controller.gd" id="10_jf6n8"]
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="11_b3dqe"]
+[ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="11_npq60"]
 [ext_resource type="Script" uid="uid://cpra3wi61tf27" path="res://assets/scripts/components/builder_component.gd" id="11_yfi7d"]
+[ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="13_jnpjv"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xflxm"]
 animations = [{
@@ -24,13 +28,25 @@ animations = [{
 "texture": ExtResource("7_2tf2h")
 }, {
 "duration": 1.0,
+"texture": ExtResource("7_f0e17")
+}, {
+"duration": 1.0,
 "texture": ExtResource("8_rrkuk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_xflxm")
 }, {
 "duration": 1.0,
 "texture": ExtResource("9_jf6n8")
 }, {
 "duration": 1.0,
+"texture": ExtResource("11_npq60")
+}, {
+"duration": 1.0,
 "texture": ExtResource("10_f0e17")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_jnpjv")
 }],
 "loop": true,
 "name": &"default",
@@ -50,13 +66,11 @@ attack_component = NodePath("AttackComponent")
 inventory = NodePath("Inventory")
 item_thrower_component = NodePath("ItemThrowerComponent")
 builder_component = NodePath("BuilderComponent")
-push_force = null
 respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("3_hsamt")
 health_stats_script = ExtResource("4_b3dqe")
 interaction_and_attack_stats_script = ExtResource("5_u84jc")
 loot_drop_script = ExtResource("6_yfi7d")
-combat_radius = null
 character_sprite = NodePath("CharacterAnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
@@ -66,8 +80,7 @@ texture_filter = 5
 scale = Vector2(0.45, 0.45)
 sprite_frames = SubResource("SpriteFrames_xflxm")
 
-[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("7_oet4l")]
-target_sprite = NodePath("")
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_collision") instance=ExtResource("7_oet4l")]
 target_collision = NodePath("../CollisionShape2D")
 
 [node name="EffectsCollector" type="Node" parent="." unique_id=768136432]

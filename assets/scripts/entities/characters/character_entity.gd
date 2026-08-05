@@ -110,7 +110,7 @@ func remove_effect_by_name(eff_name: String) -> void:
 
 #region Silnik animacji
 
-## Zmienia klatkę animacji w zależności od wektora ruchu
+## Zmienia klatkę animacji w zależności od 8-kierunkowego wektora ruchu
 func _update_sprite_direction(move_dir: Vector2) -> void:
 	# Zabezpieczenie przed brakiem przypisanego sprite'a
 	if not character_sprite:
@@ -120,18 +120,27 @@ func _update_sprite_direction(move_dir: Vector2) -> void:
 	if move_dir == Vector2.ZERO:
 		return
 
-	# Analizujemy, w której osi entity porusza się szybciej, aby obsłużyć "skosy"
-	if abs(move_dir.x) > abs(move_dir.y):
-		# Ruch poziomy
-		if move_dir.x > 0:
-			character_sprite.frame = 1 # Prawo
-		else:
-			character_sprite.frame = 3 # Lewo
-	else:
-		# Ruch pionowy
-		if move_dir.y > 0:
-			character_sprite.frame = 0 # Dół
-		else:
-			character_sprite.frame = 2 # Góra
+	# Normalizujemy wektor i zaokrąglamy go (round). 
+	# Dzięki temu z ułamków zrobimy idealne wektory kierunkowe (np. Vector2(1, 1), Vector2(0, -1))
+	var snapped_dir = move_dir.normalized().round()
+
+	# Dopasowujemy zaokrąglony wektor do 8 klatek (ruch przeciwny do wskazówek zegara)
+	match snapped_dir:
+		Vector2(0, 1):   # Dół
+			character_sprite.frame = 0
+		Vector2(1, 1):   # Dół-Prawo
+			character_sprite.frame = 1
+		Vector2(1, 0):   # Prawo
+			character_sprite.frame = 2
+		Vector2(1, -1):  # Góra-Prawo
+			character_sprite.frame = 3
+		Vector2(0, -1):  # Góra
+			character_sprite.frame = 4
+		Vector2(-1, -1): # Góra-Lewo
+			character_sprite.frame = 5
+		Vector2(-1, 0):  # Lewo
+			character_sprite.frame = 6
+		Vector2(-1, 1):  # Dół-Lewo
+			character_sprite.frame = 7
 
 #endregion
