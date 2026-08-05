@@ -18,9 +18,13 @@
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="17_rr1d6"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="18_wwhbf"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="19_fcdbf"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="19_yufsd"]
 [ext_resource type="Texture2D" uid="uid://cadftf52v2b8n" path="res://assets/textures/samples_examples/door/white_door.png" id="20_1l5b4"]
+[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="20_lngr2"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="21_6knmq"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="21_jlqtn"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="22_gx4lf"]
+[ext_resource type="Script" uid="uid://chlfbfwe1orr8" path="res://assets/scripts/entities/effects/active_effects/liliput_effect.gd" id="22_lngr2"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="23_i20sb"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="24_s5o2q"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="25_xgw8r"]
@@ -65,6 +69,21 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="Resource" id="Resource_f5082"]
+script = ExtResource("20_lngr2")
+metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
+
+[sub_resource type="Resource" id="Resource_nll8k"]
+script = ExtResource("21_6knmq")
+heal_per_tick = 1
+tick_interval = 0.025
+metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
+
+[sub_resource type="Resource" id="Resource_63tgo"]
+script = ExtResource("22_lngr2")
+scale_modifier = 0.6
+metadata/_custom_type_script = "uid://chlfbfwe1orr8"
 
 [sub_resource type="Resource" id="Resource_rwyo8"]
 resource_local_to_scene = true
@@ -758,32 +777,36 @@ starting_room = NodePath("Room13_StartRoom")
 reset_map_history_on_respawn = false
 auto_door_scene = ExtResource("19_fcdbf")
 
-[node name="Room03_TestSecretRoom" parent="Map" unique_id=1124479501 instance=ExtResource("18_wwhbf")]
+[node name="Room03_DebugRoom" parent="Map" unique_id=1124479501 instance=ExtResource("18_wwhbf")]
 map_position = Vector2i(3, 0)
+room_type = 5
 is_secret = true
+ignore_combat_lock = true
+ambient_aura_effects = Array[ExtResource("19_yufsd")]([SubResource("Resource_f5082"), SubResource("Resource_nll8k")])
+sticky_entry_effects = Array[ExtResource("19_yufsd")]([SubResource("Resource_63tgo")])
 
-[node name="DoorDown" parent="Map/Room03_TestSecretRoom" unique_id=406558948 instance=ExtResource("19_fcdbf")]
+[node name="DoorDown" parent="Map/Room03_DebugRoom" unique_id=406558948 instance=ExtResource("19_fcdbf")]
 position = Vector2(958, 1056)
 rotation = -3.1415925
 door_direction = 2
 
-[node name="Sprite2D" parent="Map/Room03_TestSecretRoom/DoorDown" index="0" unique_id=338021962]
+[node name="Sprite2D" parent="Map/Room03_DebugRoom/DoorDown" index="0" unique_id=338021962]
 texture = ExtResource("20_1l5b4")
 
-[node name="InfinitySpider" parent="Map/Room03_TestSecretRoom" unique_id=1198211542 instance=ExtResource("21_jlqtn")]
+[node name="InfinitySpider" parent="Map/Room03_DebugRoom" unique_id=1198211542 instance=ExtResource("21_jlqtn")]
 position = Vector2(960, 156)
 rotation = 1.5707964
 movement_universal_script = SubResource("Resource_rwyo8")
 health_stats_script = SubResource("Resource_c6mwm")
 interaction_and_attack_stats_script = SubResource("Resource_fo5ut")
 
-[node name="Chest(Building)" parent="Map/Room03_TestSecretRoom" unique_id=1382818356 instance=ExtResource("26_lr4av")]
+[node name="Chest(Building)" parent="Map/Room03_DebugRoom" unique_id=1382818356 instance=ExtResource("26_lr4av")]
 position = Vector2(1376, 160)
 
-[node name="StorageComponent" parent="Map/Room03_TestSecretRoom/Chest(Building)" index="4" unique_id=687521106]
+[node name="StorageComponent" parent="Map/Room03_DebugRoom/Chest(Building)" index="4" unique_id=687521106]
 slots = Array[ExtResource("27_r2o1q")]([SubResource("Resource_1gk60"), SubResource("Resource_nadtx")])
 
-[node name="Potions" type="Label" parent="Map/Room03_TestSecretRoom" unique_id=935919769]
+[node name="Potions" type="Label" parent="Map/Room03_DebugRoom" unique_id=935919769]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -803,57 +826,57 @@ text = "Potions"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HastePotion" parent="Map/Room03_TestSecretRoom" unique_id=889212379 instance=ExtResource("30_bx6lb")]
+[node name="HastePotion" parent="Map/Room03_DebugRoom" unique_id=889212379 instance=ExtResource("30_bx6lb")]
 position = Vector2(191, 688)
 test_item_data = ExtResource("31_3quwv")
 test_amount = 99
 
-[node name="SlowPotion" parent="Map/Room03_TestSecretRoom" unique_id=1315206960 instance=ExtResource("30_bx6lb")]
+[node name="SlowPotion" parent="Map/Room03_DebugRoom" unique_id=1315206960 instance=ExtResource("30_bx6lb")]
 position = Vector2(319, 688)
 test_item_data = ExtResource("32_1th50")
 test_amount = 99
 
-[node name="GiganticPotion" parent="Map/Room03_TestSecretRoom" unique_id=232449020 instance=ExtResource("30_bx6lb")]
+[node name="GiganticPotion" parent="Map/Room03_DebugRoom" unique_id=232449020 instance=ExtResource("30_bx6lb")]
 position = Vector2(444, 688)
 test_item_data = ExtResource("33_yy5oy")
 test_amount = 99
 
-[node name="LiliputPotion" parent="Map/Room03_TestSecretRoom" unique_id=1854500409 instance=ExtResource("30_bx6lb")]
+[node name="LiliputPotion" parent="Map/Room03_DebugRoom" unique_id=1854500409 instance=ExtResource("30_bx6lb")]
 position = Vector2(567, 688)
 test_item_data = ExtResource("34_kqdtg")
 test_amount = 99
 
-[node name="FullRegeneratePotion" parent="Map/Room03_TestSecretRoom" unique_id=47125741 instance=ExtResource("30_bx6lb")]
+[node name="FullRegeneratePotion" parent="Map/Room03_DebugRoom" unique_id=47125741 instance=ExtResource("30_bx6lb")]
 position = Vector2(191, 818)
 test_item_data = ExtResource("35_xcswx")
 test_amount = 99
 
-[node name="HealingPotion" parent="Map/Room03_TestSecretRoom" unique_id=2052992790 instance=ExtResource("30_bx6lb")]
+[node name="HealingPotion" parent="Map/Room03_DebugRoom" unique_id=2052992790 instance=ExtResource("30_bx6lb")]
 position = Vector2(324, 818)
 test_item_data = ExtResource("36_7tjm6")
 test_amount = 99
 
-[node name="FreezingPotion" parent="Map/Room03_TestSecretRoom" unique_id=248005847 instance=ExtResource("30_bx6lb")]
+[node name="FreezingPotion" parent="Map/Room03_DebugRoom" unique_id=248005847 instance=ExtResource("30_bx6lb")]
 position = Vector2(191, 940)
 test_item_data = ExtResource("37_h1o67")
 test_amount = 99
 
-[node name="ResetPotion" parent="Map/Room03_TestSecretRoom" unique_id=101299507 instance=ExtResource("30_bx6lb")]
+[node name="ResetPotion" parent="Map/Room03_DebugRoom" unique_id=101299507 instance=ExtResource("30_bx6lb")]
 position = Vector2(309, 940)
 test_item_data = ExtResource("38_3kedq")
 test_amount = 99
 
-[node name="SimplePotion" parent="Map/Room03_TestSecretRoom" unique_id=1624868555 instance=ExtResource("30_bx6lb")]
+[node name="SimplePotion" parent="Map/Room03_DebugRoom" unique_id=1624868555 instance=ExtResource("30_bx6lb")]
 position = Vector2(447, 936)
 test_item_data = ExtResource("39_lyhxh")
 test_amount = 99
 
-[node name="EscapePotion" parent="Map/Room03_TestSecretRoom" unique_id=1187040862 instance=ExtResource("30_bx6lb")]
+[node name="EscapePotion" parent="Map/Room03_DebugRoom" unique_id=1187040862 instance=ExtResource("30_bx6lb")]
 position = Vector2(583, 936)
 test_item_data = ExtResource("40_ftx8o")
 test_amount = 99
 
-[node name="Weapons" type="Label" parent="Map/Room03_TestSecretRoom" unique_id=362662847]
+[node name="Weapons" type="Label" parent="Map/Room03_DebugRoom" unique_id=362662847]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -873,30 +896,30 @@ text = "Weapons"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Sword" parent="Map/Room03_TestSecretRoom" unique_id=539811803 instance=ExtResource("30_bx6lb")]
+[node name="Sword" parent="Map/Room03_DebugRoom" unique_id=539811803 instance=ExtResource("30_bx6lb")]
 position = Vector2(832, 688)
 test_item_data = ExtResource("28_3utb5")
 test_amount = 99
 
-[node name="BigSword" parent="Map/Room03_TestSecretRoom" unique_id=946167440 instance=ExtResource("30_bx6lb")]
+[node name="BigSword" parent="Map/Room03_DebugRoom" unique_id=946167440 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 688)
 test_item_data = ExtResource("41_sl3eu")
 test_amount = 99
 
-[node name="Knife" parent="Map/Room03_TestSecretRoom" unique_id=1920523020 instance=ExtResource("30_bx6lb")]
+[node name="Knife" parent="Map/Room03_DebugRoom" unique_id=1920523020 instance=ExtResource("30_bx6lb")]
 position = Vector2(1088, 688)
 test_item_data = ExtResource("42_44qkj")
 test_amount = 99
 
-[node name="Gun" parent="Map/Room03_TestSecretRoom" unique_id=919248667 instance=ExtResource("30_bx6lb")]
+[node name="Gun" parent="Map/Room03_DebugRoom" unique_id=919248667 instance=ExtResource("30_bx6lb")]
 position = Vector2(832, 800)
 test_item_data = ExtResource("43_ohyc0")
 
-[node name="FreezingGun" parent="Map/Room03_TestSecretRoom" unique_id=174245008 instance=ExtResource("30_bx6lb")]
+[node name="FreezingGun" parent="Map/Room03_DebugRoom" unique_id=174245008 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 800)
 test_item_data = ExtResource("44_mf327")
 
-[node name="OtherItems" type="Label" parent="Map/Room03_TestSecretRoom" unique_id=2021909465]
+[node name="OtherItems" type="Label" parent="Map/Room03_DebugRoom" unique_id=2021909465]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -916,37 +939,37 @@ text = "Other Items"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ChockolateCookie" parent="Map/Room03_TestSecretRoom" unique_id=1044475718 instance=ExtResource("30_bx6lb")]
+[node name="ChockolateCookie" parent="Map/Room03_DebugRoom" unique_id=1044475718 instance=ExtResource("30_bx6lb")]
 position = Vector2(1360, 688)
 test_item_data = ExtResource("45_mm8li")
 test_amount = 99
 
-[node name="RipStoneCross" parent="Map/Room03_TestSecretRoom" unique_id=2142085002 instance=ExtResource("30_bx6lb")]
+[node name="RipStoneCross" parent="Map/Room03_DebugRoom" unique_id=2142085002 instance=ExtResource("30_bx6lb")]
 position = Vector2(1478, 690)
 test_item_data = ExtResource("46_ab1gq")
 test_amount = 99
 
-[node name="JustItem" parent="Map/Room03_TestSecretRoom" unique_id=150315641 instance=ExtResource("30_bx6lb")]
+[node name="JustItem" parent="Map/Room03_DebugRoom" unique_id=150315641 instance=ExtResource("30_bx6lb")]
 position = Vector2(1582, 688)
 test_item_data = ExtResource("47_f5082")
 test_amount = 99
 
-[node name="Chest" parent="Map/Room03_TestSecretRoom" unique_id=1663445108 instance=ExtResource("30_bx6lb")]
+[node name="Chest" parent="Map/Room03_DebugRoom" unique_id=1663445108 instance=ExtResource("30_bx6lb")]
 position = Vector2(1360, 904)
 test_item_data = ExtResource("48_nll8k")
 test_amount = 99
 
-[node name="Backpack" parent="Map/Room03_TestSecretRoom" unique_id=1142317015 instance=ExtResource("30_bx6lb")]
+[node name="Backpack" parent="Map/Room03_DebugRoom" unique_id=1142317015 instance=ExtResource("30_bx6lb")]
 position = Vector2(1360, 794)
 test_item_data = ExtResource("49_63tgo")
 test_amount = 99
 
-[node name="BigBackpack" parent="Map/Room03_TestSecretRoom" unique_id=340229380 instance=ExtResource("30_bx6lb")]
+[node name="BigBackpack" parent="Map/Room03_DebugRoom" unique_id=340229380 instance=ExtResource("30_bx6lb")]
 position = Vector2(1477, 794)
 test_item_data = ExtResource("50_qo5pq")
 test_amount = 99
 
-[node name="Purse" parent="Map/Room03_TestSecretRoom" unique_id=1762434968 instance=ExtResource("30_bx6lb")]
+[node name="Purse" parent="Map/Room03_DebugRoom" unique_id=1762434968 instance=ExtResource("30_bx6lb")]
 position = Vector2(1583, 794)
 test_item_data = ExtResource("51_n2jbx")
 test_amount = 99
@@ -989,6 +1012,7 @@ test_amount = 6
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 node_paths=PackedStringArray("spawn_points") instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(3, 1)
+room_type = 1
 spawn_points = [NodePath("RespawnPoint")]
 
 [node name="RespawnPoint" type="Marker2D" parent="Map/Room13_StartRoom" unique_id=491320201 groups=["RespawnPoint"]]
@@ -1330,8 +1354,8 @@ movement_universal_script = SubResource("Resource_mf327")
 health_stats_script = SubResource("Resource_mm8li")
 interaction_and_attack_stats_script = SubResource("Resource_ab1gq")
 
-[editable path="Map/Room03_TestSecretRoom/DoorDown"]
-[editable path="Map/Room03_TestSecretRoom/Chest(Building)"]
+[editable path="Map/Room03_DebugRoom/DoorDown"]
+[editable path="Map/Room03_DebugRoom/Chest(Building)"]
 [editable path="Map/Room15/Chest"]
 [editable path="Map/Room43/Chest"]
 [editable path="Map/Room45/DoorUp"]

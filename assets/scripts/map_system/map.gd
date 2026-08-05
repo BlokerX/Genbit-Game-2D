@@ -121,6 +121,12 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
+	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURĘ!) ---
+	if current_room and player:
+		for effect in current_room.ambient_aura_effects:
+			if effect != null:
+				player.remove_effect_by_name(effect.effect_name)
+	
 	# Zabezpieczamy gracza: wyciągamy go ze starego pokoju, żeby nie zniknął razem z nim
 	if player and player.get_parent():
 		player.get_parent().remove_child(player)
@@ -165,8 +171,27 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
 		
+		# --- NOWOŚĆ 1: Nakładamy nowe efekty typu AURA (nieskończone) ---
+		for effect in current_room.ambient_aura_effects:
+			if effect != null:
+				var infinite_effect = effect.duplicate()
+				if "duration" in infinite_effect:
+					infinite_effect.duration = 99999.0 # Wymuszamy nieskończoność
+				player.receive_effect(infinite_effect)
+				
+		# --- NOWOŚĆ 2: Nakładamy efekty typu KLĄTWA (Zostają po wyjściu) ---
+		for effect in current_room.sticky_entry_effects:
+			if effect != null:
+				var normal_effect = effect.duplicate()
+				# Nie modyfikujemy czasu! Gra wykorzysta czas ustawiony w pliku .tres
+				player.receive_effect(normal_effect)
+		
 	# 5. Odpalamy logikę walki / blokady pokoju po wejściu gracza
 	current_room.check_and_lock_room()
+	
+	# 6. Informujemy gracza o strefie pacyfizmu ---
+	if player and "is_in_pacifist_zone" in player:
+		player.is_in_pacifist_zone = current_room.pacifist_zone
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:

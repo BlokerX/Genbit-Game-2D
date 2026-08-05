@@ -94,4 +94,16 @@ func clear_all_effects() -> void:
 		return
 	print("Nie znaleziono kontenera efektów w entity character.")
 
+## Funkcja usuwająca konkretny efekt po jego nazwie (używana przez pokoje z hazardami)
+func remove_effect_by_name(eff_name: String) -> void:
+	if effects_collector != null:
+		for active_effect in effects_collector.get_children():
+			# Zabezpieczenie Duck Typing
+			if active_effect.get("effect_resource") != null and active_effect.effect_resource.effect_name == eff_name:
+				if active_effect.has_method("end_effect"):
+					active_effect.end_effect()
+				else:
+					active_effect.queue_free()
+				print("Usunięto efekt środowiskowy: ", eff_name)
+
 #endregion

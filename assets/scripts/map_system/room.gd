@@ -8,12 +8,41 @@ const ENEMY_GROUP = "Enemy"
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
 @export var map_position : Vector2i = Vector2i.ZERO
+
+
+@export_group("Typ i Znaczenie Pokoju")
+
+enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
+
+## Określa typ pokoju. Przydatne dla Minimapy (ikony), Menedżera Muzyki oraz logiki gry.
+@export var room_type: RoomType = RoomType.NORMAL
+
 ## Jeśli prawda, pokój pojawi się na mapie dopiero po wejściu do niego
 @export var is_secret : bool = false
 
-#@export_group("Typ Pokoju")
-#enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS }
-#@export var room_type: RoomType = RoomType.NORMAL
+@export_group("Logika Walki i Ograniczenia")
+## Strefa Bezpieczna: pokój NIGDY nie zablokuje drzwi (idealne dla Sklepów i Dev Rooma).
+@export var ignore_combat_lock: bool = false
+
+## Klatka (One-Way): Gdy gracz wejdzie do pokoju, drzwi się zamkną i NIE otworzą nawet po zabiciu wrogów. (Pokoje Bossa, pułapki).
+@export var lock_permanently_after_entry: bool = false
+
+## Pacyfizm: Jeśli włączone, gracz ma zablokowaną możliwość używania broni i rzucania itemami (Sklepy, NPC).
+@export var pacifist_zone: bool = false
+
+
+@export_group("Efekty Środowiskowe (Hazards)")
+## Wymaga systemu świateł 2D. Jeśli włączone, pokój nakłada na siebie Mroczną Maskę wymuszając na graczu użycie latarki.
+@export var is_dark_room: bool = false
+
+## AURA (Znika po wyjściu): Efekty aktywne TYLKO w tym pokoju (np. Spowolnienie od błota). Trwają w nieskończoność, dopóki gracz tu jest.
+@export var ambient_aura_effects: Array[Effect] = []
+
+## KLĄTWA (Zostaje po wyjściu): Efekty nakładane przy wejściu. Mają swój standardowy czas trwania i znikną same, nawet po zmianie pokoju (np. Trucizna, Krwawienie).
+@export var sticky_entry_effects: Array[Effect] = []
+
+
+
 
 @export_group("Wymiary Pokoju")
 @export var room_size_tiles : Vector2i = Vector2i(30, 17):
@@ -63,6 +92,13 @@ var active_enemies_count : int = 0
 var size_px : Vector2
 
 func _ready() -> void:
+	# Jeżeli Mroczny pokój (Ciemność)
+	if is_dark_room:
+		var darkness = CanvasModulate.new()
+		# Ustawiamy kolor na bardzo ciemny granat/szary (zmodyfikuj według uznania)
+		darkness.color = Color(0.09, 0.09, 0.09, 1.0) 
+		add_child(darkness)
+	
 	# Ta linijka sprawia, że gra po uruchomieniu zbuduje kafelki i zespawnuje drzwi!
 	generate_room()
 	
@@ -224,6 +260,20 @@ func _draw() -> void:
 
 ## Sprawdza, czy w pokoju są wrogowie i odpowiednio zarządza drzwiami
 func check_and_lock_room() -> void:
+	# 1. Strefa Bezpieczna (Sklep, Dev Room) - Ignoruje zamykanie
+	if ignore_combat_lock:
+		for door in doors:
+			door.unlock_door()
+		return
+		
+	# 2. Klatka / Arena - Zamyka się natychmiast, ignoruje liczenie wrogów!
+	if lock_permanently_after_entry:
+		print("Pułapka! Zamykam drzwi na stałe w pokoju: " + name)
+		for door in doors:
+			door.lock_door()
+		return
+
+	# 3. Standardowa walka - Zamyka tylko, jeśli wykryje wrogów
 	active_enemies_count = 0
 	_find_enemies_recursive(self)
 	
@@ -253,9 +303,14 @@ func _find_enemies_recursive(node: Node) -> void:
 func _on_enemy_died() -> void:
 	active_enemies_count -= 1
 	if active_enemies_count <= 0:
-		print("Pokój oczyszczony! Odblokowuję drzwi.")
-		for door in doors:
-			door.unlock_door()
 		room_cleared.emit()
+		
+		# Klatka nie otwiera drzwi po czyszczeniu!
+		if lock_permanently_after_entry:
+			print("Pokój oczyszczony, ale to pułapka! Drzwi pozostają zamknięte.")
+		else:
+			print("Pokój oczyszczony! Odblokowuję drzwi.")
+			for door in doors:
+				door.unlock_door()
 
 #endregion

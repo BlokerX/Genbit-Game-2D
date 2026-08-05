@@ -105,6 +105,9 @@ var current_state: PlayerState = PlayerState.DEFAULT
 # Blokada wejścia z interfejsu UI
 var is_input_locked: bool = false
 
+# Blokada pacyfistyczna
+var is_in_pacifist_zone: bool = false
+
 #endregion
 
 #region Główne funkcje silnikowe
@@ -338,13 +341,16 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 	return false
 
 func _handle_default_inputs(event: InputEvent) -> void:
+	# Blokada Walki w pacifist zone
+	if is_in_pacifist_zone and (event.is_action_pressed(INPUT_ATTACK) or event.is_action_pressed(INPUT_USE_ITEM)):
+		print("Jesteś w Strefie Bezpiecznej! Walka zablokowana.")
 	# ATAK
-	if event.is_action_pressed(INPUT_ATTACK):
+	elif event.is_action_pressed(INPUT_ATTACK):
 		is_holding_attack = true
 	elif event.is_action_released(INPUT_ATTACK):
 		is_holding_attack = false
 		
-# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
+	# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
 	if event.is_action_pressed(INPUT_INTERACT):
 		if aim_controller.current_target != null:
 			aim_controller.current_target.interact(self)
