@@ -18,6 +18,8 @@ const PLAYER_GROUP = "Player"
 @export var destination_door : Door = null 
 @export var opening_time : float = 0.1 # Czas otwierania w sekundach
 @export var is_door_visible : bool = true
+## Dedykowana tekstura (ustawiana przez auto-generator)
+@export var door_texture: Texture2D = null
 
 @onready var spawn_point : Marker2D = $Spawnpoint
 @onready var door_sprite : Sprite2D = $Sprite2D
@@ -29,6 +31,10 @@ var is_locked : bool = false
 
 func _ready() -> void:
 	door_sprite.visible = is_door_visible
+	# Nadpisywanie tekstury, jeśli została przekazana ---
+	if door_texture != null:
+		door_sprite.texture = door_texture
+	
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 

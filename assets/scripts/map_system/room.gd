@@ -47,6 +47,14 @@ var doors : Array[Door] = []
 signal room_cleared 
 var active_enemies_count : int = 0
 
+@export_group("Auto-Drzwi (Przejścia)")
+## Decyduje, czy ten pokój zezwala na wygenerowanie drzwi na danej ścianie.
+## Aby przejście powstało, OBA sąsiadujące pokoje muszą mieć tę flagę włączoną na styku.
+@export var allow_door_up: bool = true
+@export var allow_door_down: bool = true
+@export var allow_door_left: bool = true
+@export var allow_door_right: bool = true
+
 @export_group("Elementy Pokoju")
 @onready var tile_map : TileMapLayer = $TileMap
 @onready var navigation_region_2d : NavigationRegion2D = $NavigationRegion2D
@@ -118,6 +126,64 @@ func generate_room() -> void:
 	
 	calculate_room_bounds()
 	update_navigation_region()
+
+## Pozwala sprawdzić, czy na tej ścianie postawiłeś już drzwi ręcznie w edytorze
+func get_door(dir: Door.Direction) -> Door:
+	for d in doors:
+		if d.door_direction == dir:
+			return d
+	return null
+
+## Wstawia obiekt drzwi w idealnym fizycznym środku ściany (ZWRACA TEN OBIEKT!)
+func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene) -> Door:
+	# Zabezpieczenie: Jeśli drzwi już tu są, po prostu je zwracamy
+	var existing_door = get_door(dir)
+	if existing_door != null:
+		return existing_door
+
+	if not tile_map or not tile_map.tile_set:
+		return null
+
+	var tile_size = tile_map.tile_set.tile_size
+	
+	# Liczymy całkowity rozmiar pokoju w PIKSELACH
+	var room_width_px = float(room_size_tiles.x * tile_size.x)
+	var room_height_px = float(room_size_tiles.y * tile_size.y)
+	
+	var exact_pos = Vector2.ZERO
+
+	# Wyliczamy pikselowy środek dla każdej krawędzi (z uwzględnieniem połowy kafelka na grubość ściany)
+	match dir:
+		Door.Direction.UP:
+			exact_pos = Vector2(room_width_px / 2.0, float(tile_size.y) / 2.0)
+		Door.Direction.DOWN:
+			exact_pos = Vector2(room_width_px / 2.0, room_height_px - (float(tile_size.y) / 2.0))
+		Door.Direction.LEFT:
+			exact_pos = Vector2(float(tile_size.x) / 2.0, room_height_px / 2.0)
+		Door.Direction.RIGHT:
+			exact_pos = Vector2(room_width_px - (float(tile_size.x) / 2.0), room_height_px / 2.0)
+
+	var new_door = door_scene.instantiate() as Door
+	new_door.door_direction = dir
+	
+	# Automatyczny obrót drzwi względem ściany
+	match dir:
+		Door.Direction.UP:
+			new_door.rotation_degrees = 0
+		Door.Direction.DOWN:
+			new_door.rotation_degrees = 180
+		Door.Direction.LEFT:
+			new_door.rotation_degrees = -90
+		Door.Direction.RIGHT:
+			new_door.rotation_degrees = 90
+	
+	# Bezpośrednie przypisanie dokładnej fizycznej pozycji
+	new_door.position = exact_pos
+	
+	add_child(new_door)
+	doors.append(new_door)
+	
+	return new_door
 
 ## Akutalizacja regionu nawigacji
 func update_navigation_region() -> void:

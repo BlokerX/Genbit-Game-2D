@@ -38,6 +38,10 @@ var visited_rooms: Array[Room] = []
 ## Kluczem jest Vector2i (np. Vector2i(0,0)), a wartością obiekt Room
 var room_grid: Dictionary = {}
 
+@export_group("Generacja Drzwi")
+## Scena drzwi, która ma być automatycznie wstawiana do pokoi
+@export var auto_door_scene: PackedScene
+
 func _ready() -> void:
 	# Rejestracja i ustawianie pokoi
 	for child in get_children():
@@ -46,7 +50,9 @@ func _ready() -> void:
 			if child != starting_room :
 				remove_child(child)
 	
-	# Auto-Linker! Zszywamy wszystkie wirtualne drzwi na mapie ---
+	# 1. NAJPIERW z centralnego poziomu spawnujemy fizyczne drzwi tam, gdzie oba pokoje się zgadzają
+	_auto_spawn_missing_doors()
+	# 2. POTEM Auto-Linker zszywa wszystkie drzwi (te wstawione ręcznie i te wstawione przez automat)
 	_auto_link_doors()
 	
 	# Wejście do pokoju startowego
@@ -255,6 +261,66 @@ func get_room_at(coords: Vector2i) -> Room:
 	if room_grid.has(coords):
 		return room_grid[coords]
 	return null
+
+## Centralny system generowania drzwi. 
+func _auto_spawn_missing_doors() -> void:
+	if auto_door_scene == null:
+		return
+	
+	# Przeszukujemy każdy pokój na wirtualnej siatce
+	for coords in room_grid.keys():
+		var grid_room = room_grid[coords]
+		
+		# KRAWĘDŹ 1: Sprawdzamy sąsiada po PRAWEJ (X+1, Y)
+		var right_coords = coords + Vector2i(1, 0)
+		if room_grid.has(right_coords):
+			var right_room = room_grid[right_coords]
+			if grid_room.allow_door_right and right_room.allow_door_left:
+				_sync_door_pair(grid_room, Door.Direction.RIGHT, right_room, Door.Direction.LEFT)
+				
+		# KRAWĘDŹ 2: Sprawdzamy sąsiada W DÓŁ (X, Y+1)
+		var down_coords = coords + Vector2i(0, 1)
+		if room_grid.has(down_coords):
+			var down_room = room_grid[down_coords]
+			if grid_room.allow_door_down and down_room.allow_door_up:
+				_sync_door_pair(grid_room, Door.Direction.DOWN, down_room, Door.Direction.UP)
+
+
+## Inteligentne parowanie i kopiowanie tekstur z węzła Sprite2D
+func _sync_door_pair(room_a: Room, dir_a: Door.Direction, room_b: Room, dir_b: Door.Direction) -> void:
+	# Sprawdzamy, czy w edytorze postawiłeś w którychś pokojach drzwi ręcznie
+	var door_a = room_a.get_door(dir_a)
+	var door_b = room_b.get_door(dir_b)
+	
+	# SCENARIUSZ 1: Oba pokoje mają już drzwi postawione przez Ciebie. Ignorujemy.
+	if door_a != null and door_b != null:
+		return
+		
+	# SCENARIUSZ 2: Nie ma żadnych drzwi. Spawnujemy dwie sztuki bazowe.
+	if door_a == null and door_b == null:
+		room_a.spawn_auto_door(dir_a, auto_door_scene)
+		room_b.spawn_auto_door(dir_b, auto_door_scene)
+		return
+		
+	# SCENARIUSZ 3: TYLKO Pokój A ma drzwi ręczne (z Twoim własnym Sprite'em).
+	if door_a != null and door_b == null:
+		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene)
+		_copy_sprite_texture(door_a, door_b)
+		
+	# SCENARIUSZ 4: TYLKO Pokój B ma drzwi ręczne (z Twoim własnym Sprite'em).
+	elif door_b != null and door_a == null:
+		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene)
+		_copy_sprite_texture(door_b, door_a)
+
+## Niezwykle wydajne operowanie na wskaźnikach pamięci tekstur
+func _copy_sprite_texture(source_door: Door, target_door: Door) -> void:
+	# Wyciągamy węzły Sprite2D z instancji (funkcja .instantiate() już je wygenerowała w pamięci)
+	var source_sprite = source_door.get_node_or_null("Sprite2D")
+	var target_sprite = target_door.get_node_or_null("Sprite2D")
+	
+	# Bezpośrednie przekazanie wskaźnika. Zero obciążenia dla pamięci!
+	if source_sprite and target_sprite:
+		target_sprite.texture = source_sprite.texture
 
 ## Skrypt Hybrydowy do automatycznego parowania drzwi
 func _auto_link_doors() -> void:
