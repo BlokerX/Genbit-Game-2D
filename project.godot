@@ -51,6 +51,9 @@ LevelManager=""
 ItemPickup=""
 Door=""
 RespawnPoint=""
+EnemySpawn=""
+ObjectSpawn=""
+ItemSpawn=""
 
 [input]
 

@@ -4,6 +4,7 @@ extends Node2D
 class_name Room
 
 const ENEMY_GROUP = "Enemy"
+const ITEM_PICKUP_SCENE = preload("res://assets/scenes/item_pickup.tscn")
 
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
@@ -42,6 +43,23 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
 @export var sticky_entry_effects: Array[Effect] = []
 
 
+@export_group("Generatory Proceduralne (Spawn Pools)")
+## Pula przeciwników (Losowana na markerach z grupy 'EnemySpawn')
+@export_group("Generatory Proceduralne (Spawn Pools)")
+@export var enemy_pool: EnemySpawnPool
+@export_range(0.0, 1.0) var enemy_spawn_chance: float = 0.75
+
+@export var object_pool: ObjectSpawnPool
+@export_range(0.0, 1.0) var object_spawn_chance: float = 0.50
+
+@export var item_pool: ItemLootPool
+@export_range(0.0, 1.0) var item_spawn_chance: float = 0.30
+
+# Markery rozdzielone na kategorie
+var enemy_spawns: Array[Marker2D] = []
+var object_spawns: Array[Marker2D] = []
+var item_spawns: Array[Marker2D] = []
+var has_spawned_entities: bool = false
 
 
 @export_group("Wymiary Pokoju")
@@ -126,20 +144,30 @@ func _find_doors_recursive(node: Node) -> void:
 		if child.get_child_count() > 0:
 			_find_doors_recursive(child)
 
-## Automatycznie szuka wewnątrz pokoju węzłów typu Marker2D przypisanych do grupy "RespawnPoint"
+## Automatycznie szuka węzłów Marker2D i dzieli je na kategorie
 func _auto_fetch_spawn_points() -> void:
-	spawn_points.clear()
+	spawn_points.clear() # Główna lista (dla gracza, jeśli jeszcze z niej korzysta)
+	enemy_spawns.clear()
+	object_spawns.clear()
+	item_spawns.clear()
+	
 	_find_spawn_points_recursive(self)
-	print("Pokój " + name + " znalazł automatycznie " + str(spawn_points.size()) + " punktów respawnu z grupy.")
 
 ## Rekurencyjne przeszukiwanie drzewa węzłów pokoju
 func _find_spawn_points_recursive(node: Node) -> void:
 	for child in node.get_children():
-		# Sprawdzamy czy to Marker2D oraz czy należy do grupy RespawnPoint
-		if child is Marker2D and child.is_in_group("RespawnPoint"):
-			spawn_points.append(child)
-		
-		# Jeśli węzeł ma własne dzieci, szukamy głębiej
+		if child is Marker2D:
+			# Segregowanie markerów do Reżysera
+			if child.is_in_group("EnemySpawn"):
+				enemy_spawns.append(child)
+			elif child.is_in_group("ObjectSpawn"):
+				object_spawns.append(child)
+			elif child.is_in_group("ItemSpawn"):
+				item_spawns.append(child)
+			# Fallback dla starego systemu respawnu gracza (żeby nic nie popsuć)
+			elif child.is_in_group("RespawnPoint"):
+				spawn_points.append(child)
+				
 		if child.get_child_count() > 0:
 			_find_spawn_points_recursive(child)
 
@@ -258,7 +286,7 @@ func _draw() -> void:
 
 #region Logika stanu walki
 
-## Sprawdza, czy w pokoju są wrogowie i odpowiednio zarządza drzwiami
+## Sprawdza, czy w pokoju są wrogowie, odpala Reżysera i zarządza drzwiami
 func check_and_lock_room() -> void:
 	# 1. Strefa Bezpieczna (Sklep, Dev Room) - Ignoruje zamykanie
 	if ignore_combat_lock:
@@ -272,18 +300,103 @@ func check_and_lock_room() -> void:
 		for door in doors:
 			door.lock_door()
 		return
-
+	
+	# Reżyser Pokoju (Spawn i Skrzynie)
+	if not has_spawned_entities and not pacifist_zone:
+		_run_director_spawner()
+		_fill_hybrid_containers(self) # Wypełnia RĘCZNE i WYLOSOWANE obiekty!
+		has_spawned_entities = true
+	
 	# 3. Standardowa walka - Zamyka tylko, jeśli wykryje wrogów
+	# Zlicza wrogów (ręcznych + tych właśnie zespawnowanych)
 	active_enemies_count = 0
 	_find_enemies_recursive(self)
 	
 	if active_enemies_count > 0:
-		print("Wrogowie wykryci! Liczba: " + str(active_enemies_count) + ". Zamykam drzwi w pokoju: " + name)
-		for door in doors:
-			door.lock_door()
+		for door in doors: door.lock_door()
 	else:
-		for door in doors:
-			door.unlock_door()
+		for door in doors: door.unlock_door()
+
+#region Reżyser
+
+## Główny Reżyser: Czysto rozdzielone 3 niezależne systemy
+func _run_director_spawner() -> void:
+	var entities_node = find_child("Entities")
+	var parent_node = entities_node if entities_node else self
+	
+	# 1. SYSTEM WROGÓW (Tylko Sceny, pełne bezpieczeństwo typów)
+	if enemy_pool != null:
+		for marker in enemy_spawns:
+			if randf() <= enemy_spawn_chance:
+				var scene = enemy_pool.get_random_enemy_scene()
+				_instantiate_scene(scene, marker.global_position, parent_node)
+				
+	# 2. SYSTEM OBIEKTÓW (Tylko Sceny Skrzyń/Beczek)
+	if object_pool != null:
+		for marker in object_spawns:
+			if randf() <= object_spawn_chance:
+				var scene = object_pool.get_random_object_scene()
+				_instantiate_scene(scene, marker.global_position, parent_node)
+				
+	# 3. SYSTEM PRZEDMIOTÓW NA ZIEMI (ItemData -> ItemInstance -> ItemPickup)
+	if item_pool != null:
+		for marker in item_spawns:
+			if randf() <= item_spawn_chance:
+				var item_instance = item_pool.get_random_item_instance()
+				if item_instance != null:
+					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
+					pickup.item = item_instance
+					_instantiate_node(pickup, marker.global_position, parent_node)
+
+## Faza Hybrydowa: Wstrzykuje ItemInstance w LOSOWE sloty komponentu skrzyni
+func _fill_hybrid_containers(node: Node) -> void:
+	for child in node.get_children():
+		
+		# Wyszukujemy komponent StorageComponent 
+		var storage = child.get_node_or_null("StorageComponent")
+		
+		if storage != null and not child.has_meta("is_filled_by_director"):
+			child.set_meta("is_filled_by_director", true) 
+			
+			if item_pool != null:
+				var items_to_generate = randi_range(1, 3)
+				for i in range(items_to_generate):
+					var item_instance = item_pool.get_random_item_instance()
+					if item_instance != null:
+						
+						# --- NOWOŚĆ: Losowe rozmieszczenie w skrzyni ---
+						var empty_slot_indexes: Array[int] = []
+						
+						# 1. Zbieramy indeksy WSZYSTKICH pustych slotów w tej konkretnej skrzyni
+						for slot_idx in range(storage.slots.size()):
+							if storage.slots[slot_idx].is_empty():
+								empty_slot_indexes.append(slot_idx)
+						
+						# 2. Jeśli mamy jakiekolwiek wolne miejsce, losujemy jedno z nich
+						if empty_slot_indexes.size() > 0:
+							var random_slot_idx = empty_slot_indexes.pick_random()
+							storage.slots[random_slot_idx].item = item_instance
+						else:
+							# Fallback: Jeśli dziwnym trafem wylosowało więcej przedmiotów niż skrzynia ma miejsc,
+							# używamy domyślnego wkładania (które np. połączy stackowalne przedmioty)
+							storage.insert_instance(item_instance)
+						
+		if child.get_child_count() > 0:
+			_fill_hybrid_containers(child)
+
+## Pomocnicze wstawianie PackedScene
+func _instantiate_scene(scene: PackedScene, pos: Vector2, parent: Node) -> void:
+	if scene == null: return
+	var instance = scene.instantiate()
+	_instantiate_node(instance, pos, parent)
+
+## Pomocnicze wstawianie fizycznego węzła do świata
+func _instantiate_node(instance: Node, pos: Vector2, parent: Node) -> void:
+	parent.add_child(instance)
+	if "global_position" in instance:
+		instance.global_position = pos
+
+#endregion
 
 ## Szuka rekurencyjnie przeciwników pośród wszystkich dzieci pokoju
 func _find_enemies_recursive(node: Node) -> void:

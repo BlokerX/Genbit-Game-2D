@@ -1,8 +1,11 @@
 [gd_scene format=4 uid="uid://cliypgfyur2gq"]
 
 [ext_resource type="Script" uid="uid://vp0vroyyx208" path="res://assets/scripts/map_system/room.gd" id="1_l3nri"]
+[ext_resource type="Resource" uid="uid://dkpmxc6sp5g2y" path="res://assets/scripts/map_system/resources/templates/Test_Enemies.tres" id="2_l852n"]
 [ext_resource type="Shader" uid="uid://dhdace02w454n" path="res://assets/shaders/wood.gdshader" id="2_pl0hj"]
+[ext_resource type="Resource" uid="uid://b50get08bq4dt" path="res://assets/scripts/map_system/resources/templates/Test_Objects.tres" id="3_8jlt0"]
 [ext_resource type="Texture2D" uid="uid://dg1csp7v0jbrm" path="res://assets/textures/samples_examples/tilesets/wood_planks_big_single.png" id="3_yursh"]
+[ext_resource type="Resource" uid="uid://dtx4553mfd2b2" path="res://assets/scripts/map_system/resources/templates/Test_Loot.tres" id="4_cve4a"]
 [ext_resource type="Texture2D" uid="uid://cres07hr3d2gp" path="res://assets/textures/samples_examples/tilesets/concrete_tiles_big.png" id="4_l852n"]
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/tilesets/test_tileset.png" id="5_8jlt0"]
 
@@ -33,12 +36,15 @@ tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_cve4a")
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_l3nri"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_l852n"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
 [node name="Room" type="Node2D" unique_id=1124479501 groups=["Rooms"]]
 script = ExtResource("1_l3nri")
+enemy_pool = ExtResource("2_l852n")
+object_pool = ExtResource("3_8jlt0")
+item_pool = ExtResource("4_cve4a")
 floor_alt_id = 1
 wall_alt_id = 1
 
@@ -48,4 +54,4 @@ tile_set = SubResource("TileSet_ogun7")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=1239899796]
 visible = false
-navigation_polygon = SubResource("NavigationPolygon_l3nri")
+navigation_polygon = SubResource("NavigationPolygon_l852n")

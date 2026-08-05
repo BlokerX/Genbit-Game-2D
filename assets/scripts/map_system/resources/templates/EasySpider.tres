@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemySpawnPool" format=3 uid="uid://bsi633f7g8cox"]
+
+[ext_resource type="Script" uid="uid://bppa36a616ks" path="res://assets/scripts/map_system/resources/enemy_spawn_entry.gd" id="1_r07u1"]
+[ext_resource type="PackedScene" uid="uid://ch3ffas3avu00" path="res://assets/scenes/enemies/easy_spider_tmp.tscn" id="2_0q3p1"]
+[ext_resource type="Script" uid="uid://by435sfv5okql" path="res://assets/scripts/map_system/resources/enemy_spawn_pool.gd" id="3_0f7gq"]
+
+[sub_resource type="Resource" id="Resource_qivk8"]
+script = ExtResource("1_r07u1")
+enemy_scene = ExtResource("2_0q3p1")
+metadata/_custom_type_script = "uid://bppa36a616ks"
+
+[resource]
+script = ExtResource("3_0f7gq")
+entries = Array[ExtResource("1_r07u1")]([SubResource("Resource_qivk8")])
+metadata/_custom_type_script = "uid://by435sfv5okql"

@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="ItemLootPool" format=3 uid="uid://dtx4553mfd2b2"]
+
+[ext_resource type="Script" uid="uid://di4apywurdjiw" path="res://assets/scripts/map_system/resources/item_loot_entry.gd" id="1_40rjk"]
+[ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="2_po22t"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="3_372aw"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="4_6wa1p"]
+[ext_resource type="Script" uid="uid://ckw2e5n0cvfht" path="res://assets/scripts/map_system/resources/item_loot_pool.gd" id="4_po22t"]
+[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="5_sifal"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="6_g0l7h"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_sifal"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="8_g0l7h"]
+
+[sub_resource type="Resource" id="Resource_ed2q3"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("2_po22t")
+max_amount = 10
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_6wa1p"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("3_372aw")
+max_amount = 24
+weight = 40.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_7m0hv"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("4_6wa1p")
+weight = 20.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_2tnpd"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("5_sifal")
+max_amount = 10
+weight = 60.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_abohg"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("6_g0l7h")
+max_amount = 10
+weight = 35.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_s0p1o"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("7_sifal")
+max_amount = 5
+weight = 65.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_daqc1"]
+script = ExtResource("1_40rjk")
+item_data = ExtResource("8_g0l7h")
+weight = 45.0
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[resource]
+script = ExtResource("4_po22t")
+entries = Array[ExtResource("1_40rjk")]([SubResource("Resource_ed2q3"), SubResource("Resource_6wa1p"), SubResource("Resource_7m0hv"), SubResource("Resource_2tnpd"), SubResource("Resource_abohg"), SubResource("Resource_s0p1o"), SubResource("Resource_daqc1")])
+metadata/_custom_type_script = "uid://ckw2e5n0cvfht"

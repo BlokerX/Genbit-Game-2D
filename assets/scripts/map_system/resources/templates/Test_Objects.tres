@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ObjectSpawnPool" format=3 uid="uid://b50get08bq4dt"]
+
+[ext_resource type="Script" uid="uid://c3d31jx3g80dr" path="res://assets/scripts/map_system/resources/object_spawn_entry.gd" id="1_da4u7"]
+[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/chest.tscn" id="2_5y708"]
+[ext_resource type="Script" uid="uid://bpw540kf5ga2b" path="res://assets/scripts/map_system/resources/object_spawn_pool.gd" id="3_wfe2d"]
+
+[sub_resource type="Resource" id="Resource_d8ycc"]
+script = ExtResource("1_da4u7")
+object_scene = ExtResource("2_5y708")
+weight = 100.0
+metadata/_custom_type_script = "uid://c3d31jx3g80dr"
+
+[resource]
+script = ExtResource("3_wfe2d")
+entries = Array[ExtResource("1_da4u7")]([SubResource("Resource_d8ycc")])
+metadata/_custom_type_script = "uid://bpw540kf5ga2b"

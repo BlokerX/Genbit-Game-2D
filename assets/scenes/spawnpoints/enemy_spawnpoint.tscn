@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://c3lyleqgqpvse"]
+
+[node name="EnemySpawnpoint" type="Marker2D" unique_id=534280628 groups=["EnemySpawn"]]

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemySpawnPool" format=3 uid="uid://dkpmxc6sp5g2y"]
+
+[ext_resource type="Script" uid="uid://bppa36a616ks" path="res://assets/scripts/map_system/resources/enemy_spawn_entry.gd" id="1_ihtma"]
+[ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="2_y4eep"]
+[ext_resource type="Script" uid="uid://by435sfv5okql" path="res://assets/scripts/map_system/resources/enemy_spawn_pool.gd" id="3_jxf8t"]
+[ext_resource type="PackedScene" uid="uid://ch3ffas3avu00" path="res://assets/scenes/enemies/easy_spider_tmp.tscn" id="3_y4eep"]
+
+[sub_resource type="Resource" id="Resource_upi1x"]
+script = ExtResource("1_ihtma")
+enemy_scene = ExtResource("2_y4eep")
+metadata/_custom_type_script = "uid://bppa36a616ks"
+
+[sub_resource type="Resource" id="Resource_jxf8t"]
+script = ExtResource("1_ihtma")
+enemy_scene = ExtResource("3_y4eep")
+metadata/_custom_type_script = "uid://bppa36a616ks"
+
+[resource]
+script = ExtResource("3_jxf8t")
+entries = Array[ExtResource("1_ihtma")]([SubResource("Resource_upi1x"), SubResource("Resource_jxf8t")])
+metadata/_custom_type_script = "uid://by435sfv5okql"

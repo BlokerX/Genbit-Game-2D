@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="ItemLootPool" format=3 uid="uid://dcrxl7xgcuu1g"]
+
+[ext_resource type="Script" uid="uid://di4apywurdjiw" path="res://assets/scripts/map_system/resources/item_loot_entry.gd" id="1_cnu3u"]
+[ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="2_r015u"]
+[ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="3_0lhea"]
+[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="4_de6qo"]
+[ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="5_4h8ls"]
+[ext_resource type="Script" uid="uid://ckw2e5n0cvfht" path="res://assets/scripts/map_system/resources/item_loot_pool.gd" id="6_w4gw6"]
+
+[sub_resource type="Resource" id="Resource_11fi7"]
+script = ExtResource("1_cnu3u")
+item_data = ExtResource("2_r015u")
+max_amount = 12
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_f5082"]
+script = ExtResource("1_cnu3u")
+item_data = ExtResource("3_0lhea")
+max_amount = 12
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_p50gn"]
+script = ExtResource("1_cnu3u")
+item_data = ExtResource("4_de6qo")
+max_amount = 12
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_almaw"]
+script = ExtResource("1_cnu3u")
+item_data = ExtResource("5_4h8ls")
+max_amount = 12
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[resource]
+script = ExtResource("6_w4gw6")
+entries = Array[ExtResource("1_cnu3u")]([SubResource("Resource_11fi7"), SubResource("Resource_f5082"), SubResource("Resource_p50gn"), SubResource("Resource_almaw")])
+metadata/_custom_type_script = "uid://ckw2e5n0cvfht"

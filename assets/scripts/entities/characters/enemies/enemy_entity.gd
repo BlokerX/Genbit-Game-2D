@@ -31,7 +31,7 @@ func _ready():
 	super()
 	
 	# Przypisanie gracza jako domyślnego celu
-	target = %Player
+	target = get_tree().get_first_node_in_group("Player")
 
 func _process(_delta):
 	super(_delta)
