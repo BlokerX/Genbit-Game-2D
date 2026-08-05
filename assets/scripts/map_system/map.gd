@@ -34,6 +34,10 @@ var discovered_rooms: Array[Room] = []
 ## Pokoje odwiedzone
 var visited_rooms: Array[Room] = []
 
+# Słownik przestrzenny (Grid)
+## Kluczem jest Vector2i (np. Vector2i(0,0)), a wartością obiekt Room
+var room_grid: Dictionary = {}
+
 func _ready() -> void:
 	# Rejestracja i ustawianie pokoi
 	for child in get_children():
@@ -41,6 +45,9 @@ func _ready() -> void:
 			register_room(child)
 			if child != starting_room :
 				remove_child(child)
+	
+	# Auto-Linker! Zszywamy wszystkie wirtualne drzwi na mapie ---
+	_auto_link_doors()
 	
 	# Wejście do pokoju startowego
 	if starting_room:
@@ -52,20 +59,30 @@ func _ready() -> void:
 func register_room(room: Room) -> void:
 	if not all_rooms.has(room):
 		all_rooms.append(room)
-			
+		
+		# Zapisujemy pokój w siatce (Grid)
+		# Używamy zmiennej map_position z room.gd jako klucza
+		room_grid[room.map_position] = room
+		
 		map_updated.emit()
 
 ## Funkcja do dynamicznego usuwania pokoju (np. pokój się zapadł/zniszczył)
 func unregister_room(room: Room) -> void:
 	if all_rooms.has(room):
+		all_rooms.append(room)
 		all_rooms.erase(room)
+	
 	if discovered_rooms.has(room):
 		discovered_rooms.erase(room)
 		
 	# Usunięcie z listy odwiedzonych przy kasowaniu pokoju
 	if visited_rooms.has(room):
 		visited_rooms.erase(room)
-		
+	
+	# Usuwamy pokój z siatki
+	if room_grid.has(room.map_position) and room_grid[room.map_position] == room:
+		room_grid.erase(room.map_position)
+	
 	map_updated.emit() # Informujemy UI o zmianie
 
 ## Odwiedzenie pokoju (dodaje do listy odwiedzonych)
@@ -231,3 +248,42 @@ func _exit_tree() -> void:
 		# musimy go ręcznie zniszczyć, aby nie wyciekł:
 		if is_instance_valid(room) and not room.is_inside_tree():
 			room.queue_free()
+
+## Funkcja do sprawdzania co leży na danym polu
+## Zwraca pokój znajdujący się na podanych koordynatach siatki (lub null, jeśli pole jest puste)
+func get_room_at(coords: Vector2i) -> Room:
+	if room_grid.has(coords):
+		return room_grid[coords]
+	return null
+
+## Skrypt Hybrydowy do automatycznego parowania drzwi
+func _auto_link_doors() -> void:
+	for room in all_rooms:
+		for door in room.doors:
+			# 1. HYBRYDA: Jeśli drzwi zostały połączone ręcznie przez Ciebie w Inspektorze, ignorujemy je
+			if door.destination_door != null:
+				continue
+				
+			# 2. Sprawdzamy kierunek drzwi
+			var offset = door.get_direction_offset()
+			if offset == Vector2i.ZERO:
+				continue # Jeśli zapomniałeś ustawić kierunek, pomijamy te drzwi
+				
+			# 3. Szukamy sąsiada na siatce względem naszego obecnego pokoju
+			var target_coords = room.map_position + offset
+			var neighbor_room = get_room_at(target_coords)
+			
+			if neighbor_room:
+				# 4. Szukamy drzwi u sąsiada, które patrzą DOKŁADNIE w naszą stronę (wektor przeciwny)
+				var opposite_offset = -offset
+				for neighbor_door in neighbor_room.doors:
+					
+					# Jeśli znajdziemy pasujące wolne drzwi...
+					if neighbor_door.destination_door == null and neighbor_door.get_direction_offset() == opposite_offset:
+						
+						# 5. ŁĄCZYMY DRZWI ZE SOBĄ Z OBU STRON!
+						door.destination_door = neighbor_door
+						neighbor_door.destination_door = door
+						
+						print("Map: Zszyto automatycznie drzwi między [" + room.name + "] a [" + neighbor_room.name + "]")
+						break

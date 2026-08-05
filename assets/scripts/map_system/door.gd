@@ -6,6 +6,10 @@ signal player_entered_door(door_node)
 
 enum State { CLOSED, OPENING, OPEN }
 
+## Kierunek drzwi na wirtualnej siatce
+enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
+@export var door_direction: Direction = Direction.NONE
+
 # --- STAŁE ---
 const PLAYER_GROUP = "Player"
 
@@ -101,3 +105,13 @@ func get_room() -> Room:
 			return current_node
 		current_node = current_node.get_parent()
 	return null
+
+## Funkcja do Auto-Linkera
+func get_direction_offset() -> Vector2i:
+	match door_direction:
+		Direction.UP: return Vector2i(0, -1)
+		Direction.DOWN: return Vector2i(0, 1)
+		Direction.LEFT: return Vector2i(-1, 0)
+		Direction.RIGHT: return Vector2i(1, 0)
+	return Vector2i.ZERO
+	# todo rozdzielić kierunki, null od wpisany już
