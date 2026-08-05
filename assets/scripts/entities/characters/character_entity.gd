@@ -15,7 +15,7 @@ class_name CharacterEntity
 ## Indywidualna grubość postaci do walki ---
 @export var combat_radius: float = 40.0
 
-@export var character_sprite : Sprite2D
+@export var character_sprite : AnimatedSprite2D
 
 @export var effects_collector : Node
 
@@ -105,5 +105,33 @@ func remove_effect_by_name(eff_name: String) -> void:
 				else:
 					active_effect.queue_free()
 				print("Usunięto efekt środowiskowy: ", eff_name)
+
+#endregion
+
+#region Silnik animacji
+
+## Zmienia klatkę animacji w zależności od wektora ruchu
+func _update_sprite_direction(move_dir: Vector2) -> void:
+	# Zabezpieczenie przed brakiem przypisanego sprite'a
+	if not character_sprite:
+		return
+
+	# Jeśli entity stoi, zostawiamy go w ostatniej pozycji (nie zmieniamy klatki)
+	if move_dir == Vector2.ZERO:
+		return
+
+	# Analizujemy, w której osi entity porusza się szybciej, aby obsłużyć "skosy"
+	if abs(move_dir.x) > abs(move_dir.y):
+		# Ruch poziomy
+		if move_dir.x > 0:
+			character_sprite.frame = 1 # Prawo
+		else:
+			character_sprite.frame = 3 # Lewo
+	else:
+		# Ruch pionowy
+		if move_dir.y > 0:
+			character_sprite.frame = 0 # Dół
+		else:
+			character_sprite.frame = 2 # Góra
 
 #endregion

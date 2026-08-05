@@ -178,14 +178,8 @@ func _physics_process(delta):
 	else:
 		velocity = Vector2.ZERO # Jeśli z jakiegoś powodu komponentu nadal nie ma, po prostu stoimy
 	
-	# Set sprite orientation
-	if horizontal < 0 :
-		if character_sprite.flip_h != false :
-			character_sprite.flip_h = false
-	elif horizontal > 0 :
-		if character_sprite.flip_h != true :
-			character_sprite.flip_h = true
-	
+	# Aktualizacja kierunku postaci
+	_update_sprite_direction(Vector2(horizontal, vertical))
 	
 	move_and_slide()
 	
