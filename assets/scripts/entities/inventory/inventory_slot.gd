@@ -50,7 +50,7 @@ func update_slot(slot: SlotData) -> void:
 		# --- GENEROWANIE INFORMACJI W TOOLTIPIE ---
 		if show_tooltip:
 			var item_data = slot.item.data
-			var tooltip_info = item_data.item_name + "\n" # Nazwa zawsze na samej górze
+			var tooltip_info = item_data.item_name + "\nID: " + str(item_data.item_id) + "\n" # Nazwa zawsze na samej górze
 			
 			# Jeśli przedmiot ma opis, dodajemy go
 			if item_data.item_description != "":

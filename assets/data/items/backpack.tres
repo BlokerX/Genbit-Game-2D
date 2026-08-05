@@ -1,11 +1,12 @@
 [gd_resource type="Resource" script_class="BackpackItem" format=3 uid="uid://da8e3nm1q40f6"]
 
-[ext_resource type="Texture2D" uid="uid://sgbmc7re7o3s" path="res://assets/textures/samples_examples/empty_potion.png" id="1_nseb4"]
+[ext_resource type="Texture2D" uid="uid://b25psuku7s2k0" path="res://assets/textures/samples_examples/items/brown_backpack.png" id="1_nseb4"]
 [ext_resource type="Script" uid="uid://bx57ryojee8n2" path="res://assets/scripts/entities/items/backpack_item.gd" id="2_e1xf5"]
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("2_e1xf5")
+item_id = 2
 item_name = "Backpack"
 item_type = "BackpackItem"
+item_description = "Standard backpack."
 item_icon = ExtResource("1_nseb4")

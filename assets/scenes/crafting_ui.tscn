@@ -9,17 +9,20 @@
 [ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="6_6qfpg"]
 [ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_tctd7"]
 [ext_resource type="Resource" uid="uid://1w0yjy4ykkyp" path="res://assets/data/items/escape_potion.tres" id="8_kysok"]
-[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/stone_cross.png" id="9_jo8vf"]
+[ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/items/stone_cross.png" id="9_jo8vf"]
 [ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="10_bj1ji"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="11_aa4ru"]
 [ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="12_tctd7"]
 [ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="13_kysok"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="14_jo8vf"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="15_jo8vf"]
-[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/giantic_potion.tres" id="16_c4uhj"]
+[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="16_c4uhj"]
 [ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="17_wp3sr"]
 [ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="18_bawxu"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="19_bawxu"]
+[ext_resource type="Resource" uid="uid://da8e3nm1q40f6" path="res://assets/data/items/backpack.tres" id="20_7yxti"]
+[ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="21_rrbuv"]
+[ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="22_tx4wq"]
 
 [sub_resource type="Resource" id="Resource_ftyar"]
 script = ExtResource("3_kl38u")
@@ -172,13 +175,54 @@ ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_eld5r"), SubR
 results = Array[ExtResource("5_3a5og")]([SubResource("Resource_2di5x")])
 metadata/_custom_type_script = "uid://crevd6m1abpfw"
 
+[sub_resource type="Resource" id="Resource_qv4lk"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("21_rrbuv")
+required_amount = 8
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_8o5ca"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("20_7yxti")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_qm0qn"]
+script = ExtResource("2_77p83")
+recipe_name = "Backpack"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_qv4lk")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_8o5ca")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
+[sub_resource type="Resource" id="Resource_rjxtp"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("20_7yxti")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_coadw"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("21_rrbuv")
+required_amount = 20
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_supo1"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("22_tx4wq")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_e7dwc"]
+script = ExtResource("2_77p83")
+recipe_name = "Big Backpack"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_rjxtp"), SubResource("Resource_coadw")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_supo1")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
 [node name="CraftingUI" type="Control" unique_id=101420674]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 script = ExtResource("1_3a5og")
-available_recipes = Array[ExtResource("2_77p83")]([SubResource("Resource_tx4wq"), SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh"), SubResource("Resource_kysok"), SubResource("Resource_7yxti"), SubResource("Resource_e3x4f"), SubResource("Resource_4av44")])
+available_recipes = Array[ExtResource("2_77p83")]([SubResource("Resource_tx4wq"), SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh"), SubResource("Resource_kysok"), SubResource("Resource_7yxti"), SubResource("Resource_e3x4f"), SubResource("Resource_4av44"), SubResource("Resource_qm0qn"), SubResource("Resource_e7dwc")])
 
 [node name="BackgroundPanel" type="Panel" parent="." unique_id=595898844]
 custom_minimum_size = Vector2(800, 500)

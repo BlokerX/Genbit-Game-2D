@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://wn1dt8xyy57e"]
 
-[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="1_5oxlb"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="1_5oxlb"]
 [ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_hx11q"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
@@ -14,7 +14,7 @@
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="6_6uf7s"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="6_r7ifn"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="7_6s3yp"]
-[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_6uf7s"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="7_6uf7s"]
 [ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="7_tme40"]
 [ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="8_r7ala"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="9_pgj7d"]

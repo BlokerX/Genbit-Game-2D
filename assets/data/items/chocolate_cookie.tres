@@ -3,22 +3,21 @@
 [ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_1d7vr"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_btncl"]
 [ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="2_p7alj"]
-[ext_resource type="Texture2D" uid="uid://7p5gp34slg45" path="res://assets/textures/samples_examples/cookie.png" id="3_htw1r"]
+[ext_resource type="Texture2D" uid="uid://7p5gp34slg45" path="res://assets/textures/samples_examples/items/cookie.png" id="3_htw1r"]
 
 [sub_resource type="Resource" id="Resource_htw1r"]
 script = ExtResource("2_p7alj")
 metadata/_custom_type_script = "uid://bucrmdkvkkry5"
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("1_1d7vr")
 heal_amount = 49
 effects = Array[ExtResource("1_btncl")]([SubResource("Resource_htw1r")])
 use_cooldown = 6.0
-item_id = 2
+item_id = 10
 item_name = "Choco Cookie"
 item_type = "Consumable"
-item_description = "The delicious cookie! It revials 49 hp but it is hard."
+item_description = "The delicious cookie! It restores 49 HP, but it is hard."
 item_icon = ExtResource("3_htw1r")
 item_is_stackable = true
 item_max_stack_count = 10

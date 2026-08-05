@@ -1,41 +1,57 @@
 shader_type canvas_item;
 
-uniform vec4 line_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
-uniform float line_thickness : hint_range(0, 10) = 1.0;
+// Kolor obramowania
+uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+// Grubość obrysu
+uniform float outline_width : hint_range(0.0, 10.0, 1.0) = 1.0; 
+// 8-kierunkowy (kwadratowy) czy 4-kierunkowy (krzyżyk)
+uniform bool pattern = true;
+
+// 1. MAGIA VERTEX SHADERA: ROZSZERZANIE PŁÓTNA
+void vertex() {
+	// sign(VERTEX) zwraca kierunek narożnika (-1 lub 1). 
+	// Rozsuwamy fizyczne wierzchołki siatki o naszą grubość obrysu.
+	VERTEX += sign(VERTEX) * outline_width;
+}
+
+// Funkcja pomocnicza: pobiera kolor, ale jeśli wyjdziemy poza oryginał obrazka, zwraca absolutną pustkę (transparent)
+vec4 get_texture_color(sampler2D tex, vec2 uv) {
+	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+		return vec4(0.0);
+	}
+	return texture(tex, uv);
+}
 
 void fragment() {
-	vec2 size = TEXTURE_PIXEL_SIZE * line_thickness;
+	// 2. KOREKTA ROZCIĄGANIA
+	// Skoro powiększyliśmy płótno, musimy "skurczyć" mapowanie UV, żeby obrazek nie uległ deformacji.
+	vec2 uv_scale = 1.0 + (TEXTURE_PIXEL_SIZE * outline_width * 2.0);
+	vec2 corrected_uv = (UV - 0.5) * uv_scale + 0.5;
 	
-	// 1. Obliczamy maskę obwódki (szukamy sąsiadów)
-	float alpha_sum = 0.0;
-	alpha_sum += texture(TEXTURE, UV + vec2(-size.x, 0)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(size.x, 0)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(0, -size.y)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(0, size.y)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(-size.x, -size.y)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(size.x, -size.y)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(-size.x, size.y)).a;
-	alpha_sum += texture(TEXTURE, UV + vec2(size.x, size.y)).a;
+	// Pobieramy kolor ze skorygowanego miejsca
+	vec4 sprite_color = get_texture_color(TEXTURE, corrected_uv);
+	float alpha = sprite_color.a;
 	
-	float outline_mask = clamp(alpha_sum, 0.0, 1.0);
+	// Obliczamy rozmiar jednego piksela
+	vec2 size = TEXTURE_PIXEL_SIZE * outline_width;
 	
-	// 2. Pobieramy surowy kolor tekstury
-	vec4 raw_tex = texture(TEXTURE, UV);
+	// 3. RYSOWANIE OBRYSU
+	// Szukamy sąsiednich pikseli używając naszej skorygowanej siatki
+	float outline = get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, 0.0)).a;
+	outline += get_texture_color(TEXTURE, corrected_uv + vec2(0.0, size.y)).a;
+	outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, 0.0)).a;
+	outline += get_texture_color(TEXTURE, corrected_uv + vec2(0.0, -size.y)).a;
 	
-	// 3. Nakładamy MODULACJĘ (COLOR) tylko na grafikę mikstury
-	// Dzięki temu FreezeEffect zabarwi tylko środek
-	vec4 modulated_potion = raw_tex;
+	if (pattern) {
+		outline += get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, size.y)).a;
+		outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, size.y)).a;
+		outline += get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, -size.y)).a;
+		outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, -size.y)).a;
+	}
 	
-	// 4. Izolujemy samą obwódkę (tam gdzie jest sąsiedztwo, ale nie ma środka)
-	// Używamy max(0.0, ...), żeby nie mieć ujemnych wartości
-	float only_outline_area = clamp(outline_mask - raw_tex.a, 0.0, 1.0);
+	outline = min(outline, 1.0);
 	
-	// 5. Łączymy: 
-	// Jeśli jesteśmy w polu mikstury -> rysujemy modulated_potion
-	// Jeśli jesteśmy na zewnątrz (w masce obwódki) -> rysujemy czysty line_color
-	
-	vec4 final_output = mix(modulated_potion, line_color, only_outline_area);
-	
-	// Nadpisujemy COLOR wynikiem, który ma już w sobie uwzględnioną modulację środka
-	COLOR = final_output;
+	// 4. MIESZANIE I WYNIK
+	vec4 final_color = mix(sprite_color, outline_color, outline - alpha);
+	COLOR = vec4(final_color.rgb, max(alpha, outline));
 }

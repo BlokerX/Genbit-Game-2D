@@ -22,7 +22,12 @@ func _process(_delta: float) -> void:
 		var time_left = max_time - current_time
 		
 		cooldown_label.text = "%.1f" % time_left + "s"
-		value = min((current_time / max_time) * 100.0, 100.0)
+		
+		# --- ZABEZPIECZENIE ---
+		if max_time > 0.0:
+			value = min((current_time / max_time) * 100.0, 100.0)
+		else:
+			value = 100.0
 
 # --- REAKCJE NA SYGNAŁY ---
 

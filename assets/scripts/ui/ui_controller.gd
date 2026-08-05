@@ -335,7 +335,9 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 	# 1. Priorytet 1: Jeśli mamy coś w ręku (kursorze), to najpierw wyrzucamy z kursora
 	if item_in_hand != null:
 		var amount_to_drop = item_in_hand.amount if drop_all else 1
-		var dropped_instance = ItemInstance.new(item_in_hand.data, amount_to_drop)
+		var unique_data = item_in_hand.data.duplicate(true)
+		var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
+		
 		dropped_instance.durability = item_in_hand.durability
 		
 		item_in_hand.amount -= amount_to_drop
@@ -380,7 +382,9 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 		# Odrywanie przedmiotu ze slota i rzut
 		if target_slot and not target_slot.is_empty():
 			var amount_to_drop = target_slot.item.amount if drop_all else 1
-			var dropped_instance = ItemInstance.new(target_slot.item.data, amount_to_drop)
+			var unique_data = target_slot.item.data.duplicate(true)
+			var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
+			
 			dropped_instance.durability = target_slot.item.durability
 			
 			target_slot.item.amount -= amount_to_drop
@@ -471,10 +475,12 @@ func _handle_left_click(slot: SlotData) -> void:
 		else:
 			# Kładziemy przedmiot ze wskaźnika w slot plecaka
 			if item_in_hand.data is BackpackItem:
-				# --- NOWOŚĆ: Zabezpieczenie przed stackami ---
+				# Zabezpieczenie przed stackami
 				if item_in_hand.amount > 1:
 					# Odrywamy tylko 1 sztukę
-					var single_bp = ItemInstance.new(item_in_hand.data, 1)
+					var unique_data = item_in_hand.data.duplicate(true)
+					var single_bp = ItemInstance.new(unique_data, 1)
+					
 					single_bp.durability = item_in_hand.durability
 					item_in_hand.amount -= 1
 					
@@ -504,7 +510,7 @@ func _handle_left_click(slot: SlotData) -> void:
 			slot.item = item_in_hand
 			item_in_hand = null
 		else:
-			if slot.item.data.item_id == item_in_hand.data.item_id and item_in_hand.data.item_is_stackable:
+			if slot.item.can_stack_with(item_in_hand):
 				var available_space = slot.item.data.item_max_stack_count - slot.item.amount
 				if available_space > 0:
 					var amount_to_add = min(available_space, item_in_hand.amount)
@@ -523,7 +529,10 @@ func _handle_right_click(slot: SlotData) -> void:
 			if slot.item.amount > 1:
 				@warning_ignore("integer_division")
 				var half_amount = int(slot.item.amount / 2) 
-				item_in_hand = ItemInstance.new(slot.item.data, half_amount)
+				
+				var unique_data = slot.item.data.duplicate(true)
+				item_in_hand = ItemInstance.new(unique_data, half_amount)
+				
 				item_in_hand.durability = slot.item.durability
 				slot.item.amount -= half_amount
 			else:
@@ -531,12 +540,13 @@ func _handle_right_click(slot: SlotData) -> void:
 				slot.clear_slot()
 	else:
 		if slot.is_empty():
-			slot.item = ItemInstance.new(item_in_hand.data, 1)
+			var unique_data = item_in_hand.data.duplicate(true)
+			slot.item = ItemInstance.new(unique_data, 1)
 			slot.item.durability = item_in_hand.durability
 			item_in_hand.amount -= 1
 			if item_in_hand.amount <= 0:
 				item_in_hand = null
-		elif slot.item.data.item_id == item_in_hand.data.item_id and item_in_hand.data.item_is_stackable:
+		elif slot.item.can_stack_with(item_in_hand):
 			if slot.item.amount < slot.item.data.item_max_stack_count:
 				slot.item.amount += 1
 				item_in_hand.amount -= 1
@@ -593,7 +603,10 @@ func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
 		if not slot_data.is_empty() and slot_data.item.data is BackpackItem:
 			if player_inventory.backpack_slot.is_empty():
 				# Tworzymy instancję jednej sztuki (gdyby sakiewki były stackowalne)
-				var single_bp = ItemInstance.new(slot_data.item.data, 1)
+				# ZABEZPIECZENIE DANYCH PLECAKA/SAKIEWKI
+				var unique_data = slot_data.item.data.duplicate(true)
+				var single_bp = ItemInstance.new(unique_data, 1)
+				
 				single_bp.durability = slot_data.item.durability
 				
 				# Odejmujemy sztukę z aktualnego slota

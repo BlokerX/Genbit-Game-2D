@@ -10,6 +10,7 @@ class_name PlacedObject
 @export_category("Health Settings")
 @export var max_health: int = 50 
 var current_health: int
+var is_broken: bool = false
 
 func _ready() -> void:
 	current_health = max_health
@@ -25,12 +26,13 @@ func _on_collected(_player: Node) -> void:
 
 # --- 2. NISZCZENIE PRZEZ ATAK (LEWY KLIK) ---
 func receive_effect(effect: Effect) -> bool:
-	if effect is DamageEffect:
+	if effect is DamageEffect and not is_broken:
 		current_health -= effect.damage_amount
 		print("Skrzynia dostała: ", effect.damage_amount, " obrażeń! Zostało HP: ", current_health)
 		
 		# Skrzynia pęka od ciosów
 		if current_health <= 0:
+			is_broken = true # Blokujemy możliwość wielokrotnego zniszczenia
 			print("Skrzynia zniszczona atakiem - znika bez zwrotu budynku!")
 			_break_and_drop(false) # false oznacza: NIE oddawaj przedmiotu skrzyni
 			
@@ -48,7 +50,11 @@ func _break_and_drop(return_chest_item: bool) -> void:
 	# 1. Jeśli gracz zebrał ją kulturalnie (F), wyrzucamy przedmiot skrzyni na ziemię
 	if return_chest_item and item_to_drop != null and item_pickup_scene != null:
 		var drop = item_pickup_scene.instantiate()
-		var drop_instance = ItemInstance.new(item_to_drop, 1)
+		
+		# TWORZYMY GŁĘBOKĄ KOPIĘ ZWRACANEGO SZABLONU
+		var unique_drop_data = item_to_drop.duplicate(true)
+		var drop_instance = ItemInstance.new(unique_drop_data, 1)
+		
 		drop.set("item", drop_instance)
 		drop.global_position = global_position
 		get_parent().call_deferred("add_child", drop)

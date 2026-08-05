@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="5_r73tf"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="6_ninxk"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="6_r73tf"]
-[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/spider.png" id="7_3xyyd"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="7_3xyyd"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="7_ninxk"]
 [ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_r73tf"]
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="8_ninxk"]
@@ -80,12 +80,13 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6mq0h"]
-size = Vector2(64.5, 64)
+[sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
+radius = 40.0
 
 [node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
 collision_layer = 4
 collision_mask = 7
+motion_mode = 1
 script = ExtResource("1_ydunf")
 respawnVector = Vector2(968, 928)
 movement_universal_script = SubResource("Resource_k1opt")
@@ -113,7 +114,7 @@ scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_pijm0")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
-shape = SubResource("RectangleShape2D_6mq0h")
+shape = SubResource("CircleShape2D_r73tf")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
 [node name="HealthProgressBar" type="ProgressBar" parent="." unique_id=482593767 node_paths=PackedStringArray("character_entity")]
@@ -129,7 +130,7 @@ show_percentage = false
 script = ExtResource("9_rlnf5")
 character_entity = NodePath("..")
 
-[node name="Label2" type="Label" parent="HealthProgressBar" unique_id=1863562766]
+[node name="Label" type="Label" parent="HealthProgressBar" unique_id=1863562766]
 texture_filter = 5
 layout_mode = 0
 offset_right = 64.0

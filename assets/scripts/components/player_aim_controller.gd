@@ -157,7 +157,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 			var best_angle = 0.6 
 			for enemy in nearby_enemies:
 				if not is_instance_valid(enemy): continue
-				var dist = global_position.distance_to(enemy.global_position)
+				var dist = get_edge_distance(enemy)
 				if dist <= best_dist and has_line_of_sight(enemy):
 					var dir_to_enemy = global_position.direction_to(enemy.global_position)
 					var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
@@ -169,14 +169,14 @@ func handle_gamepad_aiming(current_attack_range: float):
 			if last_target != null and is_instance_valid(last_target):
 				var lp = last_target.get_parent()
 				if lp and lp.is_in_group("Enemy"):
-					var dist = global_position.distance_to(lp.global_position)
+					var dist = get_edge_distance(lp)
 					if dist <= best_dist and has_line_of_sight(lp):
 						best_enemy = lp
 						best_dist = dist 
 			
 			for enemy in nearby_enemies:
 				if not is_instance_valid(enemy): continue
-				var dist = global_position.distance_to(enemy.global_position)
+				var dist = get_edge_distance(enemy)
 				if dist < best_dist and has_line_of_sight(enemy):
 					best_dist = dist
 					best_enemy = enemy
@@ -193,7 +193,7 @@ func handle_gamepad_aiming(current_attack_range: float):
 		var best_angle = 0.6 
 		for enemy in nearby_enemies:
 			if not is_instance_valid(enemy): continue
-			var dist = global_position.distance_to(enemy.global_position)
+			var dist = get_edge_distance(enemy)
 			if dist <= current_attack_range: 
 				var dir_to_enemy = global_position.direction_to(enemy.global_position)
 				var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
@@ -263,16 +263,17 @@ func _enforce_distance_check(target: InteractableComponent, current_attack_range
 		var target_parent = target.get_parent()
 		
 		if target_parent and target_parent.is_in_group("Enemy"):
-			var dist_to_enemy = global_position.distance_to(target_parent.global_position)
+			# Używamy Edge-to-Edge!
+			var dist_to_enemy = get_edge_distance(target_parent)
 			if dist_to_enemy <= current_attack_range:
 				is_reachable = true
 		else:
-			var dist_to_object = global_position.distance_to(target.global_position)
-			if dist_to_object <= interaction_distance:
+			# Skrzynki i looty też mierzymy od krawędzi gracza
+			var dist_to_object = get_edge_distance(target)
+			if dist_to_object <= interaction_distance and has_line_of_sight(target):
 				is_reachable = true
 				
-		if not is_reachable:
-			return null
+		if not is_reachable: return null
 	return target
 
 # Sprawdza, czy gracz ma czystą linię strzału/ciosu do celu (nie zasłaniają go ściany)
@@ -326,19 +327,19 @@ func _manage_target_highlight(found_target: InteractableComponent, is_gamepad: b
 			if not should_drop and is_instance_valid(current_target):
 				var is_still_reachable = false
 				var target_parent = current_target.get_parent()
-				
+					
 				if target_parent and target_parent.is_in_group("Enemy"):
-					var dist = global_position.distance_to(target_parent.global_position)
+					var dist = get_edge_distance(target_parent) # Używamy Edge-to-Edge!
 					if dist <= current_attack_range:
 						is_still_reachable = true
 				else:
-					var dist = global_position.distance_to(current_target.global_position)
+					var dist = get_edge_distance(current_target) # Używamy Edge-to-Edge!
 					if dist <= interaction_distance:
 						is_still_reachable = true
 						
 				if not is_still_reachable:
 					should_drop = true
-					dropped_due_to_distance = true 
+					dropped_due_to_distance = true
 			
 			elif not is_instance_valid(current_target):
 				should_drop = true
@@ -368,5 +369,20 @@ func is_target_building() -> bool :
 	if potential_target is PlacedObject :
 		return true
 	return false
+
+func get_edge_distance(target_node: Node2D) -> float:
+	if not is_instance_valid(target_node): return INF
+	
+	# Promień Gracza
+	var my_radius = 20.0
+	if get_parent() and "combat_radius" in get_parent():
+		my_radius = get_parent().combat_radius
+		
+	# Promień Celu (Wroga / Skrzyni)
+	var target_radius = 20.0
+	if "combat_radius" in target_node:
+		target_radius = target_node.combat_radius
+	
+	return max(0.0, global_position.distance_to(target_node.global_position) - (my_radius + target_radius))
 
 #endregion

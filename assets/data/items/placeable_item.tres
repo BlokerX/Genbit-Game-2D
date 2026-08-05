@@ -1,12 +1,11 @@
 [gd_resource type="Resource" script_class="PlaceableItem" format=3 uid="uid://cybctusoi7i26"]
 
-[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="1_hlhqm"]
+[ext_resource type="Texture2D" uid="uid://banakbfg1ibtj" path="res://assets/textures/samples_examples/items/orange_potion_v2.png" id="1_hlhqm"]
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="2_hlhqm"]
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("2_hlhqm")
 scene_path = "uid://c4txjjfeoqbcr"
-item_id = 19
+item_id = 22
 item_icon = ExtResource("1_hlhqm")
 item_is_stackable = true

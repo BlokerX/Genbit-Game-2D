@@ -12,6 +12,9 @@ class_name CharacterEntity
 @export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
 @export var loot_drop_script : LootDropComponent
 
+## Indywidualna grubość postaci do walki ---
+@export var combat_radius: float = 40.0
+
 @export var character_sprite : Sprite2D
 
 @export var effects_collector : Node

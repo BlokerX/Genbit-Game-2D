@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BackpackItem" format=3 uid="uid://3u70th2n4bo"]
+
+[ext_resource type="Texture2D" uid="uid://2hsmupd4g5d" path="res://assets/textures/samples_examples/items/purse.png" id="1_nedpy"]
+[ext_resource type="Script" uid="uid://bx57ryojee8n2" path="res://assets/scripts/entities/items/backpack_item.gd" id="2_mcwss"]
+
+[resource]
+script = ExtResource("2_mcwss")
+extra_slots_count = 1
+item_id = 4
+item_name = "Purse"
+item_type = "BackpackItem"
+item_description = "One slot up."
+item_icon = ExtResource("1_nedpy")
+item_is_stackable = true
+item_max_stack_count = 10

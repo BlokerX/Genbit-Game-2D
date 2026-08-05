@@ -153,14 +153,18 @@ func try_place_object() -> bool:
 	# Skoro miejsce jest wolne, tworzymy WŁAŚCIWY obiekt.
 	var final_instance = current_build_scene.instantiate()
 	
-	# --- NOWOŚĆ: Przekazanie Duszy (ItemInstance) ---
+	# Przekazanie Duszy (ItemInstance)
 	# Jeżeli nasz nowy obiekt wspiera zapisywanie stanu przedmiotu (PlacedObject)
 	if final_instance is PlacedObject:
-		# Pobieramy tę jedną konkretną instancję, którą gracz trzyma w ręce
 		var hand_item = player.get_inventory().get_current_item()
 		
-		# Używamy bezpiecznej metody set(), która ignoruje błędy starego cache'u Godota
-		final_instance.set("item_instance", hand_item)
+		# TWORZYMY UNIKALNĄ INSTANCJĘ (1 SZTUKA) ZAMIAST DZIELIĆ JĄ Z EKWIPUNKIEM
+		var unique_item_data = hand_item.data.duplicate(true)
+		var placed_item_instance = ItemInstance.new(unique_item_data, 1)
+		placed_item_instance.durability = hand_item.durability
+		
+		# Używamy bezpiecznej metody set(), aby przekazać naszego KLONA
+		final_instance.set("item_instance", placed_item_instance)
 	
 	# Kopiujemy obrót z ducha do docelowego obiektu!
 	final_instance.rotation_degrees = current_rotation_degrees
@@ -173,21 +177,68 @@ func try_place_object() -> bool:
 
 # Wewnętrzna funkcja sprawdzająca kolizje (podświetla na zielono/czerwono).
 func _validate_placement() -> void:
+	can_place_here = true
+	var is_blocked = false
 	var area = ghost_instance.get_node_or_null("BuildArea")
 	
 	if area and area is Area2D:
-		var overlapping_bodies = area.get_overlapping_bodies()
-		var overlapping_areas = area.get_overlapping_areas()
-		
-		if overlapping_bodies.size() > 0 or overlapping_areas.size() > 0:
-			can_place_here = false
-			_update_ghost_color(Color(1.0, 0.0, 0.0, 0.75))
+		var col_shape = area.get_node_or_null("CollisionShape2D")
+		if col_shape and col_shape.shape:
+			# NATYCHMIASTOWE ZAPYTANIE DO SILNIKA FIZYKI
+			var space_state = ghost_instance.get_world_2d().direct_space_state
+			var query = PhysicsShapeQueryParameters2D.new()
+			query.shape = col_shape.shape
+			query.transform = col_shape.global_transform
+			query.collision_mask = area.collision_mask
+			query.collide_with_bodies = true
+			query.collide_with_areas = true # Sprawdzamy też obszary innych budynków
+			
+			var results = space_state.intersect_shape(query)
+			
+			for res in results:
+				var collider = res.collider
+				
+				# --- WSPINACZKA PO DRZEWIE ---
+				# Sprawdzamy, czy uderzyliśmy w sam obiekt, czy w jakieś jego dziecko (np. Area2D)
+				var current_node = collider
+				var should_ignore = false
+				
+				while current_node != null:
+					# Ignorujemy samego ducha i przedmioty leżące na ziemi
+					if current_node == ghost_instance or current_node is ItemPickup:
+						should_ignore = true
+						break
+					current_node = current_node.get_parent()
+					
+				if should_ignore:
+					continue
+				# -----------------------------
+					
+				# Jeśli dotarliśmy tutaj, to trafiliśmy na inną ścianę, wroga lub skrzynię - BLOKUJEMY
+				is_blocked = true
+				break
 		else:
-			can_place_here = true
-			_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75))
+			# Fallback, jeśli nie ma CollisionShape2D
+			for body in area.get_overlapping_bodies():
+				var current_node = body
+				var should_ignore = false
+				
+				while current_node != null:
+					if current_node == ghost_instance or current_node is ItemPickup:
+						should_ignore = true
+						break
+					current_node = current_node.get_parent()
+					
+				if not should_ignore:
+					is_blocked = true
+					break
+
+	if is_blocked:
+		can_place_here = false
+		_update_ghost_color(Color(1.0, 0.0, 0.0, 0.75)) # Czerwony - Zablokowane
 	else:
 		can_place_here = true
-		_update_ghost_color(Color(1.0, 1.0, 1.0, 0.75))
+		_update_ghost_color(Color(0.0, 1.0, 0.0, 0.75)) # Zielony - Wolne
 
 func _update_ghost_color(color: Color) -> void:
 	if "modulate" in ghost_instance:

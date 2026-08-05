@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/movement/special_instations/player_movement_component.tres" id="3_hsamt"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player_monitored_life_stats_component.tres" id="4_b3dqe"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/scripts/entities/stats/special_instations/player_interaction_and_attack_stats_component.tres" id="5_u84jc"]
-[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/example_avatar.png" id="6_q3ml6"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="6_q3ml6"]
 [ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="6_yfi7d"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/components/inventory.gd" id="8_2tf2h"]
@@ -14,13 +14,14 @@
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="11_b3dqe"]
 [ext_resource type="Script" uid="uid://cpra3wi61tf27" path="res://assets/scripts/components/builder_component.gd" id="11_yfi7d"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_p58j5"]
-size = Vector2(59, 100)
+[sub_resource type="CircleShape2D" id="CircleShape2D_b3dqe"]
+radius = 40.0
 
 [node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("attack_component", "inventory", "item_thrower_component", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
 collision_mask = 7
+motion_mode = 1
 script = ExtResource("1_hyvrl")
 attack_component = NodePath("AttackComponent")
 inventory = NodePath("Inventory")
@@ -80,5 +81,5 @@ texture_filter = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1127700823]
 position = Vector2(-0.5, 0)
-shape = SubResource("RectangleShape2D_p58j5")
+shape = SubResource("CircleShape2D_b3dqe")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)

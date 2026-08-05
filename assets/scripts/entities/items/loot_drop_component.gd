@@ -36,10 +36,13 @@ func perform_drop(spawner: Node2D) -> void:
 		if pickup_instance == null:
 			push_error("LootDropComponent: Zła scena! Przypisana scena nie posiada skryptu ItemPickup!")
 			continue
-			
+		
+		# TWORZYMY GŁĘBOKĄ KOPIĘ SZABLONU Z TABELI LOOTU
+		var unique_loot_data = loot_item.item_data.duplicate(true)
+		
 		# Losujemy ilość i generujemy CAŁKOWICIE NOWĄ instancję przedmiotu w momencie wypadnięcia!
 		var dropped_amount = randi_range(loot_item.min_amount, loot_item.max_amount)
-		var new_instance = ItemInstance.new(loot_item.item_data, dropped_amount)
+		var new_instance = ItemInstance.new(unique_loot_data, dropped_amount)
 		
 		# Przypisujemy gotową, spakowaną instancję do zmiennej na ziemi
 		pickup_instance.item = new_instance

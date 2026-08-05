@@ -1,12 +1,17 @@
 [gd_scene format=3 uid="uid://d1pwrfy72pr74"]
 
 [ext_resource type="Script" uid="uid://cly3qdibifi7w" path="res://assets/scripts/entities/items/item_pickup.gd" id="1_wtsmv"]
-[ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/green_potion.png" id="2_wtsmv"]
+[ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="2_pethx"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="3_6y1va"]
+[ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/items/_blank_item.png" id="3_pethx"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_wtsmv"]
 friction = 0.1
 bounce = 0.6
+
+[sub_resource type="Resource" id="Resource_n3mvt"]
+script = ExtResource("2_pethx")
+metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ndfam"]
 radius = 33.0
@@ -16,7 +21,7 @@ radius = 20.0
 
 [node name="ItemPickup" type="RigidBody2D" unique_id=889212379 groups=["ItemPickup"]]
 collision_layer = 8
-collision_mask = 9
+collision_mask = 15
 mass = 0.3
 physics_material_override = SubResource("PhysicsMaterial_wtsmv")
 gravity_scale = 0.0
@@ -24,11 +29,12 @@ can_sleep = false
 lock_rotation = true
 linear_damp = 8.0
 script = ExtResource("1_wtsmv")
+item = SubResource("Resource_n3mvt")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1192154879]
 texture_filter = 5
 scale = Vector2(3, 3)
-texture = ExtResource("2_wtsmv")
+texture = ExtResource("3_pethx")
 
 [node name="PhysicsShape" type="CollisionShape2D" parent="." unique_id=573150768]
 shape = SubResource("CircleShape2D_ndfam")

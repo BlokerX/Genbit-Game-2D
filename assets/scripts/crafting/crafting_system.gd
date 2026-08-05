@@ -21,15 +21,19 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 		
 	# 2. PĘTLA: Przyznanie wszystkich nagród (np. Szkło + Kapsel)
 	for result in recipe.results:
-		if result.item_data == null: continue
+		if result.item_data == null: 
+			continue
+		
+		# TWORZYMY GŁĘBOKĄ KOPIĘ SZABLONU Z RECEPTURY
+		var unique_result_data = result.item_data.duplicate(true)
 		
 		# Losujemy ilość z przedziału min-max
 		var amount_to_give = randi_range(result.min_amount, result.max_amount)
-		var leftovers = inventory.add_item(result.item_data, amount_to_give)
+		var leftovers = inventory.add_item(unique_result_data, amount_to_give)
 		
 		# Jeśli brakło miejsca, wyrzucamy nadmiar na ziemię (false = wypadnięcie bez użycia siły rzutu)
 		if leftovers > 0:
-			var leftover_instance = ItemInstance.new(result.item_data, leftovers)
+			var leftover_instance = ItemInstance.new(unique_result_data, leftovers)
 			inventory.item_dropped.emit(leftover_instance, false)
 			
 	print("Crafting: Przetworzono przepis: ", recipe.recipe_name)

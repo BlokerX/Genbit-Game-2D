@@ -1,13 +1,12 @@
 [gd_resource type="Resource" script_class="PlaceableItem" format=3 uid="uid://b8exeqhxd52o2"]
 
-[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/chest_pixel_art.png" id="1_6aqdg"]
+[ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="1_6aqdg"]
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="2_rymd2"]
 
 [resource]
-resource_local_to_scene = true
 script = ExtResource("2_rymd2")
 scene_path = "uid://bnk5e152g3104"
-item_id = 20
+item_id = 21
 item_name = "Chest"
 item_type = "Placeable Item"
 item_description = "A buildable chest."
