@@ -343,10 +343,10 @@ func _run_director_spawner() -> void:
 				var entry = item_pool.get_random_entry()
 				
 				if entry != null and entry.item_data != null:
-					# Zgodnie z życzeniem - na ziemi ignorujemy zduplikowane sloty, po prostu upuszczamy jeden przedmiot
 					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
-					var unique_data = entry.item_data.duplicate(true)
-					pickup.item = ItemInstance.new(unique_data, randi_range(entry.min_amount, entry.max_amount))
+					
+					# --- ZMIANA TUTAJ: Używamy nowej fabryki ---
+					pickup.item = _create_instance_from_entry(entry)
 					
 					var random_offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
 					_instantiate_node(pickup, marker.global_position + random_offset, parent_node)
@@ -369,12 +369,11 @@ func _fill_hybrid_containers(node: Node) -> void:
 				for i in range(rolls_to_make):
 					var entry = item_pool.get_random_entry()
 					if entry != null and entry.item_data != null:
-						# Sprawdzamy, ile razy ten item ma się pojawić jako zduplikowane entry
 						var duplicated_entries = max(1, randi_range(entry.min_slots, entry.max_slots))
 						
 						for s in range(duplicated_entries):
-							var unique_data = entry.item_data.duplicate(true)
-							var item_inst = ItemInstance.new(unique_data, randi_range(entry.min_amount, entry.max_amount))
+							# --- ZMIANA TUTAJ: Używamy nowej fabryki ---
+							var item_inst = _create_instance_from_entry(entry)
 							generated_loot.append(item_inst)
 				
 				# Mamy teraz gotową listę lootu! Np: [Miecz, Ciastko, Ciastko, Knife]
@@ -410,6 +409,34 @@ func _instantiate_node(instance: Node, pos: Vector2, parent: Node) -> void:
 	parent.add_child(instance)
 	if "global_position" in instance:
 		instance.global_position = pos
+
+## Tworzy fizyczną instancję przedmiotu na podstawie wpisu z puli,
+## uwzględniając ilość oraz dwa tryby losowania wytrzymałości.
+func _create_instance_from_entry(entry: ItemLootEntry) -> ItemInstance:
+	var unique_data = entry.item_data.duplicate(true)
+	var amount = randi_range(entry.min_amount, entry.max_amount)
+	
+	# Tworzymy instancję (konstruktor _init automatycznie ustawi durability na max_durable)
+	var instance = ItemInstance.new(unique_data, amount)
+	
+	# Jeśli wpis wymusza zużycie i przedmiot faktycznie może się zepsuć
+	if entry.randomize_durability and unique_data.max_durable > 0:
+		var new_durability: int = unique_data.max_durable
+		
+		# Sprawdzamy wybrany przez Ciebie w Inspektorze tryb
+		if entry.durability_mode == ItemLootEntry.DurabilityRollMode.PERCENTAGE:
+			var dur_percent = randf_range(entry.min_durability_percent, entry.max_durability_percent)
+			new_durability = int(float(unique_data.max_durable) * dur_percent)
+		else:
+			# Tryb EXACT_VALUE (Twarde Cyfry)
+			new_durability = randi_range(entry.min_exact_durability, entry.max_exact_durability)
+		
+		# CLAMPI (Zabezpieczenie): 
+		# Upewniamy się, że wylosowana wartość nigdy nie spadnie poniżej 1 (żeby przedmiot nie pękł w rękach) 
+		# i nigdy nie przekroczy oryginalnego max_durable (żebyś przypadkiem nie stworzył miecza z 999 użyciami, gdy max to 50).
+		instance.durability = clampi(new_durability, 1, unique_data.max_durable)
+		
+	return instance
 
 #endregion
 

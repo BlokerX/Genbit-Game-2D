@@ -16,6 +16,9 @@ class_name InventorySlot
 # Pobieramy nasz nowy węzeł z cyferką
 @onready var amount_label: Label = $AmountLabel
 
+## Pasek wytrzymałości
+@onready var durability_bar: ProgressBar = $DurabilityBar
+
 var is_storage_slot: bool = false
 var slot_index: int = -1
 var parent_reference: Node = null 
@@ -47,6 +50,38 @@ func update_slot(slot: SlotData) -> void:
 		else:
 			amount_label.hide()
 			
+		# --- NOWOŚĆ: SYSTEM PASKA WYTRZYMAŁOŚCI ---
+		# Sprawdzamy, czy ten konkretny przedmiot w ogóle może się zepsuć
+		if slot.item.data.max_durable > 0:
+			durability_bar.show()
+			durability_bar.max_value = slot.item.data.max_durable
+			durability_bar.value = slot.item.durability
+			
+			# Obliczamy procent zużycia (od 0.0 do 1.0)
+			var percentage = float(slot.item.durability) / float(slot.item.data.max_durable)
+			var bar_color = Color.GREEN
+			
+			# Zmiana kolorów w stylu Minecrafta
+			if percentage <= 0.2:
+				bar_color = Color.RED # Mniej niż 20% - Czerwony!
+			elif percentage <= 0.5:
+				bar_color = Color.ORANGE # Mniej niż 50% - Pomarańczowy
+			elif percentage <= 0.8:
+				bar_color = Color.GREEN_YELLOW # Mniej niż 80% - Żółtawy
+				
+			# Dynamiczne tworzenie stylu dla wypełnienia paska
+			var fill_stylebox = StyleBoxFlat.new()
+			fill_stylebox.bg_color = bar_color
+			durability_bar.add_theme_stylebox_override("fill", fill_stylebox)
+			
+			# Dynamiczne tworzenie tła paska
+			var bg_stylebox = StyleBoxFlat.new()
+			bg_stylebox.bg_color = Color(0, 0, 0, 0.8)
+			durability_bar.add_theme_stylebox_override("background", bg_stylebox)
+		else:
+			# Jeśli przedmiot jest niezniszczalny (np. jedzenie), chowamy pasek
+			durability_bar.hide()
+			
 		# --- GENEROWANIE INFORMACJI W TOOLTIPIE ---
 		if show_tooltip:
 			var item_data = slot.item.data
@@ -56,7 +91,7 @@ func update_slot(slot: SlotData) -> void:
 			if item_data.item_description != "":
 				tooltip_info += item_data.item_description + "\n\n"
 				
-			# Jeśli przedmiot psuje się, pokazujemy jego wytrzymałość
+			# Jeśli przedmiot psuje się, pokazujemy jego wytrzymałość w dymku
 			if item_data.max_durable > 0:
 				tooltip_info += "Wytrzymałość: " + str(slot.item.durability) + " / " + str(item_data.max_durable) + "\n"
 				
@@ -83,6 +118,7 @@ func update_slot(slot: SlotData) -> void:
 		icon_rect.texture = null
 		icon_rect.hide()
 		amount_label.hide()
+		durability_bar.hide() # Ukrywamy również pasek!
 		self.tooltip_text = "" # Czyścimy dymek dla pustego slota!
 
 # Funkcja zmieniająca teksturę w zależności od stanu

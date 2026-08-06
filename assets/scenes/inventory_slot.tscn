@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://bsch3qct65o3k" path="res://assets/textures/samples_examples/inventory_slots/inventory_slot.png" id="1_pke63"]
 [ext_resource type="Script" uid="uid://78bshyjxfqm8" path="res://assets/scripts/entities/inventory/inventory_slot.gd" id="2_yoomp"]
 [ext_resource type="Texture2D" uid="uid://dgw1pwusrsxel" path="res://assets/textures/samples_examples/inventory_slots/inventory_active_slot.png" id="3_aeatn"]
+[ext_resource type="StyleBox" uid="uid://cg6w705uowxay" path="res://assets/themes/theme_overrides/DurabilityPointsBarStyleBoxFlat.tres" id="4_yoomp"]
 
 [node name="Slot" type="TextureRect" unique_id=1315751759]
 texture_filter = 5
@@ -25,6 +26,22 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
+[node name="DurabilityBar" type="ProgressBar" parent="." unique_id=1324640457]
+texture_filter = 5
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/background = ExtResource("4_yoomp")
+show_percentage = false
+
 [node name="AmountLabel" type="Label" parent="." unique_id=1501469114]
 texture_filter = 5
 layout_mode = 1
@@ -33,8 +50,8 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -6.0
-offset_top = -8.0
+offset_left = -19.0
+offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
