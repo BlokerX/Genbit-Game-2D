@@ -324,62 +324,77 @@ func _run_director_spawner() -> void:
 	var entities_node = find_child("Entities")
 	var parent_node = entities_node if entities_node else self
 	
-	# 1. SYSTEM WROGÓW (Tylko Sceny, pełne bezpieczeństwo typów)
 	if enemy_pool != null:
 		for marker in enemy_spawns:
 			if randf() <= enemy_spawn_chance:
 				var scene = enemy_pool.get_random_enemy_scene()
 				_instantiate_scene(scene, marker.global_position, parent_node)
 				
-	# 2. SYSTEM OBIEKTÓW (Tylko Sceny Skrzyń/Beczek)
 	if object_pool != null:
 		for marker in object_spawns:
 			if randf() <= object_spawn_chance:
 				var scene = object_pool.get_random_object_scene()
 				_instantiate_scene(scene, marker.global_position, parent_node)
 				
-	# 3. SYSTEM PRZEDMIOTÓW NA ZIEMI (ItemData -> ItemInstance -> ItemPickup)
+	# 3. SYSTEM PRZEDMIOTÓW NA ZIEMI (Luzem)
 	if item_pool != null:
 		for marker in item_spawns:
 			if randf() <= item_spawn_chance:
-				var item_instance = item_pool.get_random_item_instance()
-				if item_instance != null:
+				var entry = item_pool.get_random_entry()
+				
+				if entry != null and entry.item_data != null:
+					# Zgodnie z życzeniem - na ziemi ignorujemy zduplikowane sloty, po prostu upuszczamy jeden przedmiot
 					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
-					pickup.item = item_instance
-					_instantiate_node(pickup, marker.global_position, parent_node)
+					var unique_data = entry.item_data.duplicate(true)
+					pickup.item = ItemInstance.new(unique_data, randi_range(entry.min_amount, entry.max_amount))
+					
+					var random_offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
+					_instantiate_node(pickup, marker.global_position + random_offset, parent_node)
 
-## Faza Hybrydowa: Wstrzykuje ItemInstance w LOSOWE sloty komponentu skrzyni
+## Faza Hybrydowa: KROK 1 (Tworzenie listy lootu) -> KROK 2 (Rozrzucanie po skrzyni)
 func _fill_hybrid_containers(node: Node) -> void:
 	for child in node.get_children():
-		
-		# Wyszukujemy komponent StorageComponent 
 		var storage = child.get_node_or_null("StorageComponent")
 		
 		if storage != null and not child.has_meta("is_filled_by_director"):
 			child.set_meta("is_filled_by_director", true) 
 			
 			if item_pool != null:
-				var items_to_generate = randi_range(1, 3)
-				for i in range(items_to_generate):
-					var item_instance = item_pool.get_random_item_instance()
-					if item_instance != null:
+				# Ile razy Reżyser zakręci kołem fortuny dla tej skrzyni? (np. 3 razy)
+				var rolls_to_make = randi_range(2, 4) 
+				
+				# === KROK 1: GENEROWANIE PULI PRZEDMIOTÓW ===
+				var generated_loot: Array[ItemInstance] = []
+				
+				for i in range(rolls_to_make):
+					var entry = item_pool.get_random_entry()
+					if entry != null and entry.item_data != null:
+						# Sprawdzamy, ile razy ten item ma się pojawić jako zduplikowane entry
+						var duplicated_entries = max(1, randi_range(entry.min_slots, entry.max_slots))
 						
-						# --- NOWOŚĆ: Losowe rozmieszczenie w skrzyni ---
-						var empty_slot_indexes: Array[int] = []
-						
-						# 1. Zbieramy indeksy WSZYSTKICH pustych slotów w tej konkretnej skrzyni
-						for slot_idx in range(storage.slots.size()):
-							if storage.slots[slot_idx].is_empty():
-								empty_slot_indexes.append(slot_idx)
-						
-						# 2. Jeśli mamy jakiekolwiek wolne miejsce, losujemy jedno z nich
-						if empty_slot_indexes.size() > 0:
-							var random_slot_idx = empty_slot_indexes.pick_random()
-							storage.slots[random_slot_idx].item = item_instance
-						else:
-							# Fallback: Jeśli dziwnym trafem wylosowało więcej przedmiotów niż skrzynia ma miejsc,
-							# używamy domyślnego wkładania (które np. połączy stackowalne przedmioty)
-							storage.insert_instance(item_instance)
+						for s in range(duplicated_entries):
+							var unique_data = entry.item_data.duplicate(true)
+							var item_inst = ItemInstance.new(unique_data, randi_range(entry.min_amount, entry.max_amount))
+							generated_loot.append(item_inst)
+				
+				# Mamy teraz gotową listę lootu! Np: [Miecz, Ciastko, Ciastko, Knife]
+				
+				# === KROK 2: ROZRZUCANIE PO PUSTYCH SLOTACH ===
+				for item_inst in generated_loot:
+					# Zbieramy wszystkie puste miejsca w skrzyni dla KAŻDEGO przedmiotu na nowo
+					var empty_slot_indexes: Array[int] = []
+					for slot_idx in range(storage.slots.size()):
+						if storage.slots[slot_idx].is_empty():
+							empty_slot_indexes.append(slot_idx)
+							
+					if not empty_slot_indexes.is_empty():
+						# Jeśli są wolne kratki, losujemy jedną z nich!
+						var random_slot_idx = empty_slot_indexes.pick_random()
+						storage.slots[random_slot_idx].item = item_inst
+					else:
+						# Fallback (skrzynia pełna) - wrzucamy systemowo (np. spróbuje połączyć stacki)
+						if storage.has_method("insert_instance"):
+							storage.insert_instance(item_inst)
 						
 		if child.get_child_count() > 0:
 			_fill_hybrid_containers(child)

@@ -14,54 +14,58 @@
 [sub_resource type="Resource" id="Resource_ed2q3"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("2_po22t")
-max_amount = 10
+weight = 20.0
+max_amount = 2
+max_slots = 2
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_6wa1p"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("3_372aw")
-max_amount = 24
-weight = 40.0
+max_amount = 2
+max_slots = 3
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_7m0hv"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("4_6wa1p")
-weight = 20.0
+weight = 2.0
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_l61ub"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("5_sifal")
-max_amount = 10
-weight = 60.0
+weight = 25.0
+max_amount = 2
+max_slots = 3
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_2tnpd"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("5_ytdl7")
-max_amount = 10
-weight = 22.0
+weight = 7.0
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_abohg"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("6_g0l7h")
-max_amount = 10
-weight = 35.0
+weight = 15.0
+max_amount = 2
+max_slots = 2
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_s0p1o"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("7_sifal")
-max_amount = 5
-weight = 65.0
+weight = 40.0
+max_amount = 2
+max_slots = 2
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [sub_resource type="Resource" id="Resource_daqc1"]
 script = ExtResource("1_40rjk")
 item_data = ExtResource("8_g0l7h")
-weight = 45.0
+max_slots = 2
 metadata/_custom_type_script = "uid://di4apywurdjiw"
 
 [resource]
