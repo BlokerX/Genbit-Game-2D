@@ -47,7 +47,8 @@ func _ready() -> void:
 	for child in get_children():
 		if child is Room:
 			register_room(child)
-			if child != starting_room :
+			# Ukrywamy wszystko oprócz pokoju startowego, by nie obciążać silnika
+			if child != starting_room:
 				remove_child(child)
 	
 	# 1. NAJPIERW z centralnego poziomu spawnujemy fizyczne drzwi tam, gdzie oba pokoje się zgadzają
@@ -55,9 +56,53 @@ func _ready() -> void:
 	# 2. POTEM Auto-Linker zszywa wszystkie drzwi (te wstawione ręcznie i te wstawione przez automat)
 	_auto_link_doors()
 	
-	# Wejście do pokoju startowego
-	if starting_room:
-		change_room(starting_room)
+	# --- SYSTEM ODBIERANIA GRACZA Z INNEGO POZIOMU ---
+	var room_to_load: Room = starting_room
+	var spawn_node: Node2D = null
+	
+	# Sprawdzamy, czy w GlobalLevelManagerze jest zapisany cel podróży
+	if GlobalLevelManager.target_entrance_id != "":
+		var entrance = _find_entrance_by_id(GlobalLevelManager.target_entrance_id)
+		if entrance:
+			# Znaleźliśmy nasze wejście! Szukamy, w którym pokoju ono leży.
+			room_to_load = _get_room_of_node(entrance)
+			spawn_node = entrance
+		else:
+			push_error("Map: Nie znaleziono wejścia o ID: " + GlobalLevelManager.target_entrance_id)
+			
+		# Czyścimy ID w chmurze, żeby przy kolejnym respawnie (np. po śmierci) nie psuło logiki
+		GlobalLevelManager.target_entrance_id = ""
+	
+	# Ładujemy ustalony pokój i OD RAZU wrzucamy do niego gracza
+	if room_to_load:
+		# Upewniamy się, że pokój jest dodany do drzewa sceny przed zmianą
+		if not room_to_load.is_inside_tree():
+			add_child(room_to_load)
+		
+		# Wywołujemy naszą pełną funkcję change_room, która poprawnie schowa i zagnieździ gracza!
+		# --- KLUCZOWA ZMIANA: call_deferred czeka, aż cały silnik i gracz wstaną ---
+		call_deferred("change_room", room_to_load, spawn_node)
+		
+		# Rozjaśniamy ekran przy wejściu do nowej mapy!
+		TransitionManager.fade_to_normal(0.4)
+
+## Funkcja pomocnicza: Szuka po ID wejścia na całej mapie
+func _find_entrance_by_id(id: String) -> LevelEntrance:
+	for room in all_rooms:
+		# Przeszukujemy dzieci pokoju w poszukiwaniu klasy LevelEntrance
+		for child in room.find_children("*", "LevelEntrance", true, false):
+			if child.my_entrance_id == id:
+				return child as LevelEntrance
+	return null
+
+## Funkcja pomocnicza: Zwraca pokój, do którego należy dany węzeł
+func _get_room_of_node(node: Node) -> Room:
+	var current = node
+	while current != null:
+		if current is Room:
+			return current
+		current = current.get_parent()
+	return null
 
 # --- FUNKCJE DYNAMIKI MAPY ---
 
@@ -117,11 +162,13 @@ func _discover_neighboring_rooms(room: Room) -> void:
 				discover_room(neighbor_room) # Odkrywamy go na mapie
 
 ## Funkcja zmiany pokoju
-func change_room(new_room: Room, target_door: Door = null) -> void:
+func change_room(new_room: Room, target_door: Node2D = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
 	var old_room = current_room
+	# Zabezpieczenie przed usuwaniem pokoju, w którym już jesteśmy (Respawn)
+	var is_same_room = (old_room == new_room)
 	
 	# ODCZYTANIE TRYBU Z NOWEGO POKOJU (Zabezpieczenie: FADE jako domyślny)
 	var mode = new_room.transition_mode if "transition_mode" in new_room else 0
@@ -129,8 +176,8 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	var do_slide = (mode == 1 or mode == 2) # SLIDE lub BOTH
 	
 	# --- Zabezpieczenie pierwszego pokoju (Start Gry / Miękki Respawn) ---
-	if old_room == null:
-		do_slide = false # Wymuszamy brak przesuwania, zostaje FADE lub nic (Instant)
+	if old_room == null or is_same_room:
+		do_slide = false # Wymuszamy brak przesuwania na starcie i przy respawnie
 	
 	# ZAMROŻENIE GRACZA NA CZAS ZMIANY
 	if player:
@@ -139,8 +186,8 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		# WYŁĄCZENIE FIZYKI GRACZA (żeby ściany go nie wyrzuciły przy przesuwaniu!)
 		player.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# WYŁĄCZENIE FIZYKI STAREGO POKOJU (ściany stają się "duchami")
-	if old_room:
+	# Wyłączamy fizykę tylko jeśli faktycznie opuszczamy stary pokój
+	if old_room and not is_same_room:
 		old_room.process_mode = Node.PROCESS_MODE_DISABLED
 
 	# ŚCIEMNIENIE EKRANU
@@ -163,9 +210,10 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 
 	# 2. OBLICZANIE WEKTORA PRZESUNIĘCIA (Jeśli to tryb SLIDE/BOTH)
 	var slide_vector = Vector2.ZERO
-	if do_slide and target_door and old_room:
-		var dir_offset = target_door.get_direction_offset()
-		slide_vector = Vector2(-dir_offset.x * current_room.size_px.x, -dir_offset.y * current_room.size_px.y)
+	if do_slide and target_door and old_room and not is_same_room:
+		if target_door is Door:
+			var dir_offset = target_door.get_direction_offset()
+			slide_vector = Vector2(-dir_offset.x * current_room.size_px.x, -dir_offset.y * current_room.size_px.y)
 
 	# 3. Dodajemy nowy pokój do sceny
 	current_room.position = slide_vector # Ustawia offset jeśli SLIDE, inaczej Vector2.ZERO
@@ -174,9 +222,9 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	if not current_room.is_inside_tree():
 		add_child(current_room)
 		
-	# Jeśli to TYLKO FADE, bezpiecznie usuwamy stary pokój od razu
-	if not do_slide and old_room:
-		old_room.process_mode = Node.PROCESS_MODE_INHERIT # Przywracamy mu fizykę pod maską
+	# Usuwamy stary pokój tylko jeśli to był INNY pokój
+	if not do_slide and old_room and not is_same_room:
+		old_room.process_mode = Node.PROCESS_MODE_INHERIT
 		_disconnect_door_signals(old_room)
 		if old_room.is_inside_tree():
 			remove_child(old_room)
@@ -201,9 +249,26 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			target_parent = current_room
 		target_parent.add_child(player)
 		
-		# Pozycjonowanie
-		if target_door and target_door.spawn_point:
-			player.global_position = target_door.spawn_point.global_position
+		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
+		if target_door:
+			if "spawn_point" in target_door and target_door.spawn_point != null:
+				if target_door is Door and target_door.spawn_point.position.length() > 5.0:
+					player.global_position = target_door.spawn_point.global_position
+				elif target_door is Door:
+					var inward_dir = -Vector2(target_door.get_direction_offset())
+					var safe_push_distance = 64.0
+					player.global_position = target_door.global_position + (inward_dir * safe_push_distance)
+				else:
+					player.global_position = target_door.spawn_point.global_position
+			else:
+				player.global_position = target_door.global_position
+		else:
+			# BRAK DRZWI: To jest Start Gry lub Respawn klawiszem R!
+			if current_room.spawn_points.size() > 0:
+				player.global_position = current_room.spawn_points[0].global_position
+			else:
+				player.global_position = current_room.global_position + (current_room.size_px / 2.0)
+		# ------------------------------------------------------------------------
 		
 		# Nakładamy nowe efekty typu AURA (nieskończone)
 		for effect in current_room.ambient_aura_effects:
@@ -246,13 +311,13 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 		var anim_duration = 0.45
 		
 		tween.tween_property(current_room, "position", Vector2.ZERO, anim_duration)
-		if old_room:
+		if old_room and not is_same_room:
 			tween.tween_property(old_room, "position", -slide_vector, anim_duration)
 			
 		await tween.finished
 		
 		# Sprzątanie starego pokoju PO ANIMACJI
-		if old_room:
+		if old_room and not is_same_room:
 			old_room.process_mode = Node.PROCESS_MODE_INHERIT # Przywracamy fizykę dla historii odwiedzonych
 			_disconnect_door_signals(old_room)
 			if old_room.is_inside_tree():

@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://b0mlsnkqjtutp"]
+
+[ext_resource type="Script" uid="uid://b14rqc04o4cj8" path="res://assets/scripts/map_system/level_entrance.gd" id="1_yjko1"]
+[ext_resource type="Texture2D" uid="uid://b8xycbp13b438" path="res://assets/textures/samples_examples/door/wooden_door.png" id="2_yjko1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u1njh"]
+size = Vector2(90, 90)
+
+[node name="LevelEntrance" type="Area2D" unique_id=406558948 groups=["Door"]]
+collision_mask = 2
+script = ExtResource("1_yjko1")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=338021962]
+texture_filter = 5
+scale = Vector2(6, 6)
+texture = ExtResource("2_yjko1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=670294462]
+shape = SubResource("RectangleShape2D_u1njh")
+debug_color = Color(0, 0.64496654, 0.27651262, 0.41960785)
+
+[node name="Spawnpoint" type="Marker2D" parent="." unique_id=736383661]
+position = Vector2(0, 121)
