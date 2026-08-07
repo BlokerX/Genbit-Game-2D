@@ -10,6 +10,11 @@ const ITEM_PICKUP_SCENE = preload("res://assets/scenes/item_pickup.tscn")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
 @export var map_position : Vector2i = Vector2i.ZERO
 
+enum TransitionMode { FADE, SLIDE, BOTH }
+
+@export_group("Ustawienia Przejścia")
+## Definiuje, w jaki sposób kamera i ekran zachowają się przy wchodzeniu do TEGO pokoju.
+@export var transition_mode: TransitionMode = TransitionMode.SLIDE
 
 @export_group("Typ i Znaczenie Pokoju")
 

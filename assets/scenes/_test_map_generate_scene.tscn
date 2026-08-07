@@ -750,6 +750,7 @@ auto_door_scene = ExtResource("19_fcdbf")
 
 [node name="Room03_DebugRoom" parent="Map" unique_id=1124479501 instance=ExtResource("18_wwhbf")]
 map_position = Vector2i(3, 0)
+transition_mode = null
 room_type = 5
 is_secret = true
 ignore_combat_lock = true
@@ -951,6 +952,7 @@ test_amount = 99
 [node name="Room11" parent="Map" unique_id=596254638 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 1)
+transition_mode = null
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
 item_spawn_chance = 1.0
@@ -1021,6 +1023,7 @@ position = Vector2(1163, 783)
 [node name="Room12" parent="Map" unique_id=350822120 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(2, 1)
+transition_mode = null
 enemy_pool = ExtResource("56_lh0lu")
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
@@ -1036,6 +1039,7 @@ position = Vector2(885, 608)
 [node name="Room13_StartRoom" parent="Map" unique_id=1187411125 node_paths=PackedStringArray("spawn_points") instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(3, 1)
+transition_mode = null
 room_type = 1
 spawn_points = [NodePath("RespawnPoint")]
 
@@ -1072,6 +1076,7 @@ interaction_and_attack_stats_script = SubResource("Resource_eq258")
 [node name="Room14" parent="Map" unique_id=1268703346 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(4, 1)
+transition_mode = null
 
 [node name="ItemPickup" parent="Map/Room14" unique_id=1682361138 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 576)
@@ -1081,6 +1086,7 @@ test_amount = 25
 [node name="Room15" parent="Map" unique_id=1738842860 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(5, 1)
+transition_mode = null
 is_secret = true
 
 [node name="Spider" parent="Map/Room15" unique_id=1401249178 instance=ExtResource("21_jlqtn")]
@@ -1105,10 +1111,12 @@ slots = Array[ExtResource("27_r2o1q")]([SubResource("Resource_wfidj"), SubResour
 [node name="Room21" parent="Map" unique_id=1548363602 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 2)
+transition_mode = null
 
 [node name="Room25" parent="Map" unique_id=1194822409 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(5, 2)
+transition_mode = null
 
 [node name="Spider" parent="Map/Room25" unique_id=871961312 instance=ExtResource("21_jlqtn")]
 position = Vector2(312, 200)
@@ -1137,6 +1145,7 @@ interaction_and_attack_stats_script = SubResource("Resource_bx6lb")
 [node name="Room31" parent="Map" unique_id=1898943010 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 3)
+transition_mode = null
 
 [node name="ResetPotion" parent="Map/Room31" unique_id=1857893565 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1146,6 +1155,7 @@ test_amount = 6
 [node name="Room35" parent="Map" unique_id=1618740216 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(5, 3)
+transition_mode = null
 
 [node name="ItemPickup" parent="Map/Room35" unique_id=269641304 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 576)
@@ -1154,6 +1164,7 @@ test_item_data = ExtResource("28_3utb5")
 [node name="Room36" parent="Map" unique_id=1433836412 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(4, 3)
+transition_mode = null
 room_type = 2
 is_secret = true
 
@@ -1164,6 +1175,7 @@ test_item_data = ExtResource("48_nll8k")
 [node name="Room41" parent="Map" unique_id=409765852 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 4)
+transition_mode = null
 
 [node name="GianticPotion" parent="Map/Room41" unique_id=1478946179 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1173,6 +1185,7 @@ test_amount = 6
 [node name="Room42" parent="Map" unique_id=53033222 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(2, 4)
+transition_mode = null
 
 [node name="SlowPotion" parent="Map/Room42" unique_id=2016003923 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1182,6 +1195,7 @@ test_amount = 6
 [node name="Room43" parent="Map" unique_id=728015522 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(3, 4)
+transition_mode = null
 
 [node name="Chest" parent="Map/Room43" unique_id=1787224600 instance=ExtResource("26_lr4av")]
 position = Vector2(960, 96)
@@ -1193,6 +1207,7 @@ slots = Array[ExtResource("27_r2o1q")]([SubResource("Resource_6c8xf")])
 [node name="Room44" parent="Map" unique_id=1288837808 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(4, 4)
+transition_mode = null
 
 [node name="Spider" parent="Map/Room44" unique_id=1935206072 instance=ExtResource("21_jlqtn")]
 position = Vector2(1472, 256)
@@ -1219,6 +1234,7 @@ test_amount = 10
 [node name="Room45" parent="Map" unique_id=975420192 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(5, 4)
+transition_mode = null
 room_type = 4
 
 [node name="DoorUp" parent="Map/Room45" unique_id=1439264432 instance=ExtResource("19_fcdbf")]
@@ -1247,6 +1263,7 @@ loot_drop_script = SubResource("Resource_wxccy")
 [node name="Room51" parent="Map" unique_id=186025939 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 5)
+transition_mode = null
 
 [node name="ChestSpawnpoint" parent="Map/Room51" unique_id=1183420303 instance=ExtResource("57_11fi7")]
 position = Vector2(1531, 227)
@@ -1266,10 +1283,12 @@ position = Vector2(1642, 837)
 [node name="Room52" parent="Map" unique_id=542491163 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(2, 5)
+transition_mode = null
 
 [node name="Room53" parent="Map" unique_id=1118217670 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(3, 5)
+transition_mode = null
 
 [node name="LiliputPotion" parent="Map/Room53" unique_id=1114826906 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1279,6 +1298,7 @@ test_amount = 6
 [node name="Room61" parent="Map" unique_id=1182440239 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 6)
+transition_mode = null
 
 [node name="SimplePotion" parent="Map/Room61" unique_id=2101736203 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1288,10 +1308,12 @@ test_amount = 3
 [node name="Room63" parent="Map" unique_id=1962506192 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(3, 6)
+transition_mode = null
 
 [node name="Room64" parent="Map" unique_id=893835166 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(4, 6)
+transition_mode = null
 
 [node name="FullRegeneratePotion" parent="Map/Room64" unique_id=1991165791 instance=ExtResource("30_bx6lb")]
 position = Vector2(960, 544)
@@ -1301,6 +1323,7 @@ test_amount = 2
 [node name="Room71" parent="Map" unique_id=448018799 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(1, 7)
+transition_mode = null
 room_type = 5
 
 [node name="DoorUp" parent="Map/Room71" unique_id=1088774629 instance=ExtResource("19_fcdbf")]
@@ -1353,6 +1376,7 @@ slots = Array[ExtResource("27_r2o1q")]([SubResource("Resource_fu16t"), SubResour
 [node name="Room74" parent="Map" unique_id=1643355136 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(4, 7)
+transition_mode = null
 
 [node name="DoorLeft" parent="Map/Room74" unique_id=958357101 node_paths=PackedStringArray("destination_door") instance=ExtResource("19_fcdbf")]
 position = Vector2(32, 544)
@@ -1365,6 +1389,7 @@ texture = ExtResource("58_yrkx5")
 [node name="Room75" parent="Map" unique_id=1303196059 instance=ExtResource("18_wwhbf")]
 visible = false
 map_position = Vector2i(5, 7)
+transition_mode = null
 room_type = 4
 
 [node name="DoorLeft" parent="Map/Room75" unique_id=1754067354 instance=ExtResource("19_fcdbf")]

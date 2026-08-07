@@ -121,28 +121,65 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
-	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURĘ!) ---
-	if current_room and player:
-		for effect in current_room.ambient_aura_effects:
+	var old_room = current_room
+	
+	# ODCZYTANIE TRYBU Z NOWEGO POKOJU (Zabezpieczenie: FADE jako domyślny)
+	var mode = new_room.transition_mode if "transition_mode" in new_room else 0
+	var do_fade = (mode == 0 or mode == 2) # FADE lub BOTH
+	var do_slide = (mode == 1 or mode == 2) # SLIDE lub BOTH
+	
+	# --- Zabezpieczenie pierwszego pokoju (Start Gry / Miękki Respawn) ---
+	if old_room == null:
+		do_slide = false # Wymuszamy brak przesuwania, zostaje FADE lub nic (Instant)
+	
+	# ZAMROŻENIE GRACZA NA CZAS ZMIANY
+	if player:
+		if player.has_method("set_physics_process"):
+			player.set_physics_process(false)
+		# WYŁĄCZENIE FIZYKI GRACZA (żeby ściany go nie wyrzuciły przy przesuwaniu!)
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+	
+	# WYŁĄCZENIE FIZYKI STAREGO POKOJU (ściany stają się "duchami")
+	if old_room:
+		old_room.process_mode = Node.PROCESS_MODE_DISABLED
+
+	# ŚCIEMNIENIE EKRANU
+	if do_fade:
+		TransitionManager.fade_to_black(0.2)
+		await TransitionManager.on_fade_out_finished
+	
+	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
+	current_room = new_room
+	
+	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURĘ!)
+	if old_room and player:
+		for effect in old_room.ambient_aura_effects:
 			if effect != null:
 				player.remove_effect_by_name(effect.effect_name)
 	
-	# Zabezpieczamy gracza: wyciągamy go ze starego pokoju, żeby nie zniknął razem z nim
+	# Zabezpieczamy gracza: wyciągamy go ze starego pokoju
 	if player and player.get_parent():
 		player.get_parent().remove_child(player)
 
-	# 2. Teraz możemy bezpiecznie usunąć stary pokój
-	if current_room:
-		_disconnect_door_signals(current_room)
-		if current_room.is_inside_tree():
-			remove_child(current_room)
-		
-	# 3. Dodajemy nowy pokój
-	current_room = new_room
+	# 2. OBLICZANIE WEKTORA PRZESUNIĘCIA (Jeśli to tryb SLIDE/BOTH)
+	var slide_vector = Vector2.ZERO
+	if do_slide and target_door and old_room:
+		var dir_offset = target_door.get_direction_offset()
+		slide_vector = Vector2(-dir_offset.x * current_room.size_px.x, -dir_offset.y * current_room.size_px.y)
+
+	# 3. Dodajemy nowy pokój do sceny
+	current_room.position = slide_vector # Ustawia offset jeśli SLIDE, inaczej Vector2.ZERO
 	current_room.visible = true
 	
 	if not current_room.is_inside_tree():
 		add_child(current_room)
+		
+	# Jeśli to TYLKO FADE, bezpiecznie usuwamy stary pokój od razu
+	if not do_slide and old_room:
+		old_room.process_mode = Node.PROCESS_MODE_INHERIT # Przywracamy mu fizykę pod maską
+		_disconnect_door_signals(old_room)
+		if old_room.is_inside_tree():
+			remove_child(old_room)
 		
 	_connect_door_signals(current_room)
 	discover_room(current_room)
@@ -155,43 +192,76 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 	
 	# 4. UMIESZCZAMY GRACZA W NOWYM POKOJU
 	if player:
-		# Ustawianie entity spawn signal
 		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
 			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
 		
-		# Ustawianie pozycji spawnpointem
-		if target_door and target_door.spawn_point:
-			player.global_position = target_door.spawn_point.global_position
-			
-		# Szukamy węzła Y-Sort
+		# Szukamy węzła Y-Sort i dodajemy gracza
 		var target_parent = current_room.find_child("Entities")
 		if not target_parent:
 			target_parent = current_room
-			
-		# Ponieważ gracz nie ma teraz rodzica (wyciągnęliśmy go na samej górze), po prostu go dodajemy:
 		target_parent.add_child(player)
 		
-		# --- NOWOŚĆ 1: Nakładamy nowe efekty typu AURA (nieskończone) ---
+		# Pozycjonowanie
+		if target_door and target_door.spawn_point:
+			player.global_position = target_door.spawn_point.global_position
+		
+		# Nakładamy nowe efekty typu AURA (nieskończone)
 		for effect in current_room.ambient_aura_effects:
 			if effect != null:
 				var infinite_effect = effect.duplicate()
 				if "duration" in infinite_effect:
-					infinite_effect.duration = 99999.0 # Wymuszamy nieskończoność
+					infinite_effect.duration = 99999.0
 				player.receive_effect(infinite_effect)
 				
-		# --- NOWOŚĆ 2: Nakładamy efekty typu KLĄTWA (Zostają po wyjściu) ---
+		# Nakładamy efekty typu KLĄTWA (Zostają po wyjściu)
 		for effect in current_room.sticky_entry_effects:
 			if effect != null:
-				var normal_effect = effect.duplicate()
-				# Nie modyfikujemy czasu! Gra wykorzysta czas ustawiony w pliku .tres
-				player.receive_effect(normal_effect)
+				player.receive_effect(effect.duplicate())
 		
-	# 5. Odpalamy logikę walki / blokady pokoju po wejściu gracza
+	# 5. Odpalamy logikę walki / blokady pokoju
 	current_room.check_and_lock_room()
 	
-	# 6. Informujemy gracza o strefie pacyfizmu ---
+	# 6. Informujemy gracza o strefie pacyfizmu
 	if player and "is_in_pacifist_zone" in player:
 		player.is_in_pacifist_zone = current_room.pacifist_zone
+	
+	# --- 7. FAZA ANIMACJI I ROZJAŚNIANIA ---
+	
+	# Jeśli BOTH, zaczynamy rozjaśniać w tle w trakcie przesuwania
+	if do_fade and do_slide:
+		TransitionManager.fade_to_normal(0.2)
+		
+	if do_slide:
+		# ANIMACJA PRZESUWANIA (TWEEN)
+		var tween = create_tween().set_parallel(true)
+		tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+		var anim_duration = 0.45
+		
+		tween.tween_property(current_room, "position", Vector2.ZERO, anim_duration)
+		if old_room:
+			tween.tween_property(old_room, "position", -slide_vector, anim_duration)
+			
+		await tween.finished
+		
+		# Sprzątanie starego pokoju PO ANIMACJI
+		if old_room:
+			old_room.process_mode = Node.PROCESS_MODE_INHERIT # Przywracamy fizykę dla historii odwiedzonych
+			_disconnect_door_signals(old_room)
+			if old_room.is_inside_tree():
+				remove_child(old_room)
+			old_room.position = Vector2.ZERO 
+			
+	else:
+		# Jeśli TYLKO FADE, stary pokój zniknął wyżej, zostaje tylko rozjaśnić obraz
+		if do_fade:
+			TransitionManager.fade_to_normal(0.2)
+			await TransitionManager.on_fade_in_finished
+
+	# 8. ODMROŻENIE GRACZA (Przywrócenie fizyki po wszystkich animacjach!)
+	if player:
+		player.process_mode = Node.PROCESS_MODE_INHERIT
+		if player.has_method("set_physics_process"):
+			player.set_physics_process(true)
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
@@ -311,7 +381,7 @@ func _auto_spawn_missing_doors() -> void:
 				_sync_door_pair(grid_room, Door.Direction.DOWN, down_room, Door.Direction.UP)
 
 
-## Inteligentne parowanie i kopiowanie tekstur z węzła Sprite2D
+## Inteligentne parowanie, kolorowanie i kopiowanie tekstur z węzła Sprite2D
 func _sync_door_pair(room_a: Room, dir_a: Door.Direction, room_b: Room, dir_b: Door.Direction) -> void:
 	# Sprawdzamy, czy w edytorze postawiłeś w którychś pokojach drzwi ręcznie
 	var door_a = room_a.get_door(dir_a)
@@ -321,21 +391,31 @@ func _sync_door_pair(room_a: Room, dir_a: Door.Direction, room_b: Room, dir_b: D
 	if door_a != null and door_b != null:
 		return
 		
-	# SCENARIUSZ 2: Nie ma żadnych drzwi. Spawnujemy dwie sztuki bazowe.
+	# SCENARIUSZ 2: Nie ma żadnych drzwi. Spawnujemy dwie sztuki i kolorujemy według typu!
 	if door_a == null and door_b == null:
-		room_a.spawn_auto_door(dir_a, auto_door_scene)
-		room_b.spawn_auto_door(dir_b, auto_door_scene)
-		return
+		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene)
+		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene)
+		
+		# Nakładamy tekstury powiązane z RoomType
+		var tex_for_a = _get_door_texture_for_room_type(room_b.room_type)
+		if tex_for_a and door_a.door_sprite:
+			door_a.door_sprite.texture = tex_for_a
+			
+		var tex_for_b = _get_door_texture_for_room_type(room_a.room_type)
+		if tex_for_b and door_b.door_sprite:
+			door_b.door_sprite.texture = tex_for_b
+			
+		return # Kończymy, by nie nadpisywać ich poniżej
 		
 	# SCENARIUSZ 3: TYLKO Pokój A ma drzwi ręczne (z Twoim własnym Sprite'em).
 	if door_a != null and door_b == null:
 		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene)
-		_copy_sprite_texture(door_a, door_b)
+		_copy_sprite_texture(door_a, door_b) # Kopiujemy ręczny design, ignorujemy RoomType
 		
 	# SCENARIUSZ 4: TYLKO Pokój B ma drzwi ręczne (z Twoim własnym Sprite'em).
 	elif door_b != null and door_a == null:
 		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene)
-		_copy_sprite_texture(door_b, door_a)
+		_copy_sprite_texture(door_b, door_a) # Kopiujemy ręczny design, ignorujemy RoomType
 
 ## Niezwykle wydajne operowanie na wskaźnikach pamięci tekstur
 func _copy_sprite_texture(source_door: Door, target_door: Door) -> void:
@@ -378,3 +458,18 @@ func _auto_link_doors() -> void:
 						
 						print("Map: Zszyto automatycznie drzwi między [" + room.name + "] a [" + neighbor_room.name + "]")
 						break
+
+## Pobiera odpowiednią teksturę drzwi na podstawie typu sąsiedniego pokoju
+func _get_door_texture_for_room_type(type: Room.RoomType) -> Texture2D:
+	match type:
+		Room.RoomType.BOSS:
+			return preload("res://assets/textures/samples_examples/door/red_door.png")
+		Room.RoomType.SHOP:
+			return preload("res://assets/textures/samples_examples/door/purple_door.png")
+		Room.RoomType.TREASURE:
+			return preload("res://assets/textures/samples_examples/door/orange_door.png")
+		Room.RoomType.DEV_ROOM:
+			return preload("res://assets/textures/samples_examples/door/black_door.png")
+		Room.RoomType.ARENA:
+			return preload("res://assets/textures/samples_examples/door/dark_blue_door.png")
+	return null # Zwraca null dla Normalnego, używając domyślnej tekstury

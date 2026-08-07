@@ -23,6 +23,7 @@ boot_splash/show_image=false
 
 SceneCollectionManager="*uid://6ewiy3em0bmv"
 EventBus="*uid://wl0j2wnuvqic"
+TransitionManager="*uid://bm8kgsgt4kdpo"
 
 [display]
 
