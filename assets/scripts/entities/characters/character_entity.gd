@@ -70,9 +70,8 @@ func respawn_sequence():
 
 #region Obsługa systemu akcji (Effect)
 
-## Funkcja pozwalająca na nałożenie dowolnego efektu na entity character.
+## Standardowa funkcja dla mikstur, pułapek i ataków (Zwykłe efekty, można wyleczyć)
 func receive_effect(effect: Effect) -> bool:
-	# Przekazujemy 'self' (czyli entity character), ponieważ skrypt rozszerza CharacterBody2D
 	var success = effect.apply_effect(self)
 	if success:
 		print("Entity character otrzymał efekt: ", effect.effect_name)
@@ -80,21 +79,45 @@ func receive_effect(effect: Effect) -> bool:
 		print("Nie udało się nałożyć efektu na entity character.")
 	return success
 
-## Funkcja usuwająca wszystkie efekty nałożone na postać
+## NOWOŚĆ: Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
+func receive_environment_effect(effect: Effect) -> bool:
+	if effects_collector == null: return false
+	
+	# Zliczamy węzły przed nałożeniem
+	var child_count_before = effects_collector.get_child_count()
+	var success = effect.apply_effect(self)
+	
+	# Jeśli efekt nałożył się pomyślnie i w kontenerze pojawił się nowy węzeł:
+	if success and effects_collector.get_child_count() > child_count_before:
+		# Pobieramy ten świeżo dodany węzeł z końca listy
+		var new_effect_node = effects_collector.get_child(-1)
+		# Naklejamy na niego systemową etykietę (Metadata)
+		new_effect_node.set_meta("is_environment_aura", true)
+		print("Otrzymano NIEUSUWONALNĄ aurę pokoju: ", effect.effect_name)
+		
+	return success
+
+## Funkcja zdejmująca efekty (używana przez mikstury). Ignoruje Aury Pokoju!
 func clear_all_effects() -> void:
 	if effects_collector != null:
 		for active_effect in effects_collector.get_children():
-			active_effect.set_process(false) # to jest dodane %
-			# Prawidłowe wymuszenie zakończenia efektu poprzez skrypt ActiveEffect
+			
+			# --- TARCZA OCHRONNA DLA AUR ---
+			# Jeśli węzeł ma naszą etykietę środowiskową, całkowicie go ignorujemy!
+			if active_effect.has_meta("is_environment_aura") and active_effect.get_meta("is_environment_aura") == true:
+				continue
+			# -------------------------------
+			
+			active_effect.set_process(false)
 			if active_effect.has_method("end_effect"):
 				active_effect.end_effect()
 			else:
 				active_effect.queue_free()
-		print("Usunięto wszystkie efekty z entity character.")
+		print("Usunięto wszystkie zwykłe efekty z entity character (Aury pozostały na miejscu).")
 		return
 	print("Nie znaleziono kontenera efektów w entity character.")
 
-## Funkcja usuwająca konkretny efekt po jego nazwie (używana przez pokoje z hazardami)
+## Funkcja do twardego usuwania po nazwie (Zdejmuje Aury, gdy gracz wychodzi z pokoju)
 func remove_effect_by_name(eff_name: String) -> void:
 	if effects_collector != null:
 		for active_effect in effects_collector.get_children():
@@ -104,7 +127,7 @@ func remove_effect_by_name(eff_name: String) -> void:
 					active_effect.end_effect()
 				else:
 					active_effect.queue_free()
-				print("Usunięto efekt środowiskowy: ", eff_name)
+				print("System Mapy: Bezpiecznie zdjęto efekt środowiskowy: ", eff_name)
 
 #endregion
 

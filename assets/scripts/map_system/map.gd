@@ -210,13 +210,21 @@ func change_room(new_room: Room, target_door: Door = null) -> void:
 			if effect != null:
 				var infinite_effect = effect.duplicate()
 				if "duration" in infinite_effect:
-					infinite_effect.duration = 99999.0
-				player.receive_effect(infinite_effect)
+					infinite_effect.duration = 99999.0 # Wymuszamy nieskończoność
+				
+				# --- ZMIANA: Używamy nowej, nieuleczalnej funkcji! ---
+				if player.has_method("receive_environment_effect"):
+					player.receive_environment_effect(infinite_effect)
+				else:
+					player.receive_effect(infinite_effect)
 				
 		# Nakładamy efekty typu KLĄTWA (Zostają po wyjściu)
 		for effect in current_room.sticky_entry_effects:
 			if effect != null:
-				player.receive_effect(effect.duplicate())
+				var normal_effect = effect.duplicate()
+				# Klątwy z pułapek normalnie nałożymy przez receive_effect, 
+				# aby gracz MÓGŁ wyleczyć je np. antidotum po wybiegnięciu z pokoju.
+				player.receive_effect(normal_effect)
 		
 	# 5. Odpalamy logikę walki / blokady pokoju
 	current_room.check_and_lock_room()
