@@ -412,7 +412,7 @@ resource_local_to_scene = true
 script = ExtResource("9_8udom")
 hand_attack_data = SubResource("Resource_nkt6r")
 
-[node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+[node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room")]
 script = ExtResource("1_af3jo")
 starting_room = NodePath("Room13_StartRoom")
 reset_map_history_on_respawn = false

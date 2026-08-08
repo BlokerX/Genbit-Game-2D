@@ -46,6 +46,8 @@ var global_darkness: CanvasModulate
 @export var auto_door_scene: PackedScene
 
 func _ready() -> void:
+	add_to_group("Map") # Wymuszenie grupy
+	
 	# --- GLOBALNY MROK ---
 	global_darkness = CanvasModulate.new()
 	global_darkness.name = "GlobalDarkness"
