@@ -47,7 +47,6 @@
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="43_suvvu"]
 [ext_resource type="Texture2D" uid="uid://da1fo61w5i54r" path="res://assets/textures/samples_examples/door/black_door.png" id="44_ey8dr"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="45_3as82"]
-[ext_resource type="PackedScene" uid="uid://cjeqtxgfnvfvq" path="res://assets/scenes/room_light.tscn" id="45_l1ryk"]
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="46_s78el"]
 [ext_resource type="Texture2D" uid="uid://d3kfsdewvs8fp" path="res://assets/textures/samples_examples/door/light_blue_door.png" id="47_gqfsi"]
 [ext_resource type="Texture2D" uid="uid://7fas83p0mjp3" path="res://assets/textures/samples_examples/door/red_door.png" id="48_pse73"]
@@ -435,13 +434,11 @@ room_type = 5
 is_secret = true
 ignore_combat_lock = true
 is_dark_room = true
+has_center_light = true
+center_light_energy = 1.5
+center_light_scale = 1.7000000000000002
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
-
-[node name="PointLight2D" parent="Room03_DebugRoom" unique_id=1692514294 instance=ExtResource("45_l1ryk")]
-position = Vector2(960, 544)
-energy = 1.25
-texture_scale = 1.5
 
 [node name="DoorDown" parent="Room03_DebugRoom" unique_id=406558948 instance=ExtResource("2_edf0i")]
 position = Vector2(958, 1056)
@@ -641,6 +638,7 @@ test_amount = 99
 visible = false
 map_position = Vector2i(1, 1)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
@@ -714,6 +712,7 @@ position = Vector2(1163, 783)
 visible = false
 map_position = Vector2i(2, 1)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 enemy_pool = ExtResource("40_ng0uo")
 enemy_spawn_chance = 1.0
@@ -728,19 +727,14 @@ position = Vector2(1012, 497)
 [node name="ItemSpawnpoint" parent="Room12" unique_id=151393325 instance=ExtResource("38_vmik7")]
 position = Vector2(885, 608)
 
-[node name="Room13_StartRoom" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_ijkfe")]
+[node name="Room13_StartRoom" parent="." unique_id=174252311 instance=ExtResource("3_ijkfe")]
 visible = false
 map_position = Vector2i(3, 1)
 room_type = 1
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
-spawn_points = [NodePath("RespawnPoint")]
-
-[node name="PointLight2D" parent="Room13_StartRoom" unique_id=2015348132 instance=ExtResource("45_l1ryk")]
-position = Vector2(960, 544)
-energy = 1.25
-texture_scale = 1.3
 
 [node name="RespawnPoint" type="Marker2D" parent="Room13_StartRoom" unique_id=2119154057 groups=["RespawnPoint"]]
 position = Vector2(960, 540)
@@ -796,6 +790,7 @@ vertical_alignment = 1
 visible = false
 map_position = Vector2i(4, 1)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -809,6 +804,7 @@ visible = false
 map_position = Vector2i(5, 1)
 is_secret = true
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -835,6 +831,7 @@ slots = Array[ExtResource("11_dbrk0")]([SubResource("Resource_wfidj"), SubResour
 visible = false
 map_position = Vector2i(1, 2)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -842,6 +839,7 @@ wall_alt_id = 0
 visible = false
 map_position = Vector2i(5, 2)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -873,6 +871,7 @@ interaction_and_attack_stats_script = SubResource("Resource_hk7ot")
 visible = false
 map_position = Vector2i(1, 3)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -885,6 +884,7 @@ test_amount = 6
 visible = false
 map_position = Vector2i(5, 3)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -898,6 +898,7 @@ map_position = Vector2i(4, 3)
 room_type = 2
 is_secret = true
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -909,6 +910,7 @@ test_item_data = ExtResource("33_5fopw")
 visible = false
 map_position = Vector2i(1, 4)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -921,6 +923,7 @@ test_amount = 6
 visible = false
 map_position = Vector2i(2, 4)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -933,6 +936,7 @@ test_amount = 6
 visible = false
 map_position = Vector2i(3, 4)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -947,6 +951,7 @@ slots = Array[ExtResource("11_dbrk0")]([SubResource("Resource_6c8xf")])
 visible = false
 map_position = Vector2i(4, 4)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -977,6 +982,7 @@ visible = false
 map_position = Vector2i(5, 4)
 room_type = 4
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1007,6 +1013,7 @@ loot_drop_script = SubResource("Resource_wxccy")
 visible = false
 map_position = Vector2i(1, 5)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1029,6 +1036,7 @@ position = Vector2(1642, 837)
 visible = false
 map_position = Vector2i(2, 5)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1036,6 +1044,7 @@ wall_alt_id = 0
 visible = false
 map_position = Vector2i(3, 5)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1048,6 +1057,7 @@ test_amount = 6
 visible = false
 map_position = Vector2i(1, 6)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1060,6 +1070,7 @@ test_amount = 3
 visible = false
 map_position = Vector2i(3, 6)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1067,6 +1078,7 @@ wall_alt_id = 0
 visible = false
 map_position = Vector2i(4, 6)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1080,6 +1092,7 @@ visible = false
 map_position = Vector2i(1, 7)
 room_type = 5
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1134,6 +1147,7 @@ slots = Array[ExtResource("11_dbrk0")]([SubResource("Resource_fu16t"), SubResour
 visible = false
 map_position = Vector2i(4, 7)
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 
@@ -1150,6 +1164,7 @@ visible = false
 map_position = Vector2i(5, 7)
 room_type = 4
 is_dark_room = true
+has_center_light = true
 ambient_aura_effects = Array[ExtResource("4_l1ryk")]([SubResource("Resource_suvvu")])
 wall_alt_id = 0
 

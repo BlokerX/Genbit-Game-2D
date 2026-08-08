@@ -36,10 +36,44 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
 ## Pacyfizm: Jeśli włączone, gracz ma zablokowaną możliwość używania broni i rzucania itemami (Sklepy, NPC).
 @export var pacifist_zone: bool = false
 
+@export_group("Oświetlenie Pokoju (Live Preview)")
+## Jeśli włączone, pokój nakłada na siebie Mroczną Maskę.
+@export var is_dark_room: bool = false:
+	set(value):
+		is_dark_room = value
+		_update_lighting()
+
+## Kolor mroku (domyślnie bardzo ciemny szary).
+@export var darkness_color: Color = Color(0.09, 0.09, 0.09, 1.0):
+	set(value):
+		darkness_color = value
+		_update_lighting()
+
+## Jeśli włączone, gra automatycznie wstawi światło na idealnym środku pokoju.
+@export var has_center_light: bool = false:
+	set(value):
+		has_center_light = value
+		_update_lighting()
+
+## Przeciągnij tutaj swoją scenę światła (np. room_light.tscn)
+@export var light_scene: PackedScene:
+	set(value):
+		light_scene = value
+		_update_lighting()
+
+## Moc/Jasność (Energy) wygenerowanego światła.
+@export_range(0.0, 5.0) var center_light_energy: float = 1.0:
+	set(value):
+		center_light_energy = value
+		_update_lighting()
+
+## Skala (zasięg) wygenerowanego światła.
+@export_range(0.1, 10.0) var center_light_scale: float = 1.3:
+	set(value):
+		center_light_scale = value
+		_update_lighting()
 
 @export_group("Efekty Środowiskowe (Hazards)")
-## Wymaga systemu świateł 2D. Jeśli włączone, pokój nakłada na siebie Mroczną Maskę wymuszając na graczu użycie latarki.
-@export var is_dark_room: bool = false
 
 ## AURA (Znika po wyjściu): Efekty aktywne TYLKO w tym pokoju (np. Spowolnienie od błota). Trwają w nieskończoność, dopóki gracz tu jest.
 @export var ambient_aura_effects: Array[Effect] = []
@@ -122,8 +156,11 @@ func _ready() -> void:
 		darkness.color = Color(0.09, 0.09, 0.09, 1.0) 
 		add_child(darkness)
 	
-	# Ta linijka sprawia, że gra po uruchomieniu zbuduje kafelki i zespawnuje drzwi!
+	# Budujemy pokój
 	generate_room()
+	
+	# Inicjalizujemy światło i mrok (działa w grze i w edytorze)
+	_update_lighting()
 	
 	# Automatyczne pobieranie drzwi przy starcie sceny
 	# Ignorujemy działanie w edytorze, jeśli nie jest nam tam potrzebne do logiki
@@ -195,6 +232,9 @@ func generate_room() -> void:
 	
 	calculate_room_bounds()
 	update_navigation_region()
+	
+	# Upewnia się, że po zmianie rozmiaru pokoju, światło wróci na środek
+	_update_lighting()
 
 ## Pozwala sprawdzić, czy na tej ścianie postawiłeś już drzwi ręcznie w edytorze
 func get_door(dir: Door.Direction) -> Door:
@@ -288,6 +328,48 @@ func _draw() -> void:
 			var tile_size = tile_map.tile_set.tile_size
 			var rect = Rect2(Vector2.ZERO, Vector2(room_size_tiles * tile_size))
 			draw_rect(rect, Color(0, 1, 0, 0.2), false, 2.0)
+
+## Funkcja zarządzająca dynamicznym oświetleniem w edytorze i grze
+func _update_lighting() -> void:
+	# Zabezpieczenie przed działaniem, zanim węzeł wejdzie do drzewa
+	if not is_inside_tree():
+		return
+
+	# --- 1. MROK (CanvasModulate) ---
+	var mod_name = "RoomDarkness"
+	var darkness = find_child(mod_name, false, false)
+
+	if is_dark_room:
+		if not darkness:
+			darkness = CanvasModulate.new()
+			darkness.name = mod_name
+			add_child(darkness)
+		darkness.color = darkness_color
+	else:
+		if darkness:
+			darkness.queue_free()
+
+	# --- 2. ŚWIATŁO (PointLight2D) ---
+	var light_name = "CenterRoomLight"
+	var light = find_child(light_name, false, false)
+
+	if has_center_light and light_scene:
+		if not light:
+			light = light_scene.instantiate()
+			light.name = light_name
+			add_child(light)
+		
+		# Aktualizacja parametrów światła na żywo
+		if light is PointLight2D:
+			light.energy = center_light_energy
+			light.texture_scale = center_light_scale
+		
+		# Upewniamy się, że wymiary pokoju są aktualne i centrujemy światło
+		calculate_room_bounds()
+		light.position = size_px / 2.0
+	else:
+		if light:
+			light.queue_free()
 
 #region Logika stanu walki
 

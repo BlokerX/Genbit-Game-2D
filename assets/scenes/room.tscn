@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://cliypgfyur2gq"]
 
 [ext_resource type="Script" uid="uid://vp0vroyyx208" path="res://assets/scripts/map_system/room.gd" id="1_l3nri"]
+[ext_resource type="PackedScene" uid="uid://cjeqtxgfnvfvq" path="res://assets/scenes/room_light.tscn" id="2_8jlt0"]
 [ext_resource type="Resource" uid="uid://dkpmxc6sp5g2y" path="res://assets/scripts/map_system/resources/templates/Test_Enemies.tres" id="2_l852n"]
 [ext_resource type="Shader" uid="uid://dhdace02w454n" path="res://assets/shaders/wood.gdshader" id="2_pl0hj"]
 [ext_resource type="Resource" uid="uid://b50get08bq4dt" path="res://assets/scripts/map_system/resources/templates/Test_Objects.tres" id="3_8jlt0"]
@@ -42,6 +43,7 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
 [node name="Room" type="Node2D" unique_id=1124479501 groups=["Rooms"]]
 script = ExtResource("1_l3nri")
+light_scene = ExtResource("2_8jlt0")
 enemy_pool = ExtResource("2_l852n")
 object_pool = ExtResource("3_8jlt0")
 item_pool = ExtResource("4_cve4a")
