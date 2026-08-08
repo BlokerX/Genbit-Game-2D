@@ -117,6 +117,18 @@ func clear_all_effects() -> void:
 		return
 	print("Nie znaleziono kontenera efektów w entity character.")
 
+## Wymuszone czyszczenie aur przy skakaniu między całymi poziomami
+func clear_all_environment_effects() -> void:
+	if effects_collector != null:
+		for active_effect in effects_collector.get_children():
+			if active_effect.has_meta("is_environment_aura") and active_effect.get_meta("is_environment_aura") == true:
+				active_effect.set_process(false)
+				if active_effect.has_method("end_effect"):
+					active_effect.end_effect()
+				else:
+					active_effect.queue_free()
+		print("System: Wymuszono usunięcie aur środowiskowych podczas zmiany mapy.")
+
 ## Funkcja do twardego usuwania po nazwie (Zdejmuje Aury, gdy gracz wychodzi z pokoju)
 func remove_effect_by_name(eff_name: String) -> void:
 	if effects_collector != null:

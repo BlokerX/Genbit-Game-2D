@@ -23,6 +23,10 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			player.set_physics_process(false)
 		player.process_mode = Node.PROCESS_MODE_DISABLED
 		
+		# Zdejmujemy Aury z poprzedniego poziomu!
+		if player.has_method("clear_all_environment_effects"):
+			player.clear_all_environment_effects()
+		
 		# Zerowanie pędu (zakładając standardowy CharacterBody2D z polem velocity)
 		if "velocity" in player:
 			player.velocity = Vector2.ZERO

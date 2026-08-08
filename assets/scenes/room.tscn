@@ -37,7 +37,7 @@ tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_cve4a")
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_l852n"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_8jlt0"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
@@ -56,4 +56,4 @@ tile_set = SubResource("TileSet_ogun7")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=1239899796]
 visible = false
-navigation_polygon = SubResource("NavigationPolygon_l852n")
+navigation_polygon = SubResource("NavigationPolygon_8jlt0")

@@ -152,21 +152,13 @@ func _ready() -> void:
 	# Budujemy pokój
 	generate_room()
 	
+	# Inicjalizujemy światło i mrok 
+	_update_lighting()
+	
 	if not Engine.is_editor_hint():
-		# GRA (RUNTIME)
-		# Wyłączamy generowanie mroku u samego siebie - steruje tym mapa!
-		is_dark_room = false
-		
-		var darkness = find_child("RoomDarkness", false, false)
-		if darkness:
-			darkness.queue_free()
-			
+		# GRA (RUNTIME) - Pobieramy dane potrzebne do rozgrywki
 		_auto_fetch_doors()
 		_auto_fetch_spawn_points()
-
-	# Inicjalizujemy światło (Zarówno w edytorze jak i w grze)
-	# Mroku w grze już nie stworzy, bo wyżej daliśmy is_dark_room = false!
-	_update_lighting()
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
@@ -339,7 +331,9 @@ func _update_lighting() -> void:
 	var mod_name = "RoomDarkness"
 	var darkness = find_child(mod_name, false, false)
 
-	if is_dark_room:
+	# WZORZEC AAA: Lokalny mrok istnieje TYLKO w edytorze dla podglądu.
+	# W samej grze lokalny mrok jest usuwany, bo globalnym steruje map.gd!
+	if Engine.is_editor_hint() and is_dark_room:
 		if not darkness:
 			darkness = CanvasModulate.new()
 			darkness.name = mod_name
@@ -353,11 +347,17 @@ func _update_lighting() -> void:
 	var light_name = "CenterRoomLight"
 	var light = find_child(light_name, false, false)
 
-	if has_center_light and light_scene:
+	if has_center_light:
 		if not light:
-			light = light_scene.instantiate()
-			light.name = light_name
-			add_child(light)
+			# BEZPIECZNE ŁADOWANIE: Jeśli w Inspektorze jest pusto, bierzemy domyślny plik!
+			var scene_to_load = light_scene
+			if not scene_to_load:
+				scene_to_load = load("res://assets/scenes/room_light.tscn")
+				
+			if scene_to_load:
+				light = scene_to_load.instantiate()
+				light.name = light_name
+				add_child(light)
 		
 		# Aktualizacja parametrów światła na żywo
 		if light is PointLight2D:

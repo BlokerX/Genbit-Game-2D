@@ -48,6 +48,7 @@ var global_darkness: CanvasModulate
 func _ready() -> void:
 	# --- GLOBALNY MROK ---
 	global_darkness = CanvasModulate.new()
+	global_darkness.name = "GlobalDarkness"
 	global_darkness.color = Color.WHITE
 	add_child(global_darkness)
 	# ---------------------
