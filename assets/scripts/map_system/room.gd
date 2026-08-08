@@ -149,24 +149,24 @@ var active_enemies_count : int = 0
 var size_px : Vector2
 
 func _ready() -> void:
-	# Jeżeli Mroczny pokój (Ciemność)
-	if is_dark_room:
-		var darkness = CanvasModulate.new()
-		# Ustawiamy kolor na bardzo ciemny granat/szary (zmodyfikuj według uznania)
-		darkness.color = Color(0.09, 0.09, 0.09, 1.0) 
-		add_child(darkness)
-	
 	# Budujemy pokój
 	generate_room()
 	
-	# Inicjalizujemy światło i mrok (działa w grze i w edytorze)
-	_update_lighting()
-	
-	# Automatyczne pobieranie drzwi przy starcie sceny
-	# Ignorujemy działanie w edytorze, jeśli nie jest nam tam potrzebne do logiki
 	if not Engine.is_editor_hint():
+		# GRA (RUNTIME)
+		# Wyłączamy generowanie mroku u samego siebie - steruje tym mapa!
+		is_dark_room = false
+		
+		var darkness = find_child("RoomDarkness", false, false)
+		if darkness:
+			darkness.queue_free()
+			
 		_auto_fetch_doors()
 		_auto_fetch_spawn_points()
+
+	# Inicjalizujemy światło (Zarówno w edytorze jak i w grze)
+	# Mroku w grze już nie stworzy, bo wyżej daliśmy is_dark_room = false!
+	_update_lighting()
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:

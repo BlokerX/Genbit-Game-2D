@@ -38,11 +38,20 @@ var visited_rooms: Array[Room] = []
 ## Kluczem jest Vector2i (np. Vector2i(0,0)), a wartością obiekt Room
 var room_grid: Dictionary = {}
 
+## Węzeł zaciemniający całą planszę (sterowany płynnie)
+var global_darkness: CanvasModulate
+
 @export_group("Generacja Drzwi")
 ## Scena drzwi, która ma być automatycznie wstawiana do pokoi
 @export var auto_door_scene: PackedScene
 
 func _ready() -> void:
+	# --- GLOBALNY MROK ---
+	global_darkness = CanvasModulate.new()
+	global_darkness.color = Color.WHITE
+	add_child(global_darkness)
+	# ---------------------
+	
 	# Rejestracja i ustawianie pokoi
 	for child in get_children():
 		if child is Room:
@@ -75,6 +84,9 @@ func _ready() -> void:
 	
 	# Ładujemy ustalony pokój i WWRZUCAMY do niego wyjętego wcześniej gracza
 	if room_to_load:
+		# Ustawiamy natychmiastowy kolor mroku dla pierwszego pokoju
+		global_darkness.color = room_to_load.darkness_color if room_to_load.is_dark_room else Color.WHITE
+		
 		if not room_to_load.is_inside_tree():
 			add_child(room_to_load)
 		
@@ -297,7 +309,7 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 	if player and "is_in_pacifist_zone" in player:
 		player.is_in_pacifist_zone = current_room.pacifist_zone
 	
-	# --- 7. FAZA ANIMACJI I ROZJAŚNIANIA ---
+	# --- 7. FAZA ANIMACJI, ROZJAŚNIANIA I ŚWIATEŁ ---
 	
 	# Jeśli BOTH, zaczynamy rozjaśniać w tle w trakcie przesuwania
 	if do_fade and do_slide:
@@ -313,6 +325,24 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 		if old_room and not is_same_room:
 			tween.tween_property(old_room, "position", -slide_vector, anim_duration)
 			
+		# --- SYSTEM PŁYNNEGO PRZEJŚCIA ŚWIATEŁ ---
+		# 1. Płynna zmiana mroku całej planszy
+		var target_color = current_room.darkness_color if current_room.is_dark_room else Color.WHITE
+		tween.tween_property(global_darkness, "color", target_color, anim_duration)
+		
+		# 2. Wygaszamy starą latarkę, żeby nie świeciła do nowego pokoju
+		if old_room and not is_same_room:
+			var old_light = old_room.find_child("CenterRoomLight", false, false)
+			if old_light and old_light is PointLight2D:
+				tween.tween_property(old_light, "energy", 0.0, anim_duration)
+				
+		# 3. Płynnie zapalamy nową latarkę
+		var new_light = current_room.find_child("CenterRoomLight", false, false)
+		if new_light and new_light is PointLight2D:
+			new_light.energy = 0.0 # Zaczynamy od zgaszonej
+			tween.tween_property(new_light, "energy", current_room.center_light_energy, anim_duration)
+		# -----------------------------------------
+			
 		await tween.finished
 		
 		# Sprzątanie starego pokoju PO ANIMACJI
@@ -325,6 +355,9 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 			
 	else:
 		# Jeśli TYLKO FADE, stary pokój zniknął wyżej, zostaje tylko rozjaśnić obraz
+		var target_color = current_room.darkness_color if current_room.is_dark_room else Color.WHITE
+		global_darkness.color = target_color
+		
 		if do_fade:
 			TransitionManager.fade_to_normal(0.2)
 			await TransitionManager.on_fade_in_finished
