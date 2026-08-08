@@ -89,6 +89,9 @@ metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 [sub_resource type="SystemFont" id="SystemFont_x5jnv"]
 subpixel_positioning = 0
 
+[sub_resource type="SystemFont" id="SystemFont_ot4u7"]
+subpixel_positioning = 0
+
 [sub_resource type="Resource" id="Resource_ot4u7"]
 resource_local_to_scene = true
 script = ExtResource("6_w83pc")
@@ -425,6 +428,8 @@ map_position = Vector2i(3, 0)
 room_type = 5
 is_secret = true
 ignore_combat_lock = true
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="DoorDown" parent="Room03_DebugRoom" unique_id=406558948 instance=ExtResource("2_4p2la")]
 position = Vector2(958, 1056)
@@ -626,6 +631,8 @@ map_position = Vector2i(1, 1)
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
 item_spawn_chance = 1.0
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="EnemySpawnpoint" parent="Room11" unique_id=534280628 instance=ExtResource("37_01f22")]
 position = Vector2(375, 253)
@@ -698,6 +705,8 @@ enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
 item_pool = ExtResource("41_17i6m")
 item_spawn_chance = 1.0
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="EnemySpawnpoint" parent="Room12" unique_id=1894876892 instance=ExtResource("37_01f22")]
 position = Vector2(1012, 497)
@@ -708,6 +717,8 @@ position = Vector2(885, 608)
 [node name="Room13_StartRoom" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_ot4u7")]
 map_position = Vector2i(3, 1)
 room_type = 1
+floor_alt_id = 0
+wall_alt_id = 0
 spawn_points = [NodePath("RespawnPoint")]
 
 [node name="RespawnPoint" type="Marker2D" parent="Room13_StartRoom" unique_id=2119154057 groups=["RespawnPoint"]]
@@ -729,25 +740,68 @@ grow_vertical = 2
 theme_override_constants/outline_size = 15
 theme_override_fonts/font = SubResource("SystemFont_x5jnv")
 theme_override_font_sizes/font_size = 40
-text = "Pokój startowy"
+text = "Start Room
+[Level 2]"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="LevelEntrance" parent="Room13_StartRoom" unique_id=1155088219 instance=ExtResource("42_xy8dj")]
-position = Vector2(362, 538)
+position = Vector2(736, 352)
 my_entrance_id = "lv2"
 target_level_path = "uid://csesll4y6obst"
 target_entrance_id = "lv1"
 
 [node name="LevelEntrance2" parent="Room13_StartRoom" unique_id=1044927789 instance=ExtResource("42_xy8dj")]
-position = Vector2(1573, 487)
+position = Vector2(1184, 352)
 my_entrance_id = "l2"
 target_level_path = "uid://b004pb6a1qssy"
 target_entrance_id = "l3"
 
+[node name="PortalLabel" type="Label" parent="Room13_StartRoom" unique_id=186405151]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 592.0
+offset_top = 384.0
+offset_right = 880.0
+offset_bottom = 439.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = SubResource("SystemFont_ot4u7")
+theme_override_font_sizes/font_size = 20
+text = "Przejśćie do Level 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PortalLabel2" type="Label" parent="Room13_StartRoom" unique_id=215520620]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1040.0
+offset_top = 384.0
+offset_right = 1328.0
+offset_bottom = 439.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = SubResource("SystemFont_ot4u7")
+theme_override_font_sizes/font_size = 20
+text = "Przejśćie do Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Room14" parent="." unique_id=1214397522 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 1)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="ItemPickup" parent="Room14" unique_id=944280307 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 576)
@@ -758,6 +812,8 @@ test_amount = 25
 visible = false
 map_position = Vector2i(5, 1)
 is_secret = true
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Spider" parent="Room15" unique_id=565536358 instance=ExtResource("5_5x3wm")]
 position = Vector2(1288, 184)
@@ -781,10 +837,14 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_wfidj"), SubResour
 [node name="Room21" parent="." unique_id=527820765 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 2)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Room25" parent="." unique_id=1637198947 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(5, 2)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Spider" parent="Room25" unique_id=1643391684 instance=ExtResource("5_5x3wm")]
 position = Vector2(312, 200)
@@ -813,6 +873,8 @@ interaction_and_attack_stats_script = SubResource("Resource_p0hcr")
 [node name="Room31" parent="." unique_id=1838418349 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 3)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="ResetPotion" parent="Room31" unique_id=1632538939 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -822,6 +884,8 @@ test_amount = 6
 [node name="Room35" parent="." unique_id=823956522 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(5, 3)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="ItemPickup" parent="Room35" unique_id=1240572461 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 576)
@@ -832,6 +896,8 @@ visible = false
 map_position = Vector2i(4, 3)
 room_type = 2
 is_secret = true
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="ItemPickup" parent="Room36" unique_id=1981250134 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 576)
@@ -840,6 +906,8 @@ test_item_data = ExtResource("33_xuhdc")
 [node name="Room41" parent="." unique_id=290033935 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 4)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="GianticPotion" parent="Room41" unique_id=2068581997 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -849,6 +917,8 @@ test_amount = 6
 [node name="Room42" parent="." unique_id=1272668815 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 4)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="SlowPotion" parent="Room42" unique_id=2035004861 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -858,6 +928,8 @@ test_amount = 6
 [node name="Room43" parent="." unique_id=97520982 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 4)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Chest" parent="Room43" unique_id=373078894 instance=ExtResource("10_gdilx")]
 position = Vector2(960, 96)
@@ -869,6 +941,8 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_6c8xf")])
 [node name="Room44" parent="." unique_id=1824872663 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 4)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Spider" parent="Room44" unique_id=1648752415 instance=ExtResource("5_5x3wm")]
 position = Vector2(1472, 256)
@@ -896,6 +970,8 @@ test_amount = 10
 visible = false
 map_position = Vector2i(5, 4)
 room_type = 4
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="DoorUp" parent="Room45" unique_id=1323211708 instance=ExtResource("2_4p2la")]
 position = Vector2(960, 32)
@@ -923,6 +999,8 @@ loot_drop_script = SubResource("Resource_wxccy")
 [node name="Room51" parent="." unique_id=6868068 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 5)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="ChestSpawnpoint" parent="Room51" unique_id=1880579657 instance=ExtResource("39_skjs6")]
 position = Vector2(1531, 227)
@@ -942,10 +1020,14 @@ position = Vector2(1642, 837)
 [node name="Room52" parent="." unique_id=245301388 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 5)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Room53" parent="." unique_id=1645768999 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 5)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="LiliputPotion" parent="Room53" unique_id=1445472467 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -955,6 +1037,8 @@ test_amount = 6
 [node name="Room61" parent="." unique_id=861183964 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 6)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="SimplePotion" parent="Room61" unique_id=2053930346 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -964,10 +1048,14 @@ test_amount = 3
 [node name="Room63" parent="." unique_id=241419138 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 6)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="Room64" parent="." unique_id=943668798 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 6)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="FullRegeneratePotion" parent="Room64" unique_id=282749848 instance=ExtResource("14_5gwdj")]
 position = Vector2(960, 544)
@@ -978,6 +1066,8 @@ test_amount = 2
 visible = false
 map_position = Vector2i(1, 7)
 room_type = 5
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="DoorUp" parent="Room71" unique_id=1048959841 instance=ExtResource("2_4p2la")]
 position = Vector2(960, 32)
@@ -1029,6 +1119,8 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_fu16t"), SubResour
 [node name="Room74" parent="." unique_id=230548481 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 7)
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="DoorLeft" parent="Room74" unique_id=1831443880 node_paths=PackedStringArray("destination_door") instance=ExtResource("2_4p2la")]
 position = Vector2(32, 544)
@@ -1042,6 +1134,8 @@ texture = ExtResource("49_unpy6")
 visible = false
 map_position = Vector2i(5, 7)
 room_type = 4
+floor_alt_id = 0
+wall_alt_id = 0
 
 [node name="DoorLeft" parent="Room75" unique_id=607293603 instance=ExtResource("2_4p2la")]
 position = Vector2(32, 544)
