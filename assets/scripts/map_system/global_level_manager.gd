@@ -17,11 +17,15 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	var tree = get_tree()
 	var player = tree.get_first_node_in_group("Player")
 	
-	# 1. ZAMRAŻAMY GRACZA I WYJMOUMY GO Z AKTUALNEJ MAPY
+	# 1. ZAMRAŻAMY GRACZA I ZERUJEMY JEGO PĘD
 	if player:
 		if player.has_method("set_physics_process"):
 			player.set_physics_process(false)
 		player.process_mode = Node.PROCESS_MODE_DISABLED
+		
+		# Zerowanie pędu (zakładając standardowy CharacterBody2D z polem velocity)
+		if "velocity" in player:
+			player.velocity = Vector2.ZERO
 		
 		var current_parent = player.get_parent()
 		if current_parent:

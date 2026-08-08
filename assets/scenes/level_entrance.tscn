@@ -20,4 +20,3 @@ shape = SubResource("RectangleShape2D_u1njh")
 debug_color = Color(0, 0.64496654, 0.27651262, 0.41960785)
 
 [node name="Spawnpoint" type="Marker2D" parent="." unique_id=736383661]
-position = Vector2(0, 121)
