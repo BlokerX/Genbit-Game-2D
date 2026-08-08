@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 ## Klasa poziomu, przechowywująca pokoje na poziomie
 class_name Map
 
@@ -73,17 +73,16 @@ func _ready() -> void:
 		# Czyścimy ID w chmurze, żeby przy kolejnym respawnie (np. po śmierci) nie psuło logiki
 		GlobalLevelManager.target_entrance_id = ""
 	
-	# Ładujemy ustalony pokój i OD RAZU wrzucamy do niego gracza
+	# Ładujemy ustalony pokój i WWRZUCAMY do niego wyjętego wcześniej gracza
 	if room_to_load:
-		# Upewniamy się, że pokój jest dodany do drzewa sceny przed zmianą
 		if not room_to_load.is_inside_tree():
 			add_child(room_to_load)
 		
-		# Wywołujemy naszą pełną funkcję change_room, która poprawnie schowa i zagnieździ gracza!
-		# --- KLUCZOWA ZMIANA: call_deferred czeka, aż cały silnik i gracz wstaną ---
+		# Wywołujemy change_room. Nasza funkcja w map.gd automatycznie 
+		# znajdzie gracza (nawet jeśli był tymczasowo w root) i wsadzi go do "Entities"!
 		call_deferred("change_room", room_to_load, spawn_node)
 		
-		# Rozjaśniamy ekran przy wejściu do nowej mapy!
+		# Rozjaśniamy ekran na nowej mapie!
 		TransitionManager.fade_to_normal(0.4)
 
 ## Funkcja pomocnicza: Szuka po ID wejścia na całej mapie

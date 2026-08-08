@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://wn1dt8xyy57e"]
 
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="1_5oxlb"]
-[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_hx11q"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="2_mjw3m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="3_mjw3m"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="3_vlfoo"]
@@ -33,6 +32,9 @@
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="29_pgj7d"]
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="32_r7ala"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="33_r7ala"]
+
+[sub_resource type="Resource" id="Resource_6s3yp"]
+metadata/__load_path__ = "res://assets/scenes/test_scene.gd"
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -84,7 +86,7 @@ animations = [{
 size = Vector2(64.5, 64)
 
 [node name="Test Room Scene" type="Node2D" unique_id=451291155]
-script = ExtResource("1_hx11q")
+script = SubResource("Resource_6s3yp")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 
@@ -227,7 +229,7 @@ discovered_not_visited_color = null
 background_color = null
 text_color = null
 
-[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["Map"]]
 script = ExtResource("26_d8aow")
 starting_room = NodePath("StartRoom")
 

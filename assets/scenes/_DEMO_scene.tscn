@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://is353qmp4irh"]
 
-[ext_resource type="Script" uid="uid://ftpolw26ve8l" path="res://assets/scenes/test_scene.gd" id="1_megpf"]
 [ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="2_7ttlc"]
 [ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/pause_menu.tscn" id="2_ix51x"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="2_lh5g3"]
@@ -59,6 +58,9 @@
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="66_ln31g"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="71_yg0s7"]
 [ext_resource type="Resource" uid="uid://bxr06u6ayl4mb" path="res://assets/data/items/freezing_potion.tres" id="75_bkki6"]
+
+[sub_resource type="Resource" id="Resource_7ttlc"]
+metadata/__load_path__ = "res://assets/scenes/test_scene.gd"
 
 [sub_resource type="Gradient" id="Gradient_mjw3m"]
 interpolation_mode = 1
@@ -467,7 +469,7 @@ script = ExtResource("18_jwwkk")
 hand_attack_data = SubResource("Resource_nkt6r")
 
 [node name="DemoScene" type="Node2D" unique_id=451291155]
-script = ExtResource("1_megpf")
+script = SubResource("Resource_7ttlc")
 
 [node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
 script = ExtResource("14_ok3uq")
@@ -754,7 +756,7 @@ grow_vertical = 0
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("2_ix51x")]
 visible = false
 
-[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["Map"]]
 script = ExtResource("11_iv1w6")
 starting_room = NodePath("Room13_StartRoom")
 reset_map_history_on_respawn = false

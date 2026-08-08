@@ -33,7 +33,7 @@ const INPUT_ROTATE = "RotateBuilding"
 
 #region Signals
 
-## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
+## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
 # ## Sygnał wykonywany po skończonej inicjalizacji gracza
@@ -493,14 +493,14 @@ func respawn_sequence() -> void:
 	
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 	
-	# 2. Przekazanie obsługi położenia do LevelManagera, 
+	# 2. Przekazanie obsługi położenia do Map, 
 	# abyśmy przenieśli się też wewnątrz węzłów pokoi, a nie tylko wizualnie
-	var level_manager = get_tree().get_first_node_in_group("LevelManager")
+	var level_manager = get_tree().get_first_node_in_group("Map")
 	if level_manager:
 		if level_manager.has_method("handle_player_respawn"):
 			level_manager.handle_player_respawn(self)
 	else:
-		push_warning("Nie znaleziono LevelManagera podczas respawnu!")
+		push_warning("Nie znaleziono Map podczas respawnu!")
 
 #endregion
 
