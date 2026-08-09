@@ -288,8 +288,10 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 		for effect in current_room.ambient_aura_effects:
 			if effect != null:
 				var infinite_effect = effect.duplicate()
-				if "duration" in infinite_effect:
-					infinite_effect.duration = 99999.0 # Wymuszamy nieskończoność
+				
+				# --- NOWE PODEJŚCIE: Używamy nowej flagi nieskończoności ---
+				if "is_infinite" in infinite_effect:
+					infinite_effect.is_infinite = true
 				
 				# --- ZMIANA: Używamy nowej, nieuleczalnej funkcji! ---
 				if player.has_method("receive_environment_effect"):
@@ -419,6 +421,10 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 	
 	# OPCJA 2: Miękki reset (Gracz zachowuje swój obiekt, np. zdobyty ekwipunek w inventory)
 	if starting_room:
+		# Czyścimy wszystkie efekty na graczu (trucizny, klątwy itp.) przed przeniesieniem!
+		if player.has_method("clear_all_effects"):
+			player.clear_all_effects()
+			
 		# Przenosimy gracza z powrotem do pokoju startowego za pomocą istniejącej logiki
 		change_room(starting_room)
 		

@@ -62,13 +62,13 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
 		_update_lighting()
 
 ## Moc/Jasność (Energy) wygenerowanego światła.
-@export_range(0.0, 5.0) var center_light_energy: float = 1.0:
+@export_range(0.0, 5.0) var center_light_energy: float = 1.2:
 	set(value):
 		center_light_energy = value
 		_update_lighting()
 
 ## Skala (zasięg) wygenerowanego światła.
-@export_range(0.1, 10.0) var center_light_scale: float = 1.3:
+@export_range(0.1, 10.0) var center_light_scale: float = 1.5:
 	set(value):
 		center_light_scale = value
 		_update_lighting()

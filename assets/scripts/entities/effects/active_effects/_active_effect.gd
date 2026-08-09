@@ -6,16 +6,18 @@ signal effect_ended(effect_resource) # Sygnał zakończenia
 var target : Node2D
 var tick_interval : float
 var duration : float
+var is_infinite : bool = false
 var effect_resource : Resource # Przechowuje referencję do zasobu, który go stworzył
 
 var _tick_timer : float = 0.0
 
 # Inicjalizacja węzła
-func setup(_target: Node2D, _effect: Resource, _duration: float, _tick_interval: float) -> void:
+func setup(_target: Node2D, _effect: Resource, _duration: float, _tick_interval: float, _is_infinite: bool = false) -> void:
 	target = _target
 	effect_resource = _effect
 	duration = _duration
 	tick_interval = _tick_interval
+	is_infinite = _is_infinite
 	_tick_timer = tick_interval
 	
 	# Wywołanie akcji startowej (np. nałożenie spowolnienia)
@@ -26,11 +28,12 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 	
-	# Odliczanie ogólnego czasu trwania efektu
-	duration -= delta
-	if duration <= 0:
-		end_effect()
-		return
+	# Odliczamy czas tylko, jeśli efekt NIE jest nieskończony
+	if not is_infinite:
+		duration -= delta
+		if duration <= 0:
+			end_effect()
+			return
 		
 	# Odliczanie do kolejnego "tiku" (np. uderzenia trucizny)
 	if tick_interval > 0:

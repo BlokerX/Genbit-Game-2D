@@ -64,7 +64,7 @@ func respawn_sequence():
 	velocity.x = 0
 	velocity.y = 0
 	
-	clear_all_effects()
+	purge_absolutely_everything()
 
 #endregion
 
@@ -139,7 +139,22 @@ func remove_effect_by_name(eff_name: String) -> void:
 					active_effect.end_effect()
 				else:
 					active_effect.queue_free()
+				
+				# Natychmiastowo wyrywamy go z drzewa sceny, by inne skrypty go nie widziały
+				effects_collector.remove_child(active_effect)
+				
 				print("System Mapy: Bezpiecznie zdjęto efekt środowiskowy: ", eff_name)
+
+## Całkowite czyszczenie absolutnie wszystkiego [Effects] (Używane przy śmierci/respawnie)
+func purge_absolutely_everything() -> void:
+	if effects_collector != null:
+		for active_effect in effects_collector.get_children():
+			active_effect.set_process(false)
+			if active_effect.has_method("end_effect"):
+				active_effect.end_effect()
+			else:
+				active_effect.queue_free()
+		print("System: Całkowicie zresetowano stan gracza (usunięto aury i efekty).")
 
 #endregion
 

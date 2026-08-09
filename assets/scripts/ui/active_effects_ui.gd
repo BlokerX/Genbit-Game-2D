@@ -28,14 +28,15 @@ func _process(_delta: float) -> void:
 			var res = child.effect_resource
 			var eff_name = res.effect_name
 			var time_left = child.duration
+			var is_inf = child.is_infinite # <--- POBIERAMY FLAGĘ
 			current_effect_names.append(eff_name)
 			
 			# Jeśli efektu nie ma jeszcze w UI, utwórz go
 			if not displayed_effects.has(eff_name):
 				create_effect_icon(res)
 				
-			# Zaktualizuj etykietę czasu
-			update_effect_time(eff_name, time_left)
+			# Zaktualizuj etykietę czasu (dodajemy nowy argument)
+			update_effect_time(eff_name, time_left, is_inf)
 			
 	# Usuń z UI efekty, których już nie ma na graczu
 	var keys_to_remove = []
@@ -95,10 +96,16 @@ func create_effect_icon(effect_resource: Resource) -> void:
 	add_child(container)
 	displayed_effects[effect_resource.effect_name] = container
 
-func update_effect_time(effect_name: String, time_left: float) -> void:
+func update_effect_time(effect_name: String, time_left: float, is_infinite: bool) -> void:
 	var container = displayed_effects[effect_name]
 	var label = container.get_meta("time_label")
-	# Formatujemy czas
+	
+	# --- NOWOŚĆ: Wyświetlanie nieskończoności ---
+	if is_infinite:
+		label.text = "∞"
+		return # Przerywamy funkcję, nie formatujemy czasu
+		
+	# Formatujemy czas dla standardowych efektów
 	if time_left > 10.0:
 		label.text = str(int(time_left)) + "s"
 	else:

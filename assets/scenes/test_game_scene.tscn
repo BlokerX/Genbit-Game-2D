@@ -29,13 +29,13 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="Resource" id="Resource_2lg7k"]
+[sub_resource type="Resource" id="Resource_ge8p3"]
 resource_local_to_scene = true
 script = ExtResource("17_vhw88")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_jim5b"]
+[sub_resource type="Resource" id="Resource_b4kdy"]
 resource_local_to_scene = true
 script = ExtResource("18_uvlnc")
 
@@ -44,7 +44,7 @@ script = ExtResource("19_elt3u")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_jqc38"]
+[sub_resource type="Resource" id="Resource_whqo5"]
 resource_local_to_scene = true
 script = ExtResource("20_2y4le")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -341,6 +341,6 @@ visible = false
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_2lg7k")
-health_stats_script = SubResource("Resource_jim5b")
-interaction_and_attack_stats_script = SubResource("Resource_jqc38")
+movement_universal_script = SubResource("Resource_ge8p3")
+health_stats_script = SubResource("Resource_b4kdy")
+interaction_and_attack_stats_script = SubResource("Resource_whqo5")
