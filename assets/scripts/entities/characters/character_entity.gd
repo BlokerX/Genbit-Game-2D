@@ -79,21 +79,24 @@ func receive_effect(effect: Effect) -> bool:
 		print("Nie udało się nałożyć efektu na entity character.")
 	return success
 
-## NOWOŚĆ: Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
+## Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
 func receive_environment_effect(effect: Effect) -> bool:
 	if effects_collector == null: return false
 	
-	# Zliczamy węzły przed nałożeniem
-	var child_count_before = effects_collector.get_child_count()
 	var success = effect.apply_effect(self)
 	
-	# Jeśli efekt nałożył się pomyślnie i w kontenerze pojawił się nowy węzeł:
-	if success and effects_collector.get_child_count() > child_count_before:
-		# Pobieramy ten świeżo dodany węzeł z końca listy
-		var new_effect_node = effects_collector.get_child(-1)
-		# Naklejamy na niego systemową etykietę (Metadata)
-		new_effect_node.set_meta("is_environment_aura", true)
-		print("Otrzymano NIEUSUWONALNĄ aurę pokoju: ", effect.effect_name)
+	# Jeśli efekt został nałożony LUB odświeżony, szukamy go i twardo wbijamy właściwości aury
+	if success:
+		for child in effects_collector.get_children():
+			if child.get("effect_resource") != null and child.effect_resource.effect_name == effect.effect_name:
+				
+				# Zabezpieczamy węzeł metadaną
+				child.set_meta("is_environment_aura", true)
+				# Wymuszamy nieskończoność bezpośrednio na zaktualizowanym węźle
+				child.is_infinite = true
+				
+				print("Otrzymano/Odświeżono NIEUSUWONALNĄ aurę pokoju: ", effect.effect_name)
+				break # Zrobione, przerywamy pętlę
 		
 	return success
 
@@ -133,17 +136,25 @@ func clear_all_environment_effects() -> void:
 func remove_effect_by_name(eff_name: String) -> void:
 	if effects_collector != null:
 		for active_effect in effects_collector.get_children():
-			# Zabezpieczenie Duck Typing
+			
+			# Szukamy po nazwie zasobu (pomijając te usunięte w tej samej klatce)
+			if active_effect.is_queued_for_deletion():
+				continue
+				
 			if active_effect.get("effect_resource") != null and active_effect.effect_resource.effect_name == eff_name:
+				
+				# Zatrzymujemy logikę
+				active_effect.set_process(false)
+				
+				# Odpalamy akcję kończącą (np. przywrócenie normalnej prędkości)
 				if active_effect.has_method("end_effect"):
 					active_effect.end_effect()
 				else:
 					active_effect.queue_free()
 				
-				# Natychmiastowo wyrywamy go z drzewa sceny, by inne skrypty go nie widziały
+				# NATYCHMIASTOWE wyrwanie z drzewa sceny, by UI od razu ukryło ikonę
 				effects_collector.remove_child(active_effect)
-				
-				print("System Mapy: Bezpiecznie zdjęto efekt środowiskowy: ", eff_name)
+				print("System Mapy: Bezpiecznie zdjęto efekt: ", eff_name)
 
 ## Całkowite czyszczenie absolutnie wszystkiego [Effects] (Używane przy śmierci/respawnie)
 func purge_absolutely_everything() -> void:

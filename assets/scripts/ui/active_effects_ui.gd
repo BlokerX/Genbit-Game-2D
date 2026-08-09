@@ -28,7 +28,7 @@ func _process(_delta: float) -> void:
 			var res = child.effect_resource
 			var eff_name = res.effect_name
 			var time_left = child.duration
-			var is_inf = child.is_infinite # <--- POBIERAMY FLAGĘ
+			var _is_inf = child.is_infinite # <--- POBIERAMY FLAGĘ
 			current_effect_names.append(eff_name)
 			
 			# Jeśli efektu nie ma jeszcze w UI, utwórz go
@@ -36,7 +36,7 @@ func _process(_delta: float) -> void:
 				create_effect_icon(res)
 				
 			# Zaktualizuj etykietę czasu (dodajemy nowy argument)
-			update_effect_time(eff_name, time_left, is_inf)
+			update_effect_time(eff_name, time_left, _is_inf)
 			
 	# Usuń z UI efekty, których już nie ma na graczu
 	var keys_to_remove = []

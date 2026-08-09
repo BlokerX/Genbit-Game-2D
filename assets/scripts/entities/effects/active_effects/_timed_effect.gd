@@ -24,9 +24,19 @@ func apply_effect(target : Node2D) -> bool:
 			if child.is_queued_for_deletion():
 				continue
 			
-			# Jeśli efekt o tej samej nazwie już tu jest, odświeżamy tylko jego czas trwania!
-			child.duration = self.duration
-			child.is_infinite = self.is_infinite # Aktualizacja flagi
+			# Sytuacja A: Gracz ma już nieskończoną aurę pokoju, a pije zwykłą potkę.
+			if child.is_infinite and not self.is_infinite:
+				print("Zignorowano efekt z przedmiotu: Nieskończona aura [", effect_name, "] już działa!")
+				return true # Przerywamy, aura zostaje nienaruszona
+				
+			# Sytuacja B: Gracz pije miksturę, ale nakładamy na niego nieskończoną aurę.
+			if self.is_infinite:
+				child.is_infinite = true
+			
+			# Sytuacja C: Odświeżamy zwykły czas. Wybieramy dłuższą wartość,
+			# aby wypicie słabszej potki nie skróciło działania silniejszej!
+			child.duration = max(child.duration, self.duration)
+			
 			print("Odświeżono czas trwania efektu: ", effect_name)
 			return true
 
