@@ -704,6 +704,7 @@ position = Vector2(1163, 783)
 [node name="Room12" parent="." unique_id=830648380 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 1)
+transition_mode = 0
 camera_follows_player = true
 enemy_pool = ExtResource("40_u328b")
 enemy_spawn_chance = 1.0
@@ -722,6 +723,7 @@ position = Vector2(885, 608)
 
 [node name="Room13_StartRoom" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_ot4u7")]
 map_position = Vector2i(3, 1)
+transition_mode = 0
 room_type = 1
 camera_follows_player = false
 floor_alt_id = 0

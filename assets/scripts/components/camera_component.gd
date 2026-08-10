@@ -29,14 +29,12 @@ var _trauma: float = 0.0
 var _focal_point: Vector2 = Vector2.ZERO
 var _target_zoom: Vector2 = default_zoom
 
-# Zmienne do Magii Przejść
-var _was_sliding: bool = false 
+# Flagi zarządzające stanami gry
+var _is_first_frame: bool = true
+var _was_transitioning: bool = false 
 var _slide_start_offset: Vector2 = Vector2.ZERO
 var _cam_start_pos: Vector2 = Vector2.ZERO
 var _cam_end_pos: Vector2 = Vector2.ZERO
-
-# Magia usuwająca skok ładowania pierwszej sceny
-var _is_first_frame: bool = true 
 
 func _ready() -> void:
 	top_level = true 
@@ -59,7 +57,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player): return
 	
-	# 1. SYSTEM ZOOMA (Działa zawsze)
+	# --- 1. SYSTEM ZOOMA ---
 	if is_instance_valid(current_room):
 		if current_room.room_type == Room.RoomType.BOSS or current_room.room_type == Room.RoomType.ARENA:
 			_target_zoom = arena_zoom
@@ -67,74 +65,85 @@ func _physics_process(delta: float) -> void:
 			_target_zoom = default_zoom
 	zoom = zoom.lerp(_target_zoom, zoom_speed * delta)
 	
+	# --- ZMIENNE STANU ---
 	var is_transitioning = player.process_mode == Node.PROCESS_MODE_DISABLED
 	var slide_offset = Vector2.ZERO
+	var is_sliding = false
+	var is_static_room = false
+	
 	if is_instance_valid(current_room):
 		slide_offset = current_room.position
-		
-	var is_sliding = slide_offset.length_squared() > 1.0
-	
+		is_sliding = slide_offset.length_squared() > 1.0
+		is_static_room = not current_room.camera_follows_player
+
 	# =========================================================
-	# MAGIA PRZEJŚĆ - ANIMACJA SLIDE (Gdy pokój fizycznie jedzie)
+	# 2. TWARDE CIĘCIA (Start Gry lub przejście FADE)
+	# =========================================================
+	# Kiedy ekran jest czarny, musimy TELEPORTOWAĆ gracza, kamerę
+	# i przede wszystkim Martwą Strefę, żeby nic na siebie nie czekało!
+	if _is_first_frame or (is_transitioning and not is_sliding):
+		_is_first_frame = false
+		_was_transitioning = true
+		
+		# KLUCZOWA POPRAWKA: Twardy snap pudełka martwej strefy na gracza
+		_focal_point = player.global_position 
+		
+		var target = Vector2.ZERO
+		if is_static_room:
+			target = current_room.global_position + (current_room.size_px / 2.0)
+		else:
+			target = _calculate_dynamic_target() # Użyje nowego _focal_point
+			
+		global_position = _clamp_to_room_bounds(target)
+		return # Koniec roboty na tę klatkę!
+		
+	# =========================================================
+	# 3. KINOWE PRZEJŚCIE (Animacja SLIDE pokoju)
 	# =========================================================
 	if is_transitioning and is_sliding:
-		if not _was_sliding:
-			_was_sliding = true
+		if not _was_transitioning:
+			_was_transitioning = true
 			_cam_start_pos = global_position
 			_slide_start_offset = slide_offset
 			
 			var future_player_pos = player.global_position - slide_offset
 			
-			if not current_room.camera_follows_player:
+			if is_static_room:
 				_cam_end_pos = current_room.size_px / 2.0
 			else:
 				_cam_end_pos = future_player_pos
 				
 			_cam_end_pos = _get_future_clamped_target(_cam_end_pos)
-			_focal_point = future_player_pos
+			_focal_point = future_player_pos # Przygotowujemy pudełko na koniec lotu
 		
 		var progress = 1.0
 		if _slide_start_offset.length_squared() > 0:
 			progress = 1.0 - (slide_offset.length() / _slide_start_offset.length())
 			
 		global_position = _cam_start_pos.lerp(_cam_end_pos, progress)
-		return 
+		return # Ignorujemy całą resztę fizyki podczas lotu!
 		
-	elif _was_sliding:
-		_was_sliding = false
-		_focal_point = player.global_position
 	# =========================================================
-
+	# 4. NORMALNA GRA (Bieganie po pokoju)
+	# =========================================================
+	if _was_transitioning:
+		# Zabezpieczenie na pierwszą klatkę po zakończeniu animacji
+		_was_transitioning = false
+		_focal_point = player.global_position
+		
 	var desired_pos = Vector2.ZERO
-	var is_static_room = false
 	
-	# 2. OBLICZANIE DOCELOWEJ POZYCJI DLA NORMALNEJ GRY ORAZ FADE
-	if is_instance_valid(current_room):
-		if not current_room.camera_follows_player:
-			is_static_room = true
-			desired_pos = current_room.global_position + (current_room.size_px / 2.0)
-			_focal_point = player.global_position
-		else:
-			_update_focal_point()
-			desired_pos = _calculate_dynamic_target()
+	if is_static_room:
+		desired_pos = current_room.global_position + (current_room.size_px / 2.0)
 	else:
 		_update_focal_point()
 		desired_pos = _calculate_dynamic_target()
 	
-	# 3. ZACISKANIE GRANIC (Działa dla ruchu i dla natychmiastowego teleportu przy FADE)
+	# Zaciskanie krawędzi działa tylko podczas zwykłej gry
 	desired_pos = _clamp_to_room_bounds(desired_pos)
 	
-	# =========================================================
-	# 4. APLIKOWANIE RUCHU KAMERY (Magia ukrywania skoków)
-	# =========================================================
-	if _is_first_frame or (is_transitioning and not is_sliding):
-		# TWARDY SNAP: Uruchamiany TYLKO przy pierwszej klatce ładowania gry 
-		# ALBO podczas trwania ściemnienia FADE.
-		# W tym momencie przerywamy jakiekolwiek wygładzanie (lerp) i teleportujemy 
-		# kamerę na odpowiednie miejsce w cieniu/na ekranie ładowania.
-		global_position = desired_pos
-		_is_first_frame = false
-	elif is_static_room:
+	# Ruch
+	if is_static_room:
 		if global_position.distance_to(desired_pos) < 1.0:
 			global_position = desired_pos
 		else:
@@ -142,8 +151,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		global_position = global_position.lerp(desired_pos, follow_speed * delta)
 		
-	# 5. APLIKOWANIE WSTRZĄSÓW (Screen Shake)
+	# Wstrząsy
 	_apply_screen_shake(delta)
+
 
 #region Obliczanie Celu i Granic
 
