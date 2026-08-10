@@ -23,6 +23,8 @@
 [ext_resource type="Resource" uid="uid://da8e3nm1q40f6" path="res://assets/data/items/backpack.tres" id="20_7yxti"]
 [ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="21_rrbuv"]
 [ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="22_tx4wq"]
+[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="23_dc5qk"]
+[ext_resource type="Resource" uid="uid://cgsfxphbm7hm5" path="res://assets/data/items/frozen_cookie.tres" id="24_kfq8w"]
 
 [sub_resource type="Resource" id="Resource_ftyar"]
 script = ExtResource("3_kl38u")
@@ -216,13 +218,35 @@ ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_rjxtp"), SubR
 results = Array[ExtResource("5_3a5og")]([SubResource("Resource_supo1")])
 metadata/_custom_type_script = "uid://crevd6m1abpfw"
 
+[sub_resource type="Resource" id="Resource_5kgfa"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("23_dc5qk")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_wokkh"]
+script = ExtResource("3_kl38u")
+item_data = ExtResource("5_aa4ru")
+metadata/_custom_type_script = "uid://qsxdqtacj8cm"
+
+[sub_resource type="Resource" id="Resource_8k8da"]
+script = ExtResource("5_3a5og")
+item_data = ExtResource("24_kfq8w")
+metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
+
+[sub_resource type="Resource" id="Resource_8vys2"]
+script = ExtResource("2_77p83")
+recipe_name = "Frozen Cookie"
+ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_5kgfa"), SubResource("Resource_wokkh")])
+results = Array[ExtResource("5_3a5og")]([SubResource("Resource_8k8da")])
+metadata/_custom_type_script = "uid://crevd6m1abpfw"
+
 [node name="CraftingUI" type="Control" unique_id=101420674]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 script = ExtResource("1_3a5og")
-available_recipes = Array[ExtResource("2_77p83")]([SubResource("Resource_tx4wq"), SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh"), SubResource("Resource_kysok"), SubResource("Resource_7yxti"), SubResource("Resource_e3x4f"), SubResource("Resource_4av44"), SubResource("Resource_qm0qn"), SubResource("Resource_e7dwc")])
+available_recipes = Array[ExtResource("2_77p83")]([SubResource("Resource_tx4wq"), SubResource("Resource_3f1qw"), SubResource("Resource_dh7nh"), SubResource("Resource_kysok"), SubResource("Resource_7yxti"), SubResource("Resource_e3x4f"), SubResource("Resource_4av44"), SubResource("Resource_qm0qn"), SubResource("Resource_e7dwc"), SubResource("Resource_8vys2")])
 
 [node name="BackgroundPanel" type="Panel" parent="." unique_id=595898844]
 custom_minimum_size = Vector2(800, 500)

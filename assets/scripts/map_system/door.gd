@@ -6,6 +6,10 @@ signal player_entered_door(door_node)
 
 enum State { CLOSED, OPENING, OPEN }
 
+## Kierunek drzwi na wirtualnej siatce
+enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
+@export var door_direction: Direction = Direction.NONE
+
 # --- STAŁE ---
 const PLAYER_GROUP = "Player"
 
@@ -14,6 +18,8 @@ const PLAYER_GROUP = "Player"
 @export var destination_door : Door = null 
 @export var opening_time : float = 0.1 # Czas otwierania w sekundach
 @export var is_door_visible : bool = true
+## Dedykowana tekstura (ustawiana przez auto-generator)
+@export var door_texture: Texture2D = null
 
 @onready var spawn_point : Marker2D = $Spawnpoint
 @onready var door_sprite : Sprite2D = $Sprite2D
@@ -25,6 +31,10 @@ var is_locked : bool = false
 
 func _ready() -> void:
 	door_sprite.visible = is_door_visible
+	# Nadpisywanie tekstury, jeśli została przekazana ---
+	if door_texture != null:
+		door_sprite.texture = door_texture
+	
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
@@ -101,3 +111,13 @@ func get_room() -> Room:
 			return current_node
 		current_node = current_node.get_parent()
 	return null
+
+## Funkcja do Auto-Linkera
+func get_direction_offset() -> Vector2i:
+	match door_direction:
+		Direction.UP: return Vector2i(0, -1)
+		Direction.DOWN: return Vector2i(0, 1)
+		Direction.LEFT: return Vector2i(-1, 0)
+		Direction.RIGHT: return Vector2i(1, 0)
+	return Vector2i.ZERO
+	# todo rozdzielić kierunki, null od wpisany już

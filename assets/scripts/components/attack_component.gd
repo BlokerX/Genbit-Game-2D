@@ -79,7 +79,7 @@ func _handle_ranged_attack(shooter: CharacterEntity, target: Node2D, weapon_data
 	spawn_projectile_requested.emit(new_projectile, shooter.global_position)
 	return true
 
-func _handle_melee_attack(shooter: CharacterEntity, target: Node2D, stats_script: Resource, has_line_of_sight: bool) -> bool:
+func _handle_melee_attack(_shooter: CharacterEntity, target: Node2D, stats_script: Resource, has_line_of_sight: bool) -> bool:
 	if not has_line_of_sight:
 		print("Atak zablokowany przez ścianę!")
 		return false
@@ -89,7 +89,7 @@ func _handle_melee_attack(shooter: CharacterEntity, target: Node2D, stats_script
 		stats_script.execute_attack_on_target(target)
 	return true
 
-func _handle_unarmed_attack(shooter: CharacterEntity, target: Node2D, stats_script: Resource, has_line_of_sight: bool) -> bool:
+func _handle_unarmed_attack(_shooter: CharacterEntity, target: Node2D, stats_script: Resource, has_line_of_sight: bool) -> bool:
 	if not has_line_of_sight:
 		print("Atak zablokowany przez ścianę!")
 		return false

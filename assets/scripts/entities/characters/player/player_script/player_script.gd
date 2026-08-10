@@ -33,7 +33,7 @@ const INPUT_ROTATE = "RotateBuilding"
 
 #region Signals
 
-## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o LevelManagerze
+## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
 # ## Sygnał wykonywany po skończonej inicjalizacji gracza
@@ -105,6 +105,9 @@ var current_state: PlayerState = PlayerState.DEFAULT
 # Blokada wejścia z interfejsu UI
 var is_input_locked: bool = false
 
+# Blokada pacyfistyczna
+var is_in_pacifist_zone: bool = false
+
 #endregion
 
 #region Główne funkcje silnikowe
@@ -175,14 +178,8 @@ func _physics_process(delta):
 	else:
 		velocity = Vector2.ZERO # Jeśli z jakiegoś powodu komponentu nadal nie ma, po prostu stoimy
 	
-	# Set sprite orientation
-	if horizontal < 0 :
-		if character_sprite.flip_h != false :
-			character_sprite.flip_h = false
-	elif horizontal > 0 :
-		if character_sprite.flip_h != true :
-			character_sprite.flip_h = true
-	
+	# Aktualizacja kierunku postaci
+	_update_sprite_direction(Vector2(horizontal, vertical))
 	
 	move_and_slide()
 	
@@ -338,13 +335,16 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 	return false
 
 func _handle_default_inputs(event: InputEvent) -> void:
+	# Blokada Walki w pacifist zone
+	if is_in_pacifist_zone and (event.is_action_pressed(INPUT_ATTACK) or event.is_action_pressed(INPUT_USE_ITEM)):
+		print("Jesteś w Strefie Bezpiecznej! Walka zablokowana.")
 	# ATAK
-	if event.is_action_pressed(INPUT_ATTACK):
+	elif event.is_action_pressed(INPUT_ATTACK):
 		is_holding_attack = true
 	elif event.is_action_released(INPUT_ATTACK):
 		is_holding_attack = false
 		
-# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
+	# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
 	if event.is_action_pressed(INPUT_INTERACT):
 		if aim_controller.current_target != null:
 			aim_controller.current_target.interact(self)
@@ -493,14 +493,14 @@ func respawn_sequence() -> void:
 	
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 	
-	# 2. Przekazanie obsługi położenia do LevelManagera, 
+	# 2. Przekazanie obsługi położenia do Map, 
 	# abyśmy przenieśli się też wewnątrz węzłów pokoi, a nie tylko wizualnie
-	var level_manager = get_tree().get_first_node_in_group("LevelManager")
+	var level_manager = get_tree().get_first_node_in_group("Map")
 	if level_manager:
 		if level_manager.has_method("handle_player_respawn"):
 			level_manager.handle_player_respawn(self)
 	else:
-		push_warning("Nie znaleziono LevelManagera podczas respawnu!")
+		push_warning("Nie znaleziono Map podczas respawnu!")
 
 #endregion
 

@@ -1,0 +1,346 @@
+[gd_scene format=3 uid="uid://bb1p1ifmi7wtf"]
+
+[ext_resource type="Script" uid="uid://ck322cqxqek41" path="res://assets/scripts/ui/ui_controller.gd" id="1_bpfx5"]
+[ext_resource type="Script" uid="uid://cycvvw1tn66k3" path="res://assets/scripts/scene_scripts/game_scene/game_scene.gd" id="1_ge8p3"]
+[ext_resource type="Script" uid="uid://b0ps68vr8aav7" path="res://assets/scripts/ui/playtime_monitor.gd" id="2_ge8p3"]
+[ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="3_b4kdy"]
+[ext_resource type="Script" uid="uid://by75yrn6lcipi" path="res://assets/scripts/ui/active_effects_ui.gd" id="4_whqo5"]
+[ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="5_32wio"]
+[ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="6_b0as1"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="7_1k26m"]
+[ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="8_1t2iv"]
+[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="9_5fad1"]
+[ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="10_tjy5o"]
+[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="11_mbo3l"]
+[ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="12_64dql"]
+[ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/crafting_ui.tscn" id="13_4mn4o"]
+[ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/grid_panel.tscn" id="14_1gqv0"]
+[ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/pause_menu.tscn" id="15_grwg2"]
+[ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="17_vhw88"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="18_uvlnc"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="19_elt3u"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="20_2y4le"]
+
+[sub_resource type="Gradient" id="Gradient_mjw3m"]
+interpolation_mode = 1
+colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
+gradient = SubResource("Gradient_mjw3m")
+
+[sub_resource type="Resource" id="Resource_ge8p3"]
+resource_local_to_scene = true
+script = ExtResource("17_vhw88")
+moveSpeed = 450.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_b4kdy"]
+resource_local_to_scene = true
+script = ExtResource("18_uvlnc")
+
+[sub_resource type="Resource" id="Resource_osvyu"]
+script = ExtResource("19_elt3u")
+max_range = 200.0
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_whqo5"]
+resource_local_to_scene = true
+script = ExtResource("20_2y4le")
+hand_attack_data = SubResource("Resource_osvyu")
+
+[node name="TestGameScene" type="Node2D" unique_id=451291155]
+script = ExtResource("1_ge8p3")
+
+[node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
+script = ExtResource("1_bpfx5")
+chest_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/ChestPanel")
+player_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/PlayerPanel")
+backpack_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/BackpackPanel")
+hotbar_panel = NodePath("InventoryUIGroup/HotbarPanel")
+cursor_item_rect = NodePath("CursorItem")
+cursor_amount_label = NodePath("CursorItem/Label")
+crafting_ui = NodePath("CraftingUI")
+minimap_ui = NodePath("Minimap")
+
+[node name="Game_UI_Layout" type="Control" parent="UI_Canvas" unique_id=725686003]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlaytimeLabel" type="Label" parent="UI_Canvas/Game_UI_Layout" unique_id=726032964]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -944.0
+offset_right = 944.0
+offset_bottom = 23.0
+grow_horizontal = 2
+horizontal_alignment = 1
+script = ExtResource("2_ge8p3")
+
+[node name="MarginContainer" type="MarginContainer" parent="UI_Canvas/Game_UI_Layout" unique_id=435628434]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 88
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer" unique_id=1983183050]
+layout_mode = 2
+
+[node name="StatsPanel" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer" unique_id=795723000 node_paths=PackedStringArray("player", "damage_label", "crit_rate_label", "range_label", "speed_label")]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_b4kdy")
+player = NodePath("../../../../../Player")
+damage_label = NodePath("DamageLabel")
+crit_rate_label = NodePath("CritLabel")
+range_label = NodePath("RangeLabel")
+speed_label = NodePath("SpeedLabel")
+
+[node name="DamageLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=2014525515]
+layout_mode = 2
+
+[node name="CritLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1361970591]
+layout_mode = 2
+
+[node name="RangeLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1722019231]
+layout_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=617311985]
+layout_mode = 2
+
+[node name="AcriveEffectsPanel" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer" unique_id=515517333 node_paths=PackedStringArray("player")]
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_filter = 2
+script = ExtResource("4_whqo5")
+player = NodePath("../../../../../Player")
+
+[node name="EffectsLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/AcriveEffectsPanel" unique_id=1339267922]
+layout_mode = 2
+theme_override_constants/outline_size = 10
+text = "Active effects:"
+uppercase = true
+
+[node name="PlayerUIGroup" type="Node" parent="UI_Canvas" unique_id=748282068]
+
+[node name="HealthPointsBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=1547176443 node_paths=PackedStringArray("character_entity")]
+texture_filter = 5
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 264.0
+offset_bottom = 52.36364
+scale = Vector2(1, 0.88)
+theme_override_styles/fill = ExtResource("5_32wio")
+show_percentage = false
+script = ExtResource("6_b0as1")
+character_entity = NodePath("../../../Player")
+
+[node name="HealthPointsLabel" type="Label" parent="UI_Canvas/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
+texture_filter = 5
+layout_mode = 0
+offset_right = 248.0
+offset_bottom = 36.36364
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CooldownProgressBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+texture_filter = 5
+offset_left = 16.0
+offset_top = 56.0
+offset_right = 264.0
+offset_bottom = 80.0
+theme_override_styles/fill = ExtResource("7_1k26m")
+show_percentage = false
+script = ExtResource("8_1t2iv")
+player = NodePath("../../../Player")
+cooldown_label = NodePath("CooldownLabel")
+
+[node name="CooldownLabel" type="Label" parent="UI_Canvas/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
+texture_filter = 5
+layout_mode = 0
+offset_top = 1.0
+offset_right = 248.0
+offset_bottom = 24.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterSlotTextureRect" type="TextureRect" parent="UI_Canvas/PlayerUIGroup" unique_id=854278161]
+texture_filter = 5
+custom_minimum_size = Vector2(7, 7)
+offset_left = 272.0
+offset_top = 16.0
+offset_right = 336.0
+offset_bottom = 80.0
+texture = SubResource("GradientTexture1D_totju")
+expand_mode = 1
+
+[node name="CharacterTexture" type="TextureRect" parent="UI_Canvas/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
+texture_filter = 5
+custom_minimum_size = Vector2(7, 7)
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("9_5fad1")
+expand_mode = 1
+
+[node name="InventoryUIGroup" type="Node" parent="UI_Canvas" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
+script = ExtResource("10_tjy5o")
+player = NodePath("../../Player")
+info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
+
+[node name="ItemInfoPanelContainer" type="PanelContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=815114077]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+
+[node name="InfoLabel" type="Label" parent="UI_Canvas/InventoryUIGroup/ItemInfoPanelContainer" unique_id=656463042]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+
+[node name="HotbarPanel" type="HBoxContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=682378422]
+offset_left = 8.0
+offset_top = 1016.0
+offset_right = 616.0
+offset_bottom = 1080.0
+
+[node name="Slot" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1315751759 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot2" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=401580884 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot3" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=2124368672 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot4" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=756972471 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot5" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1953207854 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot6" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1471169057 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot7" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1237336103 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot8" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1230213238 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot9" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1394381743 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Minimap" type="Control" parent="UI_Canvas" unique_id=726594060]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -480.0
+offset_top = -270.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("12_64dql")
+cell_size = 35.0
+metadata/_edit_group_ = true
+
+[node name="CraftingUI" parent="UI_Canvas" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
+visible = false
+player = NodePath("../../Player")
+
+[node name="CenterContainer" type="CenterContainer" parent="UI_Canvas" unique_id=1788338789]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="UI_Canvas/CenterContainer" unique_id=1136116868]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/CenterContainer/PanelContainer" unique_id=1263793803]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 200
+
+[node name="ChestPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=1069289126 instance=ExtResource("14_1gqv0")]
+visible = false
+layout_mode = 2
+
+[node name="BackpackPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=186742539 instance=ExtResource("14_1gqv0")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="PlayerPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=1892079471 instance=ExtResource("14_1gqv0")]
+visible = false
+layout_mode = 2
+
+[node name="CursorItem" type="TextureRect" parent="UI_Canvas" unique_id=62955625]
+custom_minimum_size = Vector2(16, 16)
+offset_right = 64.0
+offset_bottom = 64.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="UI_Canvas/CursorItem" unique_id=1182108947]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
+visible = false
+
+[node name="LevelContainer" type="Node2D" parent="." unique_id=325666330]
+
+[node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
+unique_name_in_owner = true
+position = Vector2(960, 540)
+movement_universal_script = SubResource("Resource_ge8p3")
+health_stats_script = SubResource("Resource_b4kdy")
+interaction_and_attack_stats_script = SubResource("Resource_whqo5")

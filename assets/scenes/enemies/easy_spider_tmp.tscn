@@ -1,0 +1,146 @@
+[gd_scene format=3 uid="uid://ch3ffas3avu00"]
+
+[ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="1_foj32"]
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="2_jkp61"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="3_md8h0"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="4_vftbf"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="5_20gl5"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="6_j7ujt"]
+[ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="7_08ylr"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="8_4kfto"]
+[ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="9_k4kx3"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="10_e3eoy"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="11_wrew1"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="12_ld01q"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="13_ef4xc"]
+
+[sub_resource type="Resource" id="Resource_k1opt"]
+resource_local_to_scene = true
+script = ExtResource("2_jkp61")
+moveSpeed = 200.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_d8532"]
+resource_local_to_scene = true
+script = ExtResource("3_md8h0")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_p05go"]
+script = ExtResource("4_vftbf")
+damage = 5
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_vfc7k"]
+resource_local_to_scene = true
+script = ExtResource("5_20gl5")
+hand_attack_data = SubResource("Resource_p05go")
+
+[sub_resource type="Resource" id="Resource_3xyyd"]
+script = ExtResource("7_08ylr")
+item_data = ExtResource("8_4kfto")
+metadata/_custom_type_script = "uid://1f2qvv7y72gg"
+
+[sub_resource type="Resource" id="Resource_yn8as"]
+script = ExtResource("9_k4kx3")
+item_pickup_scene = ExtResource("6_j7ujt")
+loot_table = Array[ExtResource("7_08ylr")]([SubResource("Resource_3xyyd")])
+metadata/_custom_type_script = "uid://brgrsjbml6fve"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
+atlas = ExtResource("11_wrew1")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7fpw2"]
+atlas = ExtResource("11_wrew1")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tme40"]
+atlas = ExtResource("11_wrew1")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d7uxj"]
+atlas = ExtResource("11_wrew1")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w0vak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7fpw2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tme40")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d7uxj")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
+radius = 40.0
+
+[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
+collision_layer = 4
+collision_mask = 7
+motion_mode = 1
+script = ExtResource("1_foj32")
+respawnVector = Vector2(968, 928)
+movement_universal_script = SubResource("Resource_k1opt")
+health_stats_script = SubResource("Resource_d8532")
+interaction_and_attack_stats_script = SubResource("Resource_vfc7k")
+loot_drop_script = SubResource("Resource_yn8as")
+combat_radius = 30.0
+effects_collector = NodePath("EffectsCollector")
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("10_e3eoy")]
+outline_material = null
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="EffectsCollector" type="Node" parent="." unique_id=932642496]
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=2095254467]
+collision_mask = 3
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
+texture_filter = 5
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_pijm0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
+shape = SubResource("CircleShape2D_r73tf")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="HealthProgressBar" type="ProgressBar" parent="." unique_id=482593767 node_paths=PackedStringArray("character_entity")]
+texture_filter = 5
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("12_ld01q")
+show_percentage = false
+script = ExtResource("13_ef4xc")
+character_entity = NodePath("..")
+
+[node name="Label" type="Label" parent="HealthProgressBar" unique_id=1863562766]
+texture_filter = 5
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1

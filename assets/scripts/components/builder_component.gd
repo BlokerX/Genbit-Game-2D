@@ -169,7 +169,7 @@ func try_place_object() -> bool:
 	# Kopiujemy obrót z ducha do docelowego obiektu!
 	final_instance.rotation_degrees = current_rotation_degrees
 	
-	# Zamiast wrzucać obiekt byle gdzie, wysyłamy sygnał do gracza/LevelManagera.
+	# Zamiast wrzucać obiekt byle gdzie, wysyłamy sygnał do gracza/Map.
 	player.entity_spawn_requested.emit(final_instance, ghost_instance.global_position)
 	print("BuilderComponent: Postawiono obiekt (Obrót: " + str(current_rotation_degrees) + "°)")
 	return true

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://cgsfxphbm7hm5"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_spde8"]
+[ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="2_3ejbt"]
+[ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/active_effects/freeze_effect.gd" id="2_erjca"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="3_3ejbt"]
+[ext_resource type="Texture2D" uid="uid://bkogcmrqxe82f" path="res://assets/textures/samples_examples/items/iced_cookie.png" id="4_qcm45"]
+[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="5_d8yyc"]
+
+[sub_resource type="Resource" id="Resource_qcm45"]
+script = ExtResource("2_3ejbt")
+metadata/_custom_type_script = "uid://bucrmdkvkkry5"
+
+[sub_resource type="Resource" id="Resource_7mtpm"]
+script = ExtResource("2_erjca")
+duration = 8.0
+metadata/_custom_type_script = "uid://byffpv3e7benb"
+
+[sub_resource type="Resource" id="Resource_h8l31"]
+script = ExtResource("3_3ejbt")
+heal_per_tick = 1
+duration = 7.2
+tick_interval = 0.1
+metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
+
+[resource]
+script = ExtResource("5_d8yyc")
+heal_amount = 1
+allow_overheal = true
+effects = Array[ExtResource("1_spde8")]([SubResource("Resource_qcm45"), SubResource("Resource_7mtpm"), SubResource("Resource_h8l31")])
+item_id = 23
+item_name = "Frozen Cookie"
+item_type = "Consumable"
+item_description = "Frozen cookie! It restores 70 HP, but it is very cold."
+item_icon = ExtResource("4_qcm45")
+item_is_stackable = true
+item_max_stack_count = 10

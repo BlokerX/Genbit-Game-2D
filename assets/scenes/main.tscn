@@ -4,5 +4,5 @@
 
 [node name="Main" type="Node" unique_id=395075483]
 script = ExtResource("1_iklni")
-game_scene_path = "uid://is353qmp4irh"
+game_scene_path = "uid://bb1p1ifmi7wtf"
 main_menu_scene_path = "uid://daetexya25b0v"

@@ -20,7 +20,7 @@ var original_bg_color: Color
 @export var background_color : Color = Color(0.0, 0.0, 0.0, 0.5)
 @export var text_color : Color = Color(0.0, 0.0, 0.0, 1.0) # Kolor litery S
 
-# --- ZMIENNE DO OBSŁUGI KLAWISZA TAB ---
+# ZMIENNE DO OBSŁUGI KLAWISZA TAB
 var is_map_toggled_large: bool = false # Przechowuje informację, czy mapa jest powiększona na stałe
 
 func _ready() -> void:
@@ -29,12 +29,66 @@ func _ready() -> void:
 	# Ustawiamy punkt skalowania na prawy dolny róg
 	pivot_offset = size
 	
-	if level_manager:
-		# Podłączamy się pod sygnały informujące o dynamice gry
+	# 1. Próbujemy złapać mapę, jeśli już tu jest (np. podczas testowania sceny)
+	_try_find_map()
+	
+	# 2. UNIWERSALNY SYSTEM NASŁUCHIWANIA (Brak obciążenia _process!)
+	# Silnik automatycznie zawoła te funkcje TYLKO WTEDY, gdy jakiś węzeł wejdzie/wyjdzie z gry
+	get_tree().node_added.connect(_on_node_added)
+	get_tree().node_removed.connect(_on_node_removed)
+
+#region EVENT-DRIVEN MAP BINDING
+
+func _try_find_map() -> void:
+	var map_node = get_tree().get_first_node_in_group("Map")
+	if map_node is Map:
+		_bind_map(map_node)
+
+## Reaguje natychmiast, gdy JAKIKOLWIEK węzeł zostanie dodany do gry (np. przez GlobalLevelManager)
+func _on_node_added(node: Node) -> void:
+	# Sprawdzamy czystym klasowaniem Godota 4, czy dodany węzeł to nasz Menedżer Mapy
+	if node is Map:
+		_bind_map(node)
+
+## Reaguje natychmiast, gdy jakiś węzeł jest usuwany (np. queue_free starej mapy)
+func _on_node_removed(node: Node) -> void:
+	# Jeśli usuwają z gry naszą mapę, zdejmujemy referencję
+	if node == level_manager:
+		_unbind_map()
+
+## Hermetyczna funkcja podpinająca mapę
+func _bind_map(new_map: Map) -> void:
+	# Jeśli to ta sama mapa, ignorujemy
+	if level_manager == new_map:
+		return
+		
+	# Odpinamy ewentualną starą mapę (zabezpieczenie przed wyciekami pamięci)
+	if level_manager != null:
+		_unbind_map()
+		
+	level_manager = new_map
+	
+	# Podpinamy sygnały nowej mapy
+	if not level_manager.room_changed.is_connected(_on_map_state_changed):
 		level_manager.room_changed.connect(_on_map_state_changed)
+	if not level_manager.map_updated.is_connected(_on_map_state_changed):
 		level_manager.map_updated.connect(_on_map_state_changed)
-	else:
-		push_warning("Minimap: Brak Map'a!")
+		
+	# Odświeżamy rysowanie UI
+	queue_redraw()
+
+## Hermetyczna funkcja odpinająca mapę
+func _unbind_map() -> void:
+	if is_instance_valid(level_manager):
+		if level_manager.room_changed.is_connected(_on_map_state_changed):
+			level_manager.room_changed.disconnect(_on_map_state_changed)
+		if level_manager.map_updated.is_connected(_on_map_state_changed):
+			level_manager.map_updated.disconnect(_on_map_state_changed)
+			
+	level_manager = null
+	queue_redraw()
+
+#endregion
 
 # --- ZMIENIONO: Usunięto _input. Mapa jest teraz sterowana przez UIController! ---
 func toggle_large_map(is_large: bool) -> void:
