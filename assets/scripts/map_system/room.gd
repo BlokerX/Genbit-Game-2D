@@ -81,6 +81,10 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
 ## KLĄTWA (Zostaje po wyjściu): Efekty nakładane przy wejściu. Mają swój standardowy czas trwania i znikną same, nawet po zmianie pokoju (np. Trucizna, Krwawienie).
 @export var sticky_entry_effects: Array[Effect] = []
 
+@export_group("Kamera")
+## Jeśli true: Kamera płynnie podąża za graczem, nie wychodząc poza ściany pokoju.
+## Jeśli false: Kamera na sztywno blokuje się na środku pokoju (styl The Binding of Isaac).
+@export var camera_follows_player: bool = false
 
 @export_group("Generatory Proceduralne (Spawn Pools)")
 ## Pula przeciwników (Losowana na markerach z grupy 'EnemySpawn')

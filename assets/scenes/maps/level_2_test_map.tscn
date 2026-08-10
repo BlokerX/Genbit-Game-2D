@@ -428,6 +428,7 @@ map_position = Vector2i(3, 0)
 room_type = 5
 is_secret = true
 ignore_combat_lock = true
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -628,9 +629,12 @@ test_amount = 99
 [node name="Room11" parent="." unique_id=1258087071 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 1)
+transition_mode = 0
+camera_follows_player = true
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
 item_spawn_chance = 1.0
+room_size_tiles = Vector2i(50, 47)
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -700,11 +704,13 @@ position = Vector2(1163, 783)
 [node name="Room12" parent="." unique_id=830648380 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 1)
+camera_follows_player = true
 enemy_pool = ExtResource("40_u328b")
 enemy_spawn_chance = 1.0
 object_spawn_chance = 1.0
 item_pool = ExtResource("41_17i6m")
 item_spawn_chance = 1.0
+room_size_tiles = Vector2i(60, 34)
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -717,6 +723,7 @@ position = Vector2(885, 608)
 [node name="Room13_StartRoom" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_ot4u7")]
 map_position = Vector2i(3, 1)
 room_type = 1
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 spawn_points = [NodePath("RespawnPoint")]
@@ -800,6 +807,7 @@ vertical_alignment = 1
 [node name="Room14" parent="." unique_id=1214397522 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 1)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -812,6 +820,7 @@ test_amount = 25
 visible = false
 map_position = Vector2i(5, 1)
 is_secret = true
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -837,12 +846,14 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_wfidj"), SubResour
 [node name="Room21" parent="." unique_id=527820765 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 2)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
 [node name="Room25" parent="." unique_id=1637198947 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(5, 2)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -873,6 +884,7 @@ interaction_and_attack_stats_script = SubResource("Resource_p0hcr")
 [node name="Room31" parent="." unique_id=1838418349 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 3)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -884,6 +896,7 @@ test_amount = 6
 [node name="Room35" parent="." unique_id=823956522 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(5, 3)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -896,6 +909,7 @@ visible = false
 map_position = Vector2i(4, 3)
 room_type = 2
 is_secret = true
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -906,6 +920,7 @@ test_item_data = ExtResource("33_xuhdc")
 [node name="Room41" parent="." unique_id=290033935 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 4)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -917,6 +932,7 @@ test_amount = 6
 [node name="Room42" parent="." unique_id=1272668815 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 4)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -928,6 +944,7 @@ test_amount = 6
 [node name="Room43" parent="." unique_id=97520982 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 4)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -941,6 +958,7 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_6c8xf")])
 [node name="Room44" parent="." unique_id=1824872663 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 4)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -970,6 +988,7 @@ test_amount = 10
 visible = false
 map_position = Vector2i(5, 4)
 room_type = 4
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -999,6 +1018,7 @@ loot_drop_script = SubResource("Resource_wxccy")
 [node name="Room51" parent="." unique_id=6868068 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 5)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1020,12 +1040,14 @@ position = Vector2(1642, 837)
 [node name="Room52" parent="." unique_id=245301388 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(2, 5)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
 [node name="Room53" parent="." unique_id=1645768999 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 5)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1037,6 +1059,7 @@ test_amount = 6
 [node name="Room61" parent="." unique_id=861183964 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(1, 6)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1048,12 +1071,14 @@ test_amount = 3
 [node name="Room63" parent="." unique_id=241419138 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(3, 6)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
 [node name="Room64" parent="." unique_id=943668798 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 6)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1066,6 +1091,7 @@ test_amount = 2
 visible = false
 map_position = Vector2i(1, 7)
 room_type = 5
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1119,6 +1145,7 @@ slots = Array[ExtResource("11_yoteg")]([SubResource("Resource_fu16t"), SubResour
 [node name="Room74" parent="." unique_id=230548481 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 7)
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
@@ -1134,6 +1161,7 @@ texture = ExtResource("49_unpy6")
 visible = false
 map_position = Vector2i(5, 7)
 room_type = 4
+camera_follows_player = false
 floor_alt_id = 0
 wall_alt_id = 0
 
