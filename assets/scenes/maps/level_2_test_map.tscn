@@ -807,7 +807,9 @@ vertical_alignment = 1
 [node name="Room14" parent="." unique_id=1214397522 instance=ExtResource("3_ot4u7")]
 visible = false
 map_position = Vector2i(4, 1)
-camera_follows_player = false
+transition_mode = 0
+camera_follows_player = true
+room_size_tiles = Vector2i(50, 30)
 floor_alt_id = 0
 wall_alt_id = 0
 
