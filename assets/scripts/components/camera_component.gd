@@ -29,14 +29,21 @@ var _trauma: float = 0.0
 var _focal_point: Vector2 = Vector2.ZERO
 var _target_zoom: Vector2 = default_zoom
 
+# Zmienne do Magii Przejść
+var _was_sliding: bool = false 
+var _slide_start_offset: Vector2 = Vector2.ZERO
+var _cam_start_pos: Vector2 = Vector2.ZERO
+var _cam_end_pos: Vector2 = Vector2.ZERO
+
+# Magia usuwająca skok ładowania pierwszej sceny
+var _is_first_frame: bool = true 
+
 func _ready() -> void:
 	top_level = true 
 	
-	# Zgrywamy kamerę IDEALNIE z klatkami fizyki (tam gdzie rusza się gracz)
-	# Priorytet 100 gwarantuje, że kamera zaktualizuje się PO tym, jak gracz wykona ruch.
 	process_mode = Node.PROCESS_MODE_ALWAYS 
 	process_physics_priority = 100
-	set_process(false) # Wyłączamy zwykły _process, by uniknąć desynchronizacji
+	set_process(false) 
 	
 	global_position = player.global_position
 	_focal_point = player.global_position
@@ -52,77 +59,117 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player): return
 	
-	var is_transitioning = player.process_mode == Node.PROCESS_MODE_DISABLED
-	var desired_pos = Vector2.ZERO
-	var is_static_room = false
-	
-	# 1. OKREŚLAMY DOCELOWĄ POZYCJĘ I ZOOM
+	# 1. SYSTEM ZOOMA (Działa zawsze)
 	if is_instance_valid(current_room):
 		if current_room.room_type == Room.RoomType.BOSS or current_room.room_type == Room.RoomType.ARENA:
 			_target_zoom = arena_zoom
 		else:
 			_target_zoom = default_zoom
+	zoom = zoom.lerp(_target_zoom, zoom_speed * delta)
+	
+	var is_transitioning = player.process_mode == Node.PROCESS_MODE_DISABLED
+	var slide_offset = Vector2.ZERO
+	if is_instance_valid(current_room):
+		slide_offset = current_room.position
+		
+	var is_sliding = slide_offset.length_squared() > 1.0
+	
+	# =========================================================
+	# MAGIA PRZEJŚĆ - ANIMACJA SLIDE (Gdy pokój fizycznie jedzie)
+	# =========================================================
+	if is_transitioning and is_sliding:
+		if not _was_sliding:
+			_was_sliding = true
+			_cam_start_pos = global_position
+			_slide_start_offset = slide_offset
 			
-		if is_transitioning:
-			# =========================================================
-			# MAGIA PRZEJŚCIA - PRZEWIDYWANIE PRZYSZŁOŚCI
-			# =========================================================
-			# Ignorujemy to, że pokój jest daleko za ekranem. Obliczamy punkt,
-			# w którym gracz znajdzie się, gdy animacja dobiegnie końca (czyli pokój na 0,0).
+			var future_player_pos = player.global_position - slide_offset
+			
 			if not current_room.camera_follows_player:
-				# Dla statycznego pokoju celem jest po prostu jego środek
-				desired_pos = current_room.size_px / 2.0
+				_cam_end_pos = current_room.size_px / 2.0
 			else:
-				# Odejmując globalną pozycję pokoju od gracza, otrzymujemy prawdziwą lokalizację gracza po animacji!
-				desired_pos = player.global_position - current_room.global_position
+				_cam_end_pos = future_player_pos
 				
-			# Zabezpieczamy Martwą Strefę, by nie szarpnęła po wyłączeniu animacji
-			_focal_point = desired_pos 
+			_cam_end_pos = _get_future_clamped_target(_cam_end_pos)
+			_focal_point = future_player_pos
+		
+		var progress = 1.0
+		if _slide_start_offset.length_squared() > 0:
+			progress = 1.0 - (slide_offset.length() / _slide_start_offset.length())
 			
+		global_position = _cam_start_pos.lerp(_cam_end_pos, progress)
+		return 
+		
+	elif _was_sliding:
+		_was_sliding = false
+		_focal_point = player.global_position
+	# =========================================================
+
+	var desired_pos = Vector2.ZERO
+	var is_static_room = false
+	
+	# 2. OBLICZANIE DOCELOWEJ POZYCJI DLA NORMALNEJ GRY ORAZ FADE
+	if is_instance_valid(current_room):
+		if not current_room.camera_follows_player:
+			is_static_room = true
+			desired_pos = current_room.global_position + (current_room.size_px / 2.0)
+			_focal_point = player.global_position
 		else:
-			# =========================================================
-			# NORMALNA GRA (POZA ANIMACJĄ)
-			# =========================================================
-			if not current_room.camera_follows_player:
-				# POKÓJ STATYCZNY
-				is_static_room = true
-				desired_pos = current_room.global_position + (current_room.size_px / 2.0)
-				_focal_point = player.global_position
-			else:
-				# POKÓJ DYNAMICZNY
-				_update_focal_point()
-				desired_pos = _calculate_dynamic_target()
+			_update_focal_point()
+			desired_pos = _calculate_dynamic_target()
 	else:
 		_update_focal_point()
 		desired_pos = _calculate_dynamic_target()
-		_target_zoom = default_zoom
 	
-	# 2. ZACISKANIE GRANIC (Clamping)
-	# Wyłączamy zderzanie ze ścianami podczas animacji, co pozwala kamerze przelecieć nad czarną pustką!
-	if not is_transitioning:
-		desired_pos = _clamp_to_room_bounds(desired_pos)
+	# 3. ZACISKANIE GRANIC (Działa dla ruchu i dla natychmiastowego teleportu przy FADE)
+	desired_pos = _clamp_to_room_bounds(desired_pos)
 	
-	# 3. APLIKOWANIE RUCHU I ZOOMA
-	zoom = zoom.lerp(_target_zoom, zoom_speed * delta)
-	
-	if is_transitioning:
-		# Płynny lot (Panning) nad mapą podczas zmiany pokoi. 
-		# Mnożnik 1.5 dodaje odrobinę kinowej dynamiki.
-		global_position = global_position.lerp(desired_pos, follow_speed * 1.5 * delta)
+	# =========================================================
+	# 4. APLIKOWANIE RUCHU KAMERY (Magia ukrywania skoków)
+	# =========================================================
+	if _is_first_frame or (is_transitioning and not is_sliding):
+		# TWARDY SNAP: Uruchamiany TYLKO przy pierwszej klatce ładowania gry 
+		# ALBO podczas trwania ściemnienia FADE.
+		# W tym momencie przerywamy jakiekolwiek wygładzanie (lerp) i teleportujemy 
+		# kamerę na odpowiednie miejsce w cieniu/na ekranie ładowania.
+		global_position = desired_pos
+		_is_first_frame = false
 	elif is_static_room:
-		# Mały, statyczny pokój: Blokujemy mikroszarpnięcia wygładzania na środku
 		if global_position.distance_to(desired_pos) < 1.0:
 			global_position = desired_pos
 		else:
 			global_position = global_position.lerp(desired_pos, follow_speed * delta)
 	else:
-		# Płynne podążanie podczas zwykłego biegania
 		global_position = global_position.lerp(desired_pos, follow_speed * delta)
 		
-	# 4. APLIKOWANIE WSTRZĄSÓW (Screen Shake)
+	# 5. APLIKOWANIE WSTRZĄSÓW (Screen Shake)
 	_apply_screen_shake(delta)
 
 #region Obliczanie Celu i Granic
+
+func _get_future_clamped_target(target_pos: Vector2) -> Vector2:
+	if not is_instance_valid(current_room): return target_pos
+	
+	var viewport_size = get_viewport_rect().size / _target_zoom
+	var half_screen = viewport_size / 2.0
+	var room_size = current_room.size_px
+	
+	var min_x = half_screen.x
+	var max_x = room_size.x - half_screen.x
+	var min_y = half_screen.y
+	var max_y = room_size.y - half_screen.y
+	
+	if room_size.x < viewport_size.x:
+		target_pos.x = room_size.x / 2.0
+	else:
+		target_pos.x = clamp(target_pos.x, min_x, max_x)
+		
+	if room_size.y < viewport_size.y:
+		target_pos.y = room_size.y / 2.0
+	else:
+		target_pos.y = clamp(target_pos.y, min_y, max_y)
+		
+	return target_pos
 
 func _update_focal_point() -> void:
 	if not use_dead_zone:
