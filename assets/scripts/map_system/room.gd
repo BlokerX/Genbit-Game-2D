@@ -18,7 +18,7 @@ enum TransitionMode { FADE, SLIDE, BOTH }
 
 @export_group("Typ i Znaczenie Pokoju")
 
-enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, DEV_ROOM, ARENA }
+enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, OPEN_WORLD, DEV_ROOM, ARENA }
 
 ## Określa typ pokoju. Przydatne dla Minimapy (ikony), Menedżera Muzyki oraz logiki gry.
 @export var room_type: RoomType = RoomType.NORMAL
@@ -115,6 +115,13 @@ var has_spawned_entities: bool = false
 		queue_redraw()
 
 @export_group("Ustawienia Generowania")
+## Jeśli włączone, skrypt NIE wyczyści i NIE nadpisze Twojej TileMapy. 
+## Zamiast tego automatycznie zeskanuje to co narysowałeś, by obliczyć wymiary.
+@export var manual_tilemap_override: bool = false:
+	set(value):
+		manual_tilemap_override = value
+		generate_room()
+		queue_redraw()
 @export var tile_source_id : int = 0
 @export_subgroup("Podłoga")
 @export var floor_atlas_pos : Vector2i = Vector2i(0, 0)
@@ -153,6 +160,11 @@ var active_enemies_count : int = 0
 var size_px : Vector2
 
 func _ready() -> void:
+	# Wymuszamy domyślne, poprawne zachowania dla otwartego świata
+	if room_type == RoomType.OPEN_WORLD:
+		camera_follows_player = true
+		ignore_combat_lock = true
+	
 	# Budujemy pokój
 	generate_room()
 	
@@ -209,27 +221,23 @@ func _find_spawn_points_recursive(node: Node) -> void:
 		if child.get_child_count() > 0:
 			_find_spawn_points_recursive(child)
 
-## Generowanie pokoju
+## Generowanie pokoju (Proceduralne LUB Ręczne)
 func generate_room() -> void:
 	if not tile_map: return
 	
-	tile_map.clear()
-
 	# 1. Rysowanie kafelków
-	for x in range(room_size_tiles.x):
-		for y in range(room_size_tiles.y):
-			var current_pos = Vector2i(x, y)
-			
-			# Rysowanie ścian i podłogi
-			if x == 0 or x == room_size_tiles.x - 1 or y == 0 or y == room_size_tiles.y - 1:
-				tile_map.set_cell(current_pos, tile_source_id, wall_atlas_pos, wall_alt_id)
-			else:
-				tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
+	if not manual_tilemap_override:
+		tile_map.clear() # Czyścimy kafelki TYLKO wtedy, gdy generujemy pokój automatycznie!
+		for x in range(room_size_tiles.x):
+			for y in range(room_size_tiles.y):
+				var current_pos = Vector2i(x, y)
+				if x == 0 or x == room_size_tiles.x - 1 or y == 0 or y == room_size_tiles.y - 1:
+					tile_map.set_cell(current_pos, tile_source_id, wall_atlas_pos, wall_alt_id)
+				else:
+					tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
 	
 	calculate_room_bounds()
 	update_navigation_region()
-	
-	# Upewnia się, że po zmianie rozmiaru pokoju, światło wróci na środek
 	_update_lighting()
 
 ## Pozwala sprawdzić, czy na tej ścianie postawiłeś już drzwi ręcznie w edytorze
@@ -296,7 +304,7 @@ func update_navigation_region() -> void:
 	var tile_size = tile_map.tile_set.tile_size
 	var nav_poly = NavigationPolygon.new()
 	
-	# Definiujemy wierzchołki naszego prostokątnego pokoju
+	# ZAWSZE używamy wymiarów z Inspektora, gwarantując stałą siatkę!
 	var points = PackedVector2Array([
 		Vector2(0, 0),
 		Vector2(room_size_tiles.x * tile_size.x, 0),
@@ -304,25 +312,25 @@ func update_navigation_region() -> void:
 		Vector2(0, room_size_tiles.y * tile_size.y)
 	])
 	
-	# Zamiast przestarzałego 'outlines', przypisujemy wierzchołki bezpośrednio:
 	nav_poly.vertices = points
-	
-	# Tworzymy z nich jeden wielki poligon, łącząc wierzchołki (indeksy: 0, 1, 2, 3)
 	nav_poly.add_polygon(PackedInt32Array([0, 1, 2, 3]))
-	
 	navigation_region_2d.navigation_polygon = nav_poly
 
-## Wyliczanie granic pokoju
+## Wyliczanie granic pokoju dla kamery
 func calculate_room_bounds() -> void:
 	if tile_map and tile_map.tile_set:
 		var tile_size = tile_map.tile_set.tile_size
+		# Kamera sztywno opiera się na wytyczonej przez Ciebie wielkości pokoju
 		size_px = Vector2(room_size_tiles.x * tile_size.x, room_size_tiles.y * tile_size.y)
 
 func _draw() -> void:
 	if Engine.is_editor_hint() or OS.is_debug_build():
 		if tile_map and tile_map.tile_set:
 			var tile_size = tile_map.tile_set.tile_size
-			var rect = Rect2(Vector2.ZERO, Vector2(room_size_tiles * tile_size))
+			
+			# Rysuje sztywną, zieloną ramkę na podstawie X i Y z Inspektora.
+			# Maluj kafelki wewnątrz niej, a kamera nigdy nie wyjdzie poza obszar!
+			var rect = Rect2(Vector2.ZERO, Vector2(room_size_tiles.x * tile_size.x, room_size_tiles.y * tile_size.y))
 			draw_rect(rect, Color(0, 1, 0, 0.2), false, 2.0)
 
 ## Funkcja zarządzająca dynamicznym oświetleniem w edytorze i grze
