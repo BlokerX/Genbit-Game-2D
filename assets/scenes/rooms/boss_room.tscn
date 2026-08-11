@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://c03odjri0628a"]
+
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_kyycw"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_kyycw"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1080, 0, 1080)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+
+[node name="BossRoom" unique_id=1124479501 instance=ExtResource("1_kyycw")]
+room_type = 4
+
+[node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
+navigation_polygon = SubResource("NavigationPolygon_kyycw")
