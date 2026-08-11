@@ -138,6 +138,9 @@ var has_spawned_entities: bool = false
 		generate_room()
 
 @export_group("Drzwi")
+## Jeśli wrzucisz tu teksturę, drzwi PROWADZĄCE DO TEGO POKOJU oraz DRZWI W TYM POKOJU
+## przyjmą ten wygląd (całkowicie nadpisuje to kolor z RoomType!).
+@export var custom_door_texture: Texture2D
 var doors : Array[Door] = []
 
 # Sygnał, gdy pokój zostanie oczyszczony
@@ -248,7 +251,7 @@ func get_door(dir: Door.Direction) -> Door:
 	return null
 
 ## Wstawia obiekt drzwi w idealnym fizycznym środku ściany (ZWRACA TEN OBIEKT!)
-func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene) -> Door:
+func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: Texture2D = null) -> Door:
 	# Zabezpieczenie: Jeśli drzwi już tu są, po prostu je zwracamy
 	var existing_door = get_door(dir)
 	if existing_door != null:
@@ -292,6 +295,10 @@ func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene) -> Door:
 	
 	# Bezpośrednie przypisanie dokładnej fizycznej pozycji
 	new_door.position = exact_pos
+	
+	# Nadajemy teksturę przed wejściem do gry!
+	if custom_tex != null:
+		new_door.door_texture = custom_tex
 	
 	add_child(new_door)
 	doors.append(new_door)

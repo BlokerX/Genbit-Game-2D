@@ -7,9 +7,8 @@
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[node name="StartRoom" unique_id=1124479501 instance=ExtResource("1_g07hb")]
+[node name="TreasureRoom" unique_id=1124479501 instance=ExtResource("1_g07hb")]
 room_type = 2
-camera_follows_player = false
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
 navigation_polygon = SubResource("NavigationPolygon_4bw4w")

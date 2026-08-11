@@ -83,7 +83,7 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
 
-[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
+[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("character_sprite", "effects_collector") groups=["Enemy", "NPC"]]
 collision_layer = 4
 collision_mask = 7
 motion_mode = 1
@@ -93,6 +93,7 @@ movement_universal_script = SubResource("Resource_k1opt")
 health_stats_script = SubResource("Resource_d8532")
 interaction_and_attack_stats_script = SubResource("Resource_vfc7k")
 loot_drop_script = SubResource("Resource_yn8as")
+character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 
 [node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("6_ninxk")]
