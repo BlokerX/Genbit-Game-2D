@@ -11,6 +11,7 @@
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="11_fv8qv"]
 [ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="12_af46w"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="13_2ciny"]
+[ext_resource type="Script" uid="uid://cxqidx2whm468" path="res://assets/scripts/dev_ops/dev_chest_filler.gd" id="13_gde2r"]
 [ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="14_6rlbj"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="15_jxa5q"]
 [ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="16_uxwqi"]
@@ -34,16 +35,16 @@
 [ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="34_4wr1w"]
 [ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="35_5ulm5"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_gde2r"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_favc1"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[sub_resource type="Resource" id="Resource_favc1"]
+[sub_resource type="Resource" id="Resource_8r1x1"]
 resource_local_to_scene = true
 script = ExtResource("5_j1nxu")
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_8r1x1"]
+[sub_resource type="Resource" id="Resource_ywiaw"]
 resource_local_to_scene = true
 script = ExtResource("6_cblon")
 health = 1000000000000000
@@ -54,7 +55,7 @@ script = ExtResource("7_kegip")
 damage = 0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_ywiaw"]
+[sub_resource type="Resource" id="Resource_kegip"]
 resource_local_to_scene = true
 script = ExtResource("8_8sg7u")
 hand_attack_data = SubResource("Resource_p05go")
@@ -104,14 +105,14 @@ is_secret = true
 ignore_combat_lock = true
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
-navigation_polygon = SubResource("NavigationPolygon_gde2r")
+navigation_polygon = SubResource("NavigationPolygon_favc1")
 
 [node name="InfinitySpider" parent="." index="2" unique_id=1198211542 instance=ExtResource("4_ywiaw")]
 position = Vector2(960, 384)
 rotation = 1.5707964
-movement_universal_script = SubResource("Resource_favc1")
-health_stats_script = SubResource("Resource_8r1x1")
-interaction_and_attack_stats_script = SubResource("Resource_ywiaw")
+movement_universal_script = SubResource("Resource_8r1x1")
+health_stats_script = SubResource("Resource_ywiaw")
+interaction_and_attack_stats_script = SubResource("Resource_kegip")
 
 [node name="Chest(Building)" parent="." index="3" unique_id=1382818356 instance=ExtResource("9_tx8yf")]
 position = Vector2(1376, 160)
@@ -119,11 +120,15 @@ position = Vector2(1376, 160)
 [node name="StorageComponent" parent="Chest(Building)" index="4" unique_id=687521106]
 slots = Array[ExtResource("10_kh7tt")]([SubResource("Resource_1gk60"), SubResource("Resource_nadtx")])
 
-[node name="Chest(Building)2" parent="." index="4" unique_id=1943748093 instance=ExtResource("9_tx8yf")]
+[node name="DevChest(Building)" parent="." index="4" unique_id=1943748093 instance=ExtResource("9_tx8yf")]
 position = Vector2(544, 160)
 
-[node name="StorageComponent" parent="Chest(Building)2" index="4" unique_id=687521106]
+[node name="StorageComponent" parent="DevChest(Building)" index="4" unique_id=687521106]
 slots = Array[ExtResource("10_kh7tt")]([SubResource("Resource_gde2r"), SubResource("Resource_cblon"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+
+[node name="DevChestFiller" type="Node" parent="DevChest(Building)" index="5" unique_id=354880417 node_paths=PackedStringArray("storage_component")]
+script = ExtResource("13_gde2r")
+storage_component = NodePath("../StorageComponent")
 
 [node name="Potions" type="Label" parent="." index="5" unique_id=1526169267]
 texture_filter = 5
@@ -299,4 +304,4 @@ test_item_data = ExtResource("35_5ulm5")
 test_amount = 99
 
 [editable path="Chest(Building)"]
-[editable path="Chest(Building)2"]
+[editable path="DevChest(Building)"]
