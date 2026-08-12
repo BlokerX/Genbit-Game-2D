@@ -7,7 +7,7 @@ class_name DevChestFiller
 
 ## Ilość sztuk każdego przedmiotu w skrzyni. 
 ## Zgodnie z Twoim skryptem ItemInstance, wartość -1 da nieskończony stack!
-@export var default_items_amount: int = 1
+@export var default_items_amount: int = 999
 
 ## Referencja do komponentu magazynu (jeśli puste, skrypt poszuka go u rodzica)
 @export var storage_component: StorageComponent
