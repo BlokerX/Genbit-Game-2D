@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bdy4vyopoimxw"]
+
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_vvfgf"]
+[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="2_q83rd"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_0pmxq"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+
+[node name="TwoEnemiesRoom" unique_id=1124479501 instance=ExtResource("1_vvfgf")]
+
+[node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
+navigation_polygon = SubResource("NavigationPolygon_0pmxq")
+
+[node name="EnemySpawnpoint" parent="." index="2" unique_id=534280628 instance=ExtResource("2_q83rd")]
+position = Vector2(640, 362.667)
+
+[node name="EnemySpawnpoint2" parent="." index="3" unique_id=1760315003 instance=ExtResource("2_q83rd")]
+position = Vector2(1280, 362.667)
+
+[node name="EnemySpawnpoint3" parent="." index="4" unique_id=1689087544 instance=ExtResource("2_q83rd")]
+position = Vector2(640, 725.334)
+
+[node name="EnemySpawnpoint4" parent="." index="5" unique_id=2008015289 instance=ExtResource("2_q83rd")]
+position = Vector2(1280, 725.334)

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bnk5e152g3104"]
 
-[ext_resource type="Script" uid="uid://bwf60qgdq3hgr" path="res://assets/scripts/entities/items/placed_object.gd" id="1_y0uk3"]
+[ext_resource type="Script" uid="uid://c6du57c1okjs" path="res://assets/scripts/entities/items/placeable_objects/chest_object.gd" id="1_b43y6"]
 [ext_resource type="Resource" uid="uid://b8exeqhxd52o2" path="res://assets/data/items/chest.tres" id="2_0ipb0"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="3_d2r8r"]
 [ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="4_ebv6y"]
@@ -12,7 +12,7 @@ size = Vector2(63, 63)
 
 [node name="Chest" type="StaticBody2D" unique_id=1382818356]
 collision_mask = 31
-script = ExtResource("1_y0uk3")
+script = ExtResource("1_b43y6")
 item_to_drop = ExtResource("2_0ipb0")
 item_pickup_scene = ExtResource("3_d2r8r")
 

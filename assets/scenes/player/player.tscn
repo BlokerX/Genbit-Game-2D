@@ -81,7 +81,8 @@ texture_filter = 5
 scale = Vector2(0.45, 0.45)
 sprite_frames = SubResource("SpriteFrames_xflxm")
 
-[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_collision") instance=ExtResource("7_oet4l")]
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("7_oet4l")]
+target_sprite = NodePath("../CharacterAnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
 [node name="EffectsCollector" type="Node" parent="." unique_id=768136432]

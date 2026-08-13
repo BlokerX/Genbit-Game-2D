@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://cixwnresmohro"]
+
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_q1l54"]
+[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="2_v1lau"]
+[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="3_v1lau"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_e7lt0"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+
+[node name="ProtectedTreasureRoomWithRandomLoot" unique_id=1124479501 instance=ExtResource("1_q1l54")]
+room_type = 2
+
+[node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
+navigation_polygon = SubResource("NavigationPolygon_e7lt0")
+
+[node name="ChestSpawnpoint" parent="." index="2" unique_id=1944605914 instance=ExtResource("2_v1lau")]
+position = Vector2(960, 544)
+
+[node name="EnemySpawnpoint" parent="." index="3" unique_id=534280628 instance=ExtResource("3_v1lau")]
+position = Vector2(480, 272)
+
+[node name="EnemySpawnpoint2" parent="." index="4" unique_id=1928451626 instance=ExtResource("3_v1lau")]
+position = Vector2(1440, 272)
+
+[node name="EnemySpawnpoint3" parent="." index="5" unique_id=1330923861 instance=ExtResource("3_v1lau")]
+position = Vector2(480, 816)
+
+[node name="EnemySpawnpoint4" parent="." index="6" unique_id=2061223169 instance=ExtResource("3_v1lau")]
+position = Vector2(1440, 816)

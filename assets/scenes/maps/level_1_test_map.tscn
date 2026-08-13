@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="1_v5sea"]
 [ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/door.tscn" id="2_yoj0n"]
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="3_avimg"]
-[ext_resource type="Texture2D" uid="uid://cadftf52v2b8n" path="res://assets/textures/samples_examples/door/white_door.png" id="4_rp7tb"]
+[ext_resource type="PackedScene" uid="uid://vc0xtgb4d68j" path="res://assets/scenes/rooms/_dev_rooms/dev_room.tscn" id="3_pbtmq"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="5_4nofv"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="6_b16dl"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="7_p1cjb"]
@@ -13,89 +13,46 @@
 [ext_resource type="Script" uid="uid://cla0ou6p42xsx" path="res://assets/scripts/entities/items/slot_data.gd" id="11_memvy"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="12_fr05q"]
 [ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="13_augdq"]
+[ext_resource type="PackedScene" uid="uid://cixwnresmohro" path="res://assets/scenes/rooms/treasure_rooms/protected_treasure_room_with_random_loot.tscn" id="14_pbtmq"]
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="14_vv2ky"]
-[ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="15_5u4jx"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="16_jw5t8"]
 [ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="17_r5wqp"]
 [ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="18_janoa"]
 [ext_resource type="Resource" uid="uid://b3rurgfxeb1gd" path="res://assets/data/items/full_regenerate_potion.tres" id="19_qd5f7"]
-[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="20_wq1wb"]
 [ext_resource type="Resource" uid="uid://bxr06u6ayl4mb" path="res://assets/data/items/freezing_potion.tres" id="21_xwyc5"]
 [ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="22_m5qkh"]
 [ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="23_sk0ov"]
 [ext_resource type="Resource" uid="uid://1w0yjy4ykkyp" path="res://assets/data/items/escape_potion.tres" id="24_dkq1r"]
-[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="25_s2rdq"]
+[ext_resource type="PackedScene" uid="uid://hmh510ma41h2" path="res://assets/scenes/rooms/treasure_rooms/decorated_treasure_room_with_random_loot.tscn" id="26_43pnk"]
 [ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="26_lf4o7"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="27_4as0p"]
-[ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="28_eak1n"]
-[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="29_akgvt"]
-[ext_resource type="Resource" uid="uid://cgsfxphbm7hm5" path="res://assets/data/items/frozen_cookie.tres" id="30_w25rk"]
-[ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="31_x8n73"]
-[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="32_nqht2"]
-[ext_resource type="Resource" uid="uid://b8exeqhxd52o2" path="res://assets/data/items/chest.tres" id="33_c01fs"]
-[ext_resource type="Resource" uid="uid://da8e3nm1q40f6" path="res://assets/data/items/backpack.tres" id="34_hwjh3"]
-[ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="35_5emf7"]
+[ext_resource type="PackedScene" uid="uid://f8ydx655jrei" path="res://assets/scenes/rooms/treasure_rooms/standard_treasure_room_with_chest.tscn" id="32_cwyu2"]
 [ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="36_7jigf"]
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="37_dm15n"]
 [ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/item_spawnpoint.tscn" id="38_eh1jt"]
 [ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="39_2mgyh"]
 [ext_resource type="Resource" uid="uid://bsi633f7g8cox" path="res://assets/scripts/map_system/resources/templates/EasySpider.tres" id="40_ac005"]
 [ext_resource type="Resource" uid="uid://dcrxl7xgcuu1g" path="res://assets/scripts/map_system/resources/templates/Potions_Loot.tres" id="41_vi38g"]
+[ext_resource type="PackedScene" uid="uid://c03odjri0628a" path="res://assets/scenes/rooms/boss_rooms/boss_room.tscn" id="42_38xcj"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/level_entrance.tscn" id="42_k7t6c"]
+[ext_resource type="PackedScene" uid="uid://dlqyv1khnsruk" path="res://assets/scenes/rooms/start_rooms/start_room.tscn" id="42_v5sea"]
 [ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="44_vbums"]
 [ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="45_kqthw"]
 [ext_resource type="Texture2D" uid="uid://da1fo61w5i54r" path="res://assets/textures/samples_examples/door/black_door.png" id="46_0q8kl"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="47_lpcd2"]
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="48_gqpjs"]
 [ext_resource type="Texture2D" uid="uid://d3kfsdewvs8fp" path="res://assets/textures/samples_examples/door/light_blue_door.png" id="49_pyfjf"]
-[ext_resource type="Texture2D" uid="uid://7fas83p0mjp3" path="res://assets/textures/samples_examples/door/red_door.png" id="50_dlyx6"]
-
-[sub_resource type="Resource" id="Resource_51jmg"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_v5sea"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
-health = 1000000000000000
-max_health = 1000000000000000
-
-[sub_resource type="Resource" id="Resource_p05go"]
-script = ExtResource("8_wgf74")
-damage = 0
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
-
-[sub_resource type="Resource" id="Resource_yoj0n"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_p05go")
-
-[sub_resource type="Resource" id="Resource_yg0s7"]
-script = ExtResource("13_augdq")
-data = ExtResource("12_fr05q")
-metadata/_custom_type_script = "uid://cv5afe6geisca"
-
-[sub_resource type="Resource" id="Resource_1gk60"]
-script = ExtResource("11_memvy")
-item = SubResource("Resource_yg0s7")
-metadata/_custom_type_script = "uid://cla0ou6p42xsx"
-
-[sub_resource type="Resource" id="Resource_nadtx"]
-script = ExtResource("11_memvy")
-item = SubResource("Resource_yg0s7")
-metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 
 [sub_resource type="SystemFont" id="SystemFont_x5jnv"]
 subpixel_positioning = 0
 
-[sub_resource type="Resource" id="Resource_avimg"]
+[sub_resource type="Resource" id="Resource_pbtmq"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_rp7tb"]
+[sub_resource type="Resource" id="Resource_38xcj"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
 health = 25
@@ -106,10 +63,75 @@ script = ExtResource("8_wgf74")
 damage = 5
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_4nofv"]
+[sub_resource type="Resource" id="Resource_43pnk"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_cwyu2"]
+resource_local_to_scene = true
+script = ExtResource("6_b16dl")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_jgqgf"]
+resource_local_to_scene = true
+script = ExtResource("7_p1cjb")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_uj8m5"]
+resource_local_to_scene = true
+script = ExtResource("9_5brna")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_qbv5l"]
+resource_local_to_scene = true
+script = ExtResource("6_b16dl")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_51jmg"]
+resource_local_to_scene = true
+script = ExtResource("7_p1cjb")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_v5sea"]
+resource_local_to_scene = true
+script = ExtResource("9_5brna")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_yoj0n"]
+resource_local_to_scene = true
+script = ExtResource("6_b16dl")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_avimg"]
+resource_local_to_scene = true
+script = ExtResource("7_p1cjb")
+health = 25
+max_health = 25
+
+[sub_resource type="Resource" id="Resource_rp7tb"]
+resource_local_to_scene = true
+script = ExtResource("9_5brna")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_4nofv"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+
+[sub_resource type="Resource" id="Resource_r5wqp"]
+script = ExtResource("13_augdq")
+data = ExtResource("27_4as0p")
+metadata/_custom_type_script = "uid://cv5afe6geisca"
+
+[sub_resource type="Resource" id="Resource_janoa"]
+script = ExtResource("11_memvy")
+item = SubResource("Resource_r5wqp")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 
 [sub_resource type="Resource" id="Resource_b16dl"]
 resource_local_to_scene = true
@@ -120,142 +142,6 @@ metadata/_custom_type_script = "uid://qggqcqys4ruj"
 [sub_resource type="Resource" id="Resource_p1cjb"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_wgf74"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_5brna"]
-resource_local_to_scene = true
-script = ExtResource("45_kqthw")
-scene_path = "uid://bnk5e152g3104"
-item_id = 20
-item_name = "Chest"
-item_type = "Placeable Item"
-item_description = "A buildable chest."
-item_icon = ExtResource("44_vbums")
-
-[sub_resource type="Resource" id="Resource_vi7gw"]
-script = ExtResource("13_augdq")
-data = ExtResource("29_akgvt")
-amount = 6
-metadata/_custom_type_script = "uid://cv5afe6geisca"
-
-[sub_resource type="Resource" id="Resource_wfidj"]
-script = ExtResource("11_memvy")
-item = SubResource("Resource_vi7gw")
-metadata/_custom_type_script = "uid://cla0ou6p42xsx"
-
-[sub_resource type="Resource" id="Resource_h6jbw"]
-script = ExtResource("13_augdq")
-data = ExtResource("32_nqht2")
-metadata/_custom_type_script = "uid://cv5afe6geisca"
-
-[sub_resource type="Resource" id="Resource_378wx"]
-script = ExtResource("11_memvy")
-item = SubResource("Resource_h6jbw")
-metadata/_custom_type_script = "uid://cla0ou6p42xsx"
-
-[sub_resource type="Resource" id="Resource_wfbmd"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_memvy"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_fr05q"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_augdq"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_vv2ky"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_5u4jx"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_jw5t8"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_r5wqp"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_janoa"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_qd5f7"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_wq1wb"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
-health = 25
-max_health = 25
-
-[sub_resource type="Resource" id="Resource_xwyc5"]
-resource_local_to_scene = true
-script = ExtResource("9_5brna")
-hand_attack_data = SubResource("Resource_jnda7")
-
-[sub_resource type="Resource" id="Resource_m5qkh"]
-resource_local_to_scene = true
-script = ExtResource("45_kqthw")
-scene_path = "uid://bnk5e152g3104"
-item_id = 20
-item_name = "Chest"
-item_type = "Placeable Item"
-item_description = "A buildable chest."
-item_icon = ExtResource("44_vbums")
-
-[sub_resource type="Resource" id="Resource_bkki6"]
-script = ExtResource("13_augdq")
-data = ExtResource("27_4as0p")
-metadata/_custom_type_script = "uid://cv5afe6geisca"
-
-[sub_resource type="Resource" id="Resource_6c8xf"]
-script = ExtResource("11_memvy")
-item = SubResource("Resource_bkki6")
-metadata/_custom_type_script = "uid://cla0ou6p42xsx"
-
-[sub_resource type="Resource" id="Resource_sk0ov"]
-resource_local_to_scene = true
-script = ExtResource("6_b16dl")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_dkq1r"]
-resource_local_to_scene = true
-script = ExtResource("7_p1cjb")
 health = 50
 max_health = 50
 
@@ -263,29 +149,29 @@ max_health = 50
 script = ExtResource("8_wgf74")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_s2rdq"]
+[sub_resource type="Resource" id="Resource_wgf74"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_dh7nh")
 
-[sub_resource type="Resource" id="Resource_lf4o7"]
+[sub_resource type="Resource" id="Resource_5brna"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_4as0p"]
+[sub_resource type="Resource" id="Resource_wfbmd"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
 health = 50
 max_health = 50
 
-[sub_resource type="Resource" id="Resource_eak1n"]
+[sub_resource type="Resource" id="Resource_memvy"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_dh7nh")
 
-[sub_resource type="Resource" id="Resource_akgvt"]
+[sub_resource type="Resource" id="Resource_fr05q"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 375.0
@@ -305,7 +191,7 @@ critical_rate = 0.2
 max_range = 400.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_w25rk"]
+[sub_resource type="Resource" id="Resource_augdq"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_ix51x")
@@ -329,7 +215,7 @@ item_pickup_scene = ExtResource("14_vv2ky")
 loot_table = Array[ExtResource("47_lpcd2")]([SubResource("Resource_3xyyd"), SubResource("Resource_6c7pm")])
 metadata/_custom_type_script = "uid://brgrsjbml6fve"
 
-[sub_resource type="Resource" id="Resource_x8n73"]
+[sub_resource type="Resource" id="Resource_vv2ky"]
 resource_local_to_scene = true
 script = ExtResource("45_kqthw")
 scene_path = "uid://bnk5e152g3104"
@@ -350,19 +236,19 @@ script = ExtResource("11_memvy")
 item = SubResource("Resource_k5gqw")
 metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 
-[sub_resource type="Resource" id="Resource_nqht2"]
+[sub_resource type="Resource" id="Resource_5u4jx"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 375.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_c01fs"]
+[sub_resource type="Resource" id="Resource_jw5t8"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
 health = 500
 max_health = 500
 
-[sub_resource type="Resource" id="Resource_hwjh3"]
+[sub_resource type="Resource" id="Resource_qd5f7"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_ix51x")
@@ -379,13 +265,13 @@ item_pickup_scene = ExtResource("14_vv2ky")
 loot_table = Array[ExtResource("47_lpcd2")]([SubResource("Resource_0x7bm")])
 metadata/_custom_type_script = "uid://brgrsjbml6fve"
 
-[sub_resource type="Resource" id="Resource_5emf7"]
+[sub_resource type="Resource" id="Resource_wq1wb"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_7jigf"]
+[sub_resource type="Resource" id="Resource_xwyc5"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
 
@@ -393,243 +279,44 @@ script = ExtResource("7_p1cjb")
 script = ExtResource("8_wgf74")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_dm15n"]
+[sub_resource type="Resource" id="Resource_m5qkh"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_nkt6r")
 
-[sub_resource type="Resource" id="Resource_eh1jt"]
+[sub_resource type="Resource" id="Resource_sk0ov"]
 resource_local_to_scene = true
 script = ExtResource("6_b16dl")
 moveSpeed = 250.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_2mgyh"]
+[sub_resource type="Resource" id="Resource_dkq1r"]
 resource_local_to_scene = true
 script = ExtResource("7_p1cjb")
 
-[sub_resource type="Resource" id="Resource_ac005"]
+[sub_resource type="Resource" id="Resource_s2rdq"]
 resource_local_to_scene = true
 script = ExtResource("9_5brna")
 hand_attack_data = SubResource("Resource_nkt6r")
 
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["Map"]]
 script = ExtResource("1_v5sea")
-starting_room = NodePath("Room13_StartRoom")
+starting_room = NodePath("StartRoom")
 reset_map_history_on_respawn = false
 auto_door_scene = ExtResource("2_yoj0n")
 
-[node name="Room03_DebugRoom" parent="." unique_id=1124479501 instance=ExtResource("3_avimg")]
+[node name="DevRoom" parent="." unique_id=1124479501 instance=ExtResource("3_pbtmq")]
 visible = false
 map_position = Vector2i(3, 0)
-room_type = 5
-is_secret = true
-ignore_combat_lock = true
-center_light_energy = 1.0
-center_light_scale = 1.3
-
-[node name="DoorDown" parent="Room03_DebugRoom" unique_id=406558948 instance=ExtResource("2_yoj0n")]
-position = Vector2(958, 1056)
-rotation = -3.1415925
-door_direction = 2
-
-[node name="Sprite2D" parent="Room03_DebugRoom/DoorDown" index="0" unique_id=338021962]
-texture = ExtResource("4_rp7tb")
-
-[node name="InfinitySpider" parent="Room03_DebugRoom" unique_id=1198211542 instance=ExtResource("5_4nofv")]
-position = Vector2(960, 156)
-rotation = 1.5707964
-movement_universal_script = SubResource("Resource_51jmg")
-health_stats_script = SubResource("Resource_v5sea")
-interaction_and_attack_stats_script = SubResource("Resource_yoj0n")
-
-[node name="Chest(Building)" parent="Room03_DebugRoom" unique_id=1382818356 instance=ExtResource("10_wfbmd")]
-position = Vector2(1376, 160)
-
-[node name="StorageComponent" parent="Room03_DebugRoom/Chest(Building)" index="4" unique_id=687521106]
-slots = Array[ExtResource("11_memvy")]([SubResource("Resource_1gk60"), SubResource("Resource_nadtx")])
-
-[node name="Potions" type="Label" parent="Room03_DebugRoom" unique_id=1986056872]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 240.0
-offset_top = 520.0
-offset_right = 528.0
-offset_bottom = 575.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/outline_size = 15
-theme_override_fonts/font = SubResource("SystemFont_x5jnv")
-theme_override_font_sizes/font_size = 40
-text = "Potions"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HastePotion" parent="Room03_DebugRoom" unique_id=889212379 instance=ExtResource("14_vv2ky")]
-position = Vector2(191, 688)
-test_item_data = ExtResource("15_5u4jx")
-test_amount = 99
-
-[node name="SlowPotion" parent="Room03_DebugRoom" unique_id=954374506 instance=ExtResource("14_vv2ky")]
-position = Vector2(319, 688)
-test_item_data = ExtResource("16_jw5t8")
-test_amount = 99
-
-[node name="GiganticPotion" parent="Room03_DebugRoom" unique_id=1952716167 instance=ExtResource("14_vv2ky")]
-position = Vector2(444, 688)
-test_item_data = ExtResource("17_r5wqp")
-test_amount = 99
-
-[node name="LiliputPotion" parent="Room03_DebugRoom" unique_id=1572480347 instance=ExtResource("14_vv2ky")]
-position = Vector2(567, 688)
-test_item_data = ExtResource("18_janoa")
-test_amount = 99
-
-[node name="FullRegeneratePotion" parent="Room03_DebugRoom" unique_id=240132913 instance=ExtResource("14_vv2ky")]
-position = Vector2(191, 818)
-test_item_data = ExtResource("19_qd5f7")
-test_amount = 99
-
-[node name="HealingPotion" parent="Room03_DebugRoom" unique_id=1598385237 instance=ExtResource("14_vv2ky")]
-position = Vector2(324, 818)
-test_item_data = ExtResource("20_wq1wb")
-test_amount = 99
-
-[node name="FreezingPotion" parent="Room03_DebugRoom" unique_id=956156104 instance=ExtResource("14_vv2ky")]
-position = Vector2(191, 940)
-test_item_data = ExtResource("21_xwyc5")
-test_amount = 99
-
-[node name="ResetPotion" parent="Room03_DebugRoom" unique_id=146787439 instance=ExtResource("14_vv2ky")]
-position = Vector2(309, 940)
-test_item_data = ExtResource("22_m5qkh")
-test_amount = 99
-
-[node name="SimplePotion" parent="Room03_DebugRoom" unique_id=1067505196 instance=ExtResource("14_vv2ky")]
-position = Vector2(447, 936)
-test_item_data = ExtResource("23_sk0ov")
-test_amount = 99
-
-[node name="EscapePotion" parent="Room03_DebugRoom" unique_id=416046657 instance=ExtResource("14_vv2ky")]
-position = Vector2(583, 936)
-test_item_data = ExtResource("24_dkq1r")
-test_amount = 99
-
-[node name="Weapons" type="Label" parent="Room03_DebugRoom" unique_id=1214815815]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 817.0
-offset_top = 524.0
-offset_right = 1105.0
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/outline_size = 15
-theme_override_fonts/font = SubResource("SystemFont_x5jnv")
-theme_override_font_sizes/font_size = 40
-text = "Weapons"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Sword" parent="Room03_DebugRoom" unique_id=1513380429 instance=ExtResource("14_vv2ky")]
-position = Vector2(832, 688)
-test_item_data = ExtResource("12_fr05q")
-test_amount = 99
-
-[node name="BigSword" parent="Room03_DebugRoom" unique_id=1621259167 instance=ExtResource("14_vv2ky")]
-position = Vector2(960, 688)
-test_item_data = ExtResource("25_s2rdq")
-test_amount = 99
-
-[node name="Knife" parent="Room03_DebugRoom" unique_id=1940282590 instance=ExtResource("14_vv2ky")]
-position = Vector2(1088, 688)
-test_item_data = ExtResource("26_lf4o7")
-test_amount = 99
-
-[node name="Gun" parent="Room03_DebugRoom" unique_id=289245138 instance=ExtResource("14_vv2ky")]
-position = Vector2(832, 800)
-test_item_data = ExtResource("27_4as0p")
-
-[node name="FreezingGun" parent="Room03_DebugRoom" unique_id=1039803327 instance=ExtResource("14_vv2ky")]
-position = Vector2(960, 800)
-test_item_data = ExtResource("28_eak1n")
-
-[node name="OtherItems" type="Label" parent="Room03_DebugRoom" unique_id=1106887838]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 1312.0
-offset_top = 496.0
-offset_right = 1600.0
-offset_bottom = 609.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/outline_size = 15
-theme_override_fonts/font = SubResource("SystemFont_x5jnv")
-theme_override_font_sizes/font_size = 40
-text = "Other Items"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ChockolateCookie" parent="Room03_DebugRoom" unique_id=1491339864 instance=ExtResource("14_vv2ky")]
-position = Vector2(1360, 688)
-test_item_data = ExtResource("29_akgvt")
-test_amount = 99
-
-[node name="FrozenCookie" parent="Room03_DebugRoom" unique_id=123428721 instance=ExtResource("14_vv2ky")]
-position = Vector2(1480, 684)
-test_item_data = ExtResource("30_w25rk")
-test_amount = 99
-
-[node name="RipStoneCross" parent="Room03_DebugRoom" unique_id=1076044505 instance=ExtResource("14_vv2ky")]
-position = Vector2(1480, 902)
-test_item_data = ExtResource("31_x8n73")
-test_amount = 99
-
-[node name="JustItem" parent="Room03_DebugRoom" unique_id=1640865374 instance=ExtResource("14_vv2ky")]
-position = Vector2(1584, 900)
-test_item_data = ExtResource("32_nqht2")
-test_amount = 99
-
-[node name="Chest" parent="Room03_DebugRoom" unique_id=147947849 instance=ExtResource("14_vv2ky")]
-position = Vector2(1360, 904)
-test_item_data = ExtResource("33_c01fs")
-test_amount = 99
-
-[node name="Backpack" parent="Room03_DebugRoom" unique_id=892815640 instance=ExtResource("14_vv2ky")]
-position = Vector2(1360, 794)
-test_item_data = ExtResource("34_hwjh3")
-test_amount = 99
-
-[node name="BigBackpack" parent="Room03_DebugRoom" unique_id=2110010982 instance=ExtResource("14_vv2ky")]
-position = Vector2(1477, 794)
-test_item_data = ExtResource("35_5emf7")
-test_amount = 99
-
-[node name="Purse" parent="Room03_DebugRoom" unique_id=929705677 instance=ExtResource("14_vv2ky")]
-position = Vector2(1583, 794)
-test_item_data = ExtResource("36_7jigf")
-test_amount = 99
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="Room11" parent="." unique_id=1258087071 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(1, 1)
 center_light_energy = 1.0
 center_light_scale = 1.3
-enemy_spawn_chance = 1.0
-object_spawn_chance = 1.0
-item_spawn_chance = 1.0
 
 [node name="EnemySpawnpoint" parent="Room11" unique_id=534280628 instance=ExtResource("37_dm15n")]
 position = Vector2(375, 253)
@@ -700,10 +387,7 @@ map_position = Vector2i(2, 1)
 center_light_energy = 1.0
 center_light_scale = 1.3
 enemy_pool = ExtResource("40_ac005")
-enemy_spawn_chance = 1.0
-object_spawn_chance = 1.0
 item_pool = ExtResource("41_vi38g")
-item_spawn_chance = 1.0
 
 [node name="EnemySpawnpoint" parent="Room12" unique_id=1894876892 instance=ExtResource("37_dm15n")]
 position = Vector2(1012, 497)
@@ -711,38 +395,14 @@ position = Vector2(1012, 497)
 [node name="ItemSpawnpoint" parent="Room12" unique_id=151393325 instance=ExtResource("38_eh1jt")]
 position = Vector2(885, 608)
 
-[node name="Room13_StartRoom" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_avimg")]
+[node name="StartRoom" parent="." unique_id=1756540935 instance=ExtResource("42_v5sea")]
+visible = false
 map_position = Vector2i(3, 1)
-room_type = 1
-center_light_energy = 1.0
-center_light_scale = 1.3
-spawn_points = [NodePath("RespawnPoint")]
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
-[node name="RespawnPoint" type="Marker2D" parent="Room13_StartRoom" unique_id=2119154057 groups=["RespawnPoint"]]
-position = Vector2(960, 540)
-
-[node name="RoomLabel" type="Label" parent="Room13_StartRoom" unique_id=419527383]
-texture_filter = 5
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 816.5
-offset_top = 524.0
-offset_right = 1104.5
-offset_bottom = 579.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/outline_size = 15
-theme_override_fonts/font = SubResource("SystemFont_x5jnv")
-theme_override_font_sizes/font_size = 40
-text = "Start Room
-[Level 1]"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PortalLabel" type="Label" parent="Room13_StartRoom" unique_id=1059807611]
+[node name="PortalLabel" type="Label" parent="StartRoom" unique_id=1059807611]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -762,7 +422,7 @@ text = "Przejśćie do Level 2"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LevelEntrance" parent="Room13_StartRoom" unique_id=1882454535 instance=ExtResource("42_k7t6c")]
+[node name="LevelEntrance" parent="StartRoom" unique_id=1882454535 instance=ExtResource("42_k7t6c")]
 position = Vector2(960, 736)
 my_entrance_id = "lv1"
 target_level_path = "uid://cbecj7vxyv5rc"
@@ -773,79 +433,73 @@ visible = false
 map_position = Vector2i(4, 1)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="ItemPickup" parent="Room14" unique_id=944280307 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 576)
 test_item_data = ExtResource("26_lf4o7")
 test_amount = 25
 
-[node name="Room15" parent="." unique_id=304665235 instance=ExtResource("3_avimg")]
+[node name="ProtectedTreasureRoomWithRandomLoot" parent="." unique_id=750992575 instance=ExtResource("14_pbtmq")]
 visible = false
 map_position = Vector2i(5, 1)
-is_secret = true
-center_light_energy = 1.0
-center_light_scale = 1.3
-
-[node name="Spider" parent="Room15" unique_id=565536358 instance=ExtResource("5_4nofv")]
-position = Vector2(1288, 184)
-movement_universal_script = SubResource("Resource_avimg")
-health_stats_script = SubResource("Resource_rp7tb")
-interaction_and_attack_stats_script = SubResource("Resource_4nofv")
-
-[node name="Spider2" parent="Room15" unique_id=1727011385 instance=ExtResource("5_4nofv")]
-position = Vector2(600, 864)
-movement_universal_script = SubResource("Resource_b16dl")
-health_stats_script = SubResource("Resource_p1cjb")
-interaction_and_attack_stats_script = SubResource("Resource_wgf74")
-
-[node name="Chest" parent="Room15" unique_id=1702224669 instance=ExtResource("10_wfbmd")]
-position = Vector2(952, 520)
-item_to_drop = SubResource("Resource_5brna")
-
-[node name="StorageComponent" parent="Room15/Chest" index="4" unique_id=687521106]
-slots = Array[ExtResource("11_memvy")]([SubResource("Resource_wfidj"), SubResource("Resource_378wx"), SubResource("Resource_wfidj")])
 
 [node name="Room21" parent="." unique_id=527820765 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(1, 2)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
+
+[node name="DecoratedTreasureRoomWithRandomLoot" parent="." unique_id=861814923 instance=ExtResource("26_43pnk")]
+visible = false
+map_position = Vector2i(3, 2)
 
 [node name="Room25" parent="." unique_id=1637198947 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(5, 2)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="Spider" parent="Room25" unique_id=1643391684 instance=ExtResource("5_4nofv")]
 position = Vector2(312, 200)
-movement_universal_script = SubResource("Resource_wfbmd")
-health_stats_script = SubResource("Resource_memvy")
-interaction_and_attack_stats_script = SubResource("Resource_fr05q")
+movement_universal_script = SubResource("Resource_pbtmq")
+health_stats_script = SubResource("Resource_38xcj")
+interaction_and_attack_stats_script = SubResource("Resource_43pnk")
 
 [node name="Spider2" parent="Room25" unique_id=1619359574 instance=ExtResource("5_4nofv")]
 position = Vector2(1288, 184)
-movement_universal_script = SubResource("Resource_augdq")
-health_stats_script = SubResource("Resource_vv2ky")
-interaction_and_attack_stats_script = SubResource("Resource_5u4jx")
+movement_universal_script = SubResource("Resource_cwyu2")
+health_stats_script = SubResource("Resource_jgqgf")
+interaction_and_attack_stats_script = SubResource("Resource_uj8m5")
 
 [node name="Spider3" parent="Room25" unique_id=796471238 instance=ExtResource("5_4nofv")]
 position = Vector2(264, 808)
-movement_universal_script = SubResource("Resource_jw5t8")
-health_stats_script = SubResource("Resource_r5wqp")
-interaction_and_attack_stats_script = SubResource("Resource_janoa")
+movement_universal_script = SubResource("Resource_qbv5l")
+health_stats_script = SubResource("Resource_51jmg")
+interaction_and_attack_stats_script = SubResource("Resource_v5sea")
 
 [node name="Spider4" parent="Room25" unique_id=1286945768 instance=ExtResource("5_4nofv")]
 position = Vector2(1680, 880)
-movement_universal_script = SubResource("Resource_qd5f7")
-health_stats_script = SubResource("Resource_wq1wb")
-interaction_and_attack_stats_script = SubResource("Resource_xwyc5")
+movement_universal_script = SubResource("Resource_yoj0n")
+health_stats_script = SubResource("Resource_avimg")
+interaction_and_attack_stats_script = SubResource("Resource_rp7tb")
 
 [node name="Room31" parent="." unique_id=1838418349 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(1, 3)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="ResetPotion" parent="Room31" unique_id=1632538939 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
@@ -857,28 +511,22 @@ visible = false
 map_position = Vector2i(5, 3)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="ItemPickup" parent="Room35" unique_id=1240572461 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 576)
 test_item_data = ExtResource("12_fr05q")
-
-[node name="Room36" parent="." unique_id=255552397 instance=ExtResource("3_avimg")]
-visible = false
-map_position = Vector2i(4, 3)
-room_type = 2
-is_secret = true
-center_light_energy = 1.0
-center_light_scale = 1.3
-
-[node name="ItemPickup" parent="Room36" unique_id=1981250134 instance=ExtResource("14_vv2ky")]
-position = Vector2(960, 576)
-test_item_data = ExtResource("33_c01fs")
 
 [node name="Room41" parent="." unique_id=290033935 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(1, 4)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="GianticPotion" parent="Room41" unique_id=2068581997 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
@@ -890,42 +538,45 @@ visible = false
 map_position = Vector2i(2, 4)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="SlowPotion" parent="Room42" unique_id=2035004861 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
 test_item_data = ExtResource("16_jw5t8")
 test_amount = 6
 
-[node name="Room43" parent="." unique_id=97520982 instance=ExtResource("3_avimg")]
+[node name="TreasureRoomWithChest" parent="." unique_id=325834429 instance=ExtResource("32_cwyu2")]
 visible = false
 map_position = Vector2i(3, 4)
-center_light_energy = 1.0
-center_light_scale = 1.3
 
-[node name="Chest" parent="Room43" unique_id=373078894 instance=ExtResource("10_wfbmd")]
-position = Vector2(960, 96)
-item_to_drop = SubResource("Resource_m5qkh")
+[node name="NavigationRegion2D" parent="TreasureRoomWithChest" index="1" unique_id=1239899796]
+navigation_polygon = SubResource("NavigationPolygon_4nofv")
 
-[node name="StorageComponent" parent="Room43/Chest" index="4" unique_id=687521106]
-slots = Array[ExtResource("11_memvy")]([SubResource("Resource_6c8xf")])
+[node name="StorageComponent" parent="TreasureRoomWithChest/Chest" parent_id_path=PackedInt32Array(325834429, 1382818356) index="4" unique_id=687521106]
+slots = Array[ExtResource("11_memvy")]([null, null, null, null, null, null, null, null, null, null, null, null, null, SubResource("Resource_janoa")])
 
 [node name="Room44" parent="." unique_id=1824872663 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(4, 4)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="Spider" parent="Room44" unique_id=1648752415 instance=ExtResource("5_4nofv")]
 position = Vector2(1472, 256)
-movement_universal_script = SubResource("Resource_sk0ov")
-health_stats_script = SubResource("Resource_dkq1r")
-interaction_and_attack_stats_script = SubResource("Resource_s2rdq")
+movement_universal_script = SubResource("Resource_b16dl")
+health_stats_script = SubResource("Resource_p1cjb")
+interaction_and_attack_stats_script = SubResource("Resource_wgf74")
 
 [node name="Spider2" parent="Room44" unique_id=1034290514 instance=ExtResource("5_4nofv")]
 position = Vector2(1472, 904)
-movement_universal_script = SubResource("Resource_lf4o7")
-health_stats_script = SubResource("Resource_4as0p")
-interaction_and_attack_stats_script = SubResource("Resource_eak1n")
+movement_universal_script = SubResource("Resource_5brna")
+health_stats_script = SubResource("Resource_wfbmd")
+interaction_and_attack_stats_script = SubResource("Resource_memvy")
 
 [node name="ItemPickup" parent="Room44" unique_id=62274196 instance=ExtResource("14_vv2ky")]
 position = Vector2(256, 200)
@@ -937,34 +588,34 @@ position = Vector2(264, 904)
 test_item_data = ExtResource("36_7jigf")
 test_amount = 10
 
-[node name="Room45" parent="." unique_id=1007941658 instance=ExtResource("3_avimg")]
+[node name="MiniBossRoom" parent="." unique_id=1457661287 instance=ExtResource("42_38xcj")]
 visible = false
 map_position = Vector2i(5, 4)
-room_type = 4
-center_light_energy = 1.0
-center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
-[node name="DoorUp" parent="Room45" unique_id=1323211708 instance=ExtResource("2_yoj0n")]
+[node name="DoorUp" parent="MiniBossRoom" unique_id=1323211708 instance=ExtResource("2_yoj0n")]
 position = Vector2(960, 32)
 door_direction = 1
 
-[node name="Sprite2D" parent="Room45/DoorUp" index="0" unique_id=338021962]
+[node name="Sprite2D" parent="MiniBossRoom/DoorUp" index="0" unique_id=338021962]
 texture = ExtResource("46_0q8kl")
 
-[node name="DoorLeft" parent="Room45" unique_id=925346970 instance=ExtResource("2_yoj0n")]
+[node name="DoorLeft" parent="MiniBossRoom" unique_id=925346970 instance=ExtResource("2_yoj0n")]
 position = Vector2(32, 544)
 rotation = -1.5707964
 door_direction = 3
 
-[node name="Sprite2D" parent="Room45/DoorLeft" index="0" unique_id=338021962]
+[node name="Sprite2D" parent="MiniBossRoom/DoorLeft" index="0" unique_id=338021962]
 texture = ExtResource("46_0q8kl")
 
-[node name="MegaSpider" parent="Room45" unique_id=782179496 instance=ExtResource("5_4nofv")]
+[node name="MegaSpider" parent="MiniBossRoom" unique_id=782179496 instance=ExtResource("5_4nofv")]
 position = Vector2(960, 544)
 scale = Vector2(2, 2)
-movement_universal_script = SubResource("Resource_akgvt")
+movement_universal_script = SubResource("Resource_fr05q")
 health_stats_script = SubResource("Resource_x5jnv")
-interaction_and_attack_stats_script = SubResource("Resource_w25rk")
+interaction_and_attack_stats_script = SubResource("Resource_augdq")
 loot_drop_script = SubResource("Resource_wxccy")
 
 [node name="Room51" parent="." unique_id=6868068 instance=ExtResource("3_avimg")]
@@ -972,6 +623,9 @@ visible = false
 map_position = Vector2i(1, 5)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="ChestSpawnpoint" parent="Room51" unique_id=1880579657 instance=ExtResource("39_2mgyh")]
 position = Vector2(1531, 227)
@@ -993,12 +647,18 @@ visible = false
 map_position = Vector2i(2, 5)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="Room53" parent="." unique_id=1645768999 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(3, 5)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="LiliputPotion" parent="Room53" unique_id=1445472467 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
@@ -1010,6 +670,9 @@ visible = false
 map_position = Vector2i(1, 6)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="SimplePotion" parent="Room61" unique_id=2053930346 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
@@ -1021,12 +684,18 @@ visible = false
 map_position = Vector2i(3, 6)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="Room64" parent="." unique_id=943668798 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(4, 6)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="FullRegeneratePotion" parent="Room64" unique_id=282749848 instance=ExtResource("14_vv2ky")]
 position = Vector2(960, 544)
@@ -1036,9 +705,13 @@ test_amount = 2
 [node name="Room71" parent="." unique_id=115816208 instance=ExtResource("3_avimg")]
 visible = false
 map_position = Vector2i(1, 7)
-room_type = 5
+ignore_combat_lock = true
 center_light_energy = 1.0
 center_light_scale = 1.3
+camera_follows_player = true
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="DoorUp" parent="Room71" unique_id=1048959841 instance=ExtResource("2_yoj0n")]
 position = Vector2(960, 32)
@@ -1082,7 +755,7 @@ vertical_alignment = 1
 
 [node name="Chest" parent="Room71" unique_id=1288410922 instance=ExtResource("10_wfbmd")]
 position = Vector2(960, 664)
-item_to_drop = SubResource("Resource_x8n73")
+item_to_drop = SubResource("Resource_vv2ky")
 
 [node name="StorageComponent" parent="Room71/Chest" index="4" unique_id=687521106]
 slots = Array[ExtResource("11_memvy")]([SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t"), SubResource("Resource_fu16t")])
@@ -1092,6 +765,9 @@ visible = false
 map_position = Vector2i(4, 7)
 center_light_energy = 1.0
 center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
 [node name="DoorLeft" parent="Room74" unique_id=1831443880 node_paths=PackedStringArray("destination_door") instance=ExtResource("2_yoj0n")]
 position = Vector2(32, 544)
@@ -1101,52 +777,41 @@ destination_door = NodePath("../../Room71/DoorRight")
 [node name="Sprite2D" parent="Room74/DoorLeft" index="0" unique_id=338021962]
 texture = ExtResource("49_pyfjf")
 
-[node name="Room75" parent="." unique_id=617439924 instance=ExtResource("3_avimg")]
+[node name="BossRoom" parent="." unique_id=1113626290 instance=ExtResource("42_38xcj")]
 visible = false
 map_position = Vector2i(5, 7)
-room_type = 4
-center_light_energy = 1.0
-center_light_scale = 1.3
+enemy_spawn_chance = 0.75
+object_spawn_chance = 0.5
+item_spawn_chance = 0.3
 
-[node name="DoorLeft" parent="Room75" unique_id=607293603 instance=ExtResource("2_yoj0n")]
-position = Vector2(32, 544)
-rotation = -1.5707964
-door_direction = 3
-
-[node name="Sprite2D" parent="Room75/DoorLeft" index="0" unique_id=338021962]
-texture = ExtResource("50_dlyx6")
-
-[node name="MegaSpider" parent="Room75" unique_id=1461711298 instance=ExtResource("5_4nofv")]
-position = Vector2(1496, 544)
+[node name="MegaSpider" parent="BossRoom" unique_id=1461711298 instance=ExtResource("5_4nofv")]
+position = Vector2(1938, 627)
 scale = Vector2(4, 4)
 min_stopping_distance = 220.0
 attack_reach = 265.0
-movement_universal_script = SubResource("Resource_nqht2")
-health_stats_script = SubResource("Resource_c01fs")
-interaction_and_attack_stats_script = SubResource("Resource_hwjh3")
+movement_universal_script = SubResource("Resource_5u4jx")
+health_stats_script = SubResource("Resource_jw5t8")
+interaction_and_attack_stats_script = SubResource("Resource_qd5f7")
 loot_drop_script = SubResource("Resource_hpgrf")
 combat_radius = 160.0
 
-[node name="Spider" parent="Room75" unique_id=2126057221 instance=ExtResource("5_4nofv")]
-position = Vector2(704, 200)
-movement_universal_script = SubResource("Resource_5emf7")
-health_stats_script = SubResource("Resource_7jigf")
-interaction_and_attack_stats_script = SubResource("Resource_dm15n")
+[node name="Spider" parent="BossRoom" unique_id=2126057221 instance=ExtResource("5_4nofv")]
+position = Vector2(1166, 317)
+movement_universal_script = SubResource("Resource_wq1wb")
+health_stats_script = SubResource("Resource_xwyc5")
+interaction_and_attack_stats_script = SubResource("Resource_m5qkh")
 
-[node name="Spider2" parent="Room75" unique_id=1387826829 instance=ExtResource("5_4nofv")]
-position = Vector2(704, 896)
-movement_universal_script = SubResource("Resource_eh1jt")
-health_stats_script = SubResource("Resource_2mgyh")
-interaction_and_attack_stats_script = SubResource("Resource_ac005")
+[node name="Spider2" parent="BossRoom" unique_id=1387826829 instance=ExtResource("5_4nofv")]
+position = Vector2(1166, 1013)
+movement_universal_script = SubResource("Resource_sk0ov")
+health_stats_script = SubResource("Resource_dkq1r")
+interaction_and_attack_stats_script = SubResource("Resource_s2rdq")
 
-[editable path="Room03_DebugRoom/DoorDown"]
-[editable path="Room03_DebugRoom/Chest(Building)"]
-[editable path="Room15/Chest"]
-[editable path="Room43/Chest"]
-[editable path="Room45/DoorUp"]
-[editable path="Room45/DoorLeft"]
+[editable path="TreasureRoomWithChest"]
+[editable path="TreasureRoomWithChest/Chest"]
+[editable path="MiniBossRoom/DoorUp"]
+[editable path="MiniBossRoom/DoorLeft"]
 [editable path="Room71/DoorUp"]
 [editable path="Room71/DoorRight"]
 [editable path="Room71/Chest"]
 [editable path="Room74/DoorLeft"]
-[editable path="Room75/DoorLeft"]

@@ -20,7 +20,7 @@ signal storage_opened(storage_reference: StorageComponent)
 
 #endregion
 
-@onready var interactable_comp: Node = $"../InteractableComponent"
+@onready var interactable_comp: Node = $"../InteractableComponent" # todo rozwiązać to lepiej
 
 ## Inicjalizacja pustych slotów wzorowana na inventory.gd
 func _init() -> void:

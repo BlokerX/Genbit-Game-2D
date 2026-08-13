@@ -41,7 +41,10 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	await TransitionManager.on_fade_out_finished
 	
 	# 3. BEZPIECZNE ŁADOWANIE PLIKU ZE ŚCIEŻKI TEKSTOWEJ
-	if not FileAccess.file_exists(level_path):
+	
+	# ZMIANA TUTAJ: Używamy ResourceLoader zamiast FileAccess!
+	# ResourceLoader automatycznie widzi spakowane pliki (.remap) w wyeksportowanej grze.
+	if not ResourceLoader.exists(level_path):
 		push_error("GlobalLevelManager: Plik mapy nie istnieje pod ścieżką: " + level_path)
 		is_changing_level = false
 		return

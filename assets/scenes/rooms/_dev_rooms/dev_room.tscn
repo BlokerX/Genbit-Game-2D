@@ -1,0 +1,307 @@
+[gd_scene format=3 uid="uid://vc0xtgb4d68j"]
+
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_hp8qi"]
+[ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="4_ywiaw"]
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="5_j1nxu"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="6_cblon"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="7_kegip"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="8_8sg7u"]
+[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/chest.tscn" id="9_tx8yf"]
+[ext_resource type="Script" uid="uid://cla0ou6p42xsx" path="res://assets/scripts/entities/items/slot_data.gd" id="10_kh7tt"]
+[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="11_fv8qv"]
+[ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="12_af46w"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="13_2ciny"]
+[ext_resource type="Script" uid="uid://cxqidx2whm468" path="res://assets/scripts/dev_ops/dev_chest_filler.gd" id="13_gde2r"]
+[ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="14_6rlbj"]
+[ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="15_jxa5q"]
+[ext_resource type="Resource" uid="uid://4nrtiqt267k8" path="res://assets/data/items/gigantic_potion.tres" id="16_uxwqi"]
+[ext_resource type="Resource" uid="uid://bfy4qopem0gtu" path="res://assets/data/items/liliput_potion.tres" id="17_yntl3"]
+[ext_resource type="Resource" uid="uid://b3rurgfxeb1gd" path="res://assets/data/items/full_regenerate_potion.tres" id="18_ev3ob"]
+[ext_resource type="Resource" uid="uid://dryafysswfb8c" path="res://assets/data/items/healing_potion.tres" id="19_2jsya"]
+[ext_resource type="Resource" uid="uid://bxr06u6ayl4mb" path="res://assets/data/items/freezing_potion.tres" id="20_wi6i4"]
+[ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="21_exoji"]
+[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="22_prsrc"]
+[ext_resource type="Resource" uid="uid://1w0yjy4ykkyp" path="res://assets/data/items/escape_potion.tres" id="23_ii8tw"]
+[ext_resource type="Resource" uid="uid://bownsdq2b671r" path="res://assets/data/items/big_sword.tres" id="24_ubi33"]
+[ext_resource type="Resource" uid="uid://lo35uipqgqmm" path="res://assets/data/items/knife.tres" id="25_ocelo"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="26_yewhi"]
+[ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="27_iblv6"]
+[ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="28_ipvip"]
+[ext_resource type="Resource" uid="uid://cgsfxphbm7hm5" path="res://assets/data/items/frozen_cookie.tres" id="29_ttcl2"]
+[ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="30_duced"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="31_8fthl"]
+[ext_resource type="Resource" uid="uid://b8exeqhxd52o2" path="res://assets/data/items/chest.tres" id="32_2338t"]
+[ext_resource type="Resource" uid="uid://da8e3nm1q40f6" path="res://assets/data/items/backpack.tres" id="33_4ve0w"]
+[ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="34_4wr1w"]
+[ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="35_5ulm5"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_favc1"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+
+[sub_resource type="Resource" id="Resource_8r1x1"]
+resource_local_to_scene = true
+script = ExtResource("5_j1nxu")
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_ywiaw"]
+resource_local_to_scene = true
+script = ExtResource("6_cblon")
+health = 1000000000000000
+max_health = 1000000000000000
+
+[sub_resource type="Resource" id="Resource_p05go"]
+script = ExtResource("7_kegip")
+damage = 0
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_kegip"]
+resource_local_to_scene = true
+script = ExtResource("8_8sg7u")
+hand_attack_data = SubResource("Resource_p05go")
+
+[sub_resource type="Resource" id="Resource_yg0s7"]
+script = ExtResource("12_af46w")
+data = ExtResource("11_fv8qv")
+metadata/_custom_type_script = "uid://cv5afe6geisca"
+
+[sub_resource type="Resource" id="Resource_1gk60"]
+script = ExtResource("10_kh7tt")
+item = SubResource("Resource_yg0s7")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
+
+[sub_resource type="Resource" id="Resource_nadtx"]
+script = ExtResource("10_kh7tt")
+item = SubResource("Resource_yg0s7")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
+
+[sub_resource type="Resource" id="Resource_dg17h"]
+script = ExtResource("12_af46w")
+data = ExtResource("26_yewhi")
+amount = 999
+metadata/_custom_type_script = "uid://cv5afe6geisca"
+
+[sub_resource type="Resource" id="Resource_gde2r"]
+script = ExtResource("10_kh7tt")
+item = SubResource("Resource_dg17h")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
+
+[sub_resource type="Resource" id="Resource_j1nxu"]
+script = ExtResource("12_af46w")
+data = ExtResource("32_2338t")
+metadata/_custom_type_script = "uid://cv5afe6geisca"
+
+[sub_resource type="Resource" id="Resource_cblon"]
+script = ExtResource("10_kh7tt")
+item = SubResource("Resource_j1nxu")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
+
+[sub_resource type="SystemFont" id="SystemFont_itdm3"]
+subpixel_positioning = 0
+
+[node name="DevRoom" unique_id=1124479501 instance=ExtResource("1_hp8qi")]
+room_type = 6
+is_secret = true
+ignore_combat_lock = true
+
+[node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
+navigation_polygon = SubResource("NavigationPolygon_favc1")
+
+[node name="InfinitySpider" parent="." index="2" unique_id=1198211542 instance=ExtResource("4_ywiaw")]
+position = Vector2(960, 384)
+rotation = 1.5707964
+movement_universal_script = SubResource("Resource_8r1x1")
+health_stats_script = SubResource("Resource_ywiaw")
+interaction_and_attack_stats_script = SubResource("Resource_kegip")
+
+[node name="Chest(Building)" parent="." index="3" unique_id=1382818356 instance=ExtResource("9_tx8yf")]
+position = Vector2(1376, 160)
+
+[node name="StorageComponent" parent="Chest(Building)" index="4" unique_id=687521106]
+slots = Array[ExtResource("10_kh7tt")]([SubResource("Resource_1gk60"), SubResource("Resource_nadtx")])
+
+[node name="DevChest(Building)" parent="." index="4" unique_id=1943748093 instance=ExtResource("9_tx8yf")]
+position = Vector2(544, 160)
+
+[node name="StorageComponent" parent="DevChest(Building)" index="4" unique_id=687521106]
+slots = Array[ExtResource("10_kh7tt")]([SubResource("Resource_gde2r"), SubResource("Resource_cblon"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+
+[node name="DevChestFiller" type="Node" parent="DevChest(Building)" index="5" unique_id=354880417 node_paths=PackedStringArray("storage_component")]
+script = ExtResource("13_gde2r")
+storage_component = NodePath("../StorageComponent")
+
+[node name="Potions" type="Label" parent="." index="5" unique_id=1526169267]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 240.0
+offset_top = 520.0
+offset_right = 528.0
+offset_bottom = 575.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = SubResource("SystemFont_itdm3")
+theme_override_font_sizes/font_size = 40
+text = "Potions"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HastePotion" parent="." index="6" unique_id=889212379 instance=ExtResource("13_2ciny")]
+position = Vector2(191, 688)
+test_item_data = ExtResource("14_6rlbj")
+test_amount = 99
+
+[node name="SlowPotion" parent="." index="7" unique_id=692199794 instance=ExtResource("13_2ciny")]
+position = Vector2(319, 688)
+test_item_data = ExtResource("15_jxa5q")
+test_amount = 99
+
+[node name="GiganticPotion" parent="." index="8" unique_id=2041230731 instance=ExtResource("13_2ciny")]
+position = Vector2(444, 688)
+test_item_data = ExtResource("16_uxwqi")
+test_amount = 99
+
+[node name="LiliputPotion" parent="." index="9" unique_id=1002362015 instance=ExtResource("13_2ciny")]
+position = Vector2(567, 688)
+test_item_data = ExtResource("17_yntl3")
+test_amount = 99
+
+[node name="FullRegeneratePotion" parent="." index="10" unique_id=1564128755 instance=ExtResource("13_2ciny")]
+position = Vector2(191, 818)
+test_item_data = ExtResource("18_ev3ob")
+test_amount = 99
+
+[node name="HealingPotion" parent="." index="11" unique_id=771576995 instance=ExtResource("13_2ciny")]
+position = Vector2(324, 818)
+test_item_data = ExtResource("19_2jsya")
+test_amount = 99
+
+[node name="FreezingPotion" parent="." index="12" unique_id=1198005479 instance=ExtResource("13_2ciny")]
+position = Vector2(191, 940)
+test_item_data = ExtResource("20_wi6i4")
+test_amount = 99
+
+[node name="ResetPotion" parent="." index="13" unique_id=1627438341 instance=ExtResource("13_2ciny")]
+position = Vector2(309, 940)
+test_item_data = ExtResource("21_exoji")
+test_amount = 99
+
+[node name="SimplePotion" parent="." index="14" unique_id=134150314 instance=ExtResource("13_2ciny")]
+position = Vector2(447, 936)
+test_item_data = ExtResource("22_prsrc")
+test_amount = 99
+
+[node name="EscapePotion" parent="." index="15" unique_id=1747472101 instance=ExtResource("13_2ciny")]
+position = Vector2(583, 936)
+test_item_data = ExtResource("23_ii8tw")
+test_amount = 99
+
+[node name="Weapons" type="Label" parent="." index="16" unique_id=1871610841]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 817.0
+offset_top = 524.0
+offset_right = 1105.0
+offset_bottom = 579.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = SubResource("SystemFont_itdm3")
+theme_override_font_sizes/font_size = 40
+text = "Weapons"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sword" parent="." index="17" unique_id=494446172 instance=ExtResource("13_2ciny")]
+position = Vector2(832, 688)
+test_item_data = ExtResource("11_fv8qv")
+test_amount = 99
+
+[node name="BigSword" parent="." index="18" unique_id=1925244764 instance=ExtResource("13_2ciny")]
+position = Vector2(960, 688)
+test_item_data = ExtResource("24_ubi33")
+test_amount = 99
+
+[node name="Knife" parent="." index="19" unique_id=1405500183 instance=ExtResource("13_2ciny")]
+position = Vector2(1088, 688)
+test_item_data = ExtResource("25_ocelo")
+test_amount = 99
+
+[node name="Gun" parent="." index="20" unique_id=168925036 instance=ExtResource("13_2ciny")]
+position = Vector2(832, 800)
+test_item_data = ExtResource("26_yewhi")
+
+[node name="FreezingGun" parent="." index="21" unique_id=1870059778 instance=ExtResource("13_2ciny")]
+position = Vector2(960, 800)
+test_item_data = ExtResource("27_iblv6")
+
+[node name="OtherItems" type="Label" parent="." index="22" unique_id=1576754799]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1312.0
+offset_top = 496.0
+offset_right = 1600.0
+offset_bottom = 609.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = SubResource("SystemFont_itdm3")
+theme_override_font_sizes/font_size = 40
+text = "Other Items"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChockolateCookie" parent="." index="23" unique_id=1839045523 instance=ExtResource("13_2ciny")]
+position = Vector2(1360, 688)
+test_item_data = ExtResource("28_ipvip")
+test_amount = 99
+
+[node name="FrozenCookie" parent="." index="24" unique_id=11598476 instance=ExtResource("13_2ciny")]
+position = Vector2(1480, 684)
+test_item_data = ExtResource("29_ttcl2")
+test_amount = 99
+
+[node name="RipStoneCross" parent="." index="25" unique_id=1356159157 instance=ExtResource("13_2ciny")]
+position = Vector2(1480, 902)
+test_item_data = ExtResource("30_duced")
+test_amount = 99
+
+[node name="JustItem" parent="." index="26" unique_id=1740813570 instance=ExtResource("13_2ciny")]
+position = Vector2(1584, 900)
+test_item_data = ExtResource("31_8fthl")
+test_amount = 99
+
+[node name="Chest" parent="." index="27" unique_id=1992546604 instance=ExtResource("13_2ciny")]
+position = Vector2(1360, 904)
+test_item_data = ExtResource("32_2338t")
+test_amount = 99
+
+[node name="Backpack" parent="." index="28" unique_id=1981102050 instance=ExtResource("13_2ciny")]
+position = Vector2(1360, 794)
+test_item_data = ExtResource("33_4ve0w")
+test_amount = 99
+
+[node name="BigBackpack" parent="." index="29" unique_id=1270685939 instance=ExtResource("13_2ciny")]
+position = Vector2(1477, 794)
+test_item_data = ExtResource("34_4wr1w")
+test_amount = 99
+
+[node name="Purse" parent="." index="30" unique_id=2103173462 instance=ExtResource("13_2ciny")]
+position = Vector2(1583, 794)
+test_item_data = ExtResource("35_5ulm5")
+test_amount = 99
+
+[editable path="Chest(Building)"]
+[editable path="DevChest(Building)"]

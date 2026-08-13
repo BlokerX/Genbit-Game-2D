@@ -45,6 +45,10 @@ var global_darkness: CanvasModulate
 ## Scena drzwi, która ma być automatycznie wstawiana do pokoi
 @export var auto_door_scene: PackedScene
 
+## Domyślna tekstura drzwi dla CAŁEJ MAPY. 
+## Zostanie użyta w zwykłych pokojach, nadpisując podstawowy wygląd drzwi z pliku.
+@export var default_map_door_texture: Texture2D
+
 func _ready() -> void:
 	add_to_group("Map") # Wymuszenie grupy
 	
@@ -495,51 +499,89 @@ func _auto_spawn_missing_doors() -> void:
 				_sync_door_pair(grid_room, Door.Direction.DOWN, down_room, Door.Direction.UP)
 
 
-## Inteligentne parowanie, kolorowanie i kopiowanie tekstur z węzła Sprite2D
+## Inteligentne parowanie drzwi - obie strony przejścia ZAWSZE wyglądają identycznie!
 func _sync_door_pair(room_a: Room, dir_a: Door.Direction, room_b: Room, dir_b: Door.Direction) -> void:
-	# Sprawdzamy, czy w edytorze postawiłeś w którychś pokojach drzwi ręcznie
 	var door_a = room_a.get_door(dir_a)
 	var door_b = room_b.get_door(dir_b)
 	
-	# SCENARIUSZ 1: Oba pokoje mają już drzwi postawione przez Ciebie. Ignorujemy.
+	# PRIORYTET 1: Oba pokoje mają już Twoje ręczne drzwi. Automat nic nie robi.
 	if door_a != null and door_b != null:
 		return
 		
-	# SCENARIUSZ 2: Nie ma żadnych drzwi. Spawnujemy dwie sztuki i kolorujemy według typu!
+	# PRIORYTET 2, 3 i 4: Nie ma żadnych ręcznych drzwi - pełen automat.
 	if door_a == null and door_b == null:
-		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene)
-		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene)
+		# --- KLUCZ: Wyliczamy jedną, najsilniejszą teksturę dla OBU pokoi naraz! ---
+		var best_tex = _get_best_door_texture(room_a, room_b)
 		
-		# Nakładamy tekstury powiązane z RoomType
-		var tex_for_a = _get_door_texture_for_room_type(room_b.room_type)
-		if tex_for_a and door_a.door_sprite:
-			door_a.door_sprite.texture = tex_for_a
-			
-		var tex_for_b = _get_door_texture_for_room_type(room_a.room_type)
-		if tex_for_b and door_b.door_sprite:
-			door_b.door_sprite.texture = tex_for_b
-			
-		return # Kończymy, by nie nadpisywać ich poniżej
+		# Tworzymy i wstawiamy drzwi z tą samą teksturą po obu stronach ściany
+		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene, best_tex)
+		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene, best_tex)
+		return 
 		
-	# SCENARIUSZ 3: TYLKO Pokój A ma drzwi ręczne (z Twoim własnym Sprite'em).
+	# PRIORYTET 1 (dziedziczenie): TYLKO Pokój A ma ręczne drzwi. Pokój B musi je skopiować.
 	if door_a != null and door_b == null:
-		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene)
-		_copy_sprite_texture(door_a, door_b) # Kopiujemy ręczny design, ignorujemy RoomType
+		var tex_b = _get_manual_door_texture(door_a)
+		door_b = room_b.spawn_auto_door(dir_b, auto_door_scene, tex_b)
 		
-	# SCENARIUSZ 4: TYLKO Pokój B ma drzwi ręczne (z Twoim własnym Sprite'em).
+	# PRIORYTET 1 (dziedziczenie): TYLKO Pokój B ma ręczne drzwi. Pokój A musi je skopiować.
 	elif door_b != null and door_a == null:
-		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene)
-		_copy_sprite_texture(door_b, door_a) # Kopiujemy ręczny design, ignorujemy RoomType
+		var tex_a = _get_manual_door_texture(door_b)
+		door_a = room_a.spawn_auto_door(dir_a, auto_door_scene, tex_a)
 
-## Niezwykle wydajne operowanie na wskaźnikach pamięci tekstur
-func _copy_sprite_texture(source_door: Door, target_door: Door) -> void:
-	# Wyciągamy węzły Sprite2D z instancji (funkcja .instantiate() już je wygenerowała w pamięci)
-	var source_sprite = source_door.get_node_or_null("Sprite2D")
-	var target_sprite = target_door.get_node_or_null("Sprite2D")
+## Funkcja pomocnicza: Wylicza "najsilniejszą" teksturę dla całego połączenia
+func _get_best_door_texture(room_1: Room, room_2: Room) -> Texture2D:
+	# Priorytet 2: Niestandardowy obrazek z Inspektora (jeśli oba mają, wygrywa ten z lewej/góry)
+	if room_1.custom_door_texture != null:
+		return room_1.custom_door_texture
+	if room_2.custom_door_texture != null:
+		return room_2.custom_door_texture
+		
+	# Priorytet 3: Typ pokoju - WALKA NA PUNKTY WAŻNOŚCI
+	var weight_1 = _get_room_type_weight(room_1.room_type)
+	var weight_2 = _get_room_type_weight(room_2.room_type)
 	
-	# Bezpośrednie przekazanie wskaźnika. Zero obciążenia dla pamięci!
-	if source_sprite and target_sprite:
-		target_sprite.texture = source_sprite.texture
+	# Jeśli chociaż jeden pokój jest "specjalny" (waga > 0)
+	if weight_1 > 0 or weight_2 > 0:
+		# Zwycięża ten, który ma więcej punktów!
+		if weight_1 >= weight_2:
+			return _get_door_texture_for_room_type(room_1.room_type)
+		else:
+			return _get_door_texture_for_room_type(room_2.room_type)
+		
+	# Priorytet 4: Domyślna tekstura dla Całej Mapy
+	if default_map_door_texture != null:
+		return default_map_door_texture
+		
+	# Priorytet 5: Absolutny domyślny wygląd
+	return null
+
+## Funkcja pomocnicza: Ustala, który typ pokoju jest "ważniejszy" przy zderzeniu
+func _get_room_type_weight(type: Room.RoomType) -> int:
+	match type:
+		Room.RoomType.BOSS: 
+			return 100 # Boss zawsze dominuje korytarz
+		Room.RoomType.TREASURE: 
+			return 80
+		Room.RoomType.SHOP: 
+			return 60
+		Room.RoomType.ARENA: 
+			return 40
+		Room.RoomType.DEV_ROOM: 
+			return 20
+		Room.RoomType.START:
+			return 10
+	return 0 # NORMAL, OPEN_WORLD mają 0
+
+## Funkcja pomocnicza: Kradnie teksturę z drzwi, które postawiłeś ręcznie na scenie
+func _get_manual_door_texture(door: Door) -> Texture2D:
+	if door.door_texture != null:
+		return door.door_texture
+		
+	var sprite = door.get_node_or_null("Sprite2D")
+	if sprite and sprite.texture:
+		return sprite.texture
+		
+	return null
 
 ## Skrypt Hybrydowy do automatycznego parowania drzwi
 func _auto_link_doors() -> void:
