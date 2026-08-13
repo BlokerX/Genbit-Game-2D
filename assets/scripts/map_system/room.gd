@@ -90,13 +90,13 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, OPEN_WORLD, DEV_ROOM, ARENA
 ## Pula przeciwników (Losowana na markerach z grupy 'EnemySpawn')
 @export_group("Generatory Proceduralne (Spawn Pools)")
 @export var enemy_pool: EnemySpawnPool
-@export_range(0.0, 1.0) var enemy_spawn_chance: float = 0.75
+@export_range(0.0, 1.0) var enemy_spawn_chance: float = 1.0
 
 @export var object_pool: ObjectSpawnPool
-@export_range(0.0, 1.0) var object_spawn_chance: float = 0.50
+@export_range(0.0, 1.0) var object_spawn_chance: float = 1.0
 
 @export var item_pool: ItemLootPool
-@export_range(0.0, 1.0) var item_spawn_chance: float = 0.30
+@export_range(0.0, 1.0) var item_spawn_chance: float = 1.0
 
 # Markery rozdzielone na kategorie
 var enemy_spawns: Array[Marker2D] = []
