@@ -1,11 +1,9 @@
+# item_weapon.gd
 extends UseableItem
-
 class_name ItemWeapon
 
 @export var attack_data : AttackData
-
 @export var is_ranged : bool = false
-
 @export var weapon_type : String = "Sword"
 
 # Constructor
@@ -45,3 +43,25 @@ func affect_target(target : CharacterEntity) -> bool :
 	apply_all_effects(target)
 	
 	return true
+
+# --- NOWOŚĆ: Główna funkcja wykonująca atak (Domyślnie Walka Wręcz) ---
+func execute_attack(shooter: CharacterEntity, target: Node2D, weapon_instance: ItemInstance, inventory: Inventory, stats_script: InteractionAndAttackStatsComponent, spawner: Node) -> bool:
+	
+	# 1. Sprawdzamy zasięg
+	var distance = _calculate_edge_distance(shooter, target)
+	if distance > stats_script.get_total_range():
+		print("Pudło! Wróg poza zasięgiem broni białej.")
+		return false
+		
+	# 2. Wykonujemy cios!
+	stats_script.execute_attack_on_target(target)
+	
+	# 3. Psujemy broń
+	weapon_instance.reduce_durability()
+	return true
+
+# Pomocnicza funkcja do sprawdzania odległości (przeniesiona z gracza!)
+func _calculate_edge_distance(shooter: CharacterEntity, target: Node2D) -> float:
+	var shooter_radius = shooter.combat_radius if "combat_radius" in shooter else 20.0
+	var target_radius = target.combat_radius if "combat_radius" in target else 20.0
+	return max(0.0, shooter.global_position.distance_to(target.global_position) - (shooter_radius + target_radius))

@@ -16,6 +16,7 @@ const INPUT_AIM_DOWN = "AimDown"
 
 const INPUT_DROP_ITEM = "DropItem"
 const INPUT_ATTACK = "Attack"
+const INPUT_RELOAD = "Reload"
 const INPUT_USE_ITEM = "UseItemButton"
 const INPUT_INTERACT = "Interact"
 const INPUT_COLLECT = "Collect"
@@ -343,7 +344,24 @@ func _handle_default_inputs(event: InputEvent) -> void:
 		is_holding_attack = true
 	elif event.is_action_released(INPUT_ATTACK):
 		is_holding_attack = false
-		
+	
+	# Ręczne przeładowanie (np. R)
+	if event.is_action_pressed(INPUT_RELOAD): 
+		var _item = inventory.get_current_item()
+		if _item and _item.data is ItemDistanceWeapon and _item.data.uses_ammunition:
+			if inventory.reload_current_weapon():
+				# Uruchamiamy karę czasową!
+				interaction_and_attack_stats_script.trigger_reload_cooldown(_item.data.reload_time)
+
+	# --- ZAAWANSOWANA ZMIANA AMUNICJI ---
+	# TODO Skonfiguruj w InputMap np. klawisz "T" jako "ChangeAmmo" 
+	#if event.is_action_pressed("ChangeAmmo"):
+		#var _item = inventory.get_current_item()
+		#if _item and _item.data is ItemDistanceWeapon and _item.data.uses_ammunition:
+			#inventory.cycle_weapon_ammunition()
+			## Zmiana pocisku wymusza przeładowanie, więc znowu dajemy cooldown!
+			#interaction_and_attack_stats_script.trigger_reload_cooldown(_item.data.reload_time)
+	
 	# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
 	if event.is_action_pressed(INPUT_INTERACT):
 		if aim_controller.current_target != null:
@@ -508,41 +526,24 @@ func respawn_sequence() -> void:
 
 ## Obsługa ataku
 func perform_attack() -> void:
-	var _item = inventory.get_current_item()
-	var _item_data = _item.data if _item != null else null 
-	
+	var current_item = inventory.get_current_item()
 	var target_enemy = aim_controller.get_target_node()
+	
 	if target_enemy == null:
 		return
 		
-	var max_attack_distance = get_current_attack_range()
-	if max_attack_distance <= 0.0:
-		return 
-		
-	# Mierzymy pustą przestrzeń między krawędziami (Edge-to-Edge)
-	var target_radius = 40.0
-	if "combat_radius" in target_enemy:
-		target_radius = target_enemy.combat_radius
-		
-	var distance_to_enemy = max(0.0, global_position.distance_to(target_enemy.global_position) - (combat_radius + target_radius))
-	
 	var has_los = aim_controller.has_line_of_sight(target_enemy)
-
+	
+	# Gracz po prostu mówi: "Komponencie, uderz tym, co trzymam. Masz tu mój ekwipunek!"
 	if attack_component:
-		# Zlecamy brudną robotę komponentowi
-		var attack_successful = attack_component.execute_attack(
-			self,
-			target_enemy,
-			_item_data,
-			interaction_and_attack_stats_script,
-			distance_to_enemy,
-			max_attack_distance,
+		attack_component.execute_attack(
+			self, 
+			target_enemy, 
+			current_item, 
+			inventory, # <--- WSTRZYKUJEMY EKWIPUNEK
+			interaction_and_attack_stats_script, 
 			has_los
 		)
-		
-		# Jeśli atak się udał fizycznie i używaliśmy broni, konsumujemy wytrzymałość
-		if attack_successful and _item_data != null and _item_data is ItemWeapon:
-			inventory.consume_durability_of_the_item()
 
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:

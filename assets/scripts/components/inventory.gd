@@ -90,6 +90,123 @@ func consume_current_item() -> void:
 		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
 		inventory_updated.emit()
 
+# =========================================================================
+# ZAAWANSOWANY SYSTEM AMUNICJI (EJECT & LOAD)
+# =========================================================================
+
+## Szybka zmiana typu amunicji (np. ze Zwykłej na Przeciwpancerną)
+func cycle_weapon_ammunition() -> void:
+	var slot = get_current_slot()
+	if slot.is_empty() or not slot.item.data is ItemDistanceWeapon: return
+	var inst = slot.item
+	var weapon_data = inst.data as ItemDistanceWeapon
+	
+	if not weapon_data.uses_ammunition: return
+		
+	# Szukamy wszystkich UNIKALNYCH rodzajów amunicji w plecaku pasujących do broni
+	var available_ammo: Array[AmmunitionItem] = []
+	for s in slots:
+		if not s.is_empty() and s.item.data is AmmunitionItem:
+			var ammo = s.item.data as AmmunitionItem
+			if ammo.ammunition_type == weapon_data.accepted_ammunition_type:
+				if not available_ammo.has(ammo): available_ammo.append(ammo)
+					
+	if available_ammo.is_empty():
+		print("Brak pasującej amunicji do zmiany w ekwipunku.")
+		return
+		
+	# Sprawdzamy co jest teraz załadowane / preferowane
+	var current_pref_id = inst.custom_data.get("preferred_ammo_id", -1)
+	if current_pref_id == -1 and inst.custom_data.get("ammo_data") != null:
+		current_pref_id = inst.custom_data["ammo_data"].item_id
+		
+	# Wybieramy następny typ z listy
+	var next_index = 0
+	for i in range(available_ammo.size()):
+		if available_ammo[i].item_id == current_pref_id:
+			next_index = (i + 1) % available_ammo.size()
+			break
+			
+	var next_ammo = available_ammo[next_index]
+	inst.custom_data["preferred_ammo_id"] = next_ammo.item_id
+	print(">>> Zmieniono preferencję na: ", next_ammo.item_name)
+	
+	# MAGIA: "WYPLUWANIE" OBECNYCH NABOI DO PLECAKA
+	var current_ammo_count = inst.custom_data.get("ammo_count", 0)
+	var current_ammo_data = inst.custom_data.get("ammo_data", null)
+	
+	if current_ammo_count > 0 and current_ammo_data != null:
+		var old_instance = ItemInstance.new(current_ammo_data.duplicate(true), current_ammo_count)
+		var leftovers = add_instance(old_instance)
+		
+		# Jeśli plecak jest w 100% pełny, wyrzuca pestki na ziemię!
+		if leftovers != null: item_dropped.emit(leftovers, false)
+			
+		inst.custom_data["ammo_count"] = 0
+		inst.custom_data["ammo_data"] = null
+		
+	# Od razu ładujemy nową amunicję (odpali to standardowy czas przeładowania na graczu)
+	reload_current_weapon()
+
+## Główna funkcja ładująca broń
+func reload_current_weapon() -> bool:
+	var slot = get_current_slot()
+	if slot.is_empty() or not slot.item.data is ItemDistanceWeapon: return false
+	
+	var inst = slot.item
+	var weapon_data = inst.data as ItemDistanceWeapon
+	if not weapon_data.uses_ammunition: return false
+	
+	var current_ammo = inst.custom_data.get("ammo_count", 0)
+	if current_ammo >= weapon_data.magazine_capacity: return false
+	
+	var preferred_id = inst.custom_data.get("preferred_ammo_id", -1)
+	
+	# FAZA 1: Próbujemy znaleźć dokładnie tę amunicję, której zażądał gracz (lub kontynuować załadowaną)
+	var ammo_found = _try_load_ammo(inst, weapon_data, preferred_id)
+	
+	# FAZA 2: Jeśli nie mamy "Ulubionej", bierzemy JAKĄKOLWIEK inną, która pasuje do broni
+	if ammo_found <= 0 and preferred_id != -1:
+		ammo_found = _try_load_ammo(inst, weapon_data, -1)
+		
+	if ammo_found > 0:
+		return true
+		
+	return false
+
+# Funkcja pomocnicza ukrywająca brudną logikę zżerania stosów z plecaka
+func _try_load_ammo(inst: ItemInstance, weapon_data: ItemDistanceWeapon, required_id: int) -> int:
+	var current_ammo = inst.custom_data.get("ammo_count", 0)
+	var ammo_needed = weapon_data.magazine_capacity - current_ammo
+	var ammo_found = 0
+	var ammo_reference: AmmunitionItem = inst.custom_data.get("ammo_data", null)
+	
+	for i in range(slots.size()):
+		if not slots[i].is_empty() and slots[i].item.data is AmmunitionItem:
+			var ammo_item = slots[i].item.data as AmmunitionItem
+			
+			if ammo_item.ammunition_type == weapon_data.accepted_ammunition_type:
+				# Weryfikacja preferencji (jeśli wymagana)
+				if required_id != -1 and ammo_item.item_id != required_id: continue
+				# Zabezpieczenie przed ładowaniem dwóch rożnych typów do jednego magazynka!
+				if ammo_reference != null and ammo_reference.item_id != ammo_item.item_id: continue
+					
+				ammo_reference = ammo_item 
+				var taking = min(slots[i].item.amount, ammo_needed - ammo_found)
+				slots[i].item.amount -= taking
+				ammo_found += taking
+				_update_cache(ammo_item.item_id, -taking)
+				
+				if slots[i].item.amount <= 0: slots[i].clear_slot()
+				if ammo_found >= ammo_needed: break
+					
+	if ammo_found > 0:
+		inst.custom_data["ammo_count"] = current_ammo + ammo_found
+		inst.custom_data["ammo_data"] = ammo_reference
+		inventory_updated.emit()
+		print("Załadowano: ", ammo_found, " sztuk typu: ", ammo_reference.item_name)
+		
+	return ammo_found
 
 # ----------------------------------------------------
 # --- WYRZUCANIE I PODNOSZENIE ---

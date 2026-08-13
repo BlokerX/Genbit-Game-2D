@@ -10,6 +10,9 @@ signal item_broken(item_name: String)
 ## Kiedy -1 to nieskończone
 @export var durability: int = -1
 
+# --- CLEAN CODE: Uniwersalny kontener na stany (Amunicja, Zaklęcia, Modyfikatory) ---
+@export var custom_data: Dictionary = {}
+
 ## Konstruktor ułatwiający tworzenie nowych przedmiotów "w locie"
 func _init(p_data: ItemData = null, p_amount: int = 1) -> void:
 	data = p_data
