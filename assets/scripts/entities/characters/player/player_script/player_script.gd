@@ -160,7 +160,7 @@ func _process(delta):
 func _physics_process(delta):
 	super(delta)
 	
-	# --- NOWOŚĆ: Tarcza blokująca ruch przy otwartym UI ---
+	# --- Tarcza blokująca ruch przy otwartym UI ---
 	if is_input_locked:
 		velocity = Vector2.ZERO # Błyskawiczny hamulec
 		move_and_slide()        # Aplikujemy zatrzymanie
@@ -189,9 +189,10 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Obsługa celowania skanerem - przekazujemy mu info czy to myszka i jaki mamy zasięg!
+	# Obsługa celowania skanerem - przekazujemy mu info czy to myszka, jaki mamy zasięg i czy budujemy
 	var attack_range = get_current_attack_range()
-	aim_controller.process_aiming(is_using_mouse, attack_range)
+	var is_building = (current_state == PlayerState.BUILDING)
+	aim_controller.process_aiming(is_using_mouse, attack_range, is_building)
 	# Obsługa popychania TODO
 	_handle_pushing()
 	# Obsługa wyrzucania itemów

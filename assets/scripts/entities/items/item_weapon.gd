@@ -44,7 +44,7 @@ func affect_target(target : CharacterEntity) -> bool :
 	
 	return true
 
-# --- NOWOŚĆ: Główna funkcja wykonująca atak (Domyślnie Walka Wręcz) ---
+# --- Główna funkcja wykonująca atak (Domyślnie Walka Wręcz) ---
 func execute_attack(shooter: CharacterEntity, target: Node2D, weapon_instance: ItemInstance, inventory: Inventory, stats_script: InteractionAndAttackStatsComponent, spawner: Node) -> bool:
 	
 	# 1. Sprawdzamy zasięg
@@ -56,8 +56,8 @@ func execute_attack(shooter: CharacterEntity, target: Node2D, weapon_instance: I
 	# 2. Wykonujemy cios!
 	stats_script.execute_attack_on_target(target)
 	
-	# 3. Psujemy broń
-	weapon_instance.reduce_durability()
+	# 3. Psujemy broń (jeżeli nie niezniszczalna)
+	inventory.consume_durability_of_the_item()
 	return true
 
 # Pomocnicza funkcja do sprawdzania odległości (przeniesiona z gracza!)
