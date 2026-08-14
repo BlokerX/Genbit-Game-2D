@@ -179,3 +179,13 @@ func interaction_cooldown_process(delta : float) -> void :
 func reset_cooldown() -> void:
 	cooldown_timer = 0.0
 	cooldown_started.emit()
+
+## Wymusza długi czas oczekiwania (wykorzystywane do animacji przeładowania)
+func trigger_reload_cooldown(reload_seconds: float) -> void:
+	var max_cooldown = get_total_actual_cooldown()
+	# Jeśli max_cooldown to 0.5s, a reload_seconds to 2.0s,
+	# timer wyniesie -1.5. Zajmie mu równo 2.0 sekundy, by dobić do 0.5 i pozwolić na strzał!
+	cooldown_timer = max_cooldown - reload_seconds
+	
+	# Wysyłamy sygnał do UI, by pasek zaczął się ładować od nowa
+	cooldown_started.emit()

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AmmunitionItem" format=3 uid="uid://t1k1i25ddbhn"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sl7oj"]
+[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="2_50ta4"]
+[ext_resource type="Script" uid="uid://b08o3oo8ifdm6" path="res://assets/scripts/entities/items/ammunition_item.gd" id="3_8jpv3"]
+
+[resource]
+script = ExtResource("3_8jpv3")
+ammunition_type = "AssalutRifleAmmunition"
+override_projectile_texture = ExtResource("2_50ta4")
+damage = 5
+item_id = 28
+item_name = "Assalut Rifle Ammunition"
+item_type = "Ammunition"
+item_description = "Assalut rifle ammunition."
+item_icon = ExtResource("2_50ta4")
+item_is_stackable = true
+item_max_stack_count = 100

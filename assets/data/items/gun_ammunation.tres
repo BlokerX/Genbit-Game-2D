@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AmmunitionItem" format=3 uid="uid://bt7hlvjfty8sl"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_n7inm"]
+[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="3_lbysw"]
+[ext_resource type="Script" path="res://assets/scripts/entities/items/ammunition_item.gd" id="4_a7yxw"]
+
+[resource]
+script = ExtResource("4_a7yxw")
+ammunition_type = "GunAmmunition"
+override_projectile_texture = ExtResource("3_lbysw")
+item_id = 24
+item_name = "Gun Ammunition"
+item_type = "Ammunition"
+item_description = "Standard gun bullet."
+item_icon = ExtResource("3_lbysw")
+item_is_stackable = true
+item_max_stack_count = 100

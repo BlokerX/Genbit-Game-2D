@@ -13,7 +13,7 @@ var shooter: Node2D = null
 func _ready():
 	# Skrypt nasłuchuje "zwykłej" kolizji (np. gdy wróg wejdzie w pocisk)
 	body_entered.connect(_on_body_entered)
-	rotation = direction.angle()
+	rotation = direction.angle() # Ważne przygotowania do ataku
 
 func _physics_process(delta):
 	_time_alive += delta

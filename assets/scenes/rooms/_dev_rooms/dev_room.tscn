@@ -27,6 +27,7 @@
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="26_yewhi"]
 [ext_resource type="Resource" uid="uid://bgnigc7175keo" path="res://assets/data/items/freezing_gun.tres" id="27_iblv6"]
 [ext_resource type="Resource" uid="uid://cyotjd6nl8omu" path="res://assets/data/items/chocolate_cookie.tres" id="28_ipvip"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="28_ncirm"]
 [ext_resource type="Resource" uid="uid://cgsfxphbm7hm5" path="res://assets/data/items/frozen_cookie.tres" id="29_ttcl2"]
 [ext_resource type="Resource" uid="uid://dxrnlcd6a8gg2" path="res://assets/data/items/rip_stone_cross.tres" id="30_duced"]
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="31_8fthl"]
@@ -35,16 +36,16 @@
 [ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="34_4wr1w"]
 [ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="35_5ulm5"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_favc1"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_vjgq3"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[sub_resource type="Resource" id="Resource_8r1x1"]
+[sub_resource type="Resource" id="Resource_dns1c"]
 resource_local_to_scene = true
 script = ExtResource("5_j1nxu")
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_ywiaw"]
+[sub_resource type="Resource" id="Resource_pmdun"]
 resource_local_to_scene = true
 script = ExtResource("6_cblon")
 health = 1000000000000000
@@ -55,7 +56,7 @@ script = ExtResource("7_kegip")
 damage = 0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_kegip"]
+[sub_resource type="Resource" id="Resource_hn4ck"]
 resource_local_to_scene = true
 script = ExtResource("8_8sg7u")
 hand_attack_data = SubResource("Resource_p05go")
@@ -105,14 +106,14 @@ is_secret = true
 ignore_combat_lock = true
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
-navigation_polygon = SubResource("NavigationPolygon_favc1")
+navigation_polygon = SubResource("NavigationPolygon_vjgq3")
 
 [node name="InfinitySpider" parent="." index="2" unique_id=1198211542 instance=ExtResource("4_ywiaw")]
 position = Vector2(960, 384)
 rotation = 1.5707964
-movement_universal_script = SubResource("Resource_8r1x1")
-health_stats_script = SubResource("Resource_ywiaw")
-interaction_and_attack_stats_script = SubResource("Resource_kegip")
+movement_universal_script = SubResource("Resource_dns1c")
+health_stats_script = SubResource("Resource_pmdun")
+interaction_and_attack_stats_script = SubResource("Resource_hn4ck")
 
 [node name="Chest(Building)" parent="." index="3" unique_id=1382818356 instance=ExtResource("9_tx8yf")]
 position = Vector2(1376, 160)
@@ -243,7 +244,12 @@ test_item_data = ExtResource("26_yewhi")
 position = Vector2(960, 800)
 test_item_data = ExtResource("27_iblv6")
 
-[node name="OtherItems" type="Label" parent="." index="22" unique_id=1576754799]
+[node name="FreezingGun2" parent="." index="22" unique_id=231686886 instance=ExtResource("13_2ciny")]
+position = Vector2(1088, 800)
+test_item_data = ExtResource("28_ncirm")
+test_amount = 999
+
+[node name="OtherItems" type="Label" parent="." index="23" unique_id=1576754799]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -263,42 +269,42 @@ text = "Other Items"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ChockolateCookie" parent="." index="23" unique_id=1839045523 instance=ExtResource("13_2ciny")]
+[node name="ChockolateCookie" parent="." index="24" unique_id=1839045523 instance=ExtResource("13_2ciny")]
 position = Vector2(1360, 688)
 test_item_data = ExtResource("28_ipvip")
 test_amount = 99
 
-[node name="FrozenCookie" parent="." index="24" unique_id=11598476 instance=ExtResource("13_2ciny")]
+[node name="FrozenCookie" parent="." index="25" unique_id=11598476 instance=ExtResource("13_2ciny")]
 position = Vector2(1480, 684)
 test_item_data = ExtResource("29_ttcl2")
 test_amount = 99
 
-[node name="RipStoneCross" parent="." index="25" unique_id=1356159157 instance=ExtResource("13_2ciny")]
+[node name="RipStoneCross" parent="." index="26" unique_id=1356159157 instance=ExtResource("13_2ciny")]
 position = Vector2(1480, 902)
 test_item_data = ExtResource("30_duced")
 test_amount = 99
 
-[node name="JustItem" parent="." index="26" unique_id=1740813570 instance=ExtResource("13_2ciny")]
+[node name="JustItem" parent="." index="27" unique_id=1740813570 instance=ExtResource("13_2ciny")]
 position = Vector2(1584, 900)
 test_item_data = ExtResource("31_8fthl")
 test_amount = 99
 
-[node name="Chest" parent="." index="27" unique_id=1992546604 instance=ExtResource("13_2ciny")]
+[node name="Chest" parent="." index="28" unique_id=1992546604 instance=ExtResource("13_2ciny")]
 position = Vector2(1360, 904)
 test_item_data = ExtResource("32_2338t")
 test_amount = 99
 
-[node name="Backpack" parent="." index="28" unique_id=1981102050 instance=ExtResource("13_2ciny")]
+[node name="Backpack" parent="." index="29" unique_id=1981102050 instance=ExtResource("13_2ciny")]
 position = Vector2(1360, 794)
 test_item_data = ExtResource("33_4ve0w")
 test_amount = 99
 
-[node name="BigBackpack" parent="." index="29" unique_id=1270685939 instance=ExtResource("13_2ciny")]
+[node name="BigBackpack" parent="." index="30" unique_id=1270685939 instance=ExtResource("13_2ciny")]
 position = Vector2(1477, 794)
 test_item_data = ExtResource("34_4wr1w")
 test_amount = 99
 
-[node name="Purse" parent="." index="30" unique_id=2103173462 instance=ExtResource("13_2ciny")]
+[node name="Purse" parent="." index="31" unique_id=2103173462 instance=ExtResource("13_2ciny")]
 position = Vector2(1583, 794)
 test_item_data = ExtResource("35_5ulm5")
 test_amount = 99

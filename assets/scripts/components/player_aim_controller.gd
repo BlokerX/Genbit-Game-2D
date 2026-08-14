@@ -75,55 +75,60 @@ func reset_virtual_cursor() -> void:
 # ==========================================
 
 ## Główna obsługa celowania
-func process_aiming(is_using_mouse: bool, current_attack_range: float):
+func process_aiming(is_using_mouse: bool, current_attack_range: float, disable_targeting: bool = false):
 	# Logika, która decyduje co wywołać
 	if is_using_mouse:
-		handle_mouse_aiming(current_attack_range)
+		handle_mouse_aiming(current_attack_range, disable_targeting)
 	else:
-		handle_gamepad_aiming(current_attack_range)
+		handle_gamepad_aiming(current_attack_range, disable_targeting)
+
 
 ## --- CELOWANIE MYSZKĄ ---
-func handle_mouse_aiming(current_attack_range : float):
+func handle_mouse_aiming(current_attack_range : float, disable_targeting: bool = false):
 	# 1. Ustawienie pozycji lasera za myszką
 	var local_mouse_pos = get_local_mouse_position()
 	aim_scanner.target_position = local_mouse_pos.limit_length(aim_distance)
 	
 	# 2. Aktualizacja Raycastu
 	aim_scanner.force_raycast_update()
-	var found_target = _get_raycast_target()
 	
-	# 3. Zabezpieczenie fizyczne dystansu
-	found_target = _enforce_distance_check(found_target, current_attack_range)
+	var found_target = null
 	
-	# 4. Zarządzanie podświetlaniem celu (dla myszki is_gamepad = false)
+	# Jeśli NIE budujemy, możemy skanować i zaznaczać cele
+	if not disable_targeting:
+		found_target = _get_raycast_target()
+		# 3. Zabezpieczenie fizyczne dystansu
+		found_target = _enforce_distance_check(found_target, current_attack_range)
+		
+	# 4. Zarządzanie podświetlaniem celu (Przekazanie null zdejmie podświetlenie z wroga)
 	_manage_target_highlight(found_target, false, current_attack_range)
 
+
 ## --- CELOWANIE PADEM / KLAWIATURĄ ---
-func handle_gamepad_aiming(current_attack_range: float):
+func handle_gamepad_aiming(current_attack_range: float, disable_targeting: bool = false):
 	var final_aim_dir = Vector2.ZERO
 	var is_pad_aiming = false 
-	
+
 	# --- 1. AKTUALIZACJA WIRTUALNEGO KURSORA ---
 	var aim_vector = Input.get_vector("AimLeft", "AimRight", "AimUp", "AimDown")
-	
 	if aim_vector != Vector2.ZERO:
 		is_pad_aiming = true
-		# Pobieramy deltę dla płynnego ruchu
-		var delta = get_physics_process_delta_time()
-		virtual_cursor_pos += aim_vector.normalized() * virtual_cursor_speed * delta
 		
-		var raw_aim_dir = aim_vector.normalized()
-		final_aim_dir = raw_aim_dir
-		
-		# Magnetyzm celownika dla strzelania
-		if current_target != null and is_instance_valid(current_target):
-			var target_parent = current_target.get_parent()
-			if target_parent != null:
-				var dir_to_target = global_position.direction_to(target_parent.global_position)
-				if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
-					final_aim_dir = dir_to_target
-					
-		aim_scanner.target_position = final_aim_dir * aim_distance
+	# Pobieramy deltę dla płynnego ruchu
+	var delta = get_physics_process_delta_time()
+	virtual_cursor_pos += aim_vector.normalized() * virtual_cursor_speed * delta
+	
+	var raw_aim_dir = aim_vector.normalized()
+	final_aim_dir = raw_aim_dir
+
+	# Magnetyzm celownika dla strzelania (Całkowicie zablokowany podczas budowy)
+	if not disable_targeting and current_target != null and is_instance_valid(current_target):
+		var target_parent = current_target.get_parent()
+		if target_parent != null:
+			var dir_to_target = global_position.direction_to(target_parent.global_position)
+			if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
+				final_aim_dir = dir_to_target
+				aim_scanner.target_position = final_aim_dir * aim_distance
 	else:
 		if not continuous_gamepad_aiming:
 			aim_scanner.target_position = Vector2.ZERO
@@ -132,106 +137,108 @@ func handle_gamepad_aiming(current_attack_range: float):
 	var limit_range = current_attack_range if current_attack_range > 0 else aim_distance
 	if global_position.distance_to(virtual_cursor_pos) > limit_range:
 		var dir_to_cursor = global_position.direction_to(virtual_cursor_pos)
-		# Zabezpieczenie przed błędem matematycznym gdy gracz i kursor są w tym samym miejscu
 		if dir_to_cursor == Vector2.ZERO: 
 			dir_to_cursor = Vector2.DOWN
 		virtual_cursor_pos = global_position + (dir_to_cursor * limit_range)
+		
 	# -----------------------------------------------------------------
-
 	# 2. Aktualizacja Raycastu
 	aim_scanner.force_raycast_update()
-	var found_target = _get_raycast_target()
+	
+	var found_target = null
 	var found_is_enemy = false
 	
-	if found_target != null:
-		var tp = found_target.get_parent()
-		if tp and tp.is_in_group("Enemy"):
-			found_is_enemy = true
+	# Jeśli NIE budujemy, szukamy i "kleimy" się do wrogów
+	if not disable_targeting:
+		found_target = _get_raycast_target()
+		if found_target != null:
+			var tp = found_target.get_parent()
+			if tp and tp.is_in_group("Enemy"):
+				found_is_enemy = true
 
-	# --- SYSTEM PAMIĘCI I AUTO-CELOWANIA WROGÓW ---
-	if auto_lock_closest_enemy and not found_is_enemy:
-		var best_enemy = null
-		var best_dist = current_attack_range
-		
-		if is_pad_aiming:
+		# --- SYSTEM PAMIĘCI I AUTO-CELOWANIA WROGÓW ---
+		if auto_lock_closest_enemy and not found_is_enemy:
+			var best_enemy = null
+			var best_dist = current_attack_range
+			
+			if is_pad_aiming:
+				var best_angle = 0.6 
+				for enemy in nearby_enemies:
+					if not is_instance_valid(enemy): continue
+					var dist = get_edge_distance(enemy)
+					if dist <= best_dist and has_line_of_sight(enemy):
+						var dir_to_enemy = global_position.direction_to(enemy.global_position)
+						var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
+						if angle < best_angle:
+							best_angle = angle
+							best_enemy = enemy
+							
+			if best_enemy == null and not is_pad_aiming:
+				if last_target != null and is_instance_valid(last_target):
+					var lp = last_target.get_parent()
+					if lp and lp.is_in_group("Enemy"):
+						var dist = get_edge_distance(lp)
+						if dist <= best_dist and has_line_of_sight(lp):
+							best_enemy = lp
+							best_dist = dist 
+							
+				for enemy in nearby_enemies:
+					if not is_instance_valid(enemy): continue
+					var dist = get_edge_distance(enemy)
+					if dist < best_dist and has_line_of_sight(enemy):
+						best_dist = dist
+						best_enemy = enemy
+
+			if best_enemy != null:
+				for child in best_enemy.get_children():
+					if child is InteractableComponent:
+						found_target = child
+						found_is_enemy = true
+						break
+						
+		elif is_pad_aiming and auto_enemy_selector and not found_is_enemy and not auto_lock_closest_enemy:
+			var best_enemy = null
 			var best_angle = 0.6 
 			for enemy in nearby_enemies:
 				if not is_instance_valid(enemy): continue
 				var dist = get_edge_distance(enemy)
-				if dist <= best_dist and has_line_of_sight(enemy):
+				if dist <= current_attack_range: 
 					var dir_to_enemy = global_position.direction_to(enemy.global_position)
 					var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
 					if angle < best_angle:
 						best_angle = angle
 						best_enemy = enemy
-		
-		if best_enemy == null and not is_pad_aiming:
-			if last_target != null and is_instance_valid(last_target):
-				var lp = last_target.get_parent()
-				if lp and lp.is_in_group("Enemy"):
-					var dist = get_edge_distance(lp)
-					if dist <= best_dist and has_line_of_sight(lp):
-						best_enemy = lp
-						best_dist = dist 
-			
-			for enemy in nearby_enemies:
-				if not is_instance_valid(enemy): continue
-				var dist = get_edge_distance(enemy)
-				if dist < best_dist and has_line_of_sight(enemy):
-					best_dist = dist
-					best_enemy = enemy
+			if best_enemy != null:
+				for child in best_enemy.get_children():
+					if child is InteractableComponent:
+						found_target = child
+						found_is_enemy = true
+						break
+
+		# --- ZAMROŻENIE CELU (Hard Sticky Target) ---
+		if (continuous_gamepad_aiming or auto_lock_closest_enemy) and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
+			var is_current_reachable = false
+			var target_parent = current_target.get_parent()
+			var current_is_enemy = target_parent and target_parent.is_in_group("Enemy")
+			if current_is_enemy:
+				if global_position.distance_to(target_parent.global_position) <= current_attack_range and has_line_of_sight(target_parent):
+					is_current_reachable = true
+			else:
+				if global_position.distance_to(current_target.global_position) <= interaction_distance:
+					is_current_reachable = true
 					
-		if best_enemy != null:
-			for child in best_enemy.get_children():
-				if child is InteractableComponent:
-					found_target = child
-					found_is_enemy = true
-					break
-
-	elif is_pad_aiming and auto_enemy_selector and not found_is_enemy and not auto_lock_closest_enemy:
-		var best_enemy = null
-		var best_angle = 0.6 
-		for enemy in nearby_enemies:
-			if not is_instance_valid(enemy): continue
-			var dist = get_edge_distance(enemy)
-			if dist <= current_attack_range: 
-				var dir_to_enemy = global_position.direction_to(enemy.global_position)
-				var angle = abs(final_aim_dir.angle_to(dir_to_enemy))
-				if angle < best_angle:
-					best_angle = angle
-					best_enemy = enemy
-		if best_enemy != null:
-			for child in best_enemy.get_children():
-				if child is InteractableComponent:
-					found_target = child
-					found_is_enemy = true
-					break
-
-	# --- ZAMROŻENIE CELU (Hard Sticky Target) ---
-	if (continuous_gamepad_aiming or auto_lock_closest_enemy) and not is_pad_aiming and current_target != null and is_instance_valid(current_target):
-		var is_current_reachable = false
-		var target_parent = current_target.get_parent()
-		var current_is_enemy = target_parent and target_parent.is_in_group("Enemy")
-		
-		if current_is_enemy:
-			if global_position.distance_to(target_parent.global_position) <= current_attack_range and has_line_of_sight(target_parent):
-				is_current_reachable = true
-		else:
-			if global_position.distance_to(current_target.global_position) <= interaction_distance:
-				is_current_reachable = true
+			var allow_sticky = true
+			if auto_enemy_selector and not current_is_enemy and found_is_enemy:
+				allow_sticky = false 
 				
-		var allow_sticky = true
-		if auto_enemy_selector and not current_is_enemy and found_is_enemy:
-			allow_sticky = false 
-			
-		if is_current_reachable and allow_sticky:
-			found_target = current_target
-			found_is_enemy = current_is_enemy
+			if is_current_reachable and allow_sticky:
+				found_target = current_target
+				found_is_enemy = current_is_enemy
 
-	# 3. Zabezpieczenie fizyczne dystansu
-	found_target = _enforce_distance_check(found_target, current_attack_range)
-
-	# 4. Zarządzanie podświetlaniem 
+		# 3. Zabezpieczenie fizyczne dystansu
+		found_target = _enforce_distance_check(found_target, current_attack_range)
+		
+	# 4. Zarządzanie podświetlaniem (Przekazanie null zdejmie cel)
 	_manage_target_highlight(found_target, true, current_attack_range, is_pad_aiming)
 
 ## Oczyszcza aktualny cel i usuwa obrysowanie
