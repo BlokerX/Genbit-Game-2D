@@ -46,15 +46,22 @@ func _on_inventory_updated() -> void:
 func update_info_panel() -> void:
 	if info_label == null: return
 	var slot = player.inventory.get_current_slot()
+	
 	if slot != null and not slot.is_empty():
 		var item = slot.item
 		var text = "Nazwa: " + item.data.item_name + "\n"
-		if item.data.item_is_stackable:
-			text += "Ilość: " + str(item.amount) + " / " + str(item.data.item_max_stack_count) + "\n"
-		if item.data.max_durable > 0:
-			text += "Wytrzymałość: " + str(item.durability) + " / " + str(item.data.max_durable) + "\n"
+		
+		# ODCZYT Z KOMPONENTÓW ZAMIAST STARYCH ZMIENNYCH
+		if item.data.components != null:
+			for comp in item.data.components:
+				if comp is StackComponent:
+					text += "Ilość: " + str(item.state.get("amount", 1)) + " / " + str(comp.max_stack) + "\n"
+				elif comp is DurabilityComponent:
+					text += "Wytrzymałość: " + str(item.state.get("durability", comp.max_durability)) + " / " + str(comp.max_durability) + "\n"
+					
 		if item.data.item_description != "":
 			text += "\n" + item.data.item_description
+			
 		info_label.text = text
 		info_label.get_parent().show()
 	else:

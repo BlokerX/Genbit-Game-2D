@@ -1,22 +1,12 @@
-[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://bqxxg8gmcq814"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bqxxg8gmcq814"]
 
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tdxhj"]
-[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/active_effects/poison_effect.gd" id="2_tdxhj"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_6snh5"]
 [ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/items/red_potion.png" id="3_6snh5"]
-[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_xpmky"]
-
-[sub_resource type="Resource" id="Resource_w8sgk"]
-script = ExtResource("2_tdxhj")
-metadata/_custom_type_script = "uid://csdcvcev8ylem"
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_pgnhn"]
 
 [resource]
-script = ExtResource("4_xpmky")
-effects = Array[ExtResource("1_tdxhj")]([SubResource("Resource_w8sgk")])
-use_cooldown = 0.25
-item_id = 11
+script = ExtResource("3_pgnhn")
+item_id = &"simple_potion"
 item_name = "Simple Potion"
-item_type = "Consumable"
 item_description = "It is potion."
 item_icon = ExtResource("3_6snh5")
-item_is_stackable = true
-item_max_stack_count = 12

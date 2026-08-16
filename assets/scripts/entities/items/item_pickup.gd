@@ -71,29 +71,26 @@ func _on_untargeted() -> void:
 func _on_area_entered(area: Area2D) -> void:
 	var other_pickup = area.get_parent()
 	if other_pickup is ItemPickup and other_pickup != self:
+		if get_instance_id() < other_pickup.get_instance_id(): return
+		if self.is_queued_for_deletion() or other_pickup.is_queued_for_deletion(): return
+		if item == null or item.data == null or other_pickup.item == null or other_pickup.item.data == null: return
 		
-		# --- ROZWIĄZANIE RACE CONDITION ---
-		# Sprawdzamy ID. Tylko obiekt z WIĘKSZYM ID zajmie się fuzją. 
-		if get_instance_id() < other_pickup.get_instance_id():
-			return
-		
-		if self.is_queued_for_deletion() or other_pickup.is_queued_for_deletion():
-			return
-			
-		# Zabezpieczenie przed błędami - czy obie instancje istnieją?
-		if item == null or item.data == null or other_pickup.item == null or other_pickup.item.data == null:
-			return
-		
-		# Porównujemy ID i używamy 'item.amount'
 		if item.can_stack_with(other_pickup.item):
-			var available_space = item.data.item_max_stack_count - item.amount
+			var max_stack = 1
+			for comp in item.data.components:
+				if comp is StackComponent:
+					max_stack = comp.max_stack
+					break
+			
+			var my_amount = item.state.get("amount", 1)
+			var other_amount = other_pickup.item.state.get("amount", 1)
+			var available_space = max_stack - my_amount
+			
 			if available_space > 0:
-				var amount_to_take = min(available_space, other_pickup.item.amount)
-				
-				item.amount += amount_to_take
-				other_pickup.item.amount -= amount_to_take
-				
-				if other_pickup.item.amount <= 0:
+				var amount_to_take = min(available_space, other_amount)
+				item.state["amount"] = my_amount + amount_to_take
+				other_pickup.item.state["amount"] = other_amount - amount_to_take
+				if other_pickup.item.state["amount"] <= 0:
 					other_pickup.queue_free()
 
 ## Funkcja wywoływana, gdy Gracz celuje w przedmiot i wciska "Interact" (lub klika myszką)

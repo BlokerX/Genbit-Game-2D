@@ -1,23 +1,12 @@
-[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://dryafysswfb8c"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dryafysswfb8c"]
 
-[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_cboiq"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sx258"]
-[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="2_dxp2a"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_4a1bq"]
 [ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/items/green_potion.png" id="3_8ngts"]
-
-[sub_resource type="Resource" id="Resource_8ngts"]
-script = ExtResource("2_dxp2a")
-metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_dxp2a"]
 
 [resource]
-script = ExtResource("1_cboiq")
-allow_overheal = true
-effects = Array[ExtResource("1_sx258")]([SubResource("Resource_8ngts")])
-use_cooldown = 0.25
-item_id = 12
+script = ExtResource("3_dxp2a")
+item_id = &"healing_potion"
 item_name = "Healing Potion"
-item_type = "Consumable"
 item_description = "It restores 15 HP instantly per bottle."
 item_icon = ExtResource("3_8ngts")
-item_is_stackable = true
-item_max_stack_count = 12

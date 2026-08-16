@@ -1,32 +1,12 @@
-[gd_resource type="Resource" script_class="ItemDistanceWeapon" format=3 uid="uid://mutd332m27pf"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://mutd332m27pf"]
 
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_21e3x"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="2_dwtxh"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_xn02h"]
 [ext_resource type="Texture2D" uid="uid://detvd6y1myxd1" path="res://assets/textures/samples_examples/items/gun_shape02.png" id="3_21e3x"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="4_2kpnx"]
-[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_l1kvx"]
-[ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="6_ph3g0"]
-
-[sub_resource type="Resource" id="Resource_bc7dr"]
-script = ExtResource("1_21e3x")
-damage = 0
-max_range = 1000.0
-stun_time = 1.5
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_8272s"]
 
 [resource]
-script = ExtResource("6_ph3g0")
-accepted_ammunition_type = "ShotgunAmmunition"
-auto_reload = false
-reload_time = 6.5
-projectile_texture = ExtResource("5_l1kvx")
-projectile_speed = 1000.0
-projectile_scene = ExtResource("4_2kpnx")
-attack_data = SubResource("Resource_bc7dr")
-is_ranged = true
-weapon_type = "Gun"
-item_id = 25
+script = ExtResource("3_8272s")
+item_id = &"shotgun"
 item_name = "Shotgun"
-item_type = "Weapon"
 item_description = "A shotgun."
 item_icon = ExtResource("3_21e3x")

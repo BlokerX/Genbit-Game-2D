@@ -97,6 +97,9 @@ func _update_details_panel() -> void:
 	var can_afford_all = true
 	
 	for ingredient in selected_recipe.ingredients:
+		if ingredient == null or ingredient.item_data == null:
+			continue # ZABEZPIECZENIE: Ignorujemy puste składniki, zamiast wywalać grę!
+			
 		var owned_amount = inventory.get_item_amount(ingredient.item_data.item_id)
 		var required_amount = ingredient.required_amount
 		var item_name = ingredient.item_data.item_name
@@ -105,7 +108,7 @@ func _update_details_panel() -> void:
 			details_text += "[color=green]✔ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
 		else:
 			details_text += "[color=red]✖ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
-			can_afford_all = false 
+			can_afford_all = false
 			
 	ingredients_label.text = details_text
 	craft_button.disabled = !can_afford_all

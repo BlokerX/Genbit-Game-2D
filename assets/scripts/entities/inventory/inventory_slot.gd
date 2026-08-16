@@ -43,74 +43,80 @@ func update_slot(slot: SlotData) -> void:
 		icon_rect.texture = slot.item.data.item_icon
 		icon_rect.show()
 		
-		# Wyświetlanie ilości (stack)
-		if slot.item.amount > 1:
-			amount_label.text = str(slot.item.amount)
+		# --- 1. WYŚWIETLANIE ILOŚCI (Zaktualizowane na słownik state) ---
+		if slot.item.state.has("amount") and slot.item.state["amount"] > 1:
+			amount_label.text = str(slot.item.state["amount"])
 			amount_label.show()
 		else:
 			amount_label.hide()
 			
-		# --- NOWOŚĆ: SYSTEM PASKA WYTRZYMAŁOŚCI ---
-		# Sprawdzamy, czy ten konkretny przedmiot w ogóle może się zepsuć
-		if slot.item.data.max_durable > 0:
+		# --- 2. SYSTEM PASKA WYTRZYMAŁOŚCI (Zaktualizowany na Komponenty) ---
+		if slot.item.state.has("durability"):
+			var max_dur = 1
+			# Szukamy komponentu, żeby dowiedzieć się, z jakiej wartości liczyć procenty
+			for comp in slot.item.data.components:
+				if comp is DurabilityComponent:
+					max_dur = comp.max_durability
+					break
+			
 			durability_bar.show()
-			durability_bar.max_value = slot.item.data.max_durable
-			durability_bar.value = slot.item.durability
+			durability_bar.max_value = max_dur
+			durability_bar.value = slot.item.state["durability"]
 			
 			# Obliczamy procent zużycia (od 0.0 do 1.0)
-			var percentage = float(slot.item.durability) / float(slot.item.data.max_durable)
+			var percentage = float(slot.item.state["durability"]) / float(max_dur)
 			var bar_color = Color.GREEN
 			
-			# Zmiana kolorów w stylu Minecrafta
 			if percentage <= 0.2:
-				bar_color = Color.RED # Mniej niż 20% - Czerwony!
+				bar_color = Color.RED
 			elif percentage <= 0.5:
-				bar_color = Color.ORANGE # Mniej niż 50% - Pomarańczowy
+				bar_color = Color.ORANGE
 			elif percentage <= 0.8:
-				bar_color = Color.GREEN_YELLOW # Mniej niż 80% - Żółtawy
+				bar_color = Color.GREEN_YELLOW
 				
-			# Dynamiczne tworzenie stylu dla wypełnienia paska
 			var fill_stylebox = StyleBoxFlat.new()
 			fill_stylebox.bg_color = bar_color
 			durability_bar.add_theme_stylebox_override("fill", fill_stylebox)
 			
-			# Dynamiczne tworzenie tła paska
 			var bg_stylebox = StyleBoxFlat.new()
 			bg_stylebox.bg_color = Color(0, 0, 0, 0.8)
 			durability_bar.add_theme_stylebox_override("background", bg_stylebox)
 		else:
-			# Jeśli przedmiot jest niezniszczalny (np. jedzenie), chowamy pasek
 			durability_bar.hide()
 			
-		# --- GENEROWANIE INFORMACJI W TOOLTIPIE ---
+		# --- 3. GENEROWANIE INFORMACJI W TOOLTIPIE (Odczyt z Komponentów) ---
 		if show_tooltip:
 			var item_data = slot.item.data
-			var tooltip_info = item_data.item_name + "\nID: " + str(item_data.item_id) + "\n" # Nazwa zawsze na samej górze
+			var tooltip_info = item_data.item_name + "\nID: " + str(item_data.item_id) + "\n"
 			
-			# Jeśli przedmiot ma opis, dodajemy go
 			if item_data.item_description != "":
 				tooltip_info += item_data.item_description + "\n\n"
 				
-			# Jeśli przedmiot psuje się, pokazujemy jego wytrzymałość w dymku
-			if item_data.max_durable > 0:
-				tooltip_info += "Wytrzymałość: " + str(slot.item.durability) + " / " + str(item_data.max_durable) + "\n"
-				
-			# Jeśli przedmiot to broń (sprawdzamy czy dziedziczy po ItemWeapon)
-			if item_data is ItemWeapon:
-				tooltip_info += "Obrażenia: " + str(item_data.attack_data.damage) + "\n"
-				if item_data.attack_data.critical_rate > 0.0:
-					tooltip_info += "Szansa na Kryta: " + str(item_data.attack_data.critical_rate * 100.0) + "%\n"
-				if item_data.attack_data.stun_time > 0.0:
-					tooltip_info += "Czas Ogłuszenia: " + str(item_data.attack_data.stun_time) + "s\n"
-			
-			# Jeśli to mikstura/jedzenie (EatableItem) - opcjonalnie
-			elif item_data is UseableItem and item_data.effects.size() > 0:
-				tooltip_info += "Efekty po użyciu: " + str(item_data.effects.size()) + "\n"
-
-			# Przypisujemy zbudowany tekst do wbudowanego dymka
+			# Pytamy klocki (komponenty) o ich dane do tooltipa!
+			if item_data.components != null:
+				for comp in item_data.components:
+					if comp is DurabilityComponent:
+						tooltip_info += "Wytrzymałość: " + str(slot.item.state.get("durability", comp.max_durability)) + " / " + str(comp.max_durability) + "\n"
+					elif comp is MeleeWeaponComponent:
+						tooltip_info += "Obrażenia: " + str(comp.attack_data.damage) + "\n"
+						if comp.attack_data.critical_rate > 0.0:
+							tooltip_info += "Szansa na Kryta: " + str(comp.attack_data.critical_rate * 100.0) + "%\n"
+					elif comp is RangedWeaponComponent:
+						tooltip_info += "Typ Amunicji: " + RangedWeaponComponent.AmmoType.keys()[comp.accepted_ammunition_type] + "\n"
+						tooltip_info += "Magazynek: " + str(slot.item.state.get("ammo_count", 0)) + " / " + str(comp.magazine_capacity) + "\n"
+					elif comp is AmmunitionComponent:
+						tooltip_info += "Typ Naboju: " + RangedWeaponComponent.AmmoType.keys()[comp.ammunition_type] + "\n"
+						tooltip_info += "Obrażenia Pocisku: " + str(comp.damage) + "\n"
+					elif comp is EquippableComponent:
+						tooltip_info += "Zakładany na: " + EquippableComponent.EquipSlot.keys()[comp.equip_slot_type] + "\n"
+					elif comp is ConsumableComponent:
+						tooltip_info += "Efekty po użyciu: " + str(comp.effects.size()) + "\n"
+						for effect in comp.effects:
+							if effect != null:
+								tooltip_info += "- " + effect.effect_name + "\n"
+							
 			self.tooltip_text = tooltip_info
 		else:
-			# Jeśli opcja show_tooltip jest wyłączona w edytorze
 			self.tooltip_text = ""
 
 	else:
@@ -118,8 +124,8 @@ func update_slot(slot: SlotData) -> void:
 		icon_rect.texture = null
 		icon_rect.hide()
 		amount_label.hide()
-		durability_bar.hide() # Ukrywamy również pasek!
-		self.tooltip_text = "" # Czyścimy dymek dla pustego slota!
+		durability_bar.hide()
+		self.tooltip_text = ""
 
 # Funkcja zmieniająca teksturę w zależności od stanu
 func set_highlight(is_active: bool) -> void:

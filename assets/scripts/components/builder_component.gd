@@ -72,7 +72,7 @@ func _process(_delta: float) -> void:
 
 
 ## Funkcja wywoływana przez gracza, gdy wciśnie przycisk wejścia w tryb budowy.
-func start_building(item_data: PlaceableItem) -> bool:
+func start_building(item_data: PlaceableComponent) -> bool:
 	# Sprawdzamy czy przedmiot w ogóle ma przypisaną scenę
 	if item_data.scene_path == null or item_data.scene_path.is_empty():
 		push_error("BuilderComponent: Przedmiot nie ma przypisanej sceny: ", item_data.item_name)
@@ -154,16 +154,16 @@ func try_place_object() -> bool:
 	var final_instance = current_build_scene.instantiate()
 	
 	# Przekazanie Duszy (ItemInstance)
-	# Jeżeli nasz nowy obiekt wspiera zapisywanie stanu przedmiotu (PlacedObject)
 	if final_instance is PlacedObject:
 		var hand_item = player.get_inventory().get_current_item()
 		
-		# TWORZYMY UNIKALNĄ INSTANCJĘ (1 SZTUKA) ZAMIAST DZIELIĆ JĄ Z EKWIPUNKIEM
-		var unique_item_data = hand_item.data.duplicate(true)
-		var placed_item_instance = ItemInstance.new(unique_item_data, 1)
-		placed_item_instance.durability = hand_item.durability
+		var unique_data = hand_item.data.duplicate(true)
+		var placed_item_instance = ItemInstance.new(unique_data, 1)
 		
-		# Używamy bezpiecznej metody set(), aby przekazać naszego KLONA
+		# --- NOWOŚĆ ECS: Klonujemy wytrzymałość ze słownika state, jeśli istniała ---
+		if hand_item.state.has("durability"):
+			placed_item_instance.state["durability"] = hand_item.state["durability"]
+		
 		final_instance.set("item_instance", placed_item_instance)
 	
 	# Kopiujemy obrót z ducha do docelowego obiektu!

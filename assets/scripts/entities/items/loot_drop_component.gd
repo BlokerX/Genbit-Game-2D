@@ -21,7 +21,7 @@ func perform_drop(spawner: Node2D) -> void:
 	if not spawn_parent:
 		return
 	
-	# Przechodzimy przez każdy potencjalny łup
+	# Przechodzimy przez każdy potencjalny loot
 	for loot_item in loot_table:
 		# Zabezpieczenie przed pustym polem
 		if loot_item == null or loot_item.item_data == null:
@@ -29,29 +29,25 @@ func perform_drop(spawner: Node2D) -> void:
 			
 		# Sprawdzamy indywidualną szansę tego konkretnego przedmiotu
 		if randf() > loot_item.drop_chance:
-			continue # Ten przedmiot miał pecha, nie wypada
+			continue
 			
 		var pickup_instance = item_pickup_scene.instantiate() as ItemPickup
-		
 		if pickup_instance == null:
 			push_error("LootDropComponent: Zła scena! Przypisana scena nie posiada skryptu ItemPickup!")
 			continue
-		
-		# TWORZYMY GŁĘBOKĄ KOPIĘ SZABLONU Z TABELI LOOTU
+			
+		# TWORZYMY KOPIĘ SZABLONU Z TABELI LOOTU
 		var unique_loot_data = loot_item.item_data.duplicate(true)
 		
-		# Losujemy ilość i generujemy CAŁKOWICIE NOWĄ instancję przedmiotu w momencie wypadnięcia!
+		# Losujemy ilość z uwzględnieniem min i max
 		var dropped_amount = randi_range(loot_item.min_amount, loot_item.max_amount)
+		
+		# Tworzymy instancję (konstruktor od razu wstrzykuje ilość do słownika state)
 		var new_instance = ItemInstance.new(unique_loot_data, dropped_amount)
 		
-		# Przypisujemy gotową, spakowaną instancję do zmiennej na ziemi
+		# Przypisujemy gotową instancję do obiektu leżącego na ziemi
 		pickup_instance.item = new_instance
-		
-		# --- LOSOWANIE ILOŚCI (AMOUNT) ---
-		# Losujemy liczbę całkowitą pomiędzy min_amount a max_amount
-		pickup_instance.item.amount = randi_range(loot_item.min_amount, loot_item.max_amount)
 		
 		var random_offset = Vector2(randf_range(-25, 25), randf_range(-25, 25))
 		pickup_instance.global_position = spawner.global_position + random_offset
-		
 		spawn_parent.call_deferred("add_child", pickup_instance)

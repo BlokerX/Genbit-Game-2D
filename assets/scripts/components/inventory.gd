@@ -57,152 +57,150 @@ func _ready() -> void:
 	# gdy w ekwipunku nastąpi jakakolwiek zmiana (np. przełożenie przedmiotu kursorem)!
 	inventory_updated.connect(_rebuild_cache)
 
-
 # ----------------------------------------------------
-# --- ZUŻYWANIE PRZEDMIOTÓW ---
+# --- SPRZĄTANIE PUSTYCH SLOTÓW ---
 # ----------------------------------------------------
-
-## Konsumpcja wytrzymałości itemu (zmniejszenie wytrzymałości)
-func consume_durability_of_the_item() -> void:
-	var slot = get_current_slot()
-	if not slot.is_empty():
-		slot.item.reduce_durability()
-		
-		# Jeśli wytrzymałość w instancji spadła do zera, niszczymy sztukę obecną
-		if slot.item.durability == 0:
-			consume_current_item()
-			
-		inventory_updated.emit()
-
-## Konsumpcja sztuki itemu (zmniejszenie ilości w staku)
-func consume_current_item() -> void:
-	var slot = get_current_slot()
-	if not slot.is_empty():
-		var id = slot.item.data.item_id
-		slot.item.amount -= 1
-		_update_cache(id, -1) 
-		
-		if slot.item.amount <= 0:
-			slot.clear_slot()
-		else :
-			slot.item.repair_item() # Mechanizm wyciągania nowego przedmiotu!
-			
-		# Informujemy UI o zmianie (żeby odświeżyło cyferki stacków)
+## Sprawdza ekwipunek i czyści sloty, w których skończyły się przedmioty
+func clean_dead_items() -> void:
+	var inventory_changed = false
+	for slot in slots:
+		# Pytamy bezpiecznie o słownik 'state'
+		if not slot.is_empty() and slot.item.state.has("amount"):
+			if slot.item.state["amount"] <= 0:
+				var id = slot.item.data.item_id
+				_update_cache(id, -1) # Aktualizacja cache dla craftingu
+				slot.clear_slot()
+				inventory_changed = true
+				
+	# Informujemy UI o zmianach (usunięciu przedmiotu z paska)
+	if inventory_changed:
 		inventory_updated.emit()
 
 # =========================================================================
 # ZAAWANSOWANY SYSTEM AMUNICJI (EJECT & LOAD)
 # =========================================================================
 
+# --- NOWOŚĆ: Funkcja pomocnicza znajdująca komponent dystansowy w broni ---
+func _get_ranged_comp(item: ItemInstance) -> RangedWeaponComponent:
+	if item == null or item.data == null or item.data.components == null:
+		return null
+	for comp in item.data.components:
+		if comp is RangedWeaponComponent:
+			return comp
+	return null
+
 ## Szybka zmiana typu amunicji (np. ze Zwykłej na Przeciwpancerną)
 func cycle_weapon_ammunition() -> void:
 	var slot = get_current_slot()
-	if slot.is_empty() or not slot.item.data is ItemDistanceWeapon: return
-	var inst = slot.item
-	var weapon_data = inst.data as ItemDistanceWeapon
-	
-	if not weapon_data.uses_ammunition: return
+	if slot.is_empty(): return
 		
-	# Szukamy wszystkich UNIKALNYCH rodzajów amunicji w plecaku pasujących do broni
-	var available_ammo: Array[AmmunitionItem] = []
+	# UŻYWAMY FUNKCJI POMOCNICZEJ ZAMIAST PYTAĆ O KLASĘ 'ItemDistanceWeapon'
+	var weapon_comp = _get_ranged_comp(slot.item)
+	if not weapon_comp or not weapon_comp.uses_ammunition: return
+		
+	var available_ammo: Array[ItemData] = []
 	for s in slots:
-		if not s.is_empty() and s.item.data is AmmunitionItem:
-			var ammo = s.item.data as AmmunitionItem
-			if ammo.ammunition_type == weapon_data.accepted_ammunition_type:
-				if not available_ammo.has(ammo): available_ammo.append(ammo)
+		if not s.is_empty():
+			# SZUKAMY KLOCKA 'AmmunitionComponent'
+			for comp in s.item.data.components:
+				if comp is AmmunitionComponent and comp.ammunition_type == weapon_comp.accepted_ammunition_type:
+					if not available_ammo.has(s.item.data):
+						available_ammo.append(s.item.data)
+					break
 					
 	if available_ammo.is_empty():
 		print("Brak pasującej amunicji do zmiany w ekwipunku.")
 		return
 		
-	# Sprawdzamy co jest teraz załadowane / preferowane
-	var current_pref_id = inst.custom_data.get("preferred_ammo_id", -1)
-	if current_pref_id == -1 and inst.custom_data.get("ammo_data") != null:
-		current_pref_id = inst.custom_data["ammo_data"].item_id
+	var inst = slot.item
+	var current_pref_id = inst.state.get("preferred_ammo_id", &"")
+	
+	if (current_pref_id == null or str(current_pref_id) == "") and inst.state.get("ammo_data") != null:
+		current_pref_id = inst.state["ammo_data"].item_id
 		
-	# Wybieramy następny typ z listy
 	var next_index = 0
 	for i in range(available_ammo.size()):
 		if available_ammo[i].item_id == current_pref_id:
 			next_index = (i + 1) % available_ammo.size()
 			break
 			
-	var next_ammo = available_ammo[next_index]
-	inst.custom_data["preferred_ammo_id"] = next_ammo.item_id
-	print(">>> Zmieniono preferencję na: ", next_ammo.item_name)
+	var next_ammo_data = available_ammo[next_index]
+	inst.state["preferred_ammo_id"] = next_ammo_data.item_id
+	print(">>> Zmieniono preferencję na: ", next_ammo_data.item_name)
 	
-	# MAGIA: "WYPLUWANIE" OBECNYCH NABOI DO PLECAKA
-	var current_ammo_count = inst.custom_data.get("ammo_count", 0)
-	var current_ammo_data = inst.custom_data.get("ammo_data", null)
+	var current_ammo_count = inst.state.get("ammo_count", 0)
+	var current_ammo_data = inst.state.get("ammo_data", null)
 	
 	if current_ammo_count > 0 and current_ammo_data != null:
 		var old_instance = ItemInstance.new(current_ammo_data.duplicate(true), current_ammo_count)
 		var leftovers = add_instance(old_instance)
-		
-		# Jeśli plecak jest w 100% pełny, wyrzuca pestki na ziemię!
-		if leftovers != null: item_dropped.emit(leftovers, false)
+		if leftovers != null:
+			item_dropped.emit(leftovers, false)
 			
-		inst.custom_data["ammo_count"] = 0
-		inst.custom_data["ammo_data"] = null
-		
-	# Od razu ładujemy nową amunicję (odpali to standardowy czas przeładowania na graczu)
+	inst.state["ammo_count"] = 0
+	inst.state["ammo_data"] = null
 	reload_current_weapon()
 
 ## Główna funkcja ładująca broń
 func reload_current_weapon() -> bool:
 	var slot = get_current_slot()
-	if slot.is_empty() or not slot.item.data is ItemDistanceWeapon: return false
-	
+	if slot.is_empty(): return false
+		
+	var weapon_comp = _get_ranged_comp(slot.item)
+	if not weapon_comp or not weapon_comp.uses_ammunition: return false
+		
 	var inst = slot.item
-	var weapon_data = inst.data as ItemDistanceWeapon
-	if not weapon_data.uses_ammunition: return false
-	
-	var current_ammo = inst.custom_data.get("ammo_count", 0)
-	if current_ammo >= weapon_data.magazine_capacity: return false
-	
-	var preferred_id = inst.custom_data.get("preferred_ammo_id", -1)
-	
-	# FAZA 1: Próbujemy znaleźć dokładnie tę amunicję, której zażądał gracz (lub kontynuować załadowaną)
-	var ammo_found = _try_load_ammo(inst, weapon_data, preferred_id)
-	
-	# FAZA 2: Jeśli nie mamy "Ulubionej", bierzemy JAKĄKOLWIEK inną, która pasuje do broni
-	if ammo_found <= 0 and preferred_id != -1:
-		ammo_found = _try_load_ammo(inst, weapon_data, -1)
+	var current_ammo = inst.state.get("ammo_count", 0)
+	if current_ammo >= weapon_comp.magazine_capacity: return false
 		
-	if ammo_found > 0:
-		return true
+	var preferred_id = inst.state.get("preferred_ammo_id", &"")
+	
+	var ammo_found = _try_load_ammo(inst, weapon_comp, preferred_id)
+	
+	# Jeśli ulubiona amunicja się skończyła, próbujemy załadować cokolwiek, co pasuje (stąd puste &"")
+	if ammo_found <= 0 and str(preferred_id) != "":
+		ammo_found = _try_load_ammo(inst, weapon_comp, &"")
 		
-	return false
+	return ammo_found > 0
 
-# Funkcja pomocnicza ukrywająca brudną logikę zżerania stosów z plecaka
-func _try_load_ammo(inst: ItemInstance, weapon_data: ItemDistanceWeapon, required_id: int) -> int:
-	var current_ammo = inst.custom_data.get("ammo_count", 0)
-	var ammo_needed = weapon_data.magazine_capacity - current_ammo
+func _try_load_ammo(inst: ItemInstance, weapon_comp: RangedWeaponComponent, required_id: Variant) -> int:
+	var current_ammo = inst.state.get("ammo_count", 0)
+	var ammo_needed = weapon_comp.magazine_capacity - current_ammo
 	var ammo_found = 0
-	var ammo_reference: AmmunitionItem = inst.custom_data.get("ammo_data", null)
+	var ammo_reference: ItemData = inst.state.get("ammo_data", null)
 	
 	for i in range(slots.size()):
-		if not slots[i].is_empty() and slots[i].item.data is AmmunitionItem:
-			var ammo_item = slots[i].item.data as AmmunitionItem
-			
-			if ammo_item.ammunition_type == weapon_data.accepted_ammunition_type:
-				# Weryfikacja preferencji (jeśli wymagana)
-				if required_id != -1 and ammo_item.item_id != required_id: continue
-				# Zabezpieczenie przed ładowaniem dwóch rożnych typów do jednego magazynka!
-				if ammo_reference != null and ammo_reference.item_id != ammo_item.item_id: continue
+		if not slots[i].is_empty():
+			var ammo_comp: AmmunitionComponent = null
+			for comp in slots[i].item.data.components:
+				if comp is AmmunitionComponent:
+					ammo_comp = comp
+					break
 					
-				ammo_reference = ammo_item 
-				var taking = min(slots[i].item.amount, ammo_needed - ammo_found)
-				slots[i].item.amount -= taking
-				ammo_found += taking
-				_update_cache(ammo_item.item_id, -taking)
+			if ammo_comp and ammo_comp.ammunition_type == weapon_comp.accepted_ammunition_type:
+				var req_str = str(required_id)
+				if req_str != "" and req_str != "-1" and str(slots[i].item.data.item_id) != req_str:
+					continue
+					
+				if ammo_reference != null and ammo_reference.item_id != slots[i].item.data.item_id:
+					continue
+					
+				ammo_reference = slots[i].item.data
+				var slot_amount = slots[i].item.state.get("amount", 1)
+				var taking = min(slot_amount, ammo_needed - ammo_found)
 				
-				if slots[i].item.amount <= 0: slots[i].clear_slot()
+				slots[i].item.state["amount"] = slot_amount - taking
+				ammo_found += taking
+				_update_cache(ammo_reference.item_id, -taking)
+				
+				if slots[i].item.state["amount"] <= 0:
+					slots[i].clear_slot()
+					
 				if ammo_found >= ammo_needed: break
 					
 	if ammo_found > 0:
-		inst.custom_data["ammo_count"] = current_ammo + ammo_found
-		inst.custom_data["ammo_data"] = ammo_reference
+		inst.state["ammo_count"] = current_ammo + ammo_found
+		inst.state["ammo_data"] = ammo_reference
 		inventory_updated.emit()
 		print("Załadowano: ", ammo_found, " sztuk typu: ", ammo_reference.item_name)
 		
@@ -215,103 +213,142 @@ func _try_load_ammo(inst: ItemInstance, weapon_data: ItemDistanceWeapon, require
 ## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
 func drop_current_item(drop_all: bool = false) -> void:
 	var slot = get_current_slot()
-	if slot.is_empty(): return
-	
-	var instance_to_drop: ItemInstance
+	if slot.is_empty():
+		return
 		
+	var instance_to_drop: ItemInstance
+	
 	if drop_all:
-		# Wyrzucamy całą instancję, wyciągając ją prosto ze slota!
+		# Wyrzucamy całą instancję, wyciągniętą prosto ze slota!
 		instance_to_drop = slot.item
-		_update_cache(instance_to_drop.data.item_id, -instance_to_drop.amount)
+		var drop_amt = instance_to_drop.state.get("amount", 1)
+		_update_cache(instance_to_drop.data.item_id, -drop_amt)
 		slot.clear_slot()
 		inventory_updated.emit()
 	else:
-		# Klonujemy instancję dla jednej sztuki, by zachować jej stan (durability itp.)
-		#ZABEZPIECZENIE PRZED WSPÓŁDZIELENIEM DANYCH PO WYRZUCENIU 1 SZTUKI
+		# Wyrzucamy 1 sztukę: Klonujemy szablon (ItemData)
 		var unique_data = slot.item.data.duplicate(true)
 		instance_to_drop = ItemInstance.new(unique_data, 1)
-		instance_to_drop.durability = slot.item.durability
-		consume_current_item()
 		
-	# Informujemy świat, wysyłając CAŁĄ INSTANCJĘ
+		# Kopiujemy stan wytrzymałości (jeśli to np. zużyty miecz)
+		if slot.item.state.has("durability"):
+			instance_to_drop.state["durability"] = slot.item.state["durability"]
+			
+		# UŻYWAMY NOWEJ FUNKCJI z ItemInstance, żeby zjeść 1 sztukę z ekwipunku
+		slot.item.consume_amount(1)
+		clean_dead_items() # Wywołujemy naszego nowego śmieciarza!
+		
+	# Informujemy świat, wysyłając CAŁĄ INSTANCJĘ do wyrzucenia na ziemię
 	item_dropped.emit(instance_to_drop, true)
 
 ## Przyjmuje istniejącą instancję z mapy (np. zużyty miecz lub połączone stosy łupu)
 func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
-	if instance_to_add == null or instance_to_add.amount <= 0: 
+	# 1. Sprawdzamy stan poprzez bezpieczny odczyt słownika 'state'
+	var add_amount = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
+	if instance_to_add == null or add_amount <= 0: 
 		return null
 		
-	# Jeśli przedmiot z ziemi jest stackowalny, próbujemy uzupełnić istniejące stosy
-	if instance_to_add.data.item_is_stackable:
+	# 2. ZAMIAST PYTAĆ O WŁAŚCIWOŚĆ, SZUKAMY KLOCKA 'StackComponent'
+	var is_stackable = false
+	var max_stack = 1
+	if instance_to_add.data.components != null:
+		for comp in instance_to_add.data.components:
+			if comp is StackComponent:
+				is_stackable = true
+				max_stack = comp.max_stack # Zapisujemy max_stack z komponentu
+				break
+				
+	# 3. Jeśli przedmiot ma klocek do stackowania, szukamy dla niego miejsca w istniejących stosach
+	if is_stackable:
 		for slot in slots:
 			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
-				var available_space = instance_to_add.data.item_max_stack_count - slot.item.amount
+				var slot_amount = slot.item.state.get("amount", 1)
+				var available_space = max_stack - slot_amount
+				
 				if available_space > 0:
-					var adding = min(instance_to_add.amount, available_space)
-					slot.item.amount += adding
-					instance_to_add.amount -= adding
+					var adding = min(instance_to_add.state.get("amount", 1), available_space)
+					
+					# Aktualizujemy stany obu przedmiotów
+					slot.item.state["amount"] = slot_amount + adding
+					instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
+					
+					# Rejestrujemy to w pamięci craftingu
 					_update_cache(instance_to_add.data.item_id, adding)
 					
-					if instance_to_add.amount <= 0:
+					if instance_to_add.state["amount"] <= 0:
 						inventory_updated.emit()
-						return null # Całość się zmieściła
-
-	# Próbujemy wrzucić resztę lub całą broń do slotu trzymanego w dłoni
+						return null # Całość się zmieściła, kończymy pracę
+						
+	# 4. Jeśli przedmiot nie jest stackowalny, lub zostały nam resztki:
+	# Próbujemy wrzucić do slotu trzymanego aktualnie w dłoni (jeśli jest pusty)
 	if slots[current_slot_index].is_empty():
 		slots[current_slot_index].item = instance_to_add
-		_update_cache(instance_to_add.data.item_id, instance_to_add.amount)
+		_update_cache(instance_to_add.data.item_id, instance_to_add.state.get("amount", 1))
 		inventory_updated.emit()
 		return null
 		
-	# Szukamy jakiegokolwiek innego pustego slota
+	# 5. Szukamy jakiegokolwiek innego pustego slota od lewej
 	for slot in slots:
 		if slot.is_empty():
 			slot.item = instance_to_add 
-			_update_cache(instance_to_add.data.item_id, instance_to_add.amount)
+			_update_cache(instance_to_add.data.item_id, instance_to_add.state.get("amount", 1))
 			inventory_updated.emit()
 			return null
 			
-	# Brak miejsca - zwracamy instancję z powrotem
+	# 6. Całkowity brak miejsca - zwracamy instancję z powrotem na ziemię
 	inventory_updated.emit()
 	return instance_to_add
 
 ## Klasyczne tworzenie nowego przedmiotu z definicji (przydatne np. w rzemiośle)
 func add_item(item: ItemData, amount_to_add: int = 1) -> int:
-	if item == null or amount_to_add <= 0: return amount_to_add
+	if item == null or amount_to_add <= 0:
+		return amount_to_add
+		
 	var remaining = amount_to_add
 	
+	# SZUKAMY KLOCKA 'StackComponent' ZAMIAST CZYTAĆ ZMIENNE
+	var is_stackable = false
+	var max_item_stack = 1
+	if item.components != null:
+		for comp in item.components:
+			if comp is StackComponent:
+				is_stackable = true
+				max_item_stack = comp.max_stack
+				break
+				
 	# 1. Szukanie w stosach
-	if item.item_is_stackable:
-		# Pomocnicza instancja tylko do porównania
+	if is_stackable:
 		var temp_instance = ItemInstance.new(item, 1) 
 		for slot in slots:
 			if not slot.is_empty() and slot.item.can_stack_with(temp_instance):
-				var available_space = item.item_max_stack_count - slot.item.amount
+				var slot_amount = slot.item.state.get("amount", 1)
+				var available_space = max_item_stack - slot_amount
 				
 				if available_space > 0:
 					var adding = min(remaining, available_space)
-					slot.item.amount += adding
+					slot.item.state["amount"] = slot_amount + adding
 					remaining -= adding
+					
 					_update_cache(item.item_id, adding)
 					
 					if remaining == 0:
 						inventory_updated.emit()
 						return 0
-	
+						
 	# 2. Szukanie pustych w wybranej ręce
 	if slots[current_slot_index].is_empty():
-		var adding = min(remaining, item.item_max_stack_count) if item.item_is_stackable else 1
+		var adding = min(remaining, max_item_stack) if is_stackable else 1
 		slots[current_slot_index].set_item_data(item, adding)
 		remaining -= adding
 		_update_cache(item.item_id, adding)
 		if remaining == 0:
 			inventory_updated.emit()
 			return 0
-
+			
 	# 3. Szukanie dowolnego pustego od lewej
 	for slot in slots:
 		if slot.is_empty():
-			var adding = min(remaining, item.item_max_stack_count) if item.item_is_stackable else 1
+			var adding = min(remaining, max_item_stack) if is_stackable else 1
 			slot.set_item_data(item, adding)
 			remaining -= adding
 			_update_cache(item.item_id, adding)
@@ -319,6 +356,7 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 				inventory_updated.emit()
 				return 0
 				
+	# 4. Jeśli zabrakło miejsca w całym ekwipunku, zwracamy to, co nam zostało w dłoni
 	inventory_updated.emit()
 	return remaining
 
@@ -347,32 +385,33 @@ func _recalculate_slots_size() -> void:
 	var base_slots = slots_amount
 	var bonus_slots = 0
 	
-	if not backpack_slot.is_empty() and backpack_slot.item.data is BackpackItem:
-		bonus_slots = (backpack_slot.item.data as BackpackItem).extra_slots_count
-	
+	# ZAMIAST PYTAĆ O KLASĘ 'BackpackItem', SZUKAMY KLOCKA 'BackpackComponent'
+	if not backpack_slot.is_empty():
+		for comp in backpack_slot.item.data.components:
+			if comp is BackpackComponent:
+				bonus_slots = comp.extra_slots_count
+				break
+				
 	var target_total_size = base_slots + bonus_slots
 	
 	if slots.size() != target_total_size:
-		# --- NOWOŚĆ: Zabezpieczenie przed utratą itemów ---
-		# Jeśli ekwipunek się zmniejsza, przed ucięciem tablicy wyrzucamy przedmioty na ziemię
+		# Zabezpieczenie przed utratą itemów, jeśli zdejmujemy plecak i brakuje nam slotów
 		if target_total_size < slots.size():
 			for i in range(target_total_size, slots.size()):
 				if slots[i] != null and not slots[i].is_empty():
-					# Zlecenie wyrzucenia przedmiotu pod nogi gracza
 					item_dropped.emit(slots[i].item, false) 
-		
-		# Dopasowanie rozmiaru
+					
+		# Dopasowanie rozmiaru tablicy
 		slots.resize(target_total_size)
 		for i in range(target_total_size):
 			if slots[i] == null:
 				slots[i] = SlotData.new()
-		
-		# Ściągamy kursor zaznaczenia w dół, jeśli po zdjęciu plecaka znalazł się "w powietrzu"
+				
+		# Ściągamy kursor zaznaczenia w dół, jeśli znalazł się w "pustce"
 		if current_slot_index >= slots.size():
 			current_slot_index = max(0, slots.size() - 1)
-		
-		_rebuild_cache()
-
+			
+	_rebuild_cache()
 
 # ----------------------------------------------------
 # --- NAWIGACJA ---
@@ -410,29 +449,33 @@ func scroll_inventory(direction: int) -> void:
 # --- BEZPĘTLOWY SYSTEM CRAFTINGU O(1) ---
 # ----------------------------------------------------
 
-func get_item_amount(item_id: int) -> int:
+# ZMIANA: item_id to teraz StringName (np. &"wood"), a nie int!
+func get_item_amount(item_id: StringName) -> int:
 	return _item_count_cache.get(item_id, 0)
 
-func has_items(item_id: int, required_amount: int) -> bool:
+func has_items(item_id: StringName, required_amount: int) -> bool:
 	return get_item_amount(item_id) >= required_amount
 
-func consume_ingredients(item_id: int, required_amount: int) -> void:
+func consume_ingredients(item_id: StringName, required_amount: int) -> void:
 	var remaining = required_amount
 	for slot in slots:
 		if not slot.is_empty() and slot.item.data.item_id == item_id:
-			var taking = min(slot.item.amount, remaining)
-			slot.item.amount -= taking
+			# ZMIANA: Pobieramy ze słownika zamiast ze zmiennej
+			var slot_amount = slot.item.state.get("amount", 1)
+			var taking = min(slot_amount, remaining)
+			
+			slot.item.state["amount"] = slot_amount - taking
 			remaining -= taking
 			_update_cache(item_id, -taking)
 			
-			if slot.item.amount <= 0:
+			if slot.item.state["amount"] <= 0:
 				slot.clear_slot()
 				
 			if remaining <= 0: break
 			
 	inventory_updated.emit()
 
-func _update_cache(item_id: int, diff: int) -> void:
+func _update_cache(item_id: StringName, diff: int) -> void:
 	if not _item_count_cache.has(item_id):
 		_item_count_cache[item_id] = 0
 	_item_count_cache[item_id] += diff
@@ -442,4 +485,5 @@ func _rebuild_cache() -> void:
 	_item_count_cache.clear()
 	for slot in slots:
 		if not slot.is_empty():
-			_update_cache(slot.item.data.item_id, slot.item.amount)
+			# ZMIANA: Pobieramy ilość ze słownika
+			_update_cache(slot.item.data.item_id, slot.item.state.get("amount", 1))

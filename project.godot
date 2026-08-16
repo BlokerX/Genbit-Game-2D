@@ -25,6 +25,7 @@ SceneCollectionManager="*uid://6ewiy3em0bmv"
 EventBus="*uid://wl0j2wnuvqic"
 TransitionManager="*uid://bm8kgsgt4kdpo"
 GlobalLevelManager="*uid://b2gvk2mec22nr"
+ItemDatabase="*uid://cmooht25yo8gh"
 
 [display]
 
@@ -33,6 +34,10 @@ window/size/viewport_height=1080
 window/size/mode=3
 window/stretch/mode="viewport"
 window/size/mode.editor=0
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/item_system_plugin/plugin.cfg")
 
 [file_customization]
 

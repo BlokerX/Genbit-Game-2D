@@ -1,29 +1,12 @@
-[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://lo35uipqgqmm"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://lo35uipqgqmm"]
 
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_3ienj"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_di2xb"]
-[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_ijom4"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_0akag"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/items/knife.png" id="3_3ienj"]
-
-[sub_resource type="Resource" id="Resource_0akag"]
-script = ExtResource("1_3ienj")
-damage = 5
-critical_damage = null
-critical_rate = null
-max_range = 90.0
-stun_time = null
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_h0thy"]
 
 [resource]
-script = ExtResource("1_ijom4")
-attack_data = SubResource("Resource_0akag")
-weapon_type = "Knife"
-use_cooldown = 0.1
-item_id = 5
+script = ExtResource("3_h0thy")
+item_id = &"knife"
 item_name = "Knife"
-item_type = "Weapon"
 item_description = "Bleeding! It deals 5 damage."
 item_icon = ExtResource("3_3ienj")
-item_is_stackable = true
-item_max_stack_count = 25
-max_durable = 1

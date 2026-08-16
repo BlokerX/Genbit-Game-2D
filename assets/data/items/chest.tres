@@ -1,13 +1,24 @@
-[gd_resource type="Resource" script_class="PlaceableItem" format=3 uid="uid://b8exeqhxd52o2"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b8exeqhxd52o2"]
 
 [ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="1_6aqdg"]
-[ext_resource type="Script" uid="uid://bqc47qk2uijyc" path="res://assets/scripts/entities/items/placeable_item.gd" id="2_rymd2"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_o04sa"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_acslw"]
+[ext_resource type="Script" uid="uid://b2k40ut4xgole" path="res://assets/scripts/entities/items/components/placeable_component.gd" id="3_ga2k5"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="4_t1e6w"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="6_xb3d8"]
+
+[sub_resource type="Resource" id="Resource_w3te4"]
+script = ExtResource("3_ga2k5")
+scene_path = "uid://bnk5e152g3104"
+
+[sub_resource type="Resource" id="Resource_tr43n"]
+script = ExtResource("4_t1e6w")
+max_stack = 10
 
 [resource]
-script = ExtResource("2_rymd2")
-scene_path = "uid://bnk5e152g3104"
-item_id = 21
+script = ExtResource("6_xb3d8")
+item_id = &"chest"
 item_name = "Chest"
-item_type = "Placeable Item"
 item_description = "A buildable chest."
 item_icon = ExtResource("1_6aqdg")
+components = Array[ExtResource("1_o04sa")]([SubResource("Resource_w3te4"), SubResource("Resource_tr43n")])

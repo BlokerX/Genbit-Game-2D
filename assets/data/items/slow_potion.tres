@@ -1,22 +1,12 @@
-[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://dks8varf4o3m3"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dks8varf4o3m3"]
 
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_uncvn"]
-[ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/active_effects/slow_effect.gd" id="2_uncvn"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_kp8lh"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_7nckx"]
 [ext_resource type="Texture2D" uid="uid://dh0frexf3gfjw" path="res://assets/textures/samples_examples/items/blue_potion.png" id="3_kp8lh"]
-[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_uncvn"]
-
-[sub_resource type="Resource" id="Resource_msb2i"]
-script = ExtResource("2_uncvn")
-metadata/_custom_type_script = "uid://bmbnddjayowv6"
 
 [resource]
-script = ExtResource("4_uncvn")
-effects = Array[ExtResource("1_uncvn")]([SubResource("Resource_msb2i")])
-use_cooldown = 0.25
-item_id = 15
+script = ExtResource("3_7nckx")
+item_id = &"slow_potion"
 item_name = "Slow Potion"
-item_type = "Consumable"
 item_description = "It makes you slower."
 item_icon = ExtResource("3_kp8lh")
-item_is_stackable = true
-item_max_stack_count = 12

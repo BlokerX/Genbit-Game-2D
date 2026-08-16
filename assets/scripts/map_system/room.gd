@@ -517,30 +517,36 @@ func _instantiate_node(instance: Node, pos: Vector2, parent: Node) -> void:
 		instance.global_position = pos
 
 ## Tworzy fizyczną instancję przedmiotu na podstawie wpisu z puli,
-## uwzględniając ilość oraz dwa tryby losowania wytrzymałości.
+## uwzględniając ilość oraz dwa tryby losowania wytrzymałości przez komponenty.
 func _create_instance_from_entry(entry: ItemLootEntry) -> ItemInstance:
 	var unique_data = entry.item_data.duplicate(true)
 	var amount = randi_range(entry.min_amount, entry.max_amount)
 	
-	# Tworzymy instancję (konstruktor _init automatycznie ustawi durability na max_durable)
+	# Tworzymy instancję (konstruktor _init automatycznie ustawi stack w słowniku state)
 	var instance = ItemInstance.new(unique_data, amount)
 	
-	# Jeśli wpis wymusza zużycie i przedmiot faktycznie może się zepsuć
-	if entry.randomize_durability and unique_data.max_durable > 0:
-		var new_durability: int = unique_data.max_durable
+	# Szukamy maksymalnej wytrzymałości w klocku DurabilityComponent
+	var max_dur = 0
+	if unique_data.components != null:
+		for comp in unique_data.components:
+			if comp is DurabilityComponent:
+				max_dur = comp.max_durability
+				break
+				
+	# Jeśli wpis wymusza zużycie i przedmiot faktycznie posiada komponent wytrzymałości
+	if entry.randomize_durability and max_dur > 0:
+		var new_durability: int = max_dur
 		
 		# Sprawdzamy wybrany przez Ciebie w Inspektorze tryb
 		if entry.durability_mode == ItemLootEntry.DurabilityRollMode.PERCENTAGE:
 			var dur_percent = randf_range(entry.min_durability_percent, entry.max_durability_percent)
-			new_durability = int(float(unique_data.max_durable) * dur_percent)
+			new_durability = int(float(max_dur) * dur_percent)
 		else:
 			# Tryb EXACT_VALUE (Twarde Cyfry)
 			new_durability = randi_range(entry.min_exact_durability, entry.max_exact_durability)
-		
-		# CLAMPI (Zabezpieczenie): 
-		# Upewniamy się, że wylosowana wartość nigdy nie spadnie poniżej 1 (żeby przedmiot nie pękł w rękach) 
-		# i nigdy nie przekroczy oryginalnego max_durable (żebyś przypadkiem nie stworzył miecza z 999 użyciami, gdy max to 50).
-		instance.durability = clampi(new_durability, 1, unique_data.max_durable)
+			
+		# ZAPISUJEMY W WYMAGANYM SŁOWNIKU STATE ZAMIAST BEZPOŚREDNIEGO POLA
+		instance.state["durability"] = clampi(new_durability, 1, max_dur)
 		
 	return instance
 
