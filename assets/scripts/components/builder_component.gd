@@ -154,17 +154,20 @@ func try_place_object() -> bool:
 	var final_instance = current_build_scene.instantiate()
 	
 	# Przekazanie Duszy (ItemInstance)
+	# Jeżeli nasz nowy obiekt wspiera zapisywanie stanu przedmiotu (PlacedObject)
 	if final_instance is PlacedObject:
 		var hand_item = player.get_inventory().get_current_item()
 		
-		var unique_data = hand_item.data.duplicate(true)
-		var placed_item_instance = ItemInstance.new(unique_data, 1)
+		# Tworzymy unikalną instancję na podstawie trzymanej rzeczy
+		var unique_item_data = hand_item.data.duplicate(true)
+		var placed_item_instance = ItemInstance.new(unique_item_data, 1)
 		
-		# --- NOWOŚĆ ECS: Klonujemy wytrzymałość ze słownika state, jeśli istniała ---
-		if hand_item.state.has("durability"):
-			placed_item_instance.state["durability"] = hand_item.state["durability"]
+		# --- NOWOŚĆ ECS: Klonujemy cały słownik state (wytrzymałość itp.) ---
+		placed_item_instance.state = hand_item.state.duplicate(true)
+		placed_item_instance.state["amount"] = 1 # Wymuszamy 1 sztukę, żeby skrzynia nie trzymała całego stacka
 		
-		final_instance.set("item_instance", placed_item_instance)
+		# Używamy naszej nowej, bezpiecznej zmiennej ze skryptu placed_object.gd
+		final_instance.saved_item_instance = placed_item_instance
 	
 	# Kopiujemy obrót z ducha do docelowego obiektu!
 	final_instance.rotation_degrees = current_rotation_degrees
@@ -179,6 +182,11 @@ func try_place_object() -> bool:
 func _validate_placement() -> void:
 	can_place_here = true
 	var is_blocked = false
+	
+	# WYMUSZENIE AKTUALIZACJI SILNIKA FIZYKI
+	# Naprawia błędy z opóźnionym podświetlaniem kolizji ducha
+	ghost_instance.force_update_transform()
+	
 	var area = ghost_instance.get_node_or_null("BuildArea")
 	
 	if area and area is Area2D:

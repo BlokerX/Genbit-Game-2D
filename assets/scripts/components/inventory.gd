@@ -63,16 +63,22 @@ func _ready() -> void:
 ## Sprawdza ekwipunek i czyści sloty, w których skończyły się przedmioty
 func clean_dead_items() -> void:
 	var inventory_changed = false
+	
+	# Sprzątanie głównych slotów
 	for slot in slots:
-		# Pytamy bezpiecznie o słownik 'state'
-		if not slot.is_empty() and slot.item.state.has("amount"):
+		# Pytamy bezpiecznie o słownik 'state' i czy item fizycznie istnieje
+		if slot.item != null and slot.item.state.has("amount"):
 			if slot.item.state["amount"] <= 0:
-				var id = slot.item.data.item_id
-				_update_cache(id, -1) # Aktualizacja cache dla craftingu
 				slot.clear_slot()
 				inventory_changed = true
 				
-	# Informujemy UI o zmianach (usunięciu przedmiotu z paska)
+	# Sprzątanie założonego plecaka (Tarcza ochronna na przyszłe mechaniki)
+	if backpack_slot.item != null and backpack_slot.item.state.has("amount"):
+		if backpack_slot.item.state["amount"] <= 0:
+			backpack_slot.clear_slot()
+			inventory_changed = true
+
+	# Automatyczne odświeżenie UI i PAMIĘCI CRAFTINGU
 	if inventory_changed:
 		inventory_updated.emit()
 
@@ -221,23 +227,23 @@ func drop_current_item(drop_all: bool = false) -> void:
 	if drop_all:
 		# Wyrzucamy całą instancję, wyciągniętą prosto ze slota!
 		instance_to_drop = slot.item
-		var drop_amt = instance_to_drop.state.get("amount", 1)
-		_update_cache(instance_to_drop.data.item_id, -drop_amt)
 		slot.clear_slot()
-		inventory_updated.emit()
 	else:
 		# Wyrzucamy 1 sztukę: Klonujemy szablon (ItemData)
 		var unique_data = slot.item.data.duplicate(true)
 		instance_to_drop = ItemInstance.new(unique_data, 1)
 		
-		# Kopiujemy stan wytrzymałości (jeśli to np. zużyty miecz)
-		if slot.item.state.has("durability"):
-			instance_to_drop.state["durability"] = slot.item.state["durability"]
+		# --- OSTATECZNA ZMIANA ECS: Kopiujemy CAŁĄ DUSZĘ (słownik state) ---
+		# Dzięki temu wyrzucona sztuka pamięta nie tylko "durability", ale też 
+		# załadowaną amunicję, baterię, klątwy i wszystko inne, co kiedyś dodasz.
+		instance_to_drop.state = slot.item.state.duplicate(true)
+		instance_to_drop.state["amount"] = 1 # Wymuszamy, by wyrzucona paczka miała tylko 1 sztukę
 			
 		# UŻYWAMY NOWEJ FUNKCJI z ItemInstance, żeby zjeść 1 sztukę z ekwipunku
 		slot.item.consume_amount(1)
 		clean_dead_items() # Wywołujemy naszego nowego śmieciarza!
 		
+	inventory_updated.emit()
 	# Informujemy świat, wysyłając CAŁĄ INSTANCJĘ do wyrzucenia na ziemię
 	item_dropped.emit(instance_to_drop, true)
 
@@ -424,7 +430,7 @@ func get_current_slot() -> SlotData :
 
 func get_current_item() -> ItemInstance :
 	var slot = get_current_slot()
-	if slot != null:
+	if slot != null and not slot.is_empty():
 		return slot.item
 	return null
 
