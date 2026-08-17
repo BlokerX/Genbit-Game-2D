@@ -341,11 +341,11 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 		var unique_data = item_in_hand.data.duplicate(true)
 		var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
 		
-		# ZMIANA: Klonowanie zużycia poprzez słownik
-		if item_in_hand.state.has("durability"):
-			dropped_instance.state["durability"] = item_in_hand.state["durability"]
+		# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+		dropped_instance.state = item_in_hand.state.duplicate(true)
+		dropped_instance.state["amount"] = amount_to_drop
 		
-		# ZMIANA: Odejmowanie ze słownika
+		# Odejmowanie ze słownika
 		item_in_hand.state["amount"] = hand_amount - amount_to_drop
 		if item_in_hand.state["amount"] <= 0:
 			item_in_hand = null
@@ -385,15 +385,15 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 			
 		# Odrywanie przedmiotu ze slota i rzut
 		if target_slot and not target_slot.is_empty():
-			# ZMIANA ECS: Wszystko przerobione na słownik state!
 			var slot_amount = target_slot.item.state.get("amount", 1)
 			var amount_to_drop = slot_amount if drop_all else 1
 			
 			var unique_data = target_slot.item.data.duplicate(true)
 			var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
 			
-			if target_slot.item.state.has("durability"):
-				dropped_instance.state["durability"] = target_slot.item.state["durability"]
+			# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+			dropped_instance.state = target_slot.item.state.duplicate(true)
+			dropped_instance.state["amount"] = amount_to_drop
 			
 			target_slot.item.state["amount"] = slot_amount - amount_to_drop
 			if target_slot.item.state["amount"] <= 0:
@@ -556,8 +556,9 @@ func _handle_right_click(slot: SlotData) -> void:
 				var unique_data = slot.item.data.duplicate(true)
 				item_in_hand = ItemInstance.new(unique_data, half_amount)
 				
-				if slot.item.state.has("durability"):
-					item_in_hand.state["durability"] = slot.item.state["durability"]
+				# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
+				item_in_hand.state = slot.item.state.duplicate(true)
+				item_in_hand.state["amount"] = half_amount
 					
 				slot.item.state["amount"] = slot_amount - half_amount
 			else:
@@ -568,13 +569,15 @@ func _handle_right_click(slot: SlotData) -> void:
 			var unique_data = item_in_hand.data.duplicate(true)
 			slot.item = ItemInstance.new(unique_data, 1)
 			
-			if item_in_hand.state.has("durability"):
-				slot.item.state["durability"] = item_in_hand.state["durability"]
+			# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
+			slot.item.state = item_in_hand.state.duplicate(true)
+			slot.item.state["amount"] = 1
 				
 			var hand_amount = item_in_hand.state.get("amount", 1)
 			item_in_hand.state["amount"] = hand_amount - 1
 			if item_in_hand.state["amount"] <= 0:
 				item_in_hand = null
+				
 		elif slot.item.can_stack_with(item_in_hand):
 			var max_stack = 1
 			if slot.item.data.components != null:

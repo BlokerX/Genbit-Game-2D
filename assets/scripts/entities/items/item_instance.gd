@@ -48,16 +48,26 @@ func _reset_durability_from_components() -> void:
 				break
 
 # =====================================================================
-# SYSTEM ŁĄCZENIA I PORÓWNYWANIA PRZEDMIOTÓW 
+# SYSTEM ŁĄCZENIA I PORÓWNYWANIA PRZEDMIOTÓW
 # =====================================================================
 func can_stack_with(other: ItemInstance) -> bool:
 	if other == null or data == null or other.data == null:
 		return false
 		
-	# 1. Podstawowy test tożsamości (Sprawdzamy StringName!)
+	# 1. Podstawowy test tożsamości (Sprawdzamy ID)
 	if data.item_id != other.data.item_id:
 		return false
 		
-	# Uwaga: Dokładne sprawdzanie stanu (np. czy zepsutego miecza nie łączymy z nowym)
-	# zostanie przeniesione do StackComponent w następnej fazie. Na razie zwracamy true.
+	# 2. TARCZA ECS: Sprawdzamy, czy stany przedmiotów są IDENTYCZNE.
+	# Zabezpiecza przed "leczeniem" mieczy lub łączeniem karabinów z inną amunicją!
+	for key in state.keys():
+		if key == "amount": continue # Ilość nas nie interesuje przy porównywaniu
+		if not other.state.has(key) or state[key] != other.state[key]:
+			return false
+			
+	for key in other.state.keys():
+		if key == "amount": continue
+		if not state.has(key) or state[key] != other.state[key]:
+			return false
+			
 	return true

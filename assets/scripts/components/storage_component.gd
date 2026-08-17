@@ -174,9 +174,9 @@ func remove_instance(slot_index: int, amount_to_remove: int = -1) -> ItemInstanc
 	var unique_data = slot.item.data.duplicate(true)
 	extracted_instance = ItemInstance.new(unique_data, amount_to_remove)
 	
-	# ZMIANA: Klonujemy zużycie (jeśli istnieje) używając słownika state!
-	if slot.item.state.has("durability"):
-		extracted_instance.state["durability"] = slot.item.state["durability"]
+	# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+	extracted_instance.state = slot.item.state.duplicate(true)
+	extracted_instance.state["amount"] = amount_to_remove
 		
 	# Zdejmujemy zabraną ilość z oryginalnego slotu
 	slot.item.state["amount"] = current_slot_amount - amount_to_remove
