@@ -1,8 +1,26 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d26ydrnx3wo6w"]
 
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_h6b14"]
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_jp8f5"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="3_6oxuf"]
 [ext_resource type="Texture2D" uid="uid://cjsv511sun6ls" path="res://assets/textures/samples_examples/items/gun.png" id="3_qf0ew"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_thk0w"]
+[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="4_sfuo2"]
+[ext_resource type="Script" uid="uid://dypstvdhvi7pi" path="res://assets/scripts/entities/items/components/ranged_weapon_component.gd" id="5_kmkls"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_r1ltu"]
+
+[sub_resource type="Resource" id="Resource_xto05"]
+script = ExtResource("5_kmkls")
+use_cooldown = 1.2
+accepted_ammunition_type = 2
+magazine_capacity = 5
+reload_time = 3.0
+projectile_texture = ExtResource("4_sfuo2")
+projectile_scene = ExtResource("3_6oxuf")
+
+[sub_resource type="Resource" id="Resource_v7uqk"]
+script = ExtResource("6_r1ltu")
+max_durability = 200
 
 [resource]
 script = ExtResource("3_thk0w")
@@ -10,3 +28,4 @@ item_id = &"gun"
 item_name = "Gun"
 item_description = "A gun machine."
 item_icon = ExtResource("3_qf0ew")
+components = Array[ExtResource("2_jp8f5")]([SubResource("Resource_xto05"), SubResource("Resource_v7uqk")])

@@ -12,16 +12,19 @@
 [sub_resource type="Resource" id="Resource_ktjev"]
 script = ExtResource("1_g5vyt")
 damage = 30
+critical_damage = 10
+critical_rate = 0.05
 max_range = 200.0
+stun_time = 1.0
 
 [sub_resource type="Resource" id="Resource_xs6vj"]
 script = ExtResource("5_nkun4")
 attack_data = SubResource("Resource_ktjev")
-use_cooldown = 1.7
+use_cooldown = 2.2
 
 [sub_resource type="Resource" id="Resource_rm1e4"]
 script = ExtResource("6_e4o0i")
-max_durability = 30
+max_durability = 100
 
 [resource]
 script = ExtResource("8_x34j0")

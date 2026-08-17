@@ -1,8 +1,43 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://lo35uipqgqmm"]
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_0akag"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="2_g0fm1"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/items/knife.png" id="3_3ienj"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="3_faath"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_h0thy"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="4_b06ah"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/active_effects/poison_effect.gd" id="5_w8ndq"]
+[ext_resource type="Script" uid="uid://cmsn2kpgdc7r" path="res://assets/scripts/entities/items/components/melee_weapon_component.gd" id="6_l5bdc"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_g0fm1"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="7_rqs12"]
+
+[sub_resource type="Resource" id="Resource_j4jxd"]
+script = ExtResource("2_g0fm1")
+damage = 5
+max_range = 100.0
+stun_time = 0.5
+
+[sub_resource type="Resource" id="Resource_28a2h"]
+script = ExtResource("5_w8ndq")
+poison_damage_per_tick = 1
+duration = 10.0
+tick_interval = 0.5
+metadata/_custom_type_script = "uid://csdcvcev8ylem"
+
+[sub_resource type="Resource" id="Resource_go2b2"]
+script = ExtResource("6_l5bdc")
+attack_data = SubResource("Resource_j4jxd")
+use_cooldown = 0.3
+effects = Array[ExtResource("4_b06ah")]([SubResource("Resource_28a2h")])
+
+[sub_resource type="Resource" id="Resource_b06ah"]
+script = ExtResource("7_rqs12")
+metadata/_custom_type_script = "uid://l7xgpk2wjbr4"
+
+[sub_resource type="Resource" id="Resource_faath"]
+script = ExtResource("7_g0fm1")
+max_stack = 50
+metadata/_custom_type_script = "uid://hvanwi787her"
 
 [resource]
 script = ExtResource("3_h0thy")
@@ -10,3 +45,4 @@ item_id = &"knife"
 item_name = "Knife"
 item_description = "Bleeding! It deals 5 damage."
 item_icon = ExtResource("3_3ienj")
+components = Array[ExtResource("2_0akag")]([SubResource("Resource_go2b2"), SubResource("Resource_b06ah"), SubResource("Resource_faath")])

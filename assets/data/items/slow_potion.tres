@@ -1,8 +1,26 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dks8varf4o3m3"]
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_kp8lh"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_kylen"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_0y5iq"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_7nckx"]
 [ext_resource type="Texture2D" uid="uid://dh0frexf3gfjw" path="res://assets/textures/samples_examples/items/blue_potion.png" id="3_kp8lh"]
+[ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/active_effects/slow_effect.gd" id="4_jfa2d"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_5lv3f"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_gqui4"]
+
+[sub_resource type="Resource" id="Resource_pnd7c"]
+script = ExtResource("4_jfa2d")
+metadata/_custom_type_script = "uid://bmbnddjayowv6"
+
+[sub_resource type="Resource" id="Resource_ha07b"]
+script = ExtResource("5_5lv3f")
+use_cooldown = 1.0
+effects = Array[ExtResource("3_0y5iq")]([SubResource("Resource_pnd7c")])
+
+[sub_resource type="Resource" id="Resource_2antw"]
+script = ExtResource("6_gqui4")
+max_stack = 12
 
 [resource]
 script = ExtResource("3_7nckx")
@@ -10,3 +28,4 @@ item_id = &"slow_potion"
 item_name = "Slow Potion"
 item_description = "It makes you slower."
 item_icon = ExtResource("3_kp8lh")
+components = Array[ExtResource("1_kp8lh")]([SubResource("Resource_ha07b"), SubResource("Resource_2antw")])

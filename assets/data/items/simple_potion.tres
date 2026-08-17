@@ -1,8 +1,26 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bqxxg8gmcq814"]
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_6snh5"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_e0irv"]
 [ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/items/red_potion.png" id="3_6snh5"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_bmprh"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_pgnhn"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/active_effects/poison_effect.gd" id="4_0xbpf"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_2jo1r"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_vdevo"]
+
+[sub_resource type="Resource" id="Resource_s52qk"]
+script = ExtResource("4_0xbpf")
+metadata/_custom_type_script = "uid://csdcvcev8ylem"
+
+[sub_resource type="Resource" id="Resource_dtjqc"]
+script = ExtResource("5_2jo1r")
+use_cooldown = 1.0
+effects = Array[ExtResource("3_bmprh")]([SubResource("Resource_s52qk")])
+
+[sub_resource type="Resource" id="Resource_3r3qq"]
+script = ExtResource("6_vdevo")
+max_stack = 12
 
 [resource]
 script = ExtResource("3_pgnhn")
@@ -10,3 +28,4 @@ item_id = &"simple_potion"
 item_name = "Simple Potion"
 item_description = "It is potion."
 item_icon = ExtResource("3_6snh5")
+components = Array[ExtResource("1_6snh5")]([SubResource("Resource_dtjqc"), SubResource("Resource_3r3qq")])

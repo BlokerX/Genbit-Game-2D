@@ -2,7 +2,13 @@
 
 [ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/items/_blank_item.png" id="1_6h61b"]
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_a4ema"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_xdpaw"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_n6swi"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="3_ykwyr"]
+
+[sub_resource type="Resource" id="Resource_7tay6"]
+script = ExtResource("3_ykwyr")
+max_stack = 16
 
 [resource]
 script = ExtResource("3_n6swi")
@@ -10,3 +16,4 @@ item_id = &"just_item"
 item_name = "Just Item"
 item_description = "All is nothing."
 item_icon = ExtResource("1_6h61b")
+components = Array[ExtResource("1_a4ema")]([SubResource("Resource_7tay6")])

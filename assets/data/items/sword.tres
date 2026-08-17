@@ -12,15 +12,19 @@
 [sub_resource type="Resource" id="Resource_uesbw"]
 script = ExtResource("1_5ah6c")
 damage = 20
+critical_damage = 5
+critical_rate = 0.1
+max_range = 120.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [sub_resource type="Resource" id="Resource_mv8dy"]
 script = ExtResource("5_p38wo")
 attack_data = SubResource("Resource_uesbw")
+use_cooldown = 1.5
 
 [sub_resource type="Resource" id="Resource_jwgen"]
 script = ExtResource("6_86fyl")
-max_durability = 25
+max_durability = 100
 
 [resource]
 script = ExtResource("8_xo1qm")

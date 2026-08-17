@@ -121,7 +121,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			ammo.damage = 15
 			new_components.append(ammo)
 			var stack = StackComponent.new()
-			stack.max_stack = 60
+			stack.max_stack = 100
 			new_components.append(stack)
 			
 		4: # Mikstura
@@ -129,7 +129,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			cons.use_cooldown = 1.0
 			new_components.append(cons)
 			var stack = StackComponent.new()
-			stack.max_stack = 10
+			stack.max_stack = 12
 			new_components.append(stack)
 			
 		5: # Artefakt
@@ -152,19 +152,19 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			equip.equip_slot_type = EquippableComponent.EquipSlot.BACKPACK # Inteligentne ustawienie slota!
 			new_components.append(equip)
 			var backpack = BackpackComponent.new()
-			backpack.extra_slots_count = 5 # Od razu daje +5 miejsc
+			backpack.extra_slots_count = 1 # Od razu daje +5 miejsc
 			new_components.append(backpack)
 			
 		8: # Budowla
 			var place = PlaceableComponent.new()
 			new_components.append(place)
 			var stack = StackComponent.new()
-			stack.max_stack = 64
+			stack.max_stack = 1
 			new_components.append(stack)
 			
 		9: # Surowiec
 			var stack = StackComponent.new()
-			stack.max_stack = 99
+			stack.max_stack = 16
 			new_components.append(stack)
 			
 	item.components = new_components

@@ -9,10 +9,10 @@ extends Resource
 
 @export_group("System Tagów")
 ## Tagi służące do wyszukiwania ogólnych typów przedmiotów (np. "material_wood", "weapon_sword")
-@export var tags: Array[StringName]
+@export var tags: Array[StringName] = []
 
 @export_group("Komponenty Zachowań")
-@export var components : Array[ItemComponent]
+@export var components : Array[ItemComponent] = []
 
 func _init(
 	_item_id : StringName = &"default_item",

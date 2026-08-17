@@ -1,8 +1,26 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://qqgx27ghjvi1"]
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_oy5ia"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_icl0r"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_7uu23"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_nogum"]
 [ext_resource type="Texture2D" uid="uid://c421ko77rkqnj" path="res://assets/textures/samples_examples/items/white_potion.png" id="3_secc6"]
+[ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/clear_effects_effect.gd" id="4_4i1xv"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_elfy2"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_li81u"]
+
+[sub_resource type="Resource" id="Resource_yke4s"]
+script = ExtResource("4_4i1xv")
+metadata/_custom_type_script = "uid://bucrmdkvkkry5"
+
+[sub_resource type="Resource" id="Resource_aat3w"]
+script = ExtResource("5_elfy2")
+use_cooldown = 1.0
+effects = Array[ExtResource("3_nogum")]([SubResource("Resource_yke4s")])
+
+[sub_resource type="Resource" id="Resource_n3r3q"]
+script = ExtResource("6_li81u")
+max_stack = 12
 
 [resource]
 script = ExtResource("3_7uu23")
@@ -10,3 +28,4 @@ item_id = &"reset_potion"
 item_name = "Reset Potion"
 item_description = "It clears all effects."
 item_icon = ExtResource("3_secc6")
+components = Array[ExtResource("1_oy5ia")]([SubResource("Resource_aat3w"), SubResource("Resource_n3r3q")])

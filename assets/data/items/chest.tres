@@ -13,7 +13,7 @@ scene_path = "uid://bnk5e152g3104"
 
 [sub_resource type="Resource" id="Resource_tr43n"]
 script = ExtResource("4_t1e6w")
-max_stack = 10
+max_stack = 1
 
 [resource]
 script = ExtResource("6_xb3d8")

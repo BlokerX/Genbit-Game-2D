@@ -32,6 +32,7 @@ signal item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 
 ## PAMIĘĆ PODRĘCZNA DO CRAFTINGU (Format: { ID : Ilość })
 var _item_count_cache: Dictionary = {}
+var _tag_count_cache: Dictionary = {}
 
 ## Constructor
 func _init() -> void :
@@ -489,7 +490,42 @@ func _update_cache(item_id: StringName, diff: int) -> void:
 ## Funkcja odbudowująca cache po ręcznym załadowaniu przedmiotów
 func _rebuild_cache() -> void:
 	_item_count_cache.clear()
+	_tag_count_cache.clear()
+	
 	for slot in slots:
 		if not slot.is_empty():
-			# ZMIANA: Pobieramy ilość ze słownika
-			_update_cache(slot.item.data.item_id, slot.item.state.get("amount", 1))
+			var amt = slot.item.state.get("amount", 1)
+			var data = slot.item.data
+			
+			# Liczymy po ID
+			_update_cache(data.item_id, amt)
+			
+			# Liczymy po Tagach (Jeśli przedmiot ma tag "wood" i "flammable", doda je oba)
+			for tag in data.tags:
+				if not _tag_count_cache.has(tag):
+					_tag_count_cache[tag] = 0
+				_tag_count_cache[tag] += amt
+
+# --- NARZĘDZIA DLA TAGÓW ---
+func get_tag_amount(tag: StringName) -> int:
+	return _tag_count_cache.get(tag, 0)
+
+func has_items_by_tag(tag: StringName, required_amount: int) -> bool:
+	return get_tag_amount(tag) >= required_amount
+
+func consume_by_tag(tag: StringName, required_amount: int) -> void:
+	var remaining = required_amount
+	for slot in slots:
+		if not slot.is_empty() and slot.item.data.has_tag(tag):
+			var slot_amount = slot.item.state.get("amount", 1)
+			var taking = min(slot_amount, remaining)
+			
+			slot.item.state["amount"] = slot_amount - taking
+			remaining -= taking
+			
+			if slot.item.state["amount"] <= 0:
+				slot.clear_slot()
+				
+			if remaining <= 0: break
+			
+	inventory_updated.emit() # Automatycznie odpali _rebuild_cache() i zaktualizuje UI!
