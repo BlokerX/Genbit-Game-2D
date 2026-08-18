@@ -144,6 +144,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			ranged.magazine_capacity = 5
 			# NOWOŚĆ: Automatycznie tworzymy statystyki broni z sensownym zasięgiem strzału!
 			ranged.attack_data = AttackData.new()
+			ranged.attack_data.damage = 0
 			ranged.attack_data.max_range = 1500.0 
 			new_components.append(ranged)
 			var dur = DurabilityComponent.new()

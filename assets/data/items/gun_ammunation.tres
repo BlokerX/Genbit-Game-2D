@@ -10,7 +10,7 @@
 
 [sub_resource type="Resource" id="Resource_vgdri"]
 script = ExtResource("5_rxhk6")
-ammunition_type = 2
+ammunition_type = 6
 override_projectile_texture = ExtResource("3_lbysw")
 
 [sub_resource type="Resource" id="Resource_ragoo"]

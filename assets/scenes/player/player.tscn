@@ -19,6 +19,9 @@
 [ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="11_npq60"]
 [ext_resource type="Script" uid="uid://cpra3wi61tf27" path="res://assets/scripts/components/builder_component.gd" id="11_yfi7d"]
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="13_jnpjv"]
+[ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="17_jnpjv"]
+[ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="18_yswgg"]
+[ext_resource type="Script" uid="uid://cla0ou6p42xsx" path="res://assets/scripts/entities/items/slot_data.gd" id="19_fxesn"]
 [ext_resource type="Script" uid="uid://djg3r5l1r5ji2" path="res://assets/scripts/components/camera_component.gd" id="21_xflxm"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xflxm"]
@@ -52,6 +55,16 @@ animations = [{
 "name": &"default",
 "speed": 5.0
 }]
+
+[sub_resource type="Resource" id="Resource_37c74"]
+script = ExtResource("18_yswgg")
+data = ExtResource("17_jnpjv")
+metadata/_custom_type_script = "uid://cv5afe6geisca"
+
+[sub_resource type="Resource" id="Resource_u63vv"]
+script = ExtResource("19_fxesn")
+item = SubResource("Resource_37c74")
+metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_b3dqe"]
 radius = 40.0
@@ -94,6 +107,7 @@ metadata/_custom_type_script = "uid://bf6qleyepnwwy"
 
 [node name="Inventory" type="Node" parent="." unique_id=647434682]
 script = ExtResource("8_2tf2h")
+backpack_slot = SubResource("Resource_u63vv")
 
 [node name="ItemThrowerComponent" type="Node" parent="." unique_id=1321460381]
 script = ExtResource("11_b3dqe")

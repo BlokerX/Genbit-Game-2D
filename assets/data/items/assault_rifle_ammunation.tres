@@ -8,13 +8,13 @@
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_2suhi"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="7_7l6yi"]
 
-[sub_resource type="Resource" id="Resource_3khjt"]
+[sub_resource type="Resource" id="Resource_41cvl"]
 script = ExtResource("5_jf41l")
-ammunition_type = 2
+ammunition_type = 7
 override_projectile_texture = ExtResource("2_50ta4")
-damage = 5
+damage = 15
 
-[sub_resource type="Resource" id="Resource_x57e7"]
+[sub_resource type="Resource" id="Resource_pj72x"]
 script = ExtResource("6_2suhi")
 
 [resource]
@@ -23,4 +23,4 @@ item_id = &"assault_rifle_ammunation"
 item_name = "Assault Rifle Ammunation"
 item_description = "Assalut rifle ammunition."
 item_icon = ExtResource("2_50ta4")
-components = Array[ExtResource("1_41cvl")]([SubResource("Resource_3khjt"), SubResource("Resource_x57e7")])
+components = Array[ExtResource("1_41cvl")]([SubResource("Resource_41cvl"), SubResource("Resource_pj72x")])

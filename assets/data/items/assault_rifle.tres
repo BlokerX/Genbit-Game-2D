@@ -1,8 +1,37 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ca4bdf1bpffxh"]
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_aknrp"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="2_aknrp"]
 [ext_resource type="Texture2D" uid="uid://detvd6y1myxd1" path="res://assets/textures/samples_examples/items/gun_shape02.png" id="3_id0jt"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="3_vi5fn"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="4_0uwnp"]
+[ext_resource type="Script" uid="uid://dypstvdhvi7pi" path="res://assets/scripts/entities/items/components/ranged_weapon_component.gd" id="4_qan2r"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="5_0uwnp"]
+[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_bhye6"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_bhye6"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_3b6gh"]
+
+[sub_resource type="Resource" id="Resource_aknrp"]
+script = ExtResource("2_aknrp")
+damage = 0
+max_range = 1500.0
+stun_time = 0.5
+
+[sub_resource type="Resource" id="Resource_vi5fn"]
+script = ExtResource("4_qan2r")
+use_cooldown = 0.25
+attack_data = SubResource("Resource_aknrp")
+accepted_ammunition_type = 7
+magazine_capacity = 25
+reload_time = 2.8
+projectile_texture = ExtResource("5_bhye6")
+projectile_speed = 4500.0
+projectile_lifetime = 1.0
+projectile_scene = ExtResource("4_0uwnp")
+
+[sub_resource type="Resource" id="Resource_qan2r"]
+script = ExtResource("6_bhye6")
+max_durability = 2000
 
 [resource]
 script = ExtResource("8_3b6gh")
@@ -10,3 +39,4 @@ item_id = &"assault_rifle"
 item_name = "Assault Rifle"
 item_description = "An assault rifle."
 item_icon = ExtResource("3_id0jt")
+components = Array[ExtResource("1_aknrp")]([SubResource("Resource_vi5fn"), SubResource("Resource_qan2r")])

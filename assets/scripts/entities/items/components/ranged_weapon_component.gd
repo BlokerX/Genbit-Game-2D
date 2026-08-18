@@ -1,7 +1,7 @@
 class_name RangedWeaponComponent
 extends ItemComponent
 
-enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY }
+enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_RIFLE_BULLET, SHOTGUN_BULLET }
 
 @export_category("Ustawienia Dystansowe")
 @export var use_cooldown: float = 0.8 

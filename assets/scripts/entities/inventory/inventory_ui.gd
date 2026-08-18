@@ -174,7 +174,10 @@ func update_info_panel() -> void:
 					text += "Szybkość użycia: " + str(comp.use_cooldown) + "s\n"
 					for effect in comp.effects:
 						if effect != null:
-							text += "  - " + effect.effect_name + " (" + str(effect.duration) + "s)\n"
+							text += "  - " + effect.effect_name
+							if effect is TimedEffect:
+								text += " (" + str(effect.duration) + "s)"
+							text += "\n"
 				else:
 					text += "Posiada Efekty Specjalne: Tak\n"
 				

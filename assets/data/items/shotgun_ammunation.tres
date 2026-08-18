@@ -10,7 +10,7 @@
 
 [sub_resource type="Resource" id="Resource_ipdfb"]
 script = ExtResource("5_1ks31")
-ammunition_type = 2
+ammunition_type = 8
 override_projectile_texture = ExtResource("3_gjhr6")
 damage = 65
 
