@@ -474,22 +474,18 @@ func on_inventory_update() :
 				has_custom_cooldown = true
 				break
 			elif comp is RangedWeaponComponent:
-				# --- NOWOŚĆ: Broń dystansowa w pełni ładuje swoje statystyki do gracza! ---
 				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
 				if comp.attack_data != null:
 					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
 				interaction_and_attack_stats_script.actual_extra_effects = comp.weapon_effects
 				has_custom_cooldown = true
 				break
-			elif comp is ConsumableComponent:
-				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
-				has_custom_cooldown = true
-				break
+			# UWAGA: ConsumableComponent i PlaceableComponent celowo pomijamy w tej pętli, 
+			# dzięki czemu trzymając jedzenie/surowiec, gracz zachowuje cooldown i statystyki "pięści"!
 				
 		if not has_custom_cooldown:
 			interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
 	else:
-		# Puste ręce
 		interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
 	
 	# ZABEZPIECZENIE TRYBU BUDOWANIA
