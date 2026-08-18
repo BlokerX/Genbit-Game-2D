@@ -102,8 +102,24 @@ func update_slot(slot: SlotData) -> void:
 						if comp.attack_data.critical_rate > 0.0:
 							tooltip_info += "Szansa na Kryta: " + str(comp.attack_data.critical_rate * 100.0) + "%\n"
 					elif comp is RangedWeaponComponent:
-						tooltip_info += "Typ Amunicji: " + RangedWeaponComponent.AmmoType.keys()[comp.accepted_ammunition_type] + "\n"
-						tooltip_info += "Magazynek: " + str(slot.item.state.get("ammo_count", 0)) + " / " + str(comp.magazine_capacity) + "\n"
+						if comp.attack_data != null:
+							tooltip_info += "Obrażenia Bazowe: " + str(comp.attack_data.damage) + "\n"
+							tooltip_info += "Zasięg Celowania: " + str(comp.attack_data.max_range) + "\n"
+							if comp.attack_data.critical_rate > 0.0:
+								tooltip_info += "Szansa na Kryta: " + str(comp.attack_data.critical_rate * 100.0) + "%\n"
+						
+						if comp.weapon_effects.size() > 0:
+							tooltip_info += "Efekty Broni: " + str(comp.weapon_effects.size()) + "\n"
+							for effect in comp.weapon_effects:
+								if effect != null:
+									tooltip_info += "- " + effect.effect_name + "\n"
+									
+						if comp.uses_ammunition:
+							tooltip_info += "Typ Amunicji: " + RangedWeaponComponent.AmmoType.keys()[comp.accepted_ammunition_type] + "\n"
+							tooltip_info += "Magazynek: " + str(slot.item.state.get("ammo_count", 0)) + " / " + str(comp.magazine_capacity) + "\n"
+						else:
+							tooltip_info += "Zasilanie: Nieskończone (Brak amunicji)\n"
+						
 					elif comp is AmmunitionComponent:
 						tooltip_info += "Typ Naboju: " + RangedWeaponComponent.AmmoType.keys()[comp.ammunition_type] + "\n"
 						tooltip_info += "Obrażenia Pocisku: " + str(comp.damage) + "\n"

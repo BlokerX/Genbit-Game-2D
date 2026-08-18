@@ -189,10 +189,14 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Obsługa celowania skanerem - przekazujemy mu info czy to myszka, jaki mamy zasięg i czy budujemy
-	var attack_range = get_current_attack_range()
+	# Obsługa celowania skanerem
 	var is_building = (current_state == PlayerState.BUILDING)
-	aim_controller.process_aiming(is_using_mouse, attack_range, is_building)
+	
+	# Jeśli budujemy, używamy dystansu z komponentu budowniczego. Jeśli nie - z broni.
+	var current_range = builder_component.build_range if is_building else get_current_attack_range()
+	
+	aim_controller.process_aiming(is_using_mouse, current_range, is_building)
+	
 	# Obsługa popychania TODO
 	_handle_pushing()
 	# Obsługa wyrzucania itemów
@@ -464,11 +468,20 @@ func on_inventory_update() :
 		for comp in current_item.data.components:
 			if comp is MeleeWeaponComponent:
 				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
-				interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				if comp.attack_data != null:
+					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
 				interaction_and_attack_stats_script.actual_extra_effects = comp.effects
 				has_custom_cooldown = true
 				break
-			elif comp is RangedWeaponComponent or comp is ConsumableComponent:
+			elif comp is RangedWeaponComponent:
+				# --- NOWOŚĆ: Broń dystansowa w pełni ładuje swoje statystyki do gracza! ---
+				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
+				if comp.attack_data != null:
+					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				interaction_and_attack_stats_script.actual_extra_effects = comp.weapon_effects
+				has_custom_cooldown = true
+				break
+			elif comp is ConsumableComponent:
 				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
 				has_custom_cooldown = true
 				break

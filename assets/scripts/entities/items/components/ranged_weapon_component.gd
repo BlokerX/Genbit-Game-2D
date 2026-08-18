@@ -4,13 +4,23 @@ extends ItemComponent
 enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY }
 
 @export_category("Ustawienia Dystansowe")
-@export var use_cooldown: float = 0.8 # ZEGAR STRZELANIA (Teraz go mamy!)
+@export var use_cooldown: float = 0.8 
 @export var allow_auto_aim: bool = true
+
+@export_group("Statystyki Własne Broni")
+# --- CLEAN CODE: Zastępujemy luźną zmienną damage całym pakietem statystyk! ---
+@export var attack_data: AttackData
+## Efekty nakładane przez samą broń (np. Zamrożenie z lasera).
+@export var weapon_effects: Array[Effect] = []
+
+@export_group("Amunicja")
 @export var uses_ammunition: bool = true
 @export var accepted_ammunition_type: AmmoType = AmmoType.NONE
 @export var magazine_capacity: int = 1
 @export var auto_reload: bool = true
 @export var reload_time: float = 2.5
+
+@export_group("Pocisk")
 @export var projectile_texture: Texture2D
 @export var projectile_speed: float = 500.0
 @export var projectile_lifetime: float = 2.0
@@ -65,8 +75,17 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		item_instance.state["ammo_count"] = current_ammo - 1
 
 	# 2. OBLICZANIE OBRAŻEŃ
-	var base_damage = ammo_comp.damage if ammo_comp != null else stats.hand_attack_data.damage
-	var final_damage = int((base_damage + stats.damage_adder) * stats.damage_multiplier)
+	# Bierzemy bazową moc samej broni
+	var total_base_damage = 0
+	
+	if attack_data != null:
+		total_base_damage = attack_data.damage
+	
+	# Jeśli broń załadowała amunicję, dodajemy moc pocisku do mocy broni!
+	if ammo_comp != null:
+		total_base_damage += ammo_comp.damage
+	
+	var final_damage = int((total_base_damage + stats.damage_adder) * stats.damage_multiplier)
 	if randf() <= stats.get_total_critical_rate():
 		final_damage += int(stats.get_total_critical_damage())
 		
@@ -75,6 +94,11 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	
 	if stats.get_total_stun() > 0.0:
 		generated_effects.append(StunEffect.new(stats.get_total_stun()))
+	
+	# Dodajemy unikalne efekty z samej broni (np. Laser nakładający Freeze)
+	for eff in weapon_effects:
+		if eff != null:
+			generated_effects.append(eff.duplicate(true))
 
 	# 3. FUZJA BALISTYCZNA Z NABOJEM
 	var final_speed = projectile_speed

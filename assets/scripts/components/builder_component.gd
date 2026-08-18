@@ -6,7 +6,7 @@ class_name BuilderComponent
 ## Jeśli ustawisz na 0, obiekt będzie poruszał się płynnie piksel po pikselu.
 @export var grid_size: float = 64.0 
 ## Odległość od gracza, w jakiej pojawia się obiekt, gdy gracz używa pada (zamiast myszki).
-@export var build_range: float = 50.0 
+@export var build_range: float = 320.0 
 
 # --- ZMIENNE WEWNĘTRZNE SYSTEMU ---
 ## Przechowuje aktualną scenę (prefab), którą próbujemy postawić (np. skrzynię).
@@ -38,8 +38,8 @@ func _process(_delta: float) -> void:
 		# Jeśli gracz używa myszki, duch po prostu leci do kursora.
 		target_pos = ghost_instance.get_global_mouse_position()
 		
-		# --- NOWOŚĆ: Zabezpieczenie promienia budowy również dla myszki ---
-		var max_range = player.get_current_attack_range()
+		# Używamy dedykowanego zasięgu budowania, a nie zasięgu ataku!
+		var max_range = build_range 
 		if max_range > 0 and player.global_position.distance_to(target_pos) > max_range:
 			var dir = player.global_position.direction_to(target_pos)
 			target_pos = player.global_position + (dir * max_range)
@@ -49,7 +49,7 @@ func _process(_delta: float) -> void:
 			target_pos = player.aim_controller.virtual_cursor_pos
 		else:
 			target_pos = player.global_position
-
+	
 	# --- 2. PRZYCIĄGANIE DO ŚRODKA KAFELKA (SNAP TO CENTER) ---
 	if grid_size > 0:
 		# KROK A: Obliczamy, w którym kafelku (komórce siatki) aktualnie znajduje się nasz cel.
