@@ -382,22 +382,22 @@ func _handle_default_inputs(event: InputEvent) -> void:
 	if event.is_action_pressed(INPUT_USE_ITEM):
 		var _item = inventory.get_current_item()
 		if _item != null and _item.data != null and _item.data.components != null:
-			var is_placeable = false
-			
-			# ZAMIAST: if _item_data is PlaceableItem:
 			for comp in _item.data.components:
+				
+				# 1. Obsługa budowania (PlaceableComponent sam odpali _start_building)
 				if comp is PlaceableComponent:
-					is_placeable = true
-					_start_building(comp) # Przekazujemy ten klocek do Buildera
+					comp.try_execute(self, self, _item)
 					break
-			
-			# ZAMIAST: elif _item_data is EatableItem:
-			if not is_placeable and interaction_and_attack_stats_script.can_attack():
-				for comp in _item.data.components:
-					if comp is ConsumableComponent:
-						# Komponent sam wykonuje konsumpcję
-						comp.execute(self, self, _item)
-						break
+					
+				# 2. Obsługa konsumpcji (Zabezpieczona zegarem ataku)
+				elif comp is ConsumableComponent:
+					if interaction_and_attack_stats_script.can_attack():
+						# Jeśli try_execute zwróci false, warunki nie zostały spełnione
+						var success = comp.try_execute(self, self, _item)
+						if not success:
+							print("Nie można użyć przedmiotu! Warunki niespełnione.")
+							# Tutaj możesz w przyszłości dodać np. dźwięk błędu z UI
+					break
 
 func _handle_building_inputs(event: InputEvent) -> void:
 	# W trybie budowy atak = postawienie obiektu

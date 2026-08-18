@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_mcwss"]
 [ext_resource type="Texture2D" uid="uid://2hsmupd4g5d" path="res://assets/textures/samples_examples/items/purse.png" id="1_nedpy"]
-[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_2pu0a"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_2pu0a"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_abxu7"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_sg4wo"]
 [ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="4_teqjf"]

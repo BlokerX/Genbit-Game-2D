@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_7e16n"]
 [ext_resource type="Texture2D" uid="uid://b25psuku7s2k0" path="res://assets/textures/samples_examples/items/brown_backpack.png" id="1_nseb4"]
-[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/helpers/item_condition.gd" id="2_p6i0f"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_p6i0f"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_g3u0i"]
 [ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="4_ede8p"]
 [ext_resource type="Script" uid="uid://5r6jywnhkva1" path="res://assets/scripts/entities/items/components/backpack_component.gd" id="5_6au4i"]
