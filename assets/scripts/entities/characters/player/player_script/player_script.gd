@@ -189,10 +189,14 @@ func _physics_process(delta):
 	
 	#endregion
 	
-	# Obsługa celowania skanerem - przekazujemy mu info czy to myszka, jaki mamy zasięg i czy budujemy
-	var attack_range = get_current_attack_range()
+	# Obsługa celowania skanerem
 	var is_building = (current_state == PlayerState.BUILDING)
-	aim_controller.process_aiming(is_using_mouse, attack_range, is_building)
+	
+	# Jeśli budujemy, używamy dystansu z komponentu budowniczego. Jeśli nie - z broni.
+	var current_range = builder_component.build_range if is_building else get_current_attack_range()
+	
+	aim_controller.process_aiming(is_using_mouse, current_range, is_building)
+	
 	# Obsługa popychania TODO
 	_handle_pushing()
 	# Obsługa wyrzucania itemów
@@ -349,10 +353,13 @@ func _handle_default_inputs(event: InputEvent) -> void:
 	# Ręczne przeładowanie (np. R)
 	if event.is_action_pressed(INPUT_RELOAD): 
 		var _item = inventory.get_current_item()
-		if _item and _item.data is ItemDistanceWeapon and _item.data.uses_ammunition:
-			if inventory.reload_current_weapon():
-				# Uruchamiamy karę czasową!
-				interaction_and_attack_stats_script.trigger_reload_cooldown(_item.data.reload_time)
+		if _item != null and _item.data.components != null:
+			# Szukamy komponentu broni dystansowej
+			for comp in _item.data.components:
+				if comp is RangedWeaponComponent and comp.uses_ammunition:
+					if inventory.reload_current_weapon():
+						interaction_and_attack_stats_script.trigger_reload_cooldown(comp.reload_time)
+					break # Znaleziono broń dystansową, kończymy pętlę
 
 	# --- ZAAWANSOWANA ZMIANA AMUNICJI ---
 	# TODO Skonfiguruj w InputMap np. klawisz "T" jako "ChangeAmmo" 
@@ -378,23 +385,34 @@ func _handle_default_inputs(event: InputEvent) -> void:
 	# UŻYCIE PRZEDMIOTU (lub wejście w tryb budowy)
 	if event.is_action_pressed(INPUT_USE_ITEM):
 		var _item = inventory.get_current_item()
-		if _item != null and _item.data != null:
-			var _item_data = _item.data 
-			# Sprawdzamy czy to przedmiot do postawienia
-			if _item_data is PlaceableItem:
-				_start_building(_item_data)
-			# Zwykłe użycie
-			elif interaction_and_attack_stats_script.can_attack():
-				if _item_data is EatableItem:
-					if _item_data.affect_target(self):
-						inventory.consume_current_item()
-						interaction_and_attack_stats_script.reset_cooldown()
+		if _item != null and _item.data != null and _item.data.components != null:
+			for comp in _item.data.components:
+				
+				# 1. Obsługa budowania (PlaceableComponent sam odpali _start_building)
+				if comp is PlaceableComponent:
+					comp.try_execute(self, self, _item)
+					break
+					
+				# 2. Obsługa konsumpcji (Zabezpieczona zegarem ataku)
+				elif comp is ConsumableComponent:
+					if interaction_and_attack_stats_script.can_attack():
+						# Jeśli try_execute zwróci false, warunki nie zostały spełnione
+						var success = comp.try_execute(self, self, _item)
+						if not success:
+							print("Nie można użyć przedmiotu! Warunki niespełnione.")
+							# Tutaj możesz w przyszłości dodać np. dźwięk błędu z UI
+					break
 
 func _handle_building_inputs(event: InputEvent) -> void:
 	# W trybie budowy atak = postawienie obiektu
 	if event.is_action_pressed(INPUT_ATTACK):
 		if builder_component.try_place_object():
-			inventory.consume_current_item()
+			# --- NAPRAWA: Nowy system zużywania przedmiotów ---
+			var current_item = inventory.get_current_item()
+			if current_item != null:
+				current_item.consume_amount(1)
+				inventory.clean_dead_items()
+			# --------------------------------------------------
 			_cancel_building() # Wychodzimy z trybu budowy po udanym postawieniu
 	
 	# Obracanie obiektu
@@ -405,14 +423,13 @@ func _handle_building_inputs(event: InputEvent) -> void:
 	if event.is_action_pressed(INPUT_INTERACT) or event.is_action_pressed(INPUT_USE_ITEM):
 		_cancel_building()
 
-func _start_building(item_data: PlaceableItem) -> void:
+func _start_building(placeable_comp: PlaceableComponent) -> void:
 	if not builder_component:
 		push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
 		return
 		
-	# Zlecenie budowy bezpośrednio do Buildera (przekazujemy cały obiekt item_data)
-	# Jeśli Builder zwróci true, to znaczy że pomyślnie załadował scenę i wywołał "ducha"
-	if builder_component.start_building(item_data):
+	# Zlecenie budowy bezpośrednio do Buildera (przekazujemy KOMPONENT, a nie item_data)
+	if builder_component.start_building(placeable_comp):
 		current_state = PlayerState.BUILDING
 		is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
 		print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
@@ -432,59 +449,54 @@ func _cancel_building() -> void:
 
 ## Wywołuje się kiedy ekwipunek jest aktualizowany.
 func on_inventory_update() :
-	var current_slot = inventory.get_current_slot()
 	var current_item = inventory.get_current_item()
 	
 	# Aktualizacja ręki gracza (itemu w ręce)
 	if current_item != null:
-		# Jeśli slot nie jest pusty, wkładamy przedmiot do dłoni rycerza.
 		held_item_visual.texture = current_item.data.item_icon
-		held_item_visual.show() # Pokazujemy dłoń (item)
+		held_item_visual.show() 
 	else:
-		# Jeśli slot jest pusty, czyścimy dłoń
 		held_item_visual.texture = null
-		held_item_visual.hide() # Ukrywamy, żeby nie było widać "niczego"
+		held_item_visual.hide() 
 	
+	# ODCZYT STATYSTYK Z KOMPONENTÓW
+	interaction_and_attack_stats_script.actual_extra_effects = []
+	interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data # Domyślnie na pięści
 	
-	# 1. ODPINANIE STAREGO SYGNAŁU
-	if last_connected_slot != null and not last_connected_slot.is_empty():
-		if last_connected_slot.item.item_broken.is_connected(_on_item_broken):
-			last_connected_slot.item.item_broken.disconnect(_on_item_broken)
-
-	# 2. PODŁĄCZANIE NOWEGO SYGNAŁU
-	if current_slot != null and not current_slot.is_empty():
-		if not current_slot.item.item_broken.is_connected(_on_item_broken):
-			current_slot.item.item_broken.connect(_on_item_broken)
-		last_connected_slot = current_slot
+	if current_item != null and current_item.data.components != null:
+		var has_custom_cooldown = false
+		for comp in current_item.data.components:
+			if comp is MeleeWeaponComponent:
+				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
+				if comp.attack_data != null:
+					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				interaction_and_attack_stats_script.actual_extra_effects = comp.effects
+				has_custom_cooldown = true
+				break
+			elif comp is RangedWeaponComponent:
+				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
+				if comp.attack_data != null:
+					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				interaction_and_attack_stats_script.actual_extra_effects = comp.weapon_effects
+				has_custom_cooldown = true
+				break
+			# UWAGA: ConsumableComponent i PlaceableComponent celowo pomijamy w tej pętli, 
+			# dzięki czemu trzymając jedzenie/surowiec, gracz zachowuje cooldown i statystyki "pięści"!
+				
+		if not has_custom_cooldown:
+			interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
 	else:
-		last_connected_slot = null
-	
-	
-	#Aktualizacja cooldownu z przedmiotu używalnego albo z pustych rąk
-	if current_item != null and current_item.data is UseableItem:
-		var useable_data = current_item.data as UseableItem
-		
-		# --- UŻYWAMY NOWEJ FUNKCJI DO BEZPIECZNEJ ZMIANY COOLDOWNU! ---
-		interaction_and_attack_stats_script.change_item_cooldown(useable_data.use_cooldown)
-		
-		# PRZEKAZUJEMY DODATKOWE EFEKTY Z PRZEDMIOTU DO KOMPONENTU
-		if "effects" in useable_data:
-			interaction_and_attack_stats_script.actual_extra_effects = useable_data.effects
-		
-		if useable_data is ItemWeapon:
-			interaction_and_attack_stats_script.actual_attack_data = useable_data.attack_data
-	else:
-		# --- UŻYWAMY NOWEJ FUNKCJI RÓWNIEŻ DLA PUSTYCH RĄK! ---
 		interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
-		
-		interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data
-		# Puste ręce nie mają dodatkowych efektów
-		interaction_and_attack_stats_script.actual_extra_effects = []
 	
-	# --- ZABEZPIECZENIE TRYBU BUDOWANIA ---
-	# Jeśli gracz zmieni slot lub wyrzuci przedmiot w trakcie trwania trybu budowy
+	# ZABEZPIECZENIE TRYBU BUDOWANIA
 	if current_state == PlayerState.BUILDING:
-		if current_item == null or not current_item.data is PlaceableItem:
+		var is_placeable = false
+		if current_item != null and current_item.data.components != null:
+			for comp in current_item.data.components:
+				if comp is PlaceableComponent:
+					is_placeable = true
+					break
+		if not is_placeable:
 			_cancel_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
@@ -499,11 +511,6 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, aim_target)
 	else:
 		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
-
-## Wywołuje się gdy przedmiot jest niszczony.
-func _on_item_broken(broken_item_name: String):
-	print("Twój przedmiot zniszczył się: ", broken_item_name)
-	# Tutaj możesz dodać np.: $AudioStreamPlayer.play()
 
 # Nadpisanie bazowej funkcji z CharacterEntity
 func respawn_sequence() -> void:
@@ -542,19 +549,12 @@ func perform_attack() -> void:
 			target_enemy, 
 			current_item, 
 			inventory, # <--- WSTRZYKUJEMY EKWIPUNEK
-			interaction_and_attack_stats_script, 
+			interaction_and_attack_stats_script,
 			has_los
 		)
 
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
-	var _item = inventory.get_current_item()
-	var _item_data = _item.data if _item != null else null
-	
-	# --- NAPRAWA: Zasięg pobierany bezpośrednio ze statystyk, bez kosmicznych mnożników! ---
-	if _item_data is ItemWeapon or _item_data == null:
-		return float(interaction_and_attack_stats_script.get_total_range())
-	else:
-		return 0.0
+	return float(interaction_and_attack_stats_script.get_total_range())
 
 #endregion

@@ -57,42 +57,56 @@ func _on_interacted(_interactor: Node) -> void:
 
 
 # ----------------------------------------------------
-# --- ZARZĄDZANIE INSTANCJAMI (Kompatybilne z inventory.gd) ---
+# --- ZARZĄDZANIE INSTANCJAMI (Kompatybilne z ECS) ---
 # ----------------------------------------------------
 
 ## Przyjmuje instancję do skrzyni (automatyczne szukanie miejsca)
 ## Zwraca null jeśli wszystko weszło, lub resztę instancji, jeśli zabrakło miejsca.
 func insert_instance(instance_to_add: ItemInstance) -> ItemInstance:
-	if instance_to_add == null or instance_to_add.amount <= 0:
+	# ZMIANA: Czytamy ilość ze słownika 'state'
+	var add_amount = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
+	if instance_to_add == null or add_amount <= 0:
 		return null
 		
+	# ZMIANA: Szukamy komponentu StackComponent zamiast czytać zmienną z ItemData
+	var is_stackable = false
+	var max_stack = 1
+	if instance_to_add.data.components != null:
+		for comp in instance_to_add.data.components:
+			if comp is StackComponent:
+				is_stackable = true
+				max_stack = comp.max_stack
+				break
+
 	# 1. Próbujemy uzupełnić istniejące stosy
-	if instance_to_add.data.item_is_stackable:
+	if is_stackable:
 		for slot in slots:
-			# Używamy potężnego can_stack_with zamiast głupiego sprawdzania item_id
 			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
-				var available_space = instance_to_add.data.item_max_stack_count - slot.item.amount
+				var slot_amount = slot.item.state.get("amount", 1)
+				var available_space = max_stack - slot_amount
+				
 				if available_space > 0:
-					var adding = min(instance_to_add.amount, available_space)
-					slot.item.amount += adding
-					instance_to_add.amount -= adding
+					# ZMIANA: Modyfikujemy słownik state zamiast zmiennej amount
+					var adding = min(instance_to_add.state.get("amount", 1), available_space)
+					slot.item.state["amount"] = slot_amount + adding
+					instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
 					
-					if instance_to_add.amount <= 0:
+					if instance_to_add.state["amount"] <= 0:
 						storage_updated.emit()
 						return null # Całość się zmieściła w stosie
-
+						
 	# 2. Szukamy dowolnego pustego slota od lewej
 	for slot in slots:
 		if slot.is_empty():
 			slot.item = instance_to_add
 			storage_updated.emit()
-			return null
+			return null # Przedmiot zajął pusty slot
 			
-	# Brak miejsca - zwracamy instancję z powrotem
+	# Brak miejsca - zwracamy instancję z powrotem do gracza/na ziemię
 	return instance_to_add
 
 ## Wkłada instancję do KONKRETNEGO slotu (przydatne przy Drag & Drop w UI)
-## Zwraca stary item (jeśli slot był zajęty) lub null, jeśli udało się położyć.
+## Zwraca stary item (jeśli slot był zajęty) lub null, jeśli się udało.
 func insert_instance_at(instance_to_add: ItemInstance, slot_index: int) -> ItemInstance:
 	if slot_index < 0 or slot_index >= slots_amount:
 		return instance_to_add
@@ -105,22 +119,33 @@ func insert_instance_at(instance_to_add: ItemInstance, slot_index: int) -> ItemI
 		storage_updated.emit()
 		return null
 		
-	# Jeśli w slocie jest ten sam przedmiot i można go stackować
+	# Jeśli w slocie jest ten sam przedmiot - sprawdzamy czy można go stackować
 	if slot.item.can_stack_with(instance_to_add):
-		var available_space = slot.item.data.item_max_stack_count - slot.item.amount
+		# ZMIANA: Znowu musimy znaleźć StackComponent dla przedmiotu w slocie
+		var max_stack = 1
+		if slot.item.data.components != null:
+			for comp in slot.item.data.components:
+				if comp is StackComponent:
+					max_stack = comp.max_stack
+					break
+					
+		var slot_amount = slot.item.state.get("amount", 1)
+		var available_space = max_stack - slot_amount
+		
 		if available_space > 0:
-			var adding = min(instance_to_add.amount, available_space)
-			slot.item.amount += adding
-			instance_to_add.amount -= adding
+			var adding = min(instance_to_add.state.get("amount", 1), available_space)
+			# ZMIANA: Modyfikujemy słownik state
+			slot.item.state["amount"] = slot_amount + adding
+			instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
 			
-			if instance_to_add.amount <= 0:
+			if instance_to_add.state["amount"] <= 0:
 				storage_updated.emit()
 				return null
-			else:
-				storage_updated.emit()
-				return instance_to_add # Zwraca resztę, która nie weszła do stacka
-				
-	# Jeśli w slocie jest inny przedmiot (lub brak miejsca w stacku) - Zamieniamy je miejscami
+		else:
+			storage_updated.emit()
+			return instance_to_add # Zwraca resztę, która nie weszła do stacka
+			
+	# Jeśli w slocie jest inny przedmiot (lub brak miejsca) - Zamieniamy je miejscami!
 	var old_instance = slot.item
 	slot.item = instance_to_add
 	storage_updated.emit()
@@ -134,23 +159,27 @@ func remove_instance(slot_index: int, amount_to_remove: int = -1) -> ItemInstanc
 	var slot = slots[slot_index]
 	if slot.is_empty():
 		return null
-	
+		
 	var extracted_instance
+	var current_slot_amount = slot.item.state.get("amount", 1)
 	
 	# Scenariusz 1: Zabieramy cały stack (lub wpisano wartość -1)
-	if amount_to_remove == -1 or amount_to_remove >= slot.item.amount:
+	if amount_to_remove == -1 or amount_to_remove >= current_slot_amount:
 		extracted_instance = slot.item
 		slot.clear_slot()
 		storage_updated.emit()
 		return extracted_instance
 		
 	# Scenariusz 2: Zabieramy tylko część sztuk (np. Shift+Click lub prawy przycisk myszy)
-	# Tworzymy nową instancję na bazie starej
-	# GŁĘBOKA KOPIA ABY ODCIAĆ NOWY STOS OD STAREGO
 	var unique_data = slot.item.data.duplicate(true)
 	extracted_instance = ItemInstance.new(unique_data, amount_to_remove)
-	extracted_instance.durability = slot.item.durability # Klonujemy zużycie
 	
-	slot.item.amount -= amount_to_remove
+	# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+	extracted_instance.state = slot.item.state.duplicate(true)
+	extracted_instance.state["amount"] = amount_to_remove
+		
+	# Zdejmujemy zabraną ilość z oryginalnego slotu
+	slot.item.state["amount"] = current_slot_amount - amount_to_remove
+	
 	storage_updated.emit()
 	return extracted_instance

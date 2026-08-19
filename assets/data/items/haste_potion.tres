@@ -1,22 +1,31 @@
-[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://chssjufigosbf"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://chssjufigosbf"]
 
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_lf0xb"]
-[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="2_lf0xb"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_np566"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_frfbt"]
 [ext_resource type="Texture2D" uid="uid://crf352jj6tc0q" path="res://assets/textures/samples_examples/items/yelow_potion.png" id="3_lf0xb"]
-[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_lf0xb"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_p1xo0"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_yaamg"]
+[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/active_effects/haste_effect.gd" id="4_k408r"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_xytic"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_sa4o5"]
 
-[sub_resource type="Resource" id="Resource_np566"]
-script = ExtResource("2_lf0xb")
+[sub_resource type="Resource" id="Resource_1bmeu"]
+script = ExtResource("4_k408r")
 metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
 
+[sub_resource type="Resource" id="Resource_1ni57"]
+script = ExtResource("5_xytic")
+use_cooldown = 1.0
+effects = Array[ExtResource("3_yaamg")]([SubResource("Resource_1bmeu")])
+
+[sub_resource type="Resource" id="Resource_fx1di"]
+script = ExtResource("6_sa4o5")
+max_stack = 12
+
 [resource]
-script = ExtResource("4_lf0xb")
-effects = Array[ExtResource("1_lf0xb")]([SubResource("Resource_np566")])
-use_cooldown = 0.25
-item_id = 14
+script = ExtResource("3_p1xo0")
+item_id = &"haste_potion"
 item_name = "Haste Potion"
-item_type = "Consumable"
 item_description = "It makes you faster."
 item_icon = ExtResource("3_lf0xb")
-item_is_stackable = true
-item_max_stack_count = 12
+components = Array[ExtResource("1_np566")]([SubResource("Resource_1ni57"), SubResource("Resource_fx1di")])

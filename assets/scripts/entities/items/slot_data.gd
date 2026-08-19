@@ -20,4 +20,4 @@ func clear_slot() -> void:
 
 # Mały dodatek dla wygody
 func is_empty() -> bool:
-	return item == null or item.data == null or item.amount <= 0
+	return item == null or item.data == null or item.state.get("amount", 0) <= 0

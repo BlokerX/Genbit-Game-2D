@@ -1,22 +1,31 @@
-[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://4nrtiqt267k8"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://4nrtiqt267k8"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_8r3ls"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_lb6st"]
 [ext_resource type="Script" uid="uid://lcxsjhe5qlia" path="res://assets/scripts/entities/effects/active_effects/giant_effect.gd" id="2_lb6st"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_y53fk"]
 [ext_resource type="Texture2D" uid="uid://d2bdfvjcwxoqr" path="res://assets/textures/samples_examples/items/red_potion.png" id="3_nici2"]
-[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_ar02w"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_nkmrl"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_kqh4c"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_dloqk"]
 
-[sub_resource type="Resource" id="Resource_ko707"]
+[sub_resource type="Resource" id="Resource_q74gk"]
 script = ExtResource("2_lb6st")
 metadata/_custom_type_script = "uid://lcxsjhe5qlia"
 
+[sub_resource type="Resource" id="Resource_dp75e"]
+script = ExtResource("5_nkmrl")
+use_cooldown = 1.0
+effects = Array[ExtResource("1_8r3ls")]([SubResource("Resource_q74gk")])
+
+[sub_resource type="Resource" id="Resource_u2rbh"]
+script = ExtResource("6_kqh4c")
+max_stack = 10
+
 [resource]
-script = ExtResource("4_ar02w")
-effects = Array[ExtResource("1_8r3ls")]([SubResource("Resource_ko707")])
-use_cooldown = 0.25
-item_id = 16
+script = ExtResource("8_dloqk")
+item_id = &"gigantic_potion"
 item_name = "Gigantic Potion"
-item_type = "Consumable"
 item_description = "It makes you gigantic."
 item_icon = ExtResource("3_nici2")
-item_is_stackable = true
-item_max_stack_count = 12
+components = Array[ExtResource("1_lb6st")]([SubResource("Resource_dp75e"), SubResource("Resource_u2rbh")])

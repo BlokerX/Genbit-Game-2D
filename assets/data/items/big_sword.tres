@@ -1,26 +1,35 @@
-[gd_resource type="Resource" script_class="ItemWeapon" format=3 uid="uid://bownsdq2b671r"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bownsdq2b671r"]
 
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_g5vyt"]
-[ext_resource type="Script" uid="uid://j04ope2djhxk" path="res://assets/scripts/entities/items/item_weapon.gd" id="1_r625p"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_tfixi"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_joohm"]
 [ext_resource type="Texture2D" uid="uid://o3as3a0num1a" path="res://assets/textures/samples_examples/items/sword.png" id="3_g5vyt"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="3_v3wd0"]
+[ext_resource type="Script" uid="uid://cmsn2kpgdc7r" path="res://assets/scripts/entities/items/components/melee_weapon_component.gd" id="5_nkun4"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_e4o0i"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_x34j0"]
 
-[sub_resource type="Resource" id="Resource_joohm"]
+[sub_resource type="Resource" id="Resource_ktjev"]
 script = ExtResource("1_g5vyt")
 damage = 30
-critical_damage = 15
-critical_rate = 0.2
-max_range = 130.0
-stun_time = 1.5
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+critical_damage = 10
+critical_rate = 0.05
+max_range = 200.0
+stun_time = 1.0
+
+[sub_resource type="Resource" id="Resource_xs6vj"]
+script = ExtResource("5_nkun4")
+attack_data = SubResource("Resource_ktjev")
+use_cooldown = 2.2
+
+[sub_resource type="Resource" id="Resource_rm1e4"]
+script = ExtResource("6_e4o0i")
+max_durability = 100
 
 [resource]
-script = ExtResource("1_r625p")
-attack_data = SubResource("Resource_joohm")
-use_cooldown = 2.5
-item_id = 7
-item_name = "Big sword"
-item_type = "Weapon"
+script = ExtResource("8_x34j0")
+item_id = &"big_sword"
+item_name = "Big Sword"
 item_description = "It deals 30 damage and its maximum durability is 40."
 item_icon = ExtResource("3_g5vyt")
-max_durable = 40
+components = Array[ExtResource("2_joohm")]([SubResource("Resource_xs6vj"), SubResource("Resource_rm1e4")])

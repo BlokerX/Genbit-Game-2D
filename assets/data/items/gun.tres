@@ -1,30 +1,39 @@
-[gd_resource type="Resource" script_class="ItemDistanceWeapon" format=3 uid="uid://d26ydrnx3wo6w"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://d26ydrnx3wo6w"]
 
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="1_myym0"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="2_qf0ew"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="2_h6b14"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_jp8f5"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="3_6oxuf"]
 [ext_resource type="Texture2D" uid="uid://cjsv511sun6ls" path="res://assets/textures/samples_examples/items/gun.png" id="3_qf0ew"]
-[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="4_d4pv6"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="4_jp8f5"]
-[ext_resource type="Script" uid="uid://dg8b1rxwj1heh" path="res://assets/scripts/entities/items/item_distance_weapon.gd" id="5_d4pv6"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_thk0w"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="4_kmkls"]
+[ext_resource type="Script" uid="uid://dypstvdhvi7pi" path="res://assets/scripts/entities/items/components/ranged_weapon_component.gd" id="4_sfuo2"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="5_kmkls"]
+[ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_r1ltu"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_r1ltu"]
 
-[sub_resource type="Resource" id="Resource_bc7dr"]
-script = ExtResource("1_myym0")
+[sub_resource type="Resource" id="Resource_xto05"]
+script = ExtResource("2_h6b14")
 damage = 0
-max_range = 1000.0
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+max_range = 500.0
+stun_time = 0.5
+
+[sub_resource type="Resource" id="Resource_v7uqk"]
+script = ExtResource("4_sfuo2")
+use_cooldown = 1.2
+attack_data = SubResource("Resource_xto05")
+accepted_ammunition_type = 6
+magazine_capacity = 5
+projectile_texture = ExtResource("5_r1ltu")
+projectile_scene = ExtResource("4_kmkls")
+
+[sub_resource type="Resource" id="Resource_6akhw"]
+script = ExtResource("6_r1ltu")
+max_durability = 200
 
 [resource]
-script = ExtResource("5_d4pv6")
-accepted_ammunition_type = "GunAmmunition"
-magazine_capacity = 5
-auto_reload = false
-projectile_texture = ExtResource("4_d4pv6")
-projectile_scene = ExtResource("4_jp8f5")
-attack_data = SubResource("Resource_bc7dr")
-is_ranged = true
-weapon_type = "Gun"
-item_id = 8
+script = ExtResource("3_thk0w")
+item_id = &"gun"
 item_name = "Gun"
-item_type = "Weapon"
 item_description = "A gun machine."
 item_icon = ExtResource("3_qf0ew")
+components = Array[ExtResource("2_jp8f5")]([SubResource("Resource_v7uqk"), SubResource("Resource_6akhw")])

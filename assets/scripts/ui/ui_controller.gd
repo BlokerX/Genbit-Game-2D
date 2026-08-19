@@ -334,14 +334,20 @@ func _execute_drop_in_world(dropped_instance: ItemInstance) -> void:
 func _try_drop_hovered_slot(drop_all: bool) -> void:
 	# 1. Priorytet 1: Jeśli mamy coś w ręku (kursorze), to najpierw wyrzucamy z kursora
 	if item_in_hand != null:
-		var amount_to_drop = item_in_hand.amount if drop_all else 1
+		# ZMIANA: Pobieranie ilości ze słownika 'state'
+		var hand_amount = item_in_hand.state.get("amount", 1)
+		var amount_to_drop = hand_amount if drop_all else 1
+		
 		var unique_data = item_in_hand.data.duplicate(true)
 		var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
 		
-		dropped_instance.durability = item_in_hand.durability
+		# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+		dropped_instance.state = item_in_hand.state.duplicate(true)
+		dropped_instance.state["amount"] = amount_to_drop
 		
-		item_in_hand.amount -= amount_to_drop
-		if item_in_hand.amount <= 0:
+		# Odejmowanie ze słownika
+		item_in_hand.state["amount"] = hand_amount - amount_to_drop
+		if item_in_hand.state["amount"] <= 0:
 			item_in_hand = null
 			
 		_update_cursor_visuals()
@@ -365,14 +371,12 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 		var slot_idx = target_slot_ui.slot_index
 		
 		# -- ZABEZPIECZENIE: WYRZUCANIE ZAŁOŻONEGO PLECAKA --
-		# Używamy unequip_backpack, bo inaczej ekwipunek by się nie zmniejszył!
 		if slot_idx == -2 and parent_node is Inventory:
 			if not parent_node.backpack_slot.is_empty():
 				var backpack_to_drop = parent_node.unequip_backpack()
 				_execute_drop_in_world(backpack_to_drop)
 			return
 		
-		# Wyszukiwanie normalnego slotu z ekwipunku lub skrzyni
 		var target_slot: SlotData
 		if parent_node is StorageComponent:
 			target_slot = parent_node.slots[slot_idx]
@@ -381,17 +385,20 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 			
 		# Odrywanie przedmiotu ze slota i rzut
 		if target_slot and not target_slot.is_empty():
-			var amount_to_drop = target_slot.item.amount if drop_all else 1
+			var slot_amount = target_slot.item.state.get("amount", 1)
+			var amount_to_drop = slot_amount if drop_all else 1
+			
 			var unique_data = target_slot.item.data.duplicate(true)
 			var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
 			
-			dropped_instance.durability = target_slot.item.durability
+			# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
+			dropped_instance.state = target_slot.item.state.duplicate(true)
+			dropped_instance.state["amount"] = amount_to_drop
 			
-			target_slot.item.amount -= amount_to_drop
-			if target_slot.item.amount <= 0:
+			target_slot.item.state["amount"] = slot_amount - amount_to_drop
+			if target_slot.item.state["amount"] <= 0:
 				target_slot.clear_slot()
 				
-			# Aktualizacja wyglądu skrzynek
 			if parent_node is StorageComponent:
 				parent_node.storage_updated.emit()
 			elif parent_node is Inventory:
@@ -470,35 +477,38 @@ func _handle_left_click(slot: SlotData) -> void:
 	if player_inventory != null and slot == player_inventory.backpack_slot:
 		if item_in_hand == null:
 			if not slot.is_empty():
-				# Zdejmujemy plecak i bierzemy pod kursor
 				item_in_hand = player_inventory.unequip_backpack()
 		else:
-			# Kładziemy przedmiot ze wskaźnika w slot plecaka
-			if item_in_hand.data is BackpackItem:
-				# Zabezpieczenie przed stackami
-				if item_in_hand.amount > 1:
-					# Odrywamy tylko 1 sztukę
+			# ZMIANA ECS: Zamiast "is BackpackItem", szukamy BackpackComponent
+			var is_backpack = false
+			if item_in_hand.data.components != null:
+				for comp in item_in_hand.data.components:
+					if comp is BackpackComponent:
+						is_backpack = true
+						break
+			
+			if is_backpack:
+				# Odczyt ze słownika
+				var hand_amount = item_in_hand.state.get("amount", 1)
+				if hand_amount > 1:
 					var unique_data = item_in_hand.data.duplicate(true)
 					var single_bp = ItemInstance.new(unique_data, 1)
 					
-					single_bp.durability = item_in_hand.durability
-					item_in_hand.amount -= 1
-					
-					# Podmieniamy plecak
+					if item_in_hand.state.has("durability"):
+						single_bp.state["durability"] = item_in_hand.state["durability"]
+						
+					item_in_hand.state["amount"] = hand_amount - 1
 					var old_bp = player_inventory.equip_backpack(single_bp)
-					
-					# Stary plecak (jeśli był) idzie z powrotem do ekwipunku lub na ziemię
 					if old_bp != null:
 						var remainder = player_inventory.add_instance(old_bp)
 						if remainder != null:
 							player_inventory.item_dropped.emit(remainder, false)
 				else:
-					# Jeśli trzymamy na myszce dokładnie 1 sztukę
 					var leftover = player_inventory.equip_backpack(item_in_hand)
 					item_in_hand = leftover
 			else:
 				print("W to miejsce można założyć tylko plecak!")
-		return # PRZERYWAMY, ignorując resztę kodu!
+		return
 
 	# --- ZWYKŁA LOGIKA DLA INNYCH SLOTÓW ---
 	if item_in_hand == null:
@@ -511,12 +521,24 @@ func _handle_left_click(slot: SlotData) -> void:
 			item_in_hand = null
 		else:
 			if slot.item.can_stack_with(item_in_hand):
-				var available_space = slot.item.data.item_max_stack_count - slot.item.amount
+				# ZMIANA ECS: Szukamy max_stack w komponencie StackComponent
+				var max_stack = 1
+				if slot.item.data.components != null:
+					for comp in slot.item.data.components:
+						if comp is StackComponent:
+							max_stack = comp.max_stack
+							break
+							
+				var slot_amount = slot.item.state.get("amount", 1)
+				var hand_amount = item_in_hand.state.get("amount", 1)
+				var available_space = max_stack - slot_amount
+				
 				if available_space > 0:
-					var amount_to_add = min(available_space, item_in_hand.amount)
-					slot.item.amount += amount_to_add
-					item_in_hand.amount -= amount_to_add
-					if item_in_hand.amount <= 0:
+					var amount_to_add = min(available_space, hand_amount)
+					slot.item.state["amount"] = slot_amount + amount_to_add
+					item_in_hand.state["amount"] = hand_amount - amount_to_add
+					
+					if item_in_hand.state["amount"] <= 0:
 						item_in_hand = null
 			else:
 				var temp_item = slot.item
@@ -526,15 +548,19 @@ func _handle_left_click(slot: SlotData) -> void:
 func _handle_right_click(slot: SlotData) -> void:
 	if item_in_hand == null:
 		if not slot.is_empty():
-			if slot.item.amount > 1:
+			var slot_amount = slot.item.state.get("amount", 1)
+			if slot_amount > 1:
 				@warning_ignore("integer_division")
-				var half_amount = int(slot.item.amount / 2) 
+				var half_amount = int(slot_amount / 2) 
 				
 				var unique_data = slot.item.data.duplicate(true)
 				item_in_hand = ItemInstance.new(unique_data, half_amount)
 				
-				item_in_hand.durability = slot.item.durability
-				slot.item.amount -= half_amount
+				# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
+				item_in_hand.state = slot.item.state.duplicate(true)
+				item_in_hand.state["amount"] = half_amount
+					
+				slot.item.state["amount"] = slot_amount - half_amount
 			else:
 				item_in_hand = slot.item
 				slot.clear_slot()
@@ -542,15 +568,31 @@ func _handle_right_click(slot: SlotData) -> void:
 		if slot.is_empty():
 			var unique_data = item_in_hand.data.duplicate(true)
 			slot.item = ItemInstance.new(unique_data, 1)
-			slot.item.durability = item_in_hand.durability
-			item_in_hand.amount -= 1
-			if item_in_hand.amount <= 0:
+			
+			# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
+			slot.item.state = item_in_hand.state.duplicate(true)
+			slot.item.state["amount"] = 1
+				
+			var hand_amount = item_in_hand.state.get("amount", 1)
+			item_in_hand.state["amount"] = hand_amount - 1
+			if item_in_hand.state["amount"] <= 0:
 				item_in_hand = null
+				
 		elif slot.item.can_stack_with(item_in_hand):
-			if slot.item.amount < slot.item.data.item_max_stack_count:
-				slot.item.amount += 1
-				item_in_hand.amount -= 1
-				if item_in_hand.amount <= 0:
+			var max_stack = 1
+			if slot.item.data.components != null:
+				for comp in slot.item.data.components:
+					if comp is StackComponent:
+						max_stack = comp.max_stack
+						break
+						
+			var slot_amount = slot.item.state.get("amount", 1)
+			var hand_amount = item_in_hand.state.get("amount", 1)
+			
+			if slot_amount < max_stack:
+				slot.item.state["amount"] = slot_amount + 1
+				item_in_hand.state["amount"] = hand_amount - 1
+				if item_in_hand.state["amount"] <= 0:
 					item_in_hand = null
 
 func _handle_quick_transfer(from_node: Node, slot_index: int) -> void:
@@ -594,27 +636,30 @@ func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
 	if not player_inventory: 
 		return false
 		
-	# Sprawdzamy, czy kliknęliśmy na przedmiot będący w naszym ekwipunku
 	if from_node is Inventory:
 		var slot_data = from_node.slots[slot_index]
 		
-		# Jeśli przedmiot to plecak LUB sakiewka (dziedziczy po BackpackItem) 
-		# ORAZ slot na plecy jest wolny
-		if not slot_data.is_empty() and slot_data.item.data is BackpackItem:
+		# ZMIANA ECS: Szukamy klocka BackpackComponent
+		var is_backpack = false
+		if not slot_data.is_empty() and slot_data.item.data.components != null:
+			for comp in slot_data.item.data.components:
+				if comp is BackpackComponent:
+					is_backpack = true
+					break
+		
+		if is_backpack:
 			if player_inventory.backpack_slot.is_empty():
-				# Tworzymy instancję jednej sztuki (gdyby sakiewki były stackowalne)
-				# ZABEZPIECZENIE DANYCH PLECAKA/SAKIEWKI
 				var unique_data = slot_data.item.data.duplicate(true)
 				var single_bp = ItemInstance.new(unique_data, 1)
 				
-				single_bp.durability = slot_data.item.durability
+				if slot_data.item.state.has("durability"):
+					single_bp.state["durability"] = slot_data.item.state["durability"]
 				
-				# Odejmujemy sztukę z aktualnego slota
-				slot_data.item.amount -= 1
-				if slot_data.item.amount <= 0:
+				var slot_amount = slot_data.item.state.get("amount", 1)
+				slot_data.item.state["amount"] = slot_amount - 1
+				if slot_data.item.state["amount"] <= 0:
 					slot_data.clear_slot()
 					
-				# Zakładamy na plecy
 				player_inventory.equip_backpack(single_bp)
 				return true
 				
@@ -624,8 +669,11 @@ func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
 		cursor_item_rect.texture = item_in_hand.data.item_icon
 		cursor_item_rect.show()
-		if item_in_hand.amount > 1:
-			cursor_amount_label.text = str(item_in_hand.amount)
+		
+		# ZMIANA ECS
+		var hand_amount = item_in_hand.state.get("amount", 1)
+		if hand_amount > 1:
+			cursor_amount_label.text = str(hand_amount)
 			cursor_amount_label.show()
 		else:
 			cursor_amount_label.hide()

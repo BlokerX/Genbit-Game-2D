@@ -1,22 +1,31 @@
-[gd_resource type="Resource" script_class="EatableItem" format=3 uid="uid://b3rurgfxeb1gd"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b3rurgfxeb1gd"]
 
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_6rf7q"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_jlayc"]
 [ext_resource type="Script" uid="uid://c7l5kqe6qpcqt" path="res://assets/scripts/entities/effects/full_restore_effect.gd" id="2_jlayc"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_y06e2"]
 [ext_resource type="Texture2D" uid="uid://b8grgj8hph8s0" path="res://assets/textures/samples_examples/items/green_health_potion.png" id="3_6rf7q"]
-[ext_resource type="Script" uid="uid://c83l86jp4yub3" path="res://assets/scripts/entities/items/eatable_item.gd" id="4_nliqv"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_srpds"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_51rjc"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_p48p4"]
 
-[sub_resource type="Resource" id="Resource_dpgun"]
+[sub_resource type="Resource" id="Resource_1tqnk"]
 script = ExtResource("2_jlayc")
 metadata/_custom_type_script = "uid://c7l5kqe6qpcqt"
 
+[sub_resource type="Resource" id="Resource_1ofau"]
+script = ExtResource("5_srpds")
+use_cooldown = 1.0
+effects = Array[ExtResource("1_jlayc")]([SubResource("Resource_1tqnk")])
+
+[sub_resource type="Resource" id="Resource_c8mto"]
+script = ExtResource("6_51rjc")
+max_stack = 10
+
 [resource]
-script = ExtResource("4_nliqv")
-effects = Array[ExtResource("1_jlayc")]([SubResource("Resource_dpgun")])
-use_cooldown = 0.25
-item_id = 13
+script = ExtResource("8_p48p4")
+item_id = &"full_regenerate_potion"
 item_name = "Full Regenerate Potion"
-item_type = "Consumable"
 item_description = "It's good for you!"
 item_icon = ExtResource("3_6rf7q")
-item_is_stackable = true
-item_max_stack_count = 12
+components = Array[ExtResource("1_6rf7q")]([SubResource("Resource_1ofau"), SubResource("Resource_c8mto")])

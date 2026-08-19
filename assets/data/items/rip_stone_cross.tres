@@ -1,12 +1,19 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dxrnlcd6a8gg2"]
 
 [ext_resource type="Texture2D" uid="uid://0xqi3ainivjq" path="res://assets/textures/samples_examples/items/stone_cross.png" id="1_cgifo"]
-[ext_resource type="Script" uid="uid://bewpwc62nuxe8" path="res://assets/scripts/entities/items/_item_data.gd" id="2_vx16e"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_vx16e"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_p3g3a"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_6blee"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="3_ged4j"]
+
+[sub_resource type="Resource" id="Resource_4hs8o"]
+script = ExtResource("3_ged4j")
+max_stack = 16
 
 [resource]
-script = ExtResource("2_vx16e")
-item_id = 0
-item_name = "RIP for player"
+script = ExtResource("3_6blee")
+item_id = &"rip_stone_cross"
+item_name = "Rip Stone Cross"
 item_description = "Goodbye player."
 item_icon = ExtResource("1_cgifo")
-metadata/_custom_type_script = "uid://bewpwc62nuxe8"
+components = Array[ExtResource("1_vx16e")]([SubResource("Resource_4hs8o")])

@@ -2,7 +2,11 @@ extends StaticBody2D
 class_name PlacedObject
 
 @export_category("Drop Settings")
-@export var item_to_drop: PlaceableItem
+@export var item_to_drop: ItemData
+
+# Pamięć zużycia skrzynki!
+var saved_item_instance: ItemInstance = null
+
 @export var item_pickup_scene: PackedScene
 
 @onready var interactable_component : InteractableComponent = $InteractableComponent
@@ -40,21 +44,27 @@ func receive_effect(effect: Effect) -> bool:
 
 # --- GŁÓWNA LOGIKA WYRZUCANIA ---
 func _break_and_drop(return_base_item: bool) -> void:
-	# Jeśli gracz zebrał go kulturalnie (F), wyrzucamy sam obiekt (jego budulec) na ziemię
-	if return_base_item and item_to_drop != null and item_pickup_scene != null:
+	# Jeśli gracz zebrał go kulturalnie (F), wyrzucamy obiekt na ziemię
+	if return_base_item and item_pickup_scene != null:
 		var drop = item_pickup_scene.instantiate()
+
+		# ZMIANA: Zwracamy DOKŁADNIE to, co postawił gracz (z zapamiętanym stanem)
+		if saved_item_instance != null:
+			drop.set("item", saved_item_instance)
+		elif item_to_drop != null:
+			# Fallback: Jeśli skrzynia była postawiona z poziomu edytora (bez gracza)
+			var unique_drop_data = item_to_drop.duplicate(true)
+			var drop_instance = ItemInstance.new(unique_drop_data, 1)
+			drop.set("item", drop_instance)
+		else:
+			queue_free()
+			return
 		
-		# TWORZYMY GŁĘBOKĄ KOPIĘ ZWRACANEGO SZABLONU
-		var unique_drop_data = item_to_drop.duplicate(true)
-		var drop_instance = ItemInstance.new(unique_drop_data, 1)
-		
-		drop.set("item", drop_instance)
 		drop.global_position = global_position
 		get_parent().call_deferred("add_child", drop)
 		
 		if drop is RigidBody2D:
 			var jump_dir = Vector2(randf_range(-0.5, 0.5), -1.0).normalized()
 			drop.apply_central_impulse(jump_dir * 150.0)
-			
-	# Usuwamy obiekt z mapy
+		
 	queue_free()

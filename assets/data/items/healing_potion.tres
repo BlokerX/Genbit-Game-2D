@@ -1,23 +1,37 @@
-[gd_resource type="Resource" script_class="HealingItem" format=3 uid="uid://dryafysswfb8c"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dryafysswfb8c"]
 
-[ext_resource type="Script" uid="uid://bt87rjbntxpv" path="res://assets/scripts/entities/items/healing_item.gd" id="1_cboiq"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sx258"]
-[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="2_dxp2a"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_4a1bq"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_vb5ky"]
 [ext_resource type="Texture2D" uid="uid://bwjt65o40m1xo" path="res://assets/textures/samples_examples/items/green_potion.png" id="3_8ngts"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_dxp2a"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_my318"]
+[ext_resource type="Script" uid="uid://co0a4wasj6ye1" path="res://assets/scripts/entities/effects/heal_effect.gd" id="4_bap3u"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/active_effects/regeneration_effect.gd" id="5_tb5bx"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="6_bu331"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_svrkv"]
 
-[sub_resource type="Resource" id="Resource_8ngts"]
-script = ExtResource("2_dxp2a")
+[sub_resource type="Resource" id="Resource_5nqpw"]
+script = ExtResource("4_bap3u")
+heal_amount = 15
+metadata/_custom_type_script = "uid://co0a4wasj6ye1"
+
+[sub_resource type="Resource" id="Resource_dqt3d"]
+script = ExtResource("5_tb5bx")
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
 
+[sub_resource type="Resource" id="Resource_uq51b"]
+script = ExtResource("6_bu331")
+use_cooldown = 1.0
+effects = Array[ExtResource("3_my318")]([SubResource("Resource_5nqpw"), SubResource("Resource_dqt3d")])
+
+[sub_resource type="Resource" id="Resource_4mbea"]
+script = ExtResource("7_svrkv")
+max_stack = 12
+
 [resource]
-script = ExtResource("1_cboiq")
-allow_overheal = true
-effects = Array[ExtResource("1_sx258")]([SubResource("Resource_8ngts")])
-use_cooldown = 0.25
-item_id = 12
+script = ExtResource("3_dxp2a")
+item_id = &"healing_potion"
 item_name = "Healing Potion"
-item_type = "Consumable"
 item_description = "It restores 15 HP instantly per bottle."
 item_icon = ExtResource("3_8ngts")
-item_is_stackable = true
-item_max_stack_count = 12
+components = Array[ExtResource("1_4a1bq")]([SubResource("Resource_uq51b"), SubResource("Resource_4mbea")])

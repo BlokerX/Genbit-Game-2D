@@ -1,13 +1,25 @@
-[gd_resource type="Resource" script_class="BackpackItem" format=3 uid="uid://1ill1kife1mh"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://1ill1kife1mh"]
 
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_qfysx"]
 [ext_resource type="Texture2D" uid="uid://ddovyjgmvao5e" path="res://assets/textures/samples_examples/items/black_backpack.png" id="1_uugvb"]
-[ext_resource type="Script" uid="uid://bx57ryojee8n2" path="res://assets/scripts/entities/items/backpack_item.gd" id="2_8g1pa"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_htnub"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_fx10d"]
+[ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="4_a0o85"]
+[ext_resource type="Script" uid="uid://5r6jywnhkva1" path="res://assets/scripts/entities/items/components/backpack_component.gd" id="5_sv1ue"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="7_lk516"]
+
+[sub_resource type="Resource" id="Resource_1nod8"]
+script = ExtResource("4_a0o85")
+equip_slot_type = 5
+
+[sub_resource type="Resource" id="Resource_7jaki"]
+script = ExtResource("5_sv1ue")
+extra_slots_count = 23
 
 [resource]
-script = ExtResource("2_8g1pa")
-extra_slots_count = 23
-item_id = 3
+script = ExtResource("7_lk516")
+item_id = &"big_backpack"
 item_name = "Big Backpack"
-item_type = "BackpackItem"
 item_description = "Big backpack."
 item_icon = ExtResource("1_uugvb")
+components = Array[ExtResource("1_qfysx")]([SubResource("Resource_1nod8"), SubResource("Resource_7jaki")])

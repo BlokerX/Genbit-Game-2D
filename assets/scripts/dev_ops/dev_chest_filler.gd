@@ -74,9 +74,12 @@ func _fill_chest() -> void:
 		# --- KLUCZOWA ZMIANA: Przekazujemy wybraną ilość zamiast sztywnej '1' ---
 		var item_instance = ItemInstance.new(loaded_items[i].duplicate(true), default_items_amount)
 		
-		# Naprawiamy zużycie, jeśli przedmiot ma wytrzymałość
-		if item_instance.data and item_instance.data.max_durable > 0:
-			item_instance.durability = item_instance.data.max_durable
+		# Naprawiamy zużycie używając komponentów i słownika state
+		if item_instance.data and item_instance.data.components != null:
+			for comp in item_instance.data.components:
+				if comp is DurabilityComponent:
+					item_instance.state["durability"] = comp.max_durability
+					break
 			
 		new_slot.item = item_instance
 		storage_component.slots[i] = new_slot

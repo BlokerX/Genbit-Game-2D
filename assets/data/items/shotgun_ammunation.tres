@@ -1,18 +1,26 @@
-[gd_resource type="Resource" script_class="AmmunitionItem" format=3 uid="uid://cm44oxijhroq8"]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cm44oxijhroq8"]
 
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_wgm5f"]
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_dr2dm"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_6fhb6"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_b3ith"]
 [ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="3_gjhr6"]
-[ext_resource type="Script" uid="uid://b08o3oo8ifdm6" path="res://assets/scripts/entities/items/ammunition_item.gd" id="4_6fhb6"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_wgm5f"]
+[ext_resource type="Script" uid="uid://cra5s0v72gnjn" path="res://assets/scripts/entities/items/components/ammunition_component.gd" id="5_1ks31"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_7bqeg"]
+
+[sub_resource type="Resource" id="Resource_ipdfb"]
+script = ExtResource("5_1ks31")
+ammunition_type = 8
+override_projectile_texture = ExtResource("3_gjhr6")
+damage = 65
+
+[sub_resource type="Resource" id="Resource_omqr7"]
+script = ExtResource("6_7bqeg")
 
 [resource]
-script = ExtResource("4_6fhb6")
-ammunition_type = "ShotgunAmmunition"
-override_projectile_texture = ExtResource("3_gjhr6")
-damage = 50
-item_id = 26
-item_name = "Shotgun Ammunition"
-item_type = "Ammunition"
+script = ExtResource("3_wgm5f")
+item_id = &"shotgun_ammunation"
+item_name = "Shotgun Ammunation"
 item_description = "Shotgun bullet."
 item_icon = ExtResource("3_gjhr6")
-item_is_stackable = true
-item_max_stack_count = 100
+components = Array[ExtResource("1_dr2dm")]([SubResource("Resource_ipdfb"), SubResource("Resource_omqr7")])

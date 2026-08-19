@@ -1,119 +1,73 @@
-extends Resource
 class_name ItemInstance
+extends Resource
 
-## Sygnał pęknięcia emitowany przez konkretną sztukę broni
-signal item_broken(item_name: String)
+## Sygnał emitowany zawsze, gdy stan (ilość/wytrzymałość) ulegnie zmianie
+signal state_changed
 
 @export var data: ItemData
-## Kiedy -1 to nieskończone
-@export var amount: int = 1
-## Kiedy -1 to nieskończone
-@export var durability: int = -1
+## Uniwersalny kontener na całkowity stan przedmiotu (ilość, ładunki, zepsucie)
+@export var state: Dictionary = {}
 
-# --- CLEAN CODE: Uniwersalny kontener na stany (Amunicja, Zaklęcia, Modyfikatory) ---
-@export var custom_data: Dictionary = {}
-
-## Konstruktor ułatwiający tworzenie nowych przedmiotów "w locie"
 func _init(p_data: ItemData = null, p_amount: int = 1) -> void:
 	data = p_data
-	amount = p_amount
-	if data and data.max_durable > 0:
-		durability = data.max_durable
-
-## Funkcja przeniesiona ze SlotData – teraz niszczy się INSTANCJA przedmiotu, a nie cały slot!
-func reduce_durability(points: int = 1) -> void:
-	if data == null or data.max_durable <= 0:
-		return 
-		
-	durability -= points
+	state["amount"] = p_amount # Zapisujemy początkową ilość
 	
-	if is_broken():
-		item_broken.emit(data.item_name) # Informujemy, że OSTATNIA sztuka pękła
-
-func repair_item() -> void:
-	if data:
-		durability = data.max_durable
-
-func is_broken() -> bool:
-	# Zwracamy true TYLKO wtedy, gdy zepsuł się OSTATNI miecz w stacku
-	if data and data.max_durable > 0 and durability == 0 and amount <= 1:
-		return true
-	return false
+	if data != null and data.components != null:
+		for comp in data.components:
+			if comp != null and comp.has_method("initialize_state"):
+				comp.initialize_state(self)
 
 # =====================================================================
-# SYSTEM ŁĄCZENIA I PORÓWNYWANIA PRZEDMIOTÓW (REFLEKSJA)
+# SYSTEM ZUŻYWANIA (Samozarządzanie)
 # =====================================================================
 
-## Sprawdza, czy ten przedmiot można połączyć w stack z innym
+## Odejmuje wytrzymałość. Jeśli spadnie do zera, automatycznie zjada 1 sztukę.
+func consume_durability(amount: int = 1) -> void:
+	if state.has("durability"):
+		state["durability"] -= amount
+		if state["durability"] <= 0:
+			consume_amount(1)
+		else:
+			state_changed.emit()
+
+## Odejmuje ilość ze stacka. Automatycznie odnawia wytrzymałość nowej sztuki.
+func consume_amount(count: int = 1) -> void:
+	if state.has("amount"):
+		state["amount"] -= count
+		if state["amount"] > 0:
+			_reset_durability_from_components()
+		state_changed.emit()
+
+## Prywatna funkcja: Szuka komponentu Durability, by zresetować wytrzymałość nowej sztuki
+func _reset_durability_from_components() -> void:
+	if data != null and data.components != null:
+		for comp in data.components:
+			# Pobieramy maksymalną wytrzymałość z odpowiedniego klocka!
+			if comp.get_script().resource_path.ends_with("durability_component.gd"):
+				state["durability"] = comp.max_durability
+				break
+
+# =====================================================================
+# SYSTEM ŁĄCZENIA I PORÓWNYWANIA PRZEDMIOTÓW
+# =====================================================================
 func can_stack_with(other: ItemInstance) -> bool:
 	if other == null or data == null or other.data == null:
 		return false
 		
-	# 1. Podstawowe testy: czy są stackowalne i czy to ta sama "baza" (ID)
-	if not data.item_is_stackable or data.item_id != other.data.item_id:
+	# 1. Podstawowy test tożsamości (Sprawdzamy ID)
+	if data.item_id != other.data.item_id:
 		return false
 		
-	# 2. Sprawdzanie stanu z samej instancji (np. zużycie)
-	if data.max_durable > 0 and durability != other.durability:
-		return false
-		
-	# 3. Dynamiczne, głębokie sprawdzanie WSZYSTKICH właściwości obiektu Data!
-	return _are_objects_equal(data, other.data)
-
-## W pełni zautomatyzowana funkcja korzystająca z Refleksji.
-## Sprawdza każdy obiekt, każdą tablicę i każdą zagnieżdżoną zmienną (np. w AttackData, Effect)
-func _are_objects_equal(obj1: Object, obj2: Object) -> bool:
-	# Jeśli to dokładnie to samo miejsce w pamięci
-	if obj1 == obj2: return true
-	if obj1 == null or obj2 == null: return false
-	
-	# Jeśli to dwa różne typy skryptów (np. ItemWeapon vs ItemDistanceWeapon)
-	if obj1.get_script() != obj2.get_script(): return false
-	
-	# Jeśli oba obiekty nie mają skryptu, oznacza to, że są natywnymi klasami Godota (np. Texture2D, ShaderMaterial).
-	# Skoro dotarliśmy tutaj, to wiemy już, że nie są tym samym miejscem w pamięci (obj1 == obj2 zwróciło false wyżej).
-	# Natywne zasoby porównujemy po referencji - jeśli są różne, odrzucamy je.
-	if obj1.get_script() == null and obj2.get_script() == null:
-		return false
-	
-	# Pobieramy pełną listę właściwości obiektu
-	var properties = obj1.get_property_list()
-	
-	for prop in properties:
-		# PROPERTY_USAGE_SCRIPT_VARIABLE (8192) - sprawdzamy TYLKO Twoje własne zmienne
-		if prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-			var prop_name = prop.name
-			var val1 = obj1.get(prop_name)
-			var val2 = obj2.get(prop_name)
+	# 2. TARCZA ECS: Sprawdzamy, czy stany przedmiotów są IDENTYCZNE.
+	# Zabezpiecza przed "leczeniem" mieczy lub łączeniem karabinów z inną amunicją!
+	for key in state.keys():
+		if key == "amount": continue # Ilość nas nie interesuje przy porównywaniu
+		if not other.state.has(key) or state[key] != other.state[key]:
+			return false
 			
-			# Jeśli typy się nie zgadzają, odrzucamy
-			if typeof(val1) != typeof(val2):
-				return false
-				
-			# 1. SCENARIUSZ: Zmienna jest zagnieżdżonym Obiektem (np. AttackData, Effect) -> REKURENCJA
-			if typeof(val1) == TYPE_OBJECT:
-				if not _are_objects_equal(val1, val2):
-					return false
-					
-			# 2. SCENARIUSZ: Zmienna jest Tablicą (np. effects: Array[Effect]) -> pętla po elementach
-			elif typeof(val1) == TYPE_ARRAY:
-				if val1.size() != val2.size(): 
-					return false
-				for i in range(val1.size()):
-					var elem1 = val1[i]
-					var elem2 = val2[i]
-					
-					# Jeśli element tablicy to obiekt (np. Effect), badamy go rekurencyjnie
-					if typeof(elem1) == TYPE_OBJECT and typeof(elem2) == TYPE_OBJECT:
-						if not _are_objects_equal(elem1, elem2): return false
-					# W przeciwnym razie sprawdzamy zwykłą wartość (np. zwykła tablica intów)
-					elif elem1 != elem2:
-						return false
-						
-			# 3. SCENARIUSZ: Proste zmienne (int, float, bool, String)
-			else:
-				if val1 != val2:
-					return false
-					
-	# Jeśli pętla nie znalazła absolutnie żadnych różnic - obiekty są w 100% klonami
+	for key in other.state.keys():
+		if key == "amount": continue
+		if not state.has(key) or state[key] != other.state[key]:
+			return false
+			
 	return true

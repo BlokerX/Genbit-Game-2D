@@ -97,15 +97,26 @@ func _update_details_panel() -> void:
 	var can_afford_all = true
 	
 	for ingredient in selected_recipe.ingredients:
-		var owned_amount = inventory.get_item_amount(ingredient.item_data.item_id)
+		var owned_amount = 0
 		var required_amount = ingredient.required_amount
-		var item_name = ingredient.item_data.item_name
+		var item_name = ""
 		
-		if owned_amount >= required_amount:
-			details_text += "[color=green]✔ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
+		# Sprawdzamy czy czytamy z Tagu, czy z Konkretnego Itemu
+		if ingredient.required_tag != &"":
+			item_name = "Dowolne: " + str(ingredient.required_tag)
+			owned_amount = inventory.get_tag_amount(ingredient.required_tag)
+		elif ingredient.item_data != null:
+			item_name = ingredient.item_data.item_name
+			owned_amount = inventory.get_item_amount(ingredient.item_data.item_id)
 		else:
-			details_text += "[color=red]✖ " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
-			can_afford_all = false 
+			continue # Pusty składnik, ignorujemy
+			
+		# Kolorowanie na zielono/czerwono
+		if owned_amount >= required_amount:
+			details_text += "[color=green]  " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
+		else:
+			details_text += "[color=red]  " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
+			can_afford_all = false
 			
 	ingredients_label.text = details_text
 	craft_button.disabled = !can_afford_all

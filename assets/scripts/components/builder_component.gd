@@ -6,7 +6,7 @@ class_name BuilderComponent
 ## Jeśli ustawisz na 0, obiekt będzie poruszał się płynnie piksel po pikselu.
 @export var grid_size: float = 64.0 
 ## Odległość od gracza, w jakiej pojawia się obiekt, gdy gracz używa pada (zamiast myszki).
-@export var build_range: float = 50.0 
+@export var build_range: float = 320.0 
 
 # --- ZMIENNE WEWNĘTRZNE SYSTEMU ---
 ## Przechowuje aktualną scenę (prefab), którą próbujemy postawić (np. skrzynię).
@@ -38,8 +38,8 @@ func _process(_delta: float) -> void:
 		# Jeśli gracz używa myszki, duch po prostu leci do kursora.
 		target_pos = ghost_instance.get_global_mouse_position()
 		
-		# --- NOWOŚĆ: Zabezpieczenie promienia budowy również dla myszki ---
-		var max_range = player.get_current_attack_range()
+		# Używamy dedykowanego zasięgu budowania, a nie zasięgu ataku!
+		var max_range = build_range 
 		if max_range > 0 and player.global_position.distance_to(target_pos) > max_range:
 			var dir = player.global_position.direction_to(target_pos)
 			target_pos = player.global_position + (dir * max_range)
@@ -49,7 +49,7 @@ func _process(_delta: float) -> void:
 			target_pos = player.aim_controller.virtual_cursor_pos
 		else:
 			target_pos = player.global_position
-
+	
 	# --- 2. PRZYCIĄGANIE DO ŚRODKA KAFELKA (SNAP TO CENTER) ---
 	if grid_size > 0:
 		# KROK A: Obliczamy, w którym kafelku (komórce siatki) aktualnie znajduje się nasz cel.
@@ -72,7 +72,7 @@ func _process(_delta: float) -> void:
 
 
 ## Funkcja wywoływana przez gracza, gdy wciśnie przycisk wejścia w tryb budowy.
-func start_building(item_data: PlaceableItem) -> bool:
+func start_building(item_data: PlaceableComponent) -> bool:
 	# Sprawdzamy czy przedmiot w ogóle ma przypisaną scenę
 	if item_data.scene_path == null or item_data.scene_path.is_empty():
 		push_error("BuilderComponent: Przedmiot nie ma przypisanej sceny: ", item_data.item_name)
@@ -158,13 +158,16 @@ func try_place_object() -> bool:
 	if final_instance is PlacedObject:
 		var hand_item = player.get_inventory().get_current_item()
 		
-		# TWORZYMY UNIKALNĄ INSTANCJĘ (1 SZTUKA) ZAMIAST DZIELIĆ JĄ Z EKWIPUNKIEM
+		# Tworzymy unikalną instancję na podstawie trzymanej rzeczy
 		var unique_item_data = hand_item.data.duplicate(true)
 		var placed_item_instance = ItemInstance.new(unique_item_data, 1)
-		placed_item_instance.durability = hand_item.durability
 		
-		# Używamy bezpiecznej metody set(), aby przekazać naszego KLONA
-		final_instance.set("item_instance", placed_item_instance)
+		# --- NOWOŚĆ ECS: Klonujemy cały słownik state (wytrzymałość itp.) ---
+		placed_item_instance.state = hand_item.state.duplicate(true)
+		placed_item_instance.state["amount"] = 1 # Wymuszamy 1 sztukę, żeby skrzynia nie trzymała całego stacka
+		
+		# Używamy naszej nowej, bezpiecznej zmiennej ze skryptu placed_object.gd
+		final_instance.saved_item_instance = placed_item_instance
 	
 	# Kopiujemy obrót z ducha do docelowego obiektu!
 	final_instance.rotation_degrees = current_rotation_degrees
@@ -179,6 +182,11 @@ func try_place_object() -> bool:
 func _validate_placement() -> void:
 	can_place_here = true
 	var is_blocked = false
+	
+	# WYMUSZENIE AKTUALIZACJI SILNIKA FIZYKI
+	# Naprawia błędy z opóźnionym podświetlaniem kolizji ducha
+	ghost_instance.force_update_transform()
+	
 	var area = ghost_instance.get_node_or_null("BuildArea")
 	
 	if area and area is Area2D:
