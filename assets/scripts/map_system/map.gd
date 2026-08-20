@@ -12,6 +12,12 @@ signal room_changed(new_room: Room)
 ## Sygnał aktualizacji mapy (UI)
 signal map_updated()
 
+@export_group("Ustawienia zapisu (Czy level jest zapamiętywany po wyjściu)")
+## Jeśli TRUE: Pokoje wewnątrz tego poziomu będą zarządzane przez SaveManagera.
+## Zabite potwory, zniszczone skrzynie i upuszczony loot ZOSTANĄ NA ZAWSZE w pliku save'a.
+## Jeśli FALSE: To jest "Dungeon". Wszystko wraca do normy po wyjściu z mapy.
+@export var is_persistent_level: bool = true
+
 @export_group("Główne Obiekty")
 ## Pokój startowy
 @export var starting_room: Room
@@ -24,6 +30,10 @@ signal map_updated()
 ## Czy całkowicie zresetować poziom (przeładować aktualną scenę gry)?
 ## UWAGA: Przeładowanie sceny zresetuje też statystyki/ekwipunek gracza do wartości początkowych.
 @export var reload_entire_scene_on_respawn: bool = false
+
+## Wewnętrzna zmienna systemowa: Gwarantuje, że RAM wie, skąd wzięła się ta mapa.
+## (Nie zmieniaj tego ręcznie!)
+var source_level_path: String = ""
 
 ## Obecny pokój na scenie
 var current_room: Room
@@ -72,6 +82,9 @@ func _ready() -> void:
 	# 2. POTEM Auto-Linker zszywa wszystkie drzwi (te wstawione ręcznie i te wstawione przez automat)
 	_auto_link_doors()
 	
+	initialize_level()
+
+func initialize_level() -> void:
 	# --- SYSTEM ODBIERANIA GRACZA Z INNEGO POZIOMU ---
 	var room_to_load: Room = starting_room
 	var spawn_node: Node2D = null
@@ -83,6 +96,14 @@ func _ready() -> void:
 			# Znaleźliśmy nasze wejście! Szukamy, w którym pokoju ono leży.
 			room_to_load = _get_room_of_node(entrance)
 			spawn_node = entrance
+			
+			# --- NAPRAWA PĘTLI TELEPORTACJI ---
+			# Ponieważ portal przywracany z RAM-u nie odpala funkcji _ready(),
+			# musimy ręcznie powiedzieć mu, że gracz właśnie na niego spadł, 
+			# aby nie odesłał go od razu z powrotem.
+			entrance.has_triggered = true
+			# ----------------------------------
+			
 		else:
 			push_error("Map: Nie znaleziono wejścia o ID: " + GlobalLevelManager.target_entrance_id)
 			
@@ -379,6 +400,11 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
+	# --- NAPRAWA KRYTYCZNA: Tarcza obronna ---
+	# Jeśli mapa jest "uśpiona" w RAM-ie i nie ma jej na ekranie, absolutnie ignoruje żądania spawnu!
+	if not is_inside_tree():
+		return
+	
 	if current_room:
 		current_room.add_child(spawned_node)
 	else:
@@ -417,56 +443,67 @@ func _on_door_entered(door: Door) -> void:
 
 ## Funkcja wywoływana, gdy gracz zostanie zrespawnowany
 func handle_player_respawn(player: PlayerCharacter) -> void:
-	# OPCJA 1: Pełny, twardy reset (Najwygodniejszy dla gier typu Roguelike)
-	if reload_entire_scene_on_respawn:
-		print("Menedżer Mapy: Włączony pełny reset. Przeładowuję aktualną scenę gry...")
-		get_tree().reload_current_scene()
-		return # Kod poniżej się nie wykona, ponieważ gra buduje się na nowo od zera
+	print("Menedżer Mapy: Gracz zainicjował respawn...")
 	
-	# OPCJA 2: Miękki reset (Gracz zachowuje swój obiekt, np. zdobyty ekwipunek w inventory)
 	if starting_room:
-		# Czyścimy wszystkie efekty na graczu (trucizny, klątwy itp.) przed przeniesieniem!
+		# Czyścimy wszystkie negatywne efekty (jak przy przechodzeniu levelu)
 		if player.has_method("clear_all_effects"):
 			player.clear_all_effects()
 			
-		# Przenosimy gracza z powrotem do pokoju startowego za pomocą istniejącej logiki
+		# Jeśli mapa jest stała, wczytujemy ją z pliku do czystego stanu
+		# (z pominięciem przedmiotów "usuniętych trwale") - przygotowanie do Serializacji!
+		if is_persistent_level:
+			print("Menedżer Mapy: Reset trwałej mapy. Oczekuję na mechanikę SaveManager'a...")
+			# W przyszłości: SaveManager.reload_map_from_disk(self)
+		else:
+			print("Menedżer Mapy: Miękki reset (odtworzenie proceduralnych zasobów pokoju).")
+			
+		# Zdejmujemy ewentualne zaciemnienie po śmierci
+		TransitionManager.fade_to_black(0.0) # Usuwa alfę
+		
+		# Przenosimy gracza z powrotem do pokoju startowego 
 		change_room(starting_room)
 		
-		# Pozycjonowanie gracza w pokoju
 		if starting_room.spawn_points.size() > 0:
 			player.global_position = starting_room.spawn_points[0].global_position
-			print("Menedżer Mapy: Gracz zrespawnował się w punkcie 'spawn_points' pokoju startowego.")
 		else:
 			var room_center_offset = starting_room.size_px / 2.0
 			player.global_position = starting_room.global_position + room_center_offset
-			push_warning("Menedżer Mapy: Pokój startowy nie ma zdefiniowanych spawn_points. Użyto środka pokoju.")
-		
-		# Obsługa flagi historii mapy (odkryte/odwiedzone pokoje)
+
+		# Obsługa flagi historii mapy
 		if reset_map_history_on_respawn:
 			discovered_rooms.clear()
 			visited_rooms.clear()
 			discover_room(starting_room)
-			print("Menedżer Mapy: Wyczyszczono historię minimapy (Reset historii pokoi).")
 		else:
-			print("Menedżer Mapy: Zachowano historię minimapy.")
-			# Upewniamy się tylko, że pokój startowy jest oznaczony jako odkryty i odwiedzony
 			discover_room(starting_room)
 			
 		map_updated.emit()
 	else:
-		push_warning("Menedżer Mapy: Brak zdefiniowanego starting_room dla respawnu.")
+		# Fallback - awaryjnie w ostateczności
+		push_error("Menedżer Mapy: Brak 'starting_room'. Twardy reset sceny.")
+		get_tree().reload_current_scene()
 
 ## Zwrócenie gracza ze sceny
 func get_player() -> PlayerCharacter :
 	return get_tree().get_first_node_in_group(PLAYER_GROUP)
 
-# Odpala się automatycznie, gdy węzeł jest na stałe usuwany z gry (np. przy zamykaniu okna)
+# Odpala się automatycznie, gdy węzeł mapy opuszcza ekran (np. trafia do "zamrażarki" RAM-u)
 func _exit_tree() -> void:
-	for room in all_rooms:
-		# Jeśli pokój wciąż istnieje w pamięci, ale nie ma go na mapie (jest sierotą), 
-		# musimy go ręcznie zniszczyć, aby nie wyciekł:
-		if is_instance_valid(room) and not room.is_inside_tree():
-			room.queue_free()
+	# --- NAPRAWA 1: Bezpiecznie odpinamy gracza, niczego nie niszczymy! ---
+	var player = get_player()
+	if player and player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
+		player.entity_spawn_requested.disconnect(_on_entity_spawn_requested)
+
+# Wbudowana funkcja silnika Godot, która odpala się w momencie niszczenia obiektu przez GC
+func _notification(what: int) -> void:
+	# --- NAPRAWA 2: Prawdziwe czyszczenie pamięci ---
+	# NOTIFICATION_PREDELETE odpala się TYLKO wtedy, gdy cała mapa dostała komendę queue_free()
+	# (np. po śmierci przy twardym resecie lub podczas usuwania nietrwałego Dungeonu).
+	if what == NOTIFICATION_PREDELETE:
+		for room in all_rooms:
+			if is_instance_valid(room) and room.get_parent() == null:
+				room.queue_free()
 
 ## Funkcja do sprawdzania co leży na danym polu
 ## Zwraca pokój znajdujący się na podanych koordynatach siatki (lub null, jeśli pole jest puste)
