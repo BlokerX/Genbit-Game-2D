@@ -163,6 +163,9 @@ func toggle_crafting_ui() -> void:
 	else:
 		_close_all_ui() # Zamknij ekwipunki i skrzynie, żeby zrobić czyste miejsce
 		
+		# --- ZATRZYMANIE CZASU W GRZE ---
+		get_tree().paused = true
+		
 		is_crafting_open = true
 		
 		# Wysyłamy sygnał, że okno się otworzyło
@@ -192,24 +195,32 @@ func toggle_map_ui() -> void:
 			hotbar_panel.hide()
 
 func _on_storage_opened(storage_ref: Node) -> void:
-	_close_all_ui() # Zamknij crafting, jeśli był otwarty
-	
+	_close_all_ui()
 	current_open_chest = storage_ref
+	
+	# Nasłuchujemy zniszczenia otwartej skrzyni
+	if current_open_chest.has_signal("storage_destroyed") and not current_open_chest.storage_destroyed.is_connected(_on_storage_destroyed):
+		current_open_chest.storage_destroyed.connect(_on_storage_destroyed)
+
 	is_player_inventory_open = true
-	
-	# Upewnij się, że ta linijka tu jest! To ona mrozi gracza.
-	# Wysyłamy sygnał, że okno się otworzyło
 	EventBus.ui_state_changed.emit(true)
-	
 	player_panel.open_panel(player_inventory)
 	chest_panel.open_panel(storage_ref)
 	if hotbar_panel:
-		hotbar_panel.hide() # Ukrywa hotbar
+		hotbar_panel.hide()
+
+# Dodaj nową funkcję zamykającą
+func _on_storage_destroyed() -> void:
+	print("UIController: Skrzynia zniszczona! Zamykam interfejs.")
+	_close_all_ui()
 
 func _on_storage_closed() -> void:
 	_close_all_ui()
 
 func _close_all_ui() -> void:
+	# 0. Odmrożenie gry, niezależnie od tego, co było otwarte
+	get_tree().paused = false
+	
 	# 1. Odkładanie przedmiotu z ręki
 	if item_in_hand != null and player_inventory != null:
 		var remainder = player_inventory.add_instance(item_in_hand)

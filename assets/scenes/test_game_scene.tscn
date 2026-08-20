@@ -53,6 +53,7 @@ hand_attack_data = SubResource("Resource_osvyu")
 script = ExtResource("1_ge8p3")
 
 [node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
+process_mode = 3
 script = ExtResource("1_bpfx5")
 chest_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/ChestPanel")
 player_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/PlayerPanel")
@@ -280,6 +281,7 @@ cell_size = 35.0
 metadata/_edit_group_ = true
 
 [node name="CraftingUI" parent="UI_Canvas" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
+process_mode = 3
 visible = false
 player = NodePath("../../Player")
 

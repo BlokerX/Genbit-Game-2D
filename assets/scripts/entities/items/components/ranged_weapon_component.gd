@@ -63,8 +63,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 					stats.trigger_reload_cooldown(reload_time)
 			return
 			
-		# Strzał udany, pobieramy ItemData amunicji z pamięci...
-		var stored_ammo_data = item_instance.state.get("ammo_data", null) as ItemData
+		var stored_ammo_id = item_instance.state.get("ammo_id", &"")
+		var stored_ammo_data = ItemDatabase.get_item(stored_ammo_id) # ZMIANA: Szukamy globalnie!
 		# ...i szukamy w nim komponentu balistycznego!
 		if stored_ammo_data != null and stored_ammo_data.components != null:
 			for comp in stored_ammo_data.components:
