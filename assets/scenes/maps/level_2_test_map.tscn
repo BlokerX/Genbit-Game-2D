@@ -93,6 +93,8 @@ auto_door_scene = ExtResource("2_4p2la")
 transition_mode = 0
 room_type = 5
 ignore_combat_lock = true
+is_dark_room = false
+has_center_light = false
 camera_follows_player = true
 room_size_tiles = Vector2i(240, 135)
 manual_tilemap_override = true
@@ -121,9 +123,8 @@ grow_vertical = 2
 theme_override_constants/outline_size = 15
 theme_override_fonts/font = SubResource("SystemFont_x5jnv")
 theme_override_font_sizes/font_size = 40
-text = "Open World
-Spawn
-[Level 2]"
+text = "Spawn Point
+[Open World]"
 horizontal_alignment = 1
 vertical_alignment = 1
 

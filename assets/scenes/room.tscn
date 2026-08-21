@@ -43,6 +43,8 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
 [node name="Room" type="Node2D" unique_id=1124479501 groups=["Rooms"]]
 script = ExtResource("1_l3nri")
+is_dark_room = true
+has_center_light = true
 light_scene = ExtResource("2_8jlt0")
 enemy_pool = ExtResource("2_l852n")
 object_pool = ExtResource("3_8jlt0")
