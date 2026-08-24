@@ -74,6 +74,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="PlaytimeLabel" type="Label" parent="UI_Canvas/Game_UI_Layout" unique_id=726032964]
+texture_filter = 5
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -82,6 +83,8 @@ offset_left = -944.0
 offset_right = 944.0
 offset_bottom = 23.0
 grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6862745)
+theme_override_font_sizes/font_size = 40
 horizontal_alignment = 1
 script = ExtResource("2_ge8p3")
 
@@ -131,6 +134,7 @@ script = ExtResource("4_whqo5")
 player = NodePath("../../../../../Player")
 
 [node name="EffectsLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/AcriveEffectsPanel" unique_id=1339267922]
+texture_filter = 5
 layout_mode = 2
 theme_override_constants/outline_size = 10
 text = "Active effects:"
