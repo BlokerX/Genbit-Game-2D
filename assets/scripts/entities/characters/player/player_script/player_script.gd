@@ -15,6 +15,7 @@ const INPUT_AIM_UP = "AimUp"
 const INPUT_AIM_DOWN = "AimDown"
 
 const INPUT_DROP_ITEM = "DropItem"
+const INPUT_FULL_DROP_ITEM_KEY = "FullDropItemKey"
 const INPUT_ATTACK = "Attack"
 const INPUT_RELOAD = "Reload"
 const INPUT_USE_ITEM = "UseItemButton"
@@ -75,12 +76,25 @@ var is_using_mouse: bool = true
 
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
 
-var drop_hold_time: float = 0.0
-## Czas w sekundach wymagany do wyrzucenia całego stacka
-var time_required_for_full_stack: float = 0.5 
-
 ## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
 var last_connected_slot = null
+
+# --- Zmienne do wyrzucania przedmiotów --- #
+
+## Zmienna do wyrzucania przedmiotów seryjnie
+var is_holding_drop: bool = false
+
+var has_dropped_serial: bool = false # Sprawdza, czy odpalono tryb seryjny
+
+var drop_hold_time: float = 0.0
+
+## Czas po którym zaczyna się wyrzut seryjny (przytrzymanie)
+var drop_initial_delay: float = 0.4 
+
+## Odstęp czasowy między wyrzucaniem kolejnych sztuk
+var drop_serial_cooldown: float = 0.1 
+
+var current_drop_timer: float = 0.0
 
 #endregion
 
@@ -230,16 +244,46 @@ func _handle_pushing() -> void:
 			collider.move_and_collide(-collision.get_normal() * (push_force * 0.2))
 
 func _handle_dropping(delta: float) -> void:
-	if Input.is_action_pressed(INPUT_DROP_ITEM):
-		drop_hold_time += delta
-		if drop_hold_time >= time_required_for_full_stack:
-			inventory.drop_current_item(true)
-			drop_hold_time = 0.0
-	
-	if Input.is_action_just_released(INPUT_DROP_ITEM):
-		if drop_hold_time > 0.0 and drop_hold_time < time_required_for_full_stack:
-			inventory.drop_current_item(false)
+	# PRIORYTET 1: Wyrzucenie całego stacka (Ctrl+Q z obrazka image_0a1434.png)
+	if Input.is_action_just_pressed(INPUT_FULL_DROP_ITEM_KEY):
+		inventory.drop_current_item(true)
+		# Resetujemy stan, żeby "Ctrl+Q" nie weszło przypadkiem w konflikt ze zwykłym trzymaniem "Q"
+		is_holding_drop = false 
+		has_dropped_serial = false
+		return # Odcinamy dalszą logikę
+
+	# PRIORYTET 2: Rejestracja wciśnięcia Q (bez wyrzucania czegokolwiek!)
+	if Input.is_action_just_pressed(INPUT_DROP_ITEM):
+		is_holding_drop = true
+		has_dropped_serial = false
 		drop_hold_time = 0.0
+		current_drop_timer = 0.0
+
+	# PRIORYTET 3: Przytrzymanie Q (Wyrzut seryjny)
+	if Input.is_action_pressed(INPUT_DROP_ITEM) and is_holding_drop:
+		drop_hold_time += delta
+		
+		# Kiedy minie czas przytrzymania (drop_initial_delay), uruchamiamy tryb seryjny
+		if drop_hold_time >= drop_initial_delay:
+			if current_drop_timer <= 0.0:
+				inventory.drop_current_item(false)
+				has_dropped_serial = true # Oznaczamy, że leci seria
+				current_drop_timer = drop_serial_cooldown
+			else:
+				current_drop_timer -= delta
+
+	# PRIORYTET 4: Puszczenie Q (Sprawdzanie, czy to był krótki "klik")
+	if Input.is_action_just_released(INPUT_DROP_ITEM):
+		# Wyrzuć JEDNĄ sztukę tylko, jeśli puściłeś zanim upłynął czas opóźnienia 
+		# i nie wyrzuciłeś jeszcze niczego z serii
+		if is_holding_drop and not has_dropped_serial and drop_hold_time < drop_initial_delay:
+			inventory.drop_current_item(false)
+		
+		# Reset wszystkich wartości
+		is_holding_drop = false
+		has_dropped_serial = false
+		drop_hold_time = 0.0
+		current_drop_timer = 0.0
 
 # --- WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
 func _unhandled_input(event: InputEvent) -> void:
@@ -502,13 +546,15 @@ func on_inventory_update() :
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
 	if item_thrower_component:
-		# Zabezpieczamy pobranie kierunku z pada
-		var aim_target = Vector2.ZERO
+		var throw_direction := Vector2.ZERO
+		
+		# Zamiana celu na ZNORMALIZOWANY KIERUNEK
 		if aim_controller and aim_controller.aim_scanner:
-			aim_target = aim_controller.aim_scanner.target_position
+			var target_pos = aim_controller.aim_scanner.global_position
+			throw_direction = global_position.direction_to(target_pos).normalized()
 			
-		# Delegujemy całą resztę do komponentu
-		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, aim_target)
+		# Teraz Twój item_thrower_component otrzymuje dokładny kierunek lotu
+		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, throw_direction)
 	else:
 		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 

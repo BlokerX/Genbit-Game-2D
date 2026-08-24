@@ -2,6 +2,7 @@ extends Control
 
 # USUNIĘTO: @onready var main_scene = self.get_parent()
 @onready var button_start = $"MenuPanel/MenuOptions/MenuButtons/PlayButton"
+@onready var button_settings = $"MenuPanel/MenuOptions/MenuButtons/SettingsButton"
 @onready var button_credits = $"MenuPanel/MenuOptions/MenuButtons/CreditsButton"
 @onready var canvaslayer_menus = $CanvasLayer
 @onready var ambience = $Ambience
@@ -10,6 +11,8 @@ func _ready() -> void:
 	button_start.pressed.connect(button_start_pressed)
 	
 	button_credits.main_scene_node = canvaslayer_menus
+	button_settings.main_scene_node = canvaslayer_menus
+	
 	ambience.play()
 	button_start.grab_focus()
 
@@ -22,5 +25,11 @@ func button_start_pressed() -> void:
 	else:
 		push_error("Błąd: Nie znaleziono węzła głównego (Main) na drzewie!")
 
+func back_from_settings() -> void:
+	back_to_menu()
+
 func back_from_credits() -> void:
+	back_to_menu()
+
+func back_to_menu() -> void:
 	button_start.grab_focus()

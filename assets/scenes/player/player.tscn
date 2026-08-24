@@ -59,6 +59,9 @@ animations = [{
 [sub_resource type="Resource" id="Resource_37c74"]
 script = ExtResource("18_yswgg")
 data = ExtResource("17_jnpjv")
+state = {
+"amount": 1
+}
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="Resource" id="Resource_u63vv"]
@@ -79,13 +82,11 @@ attack_component = NodePath("AttackComponent")
 inventory = NodePath("Inventory")
 item_thrower_component = NodePath("ItemThrowerComponent")
 builder_component = NodePath("BuilderComponent")
-push_force = null
 respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("3_hsamt")
 health_stats_script = ExtResource("4_b3dqe")
 interaction_and_attack_stats_script = ExtResource("5_u84jc")
 loot_drop_script = ExtResource("6_yfi7d")
-combat_radius = null
 character_sprite = NodePath("CharacterAnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
@@ -132,7 +133,6 @@ scale = Vector2(2, 2)
 texture_filter = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1127700823]
-position = Vector2(-0.5, 0)
 shape = SubResource("CircleShape2D_b3dqe")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 

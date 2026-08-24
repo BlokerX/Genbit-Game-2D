@@ -7,6 +7,9 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
 
 @export_group("Throw Settings")
+## Dystans o jaki przedmiot zostanie przesunięty od środka gracza (Flandre ma koło 40px, więc 45px jest bezpieczne)
+@export var spawn_offset_radius: float = 45.0 
+
 @export var max_throw_range: float = 150.0
 @export var min_throw_force: float = 50.0
 @export var pad_throw_force_min: float = 200.0
@@ -26,12 +29,10 @@ func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown
 	if "item" in drop:
 		drop.item = dropped_instance 
 	
-	# Zgłaszamy potrzebę zespawnowania obiektu w świecie
-	entity_spawn_requested.emit(drop, thrower.global_position)
-	
 	var drop_direction = Vector2.ZERO
 	var drop_force = 0.0
 	
+	# 1. NAJPIERW OBLICZAMY KIERUNEK
 	if is_thrown:
 		if is_using_mouse:
 			# --- WYRZUT MYSZKĄ ---
@@ -62,10 +63,29 @@ func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown
 			drop_direction = (aim_direction + spread).normalized()
 			drop_force = randf_range(pad_throw_force_min, pad_throw_force_max)
 	else:
-		# --- DELIKATNE UPUSZCZENIE (np. z craftingu) ---
-		drop_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		# --- DELIKATNE UPUSZCZENIE (Zmodyfikowane) ---
+		# Korzystamy z kierunku celowania, żeby item pojawił się przed graczem
+		var base_dir = Vector2.ZERO
+		
+		if is_using_mouse:
+			base_dir = thrower.global_position.direction_to(thrower.get_global_mouse_position())
+		else:
+			base_dir = pad_aim_direction.normalized()
+			
+		if base_dir == Vector2.ZERO:
+			base_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		
+		drop_direction = base_dir
 		drop_force = drop_push_force
 	
+	# 2. OBLICZAMY POZYCJĘ SPAWNU (Z uwzględnieniem offsetu)
+	# Mnożymy znormalizowany kierunek wyrzutu przez nasz offset (45 pikseli)
+	var final_spawn_position = thrower.global_position + (drop_direction * spawn_offset_radius)
+	
+	# 3. ZGŁASZAMY SPAWN (przekazujemy obliczoną pozycję zamiast środka gracza)
+	entity_spawn_requested.emit(drop, final_spawn_position)
+	
+	# 4. APLIKUJEMY FIZYKĘ
 	# Jeżeli nasz upuszczony przedmiot wykorzystuje silnik fizyczny
 	if drop is RigidBody2D:
 		drop.apply_central_impulse(drop_direction * drop_force)
