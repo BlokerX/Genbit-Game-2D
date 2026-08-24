@@ -11,6 +11,9 @@ bounce = 0.6
 
 [sub_resource type="Resource" id="Resource_n3mvt"]
 script = ExtResource("2_pethx")
+state = {
+"amount": 1
+}
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ndfam"]
@@ -27,6 +30,7 @@ physics_material_override = SubResource("PhysicsMaterial_wtsmv")
 gravity_scale = 0.0
 can_sleep = false
 lock_rotation = true
+continuous_cd = 2
 linear_damp = 8.0
 script = ExtResource("1_wtsmv")
 item = SubResource("Resource_n3mvt")

@@ -78,11 +78,24 @@ func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown
 		drop_direction = base_dir
 		drop_force = drop_push_force
 	
-	# 2. OBLICZAMY POZYCJĘ SPAWNU (Z uwzględnieniem offsetu)
-	# Mnożymy znormalizowany kierunek wyrzutu przez nasz offset (45 pikseli)
-	var final_spawn_position = thrower.global_position + (drop_direction * spawn_offset_radius)
+	# 2. OBLICZAMY POZYCJĘ SPAWNU (Z uwzględnieniem offsetu i ŚCIAN)
+	var desired_spawn_position = thrower.global_position + (drop_direction * spawn_offset_radius)
+	var final_spawn_position = desired_spawn_position
 	
-	# 3. ZGŁASZAMY SPAWN (przekazujemy obliczoną pozycję zamiast środka gracza)
+	# --- ZABEZPIECZENIE PRZED ŚCIANAMI ---
+	var space_state = thrower.get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(thrower.global_position, desired_spawn_position)
+	# Zakładam, że Twoje ściany (TileMap) znajdują się na masce kolizji nr 1.
+	query.collision_mask = 1 
+	query.exclude = [thrower.get_rid()] # Ignorujemy kolizję z samym graczem
+	
+	var result = space_state.intersect_ray(query)
+	if result:
+		# Jeśli na drodze spawnu (w promieniu 45px) jest ściana, spawnujemy item o 5px PRZED ścianą!
+		final_spawn_position = result.position - (drop_direction * 5.0)
+	# -------------------------------------
+	
+	# 3. ZGŁASZAMY SPAWN (przekazujemy obliczoną pozycję)
 	entity_spawn_requested.emit(drop, final_spawn_position)
 	
 	# 4. APLIKUJEMY FIZYKĘ

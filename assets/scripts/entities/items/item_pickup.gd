@@ -38,13 +38,6 @@ func _ready() -> void:
 			child.untargeted.connect(_on_untargeted)
 			break
 	
-	set_collision_mask_value(1, false)
-	await get_tree().create_timer(0.5).timeout
-	
-	if not is_instance_valid(self) or is_queued_for_deletion():
-		return # Obiekt nie istnieje, przerywamy kod!
-		
-	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
 	# Pobieramy nazwę poprzez item.data

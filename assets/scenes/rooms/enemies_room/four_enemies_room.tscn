@@ -3,14 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_vvfgf"]
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="2_q83rd"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_0pmxq"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_vvfgf"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
 [node name="TwoEnemiesRoom" unique_id=1124479501 instance=ExtResource("1_vvfgf")]
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
-navigation_polygon = SubResource("NavigationPolygon_0pmxq")
+navigation_polygon = SubResource("NavigationPolygon_vvfgf")
 
 [node name="EnemySpawnpoint" parent="." index="2" unique_id=534280628 instance=ExtResource("2_q83rd")]
 position = Vector2(640, 362.667)
