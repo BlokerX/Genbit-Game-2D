@@ -436,7 +436,12 @@ func _handle_default_inputs(event: InputEvent) -> void:
 				if comp is PlaceableComponent:
 					comp.try_execute(self, self, _item)
 					break
-					
+				
+				elif comp is ThrowableComponent:
+					if interaction_and_attack_stats_script.can_attack():
+						comp.try_execute(self, self, _item)
+					break
+				
 				# 2. Obsługa konsumpcji (Zabezpieczona zegarem ataku)
 				elif comp is ConsumableComponent:
 					if interaction_and_attack_stats_script.can_attack():

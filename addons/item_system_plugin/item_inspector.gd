@@ -53,32 +53,30 @@ func _parse_begin(object: Object) -> void:
 	opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
 	# === LOGICZNE SORTOWANIE KATEGORIAMI ===
-	
 	# Baza i Pozyskiwanie
 	opt.add_item("Zwykły Surowiec (Drewno / Ruda)")        # 0
 	opt.add_item("Narzędzie (Kilof / Siekiera)")           # 1
-	
 	# Walka Wręcz
 	opt.add_item("Broń Wręcz (Standard)")                  # 2
 	opt.add_item("Broń Wręcz (Magiczna / Z ładunkami)")    # 3
-	
 	# Walka Dystansowa
 	opt.add_item("Broń Palna (Wymaga Amunicji)")           # 4
 	opt.add_item("Broń Dystansowa (Laser / Energia)")      # 5
 	opt.add_item("Amunicja (Stackowalna)")                 # 6
-	
+	# Rzucane / Pułapki (NOWE)
+	opt.add_item("Rzucany (Nóż / Shuriken)")               # 7
+	opt.add_item("Wybuchowy (Bomba / Granat)")             # 8
+	opt.add_item("Pułapka (Mina / Sidła)")                 # 9
 	# Ubiór i Ekwipunek
-	opt.add_item("Pancerz / Hełm / Pierścień")             # 7
-	opt.add_item("Plecak (+5 Miejsc)")                     # 8
-	
+	opt.add_item("Pancerz / Hełm / Pierścień")             # 10
+	opt.add_item("Plecak (+5 Miejsc)")                     # 11
 	# Użytkowe / Konsumpcyjne
-	opt.add_item("Jedzenie (Stosy / Bezpieczne)")          # 9
-	opt.add_item("Mikstura (Potężna / Krótki CD)")         # 10
-	opt.add_item("Artefakt (Odnawialne ładunki)")          # 11
-	
+	opt.add_item("Jedzenie (Stosy / Bezpieczne)")          # 12
+	opt.add_item("Mikstura (Potężna / Krótki CD)")         # 13
+	opt.add_item("Artefakt (Odnawialne ładunki)")          # 14
 	# Konstrukcja i Inne
-	opt.add_item("Budowla / Mebel (Stawialny)")            # 12
-	opt.add_item("Przedmiot Fabularny (Quest Item)")       # 13
+	opt.add_item("Budowla / Mebel (Stawialny)")            # 15
+	opt.add_item("Przedmiot Fabularny (Quest Item)")       # 16
 
 	hbox_templates.add_child(opt)
 	
@@ -172,7 +170,64 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			stack.max_stack = 100
 			new_components.append(stack)
 			
-		7: # Pancerz
+		7: # Rzucany (Nóż / Shuriken) -> Leci szybko w linii prostej
+			var thr = ThrowableComponent.new()
+			thr.throw_force = 800.0
+			thr.friction = 0.0 # Nie zwalnia
+			thr.use_cooldown = 0.3
+			var dmg = DamageEffect.new()
+			dmg.damage_amount = 15
+			thr.effects.append(dmg) # <--- POPRAWKA
+			new_components.append(thr)
+			var stack = StackComponent.new()
+			stack.max_stack = 32
+			new_components.append(stack)
+			
+		8: # Wybuchowy (Bomba) -> Leci i się toczy/zwalnia
+			var thr = ThrowableComponent.new()
+			thr.throw_force = 500.0
+			thr.friction = 200.0 # Będzie ładnie zwalniać
+			thr.use_cooldown = 1.0
+			
+			# Efekt obrażeń
+			var dmg = DamageEffect.new()
+			dmg.damage_amount = 50
+			thr.effects.append(dmg)
+			
+			# Efekt odrzutu (Knockback)
+			var kb = KnockbackEffect.new()
+			kb.knockback_force = 800.0
+			kb.duration = 0.25
+			thr.effects.append(kb)
+			
+			new_components.append(thr)
+			var stack = StackComponent.new()
+			stack.max_stack = 10
+			new_components.append(stack)
+			
+		9: # Pułapka (Mina) -> Zostaje postawiona w miejscu
+			var thr = ThrowableComponent.new()
+			thr.throw_force = 0.0 # Zero siły = spada pod nogi
+			thr.friction = 0.0
+			thr.use_cooldown = 1.5
+			
+			# Efekt obrażeń
+			var dmg = DamageEffect.new()
+			dmg.damage_amount = 75
+			thr.effects.append(dmg)
+			
+			# Efekt odrzutu (Miny też mocno odrzucają!)
+			var kb = KnockbackEffect.new()
+			kb.knockback_force = 1000.0
+			kb.duration = 0.25
+			thr.effects.append(kb)
+			
+			new_components.append(thr)
+			var stack = StackComponent.new()
+			stack.max_stack = 5
+			new_components.append(stack)
+			
+		10: # Pancerz
 			var equip = EquippableComponent.new()
 			equip.equip_slot_type = EquippableComponent.EquipSlot.CHEST
 			new_components.append(equip)
@@ -180,7 +235,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			dur.max_durability = 500
 			new_components.append(dur)
 			
-		8: # Plecak
+		11: # Plecak
 			var equip = EquippableComponent.new()
 			equip.equip_slot_type = EquippableComponent.EquipSlot.BACKPACK
 			new_components.append(equip)
@@ -188,7 +243,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			backpack.extra_slots_count = 5 
 			new_components.append(backpack)
 			
-		9: # Jedzenie (Rozdzielone - Duże stosy, długi cooldown jedzenia)
+		12: # Jedzenie (Rozdzielone - Duże stosy, długi cooldown jedzenia)
 			var cons = ConsumableComponent.new()
 			cons.use_cooldown = 1.5
 			new_components.append(cons)
@@ -196,7 +251,7 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			stack.max_stack = 16
 			new_components.append(stack)
 			
-		10: # Mikstura (Rozdzielone - Małe stosy, szybki ratunek w walce)
+		13: # Mikstura (Rozdzielone - Małe stosy, szybki ratunek w walce)
 			var cons = ConsumableComponent.new()
 			cons.use_cooldown = 0.5
 			new_components.append(cons)
@@ -204,21 +259,21 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			stack.max_stack = 12
 			new_components.append(stack)
 			
-		11: # Artefakt
+		14: # Artefakt
 			var cons = ConsumableComponent.new()
 			new_components.append(cons)
 			var charges = ChargesComponent.new()
 			charges.max_charges = 3
 			new_components.append(charges)
 			
-		12: # Budowla
+		15: # Budowla
 			var place = PlaceableComponent.new()
 			new_components.append(place)
 			var stack = StackComponent.new()
 			stack.max_stack = 1
 			new_components.append(stack)
 			
-		13: # Przedmiot Fabularny
+		16: # Przedmiot Fabularny
 			var stack = StackComponent.new()
 			stack.max_stack = 1 # Nie łączy się, nie zużywa.
 			new_components.append(stack)

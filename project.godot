@@ -310,6 +310,7 @@ ToggleInfoMode={
 2d_physics/layer_3="NPC's"
 2d_physics/layer_4="Items (pick up)"
 2d_physics/layer_5="Itemy (self absorbtion)"
+2d_physics/layer_6="Placeable And Throwable Items"
 
 [rendering]
 

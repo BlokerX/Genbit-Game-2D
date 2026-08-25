@@ -75,7 +75,7 @@ radius = 40.0
 [node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("attack_component", "inventory", "item_thrower_component", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
-collision_mask = 7
+collision_mask = 39
 motion_mode = 1
 script = ExtResource("1_hyvrl")
 attack_component = NodePath("AttackComponent")
@@ -122,7 +122,7 @@ metadata/_custom_type_script = "uid://cpra3wi61tf27"
 script = ExtResource("10_jf6n8")
 
 [node name="AimScanner" type="RayCast2D" parent="AimController" unique_id=674220857]
-collision_mask = 13
+collision_mask = 45
 hit_from_inside = true
 
 [node name="HeldItemHandler" type="Node2D" parent="." unique_id=878024246]

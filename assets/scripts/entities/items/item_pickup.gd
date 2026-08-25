@@ -106,3 +106,8 @@ func _on_interacted(interactor: Node) -> void:
 			else:
 				# Plecak jest pełny, aktualizujemy naszą instancję na ziemi by zachowała resztki
 				item = leftovers
+
+## Odbieranie efektów środowiskowych (np. fali uderzeniowej z bomby)
+func receive_effect(effect: Effect) -> bool:
+	# Przekazuje siebie (obiekt fizyczny) do efektu, pozwalając mu podziałać na ciało
+	return effect.apply_effect(self)

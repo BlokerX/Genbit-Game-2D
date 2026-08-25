@@ -10,6 +10,7 @@
 size = Vector2(63, 63)
 
 [node name="BuildingScene" type="StaticBody2D" unique_id=1382818356]
+collision_layer = 32
 collision_mask = 31
 script = ExtResource("1_5xadf")
 item_to_drop = ExtResource("2_s0d30")

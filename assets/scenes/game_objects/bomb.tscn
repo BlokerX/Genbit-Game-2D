@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://sp1q5lo3d7t0"]
+
+[ext_resource type="Script" uid="uid://c5lq2rjee8gej" path="res://assets/scripts/entities/items/throwable_entities/throwable_entity.gd" id="1_7yb6a"]
+[ext_resource type="Texture2D" uid="uid://ckbh76sp8io31" path="res://assets/textures/samples_examples/items/black_potion_v2.png" id="2_s48il"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_q7pnx"]
+radius = 35.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7yb6a"]
+radius = 120.0
+
+[node name="Bomb" type="RigidBody2D" unique_id=945795435 node_paths=PackedStringArray("aoe_area")]
+collision_layer = 32
+collision_mask = 47
+script = ExtResource("1_7yb6a")
+destroy_on_impact = false
+friendly_fire = true
+aoe_area = NodePath("ExplosionArea")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1049323652]
+texture_filter = 5
+scale = Vector2(4, 4)
+texture = ExtResource("2_s48il")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1941373633]
+shape = SubResource("CircleShape2D_q7pnx")
+
+[node name="ExplosionArea" type="Area2D" parent="." unique_id=1649844791]
+collision_layer = 32
+collision_mask = 47
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea" unique_id=2119754464]
+shape = SubResource("CircleShape2D_7yb6a")
