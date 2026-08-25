@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dlqyv1khnsruk"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_iasij"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_iasij"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_q8eeg"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)

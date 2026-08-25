@@ -7,7 +7,7 @@
 [ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="6_yfi7d"]
 [ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="7_2tf2h"]
 [ext_resource type="Texture2D" uid="uid://d2bmsjlmavcat" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_right.png" id="7_f0e17"]
-[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="7_oet4l"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/components/inventory.gd" id="8_2tf2h"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="8_hsamt"]
 [ext_resource type="Texture2D" uid="uid://c4bw7p50ib1ff" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_right.png" id="8_rrkuk"]

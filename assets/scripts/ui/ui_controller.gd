@@ -6,7 +6,7 @@ const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
 const INPUT_TOGGLE_MAP = "ToggleMap"
 const INPUT_GAME_PAUSE = "Game_Pause"
 
-const SLOT_SCENE = preload("res://assets/scenes/inventory_slot.tscn")
+const SLOT_SCENE = preload("res://assets/scenes/gui/inventory_slot.tscn")
 
 @export var chest_panel: GridPanel
 @export var player_panel: GridPanel

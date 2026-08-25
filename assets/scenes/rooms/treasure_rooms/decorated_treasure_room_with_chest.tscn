@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://datdhnwl8332c"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_yqh8y"]
-[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/chest.tscn" id="2_yqh8y"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_yqh8y"]
+[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/chest.tscn" id="2_yqh8y"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_yqh8y"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)

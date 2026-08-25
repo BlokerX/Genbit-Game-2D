@@ -3,8 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://bmrpjbllcxh4u" path="res://assets/textures/samples_examples/items/chest_pixel_art.png" id="1_4mnot"]
 [ext_resource type="Script" uid="uid://bwf60qgdq3hgr" path="res://assets/scripts/entities/items/placed_object.gd" id="1_5xadf"]
 [ext_resource type="Resource" uid="uid://cybctusoi7i26" path="res://assets/data/items/placeable_item.tres" id="2_s0d30"]
-[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="3_5bbai"]
-[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="4_s0d30"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="3_5bbai"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="4_s0d30"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vamu6"]
 size = Vector2(63, 63)

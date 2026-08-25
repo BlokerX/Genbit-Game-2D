@@ -4,7 +4,7 @@ class_name ItemThrowerComponent
 ## Sygnał do powiadamiania menedżera poziomu o konieczności umieszczenia węzła na mapie
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
-@export var item_pickup_scene: PackedScene = preload("res://assets/scenes/item_pickup.tscn")
+@export var item_pickup_scene: PackedScene = preload("res://assets/scenes/game_objects/item_pickup.tscn")
 
 @export_group("Throw Settings")
 ## Dystans o jaki przedmiot zostanie przesunięty od środka gracza (Flandre ma koło 40px, więc 45px jest bezpieczne)

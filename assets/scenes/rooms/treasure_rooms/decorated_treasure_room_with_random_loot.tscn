@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://hmh510ma41h2"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_8u8bf"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_8u8bf"]
 [ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="2_gdney"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_xmrqt"]

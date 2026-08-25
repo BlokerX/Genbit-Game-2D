@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="2_2rull"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_dpgda"]
 [ext_resource type="Texture2D" uid="uid://cgk5oysyttlvb" path="res://assets/textures/samples_examples/items/freezing_gun_test.png" id="4_v43kk"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="5_2rull"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/game_objects/projectile.tscn" id="5_2rull"]
 [ext_resource type="Script" uid="uid://dypstvdhvi7pi" path="res://assets/scripts/entities/items/components/ranged_weapon_component.gd" id="5_gl2rf"]
 [ext_resource type="Texture2D" uid="uid://drjwe3l8bsy5y" path="res://assets/textures/samples_examples/iced_bullet.png" id="5_q4a0c"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_0ps2y"]

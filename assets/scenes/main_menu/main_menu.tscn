@@ -4,8 +4,8 @@
 [ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/scene_scripts/main_menu/credits_button.gd" id="2_6r5fw"]
 [ext_resource type="Script" uid="uid://bf83t5hpycmcm" path="res://assets/scripts/scene_scripts/main_menu/settings_button.gd" id="2_v71do"]
 [ext_resource type="Script" uid="uid://d1u13mv3i3t0n" path="res://assets/scripts/scene_scripts/main_menu/quit_button.gd" id="3_6x8q2"]
-[ext_resource type="PackedScene" uid="uid://uuss2dodm1na" path="res://assets/scenes/credits.tscn" id="3_f2xsc"]
-[ext_resource type="PackedScene" uid="uid://l7xke78p4uby" path="res://assets/scenes/settings_menu.tscn" id="3_xmmar"]
+[ext_resource type="PackedScene" uid="uid://uuss2dodm1na" path="res://assets/scenes/main_menu/credits.tscn" id="3_f2xsc"]
+[ext_resource type="PackedScene" uid="uid://l7xke78p4uby" path="res://assets/scenes/main_menu/settings_menu.tscn" id="3_xmmar"]
 [ext_resource type="AudioStream" uid="uid://giwx4maycjpr" path="res://assets/audio/main_menu/rougelike_main_menu_ambience.wav" id="4_h8d3m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_77rv3"]

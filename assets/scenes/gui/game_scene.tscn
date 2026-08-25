@@ -11,11 +11,11 @@
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="8_1t2iv"]
 [ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="9_5fad1"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="10_tjy5o"]
-[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/inventory_slot.tscn" id="11_mbo3l"]
+[ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/gui/inventory_slot.tscn" id="11_mbo3l"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="12_64dql"]
-[ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/crafting_ui.tscn" id="13_4mn4o"]
-[ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/grid_panel.tscn" id="14_1gqv0"]
-[ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/pause_menu.tscn" id="15_grwg2"]
+[ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/gui/crafting_ui.tscn" id="13_4mn4o"]
+[ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/gui/grid_panel.tscn" id="14_1gqv0"]
+[ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/main_menu/pause_menu.tscn" id="15_grwg2"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="17_vhw88"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="18_uvlnc"]
@@ -29,13 +29,13 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="Resource" id="Resource_ge8p3"]
+[sub_resource type="Resource" id="Resource_n47tv"]
 resource_local_to_scene = true
 script = ExtResource("17_vhw88")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_b4kdy"]
+[sub_resource type="Resource" id="Resource_t33c3"]
 resource_local_to_scene = true
 script = ExtResource("18_uvlnc")
 
@@ -44,7 +44,7 @@ script = ExtResource("19_elt3u")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_whqo5"]
+[sub_resource type="Resource" id="Resource_f23ex"]
 resource_local_to_scene = true
 script = ExtResource("20_2y4le")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -347,6 +347,6 @@ visible = false
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_ge8p3")
-health_stats_script = SubResource("Resource_b4kdy")
-interaction_and_attack_stats_script = SubResource("Resource_whqo5")
+movement_universal_script = SubResource("Resource_n47tv")
+health_stats_script = SubResource("Resource_t33c3")
+interaction_and_attack_stats_script = SubResource("Resource_f23ex")

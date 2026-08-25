@@ -1,7 +1,7 @@
 class_name GridPanel
 extends Control
 
-@export var slot_scene: PackedScene = preload("res://assets/scenes/inventory_slot.tscn") # Tu przeciągasz inventory_slot.tscn
+@export var slot_scene: PackedScene = preload("res://assets/scenes/gui/inventory_slot.tscn") # Tu przeciągasz inventory_slot.tscn
 
 # Automatycznie znajduje pierwszy GridContainer w drzewie tej sceny, niezależnie od jego nazwy
 @onready var grid_container: GridContainer = _find_grid_container()

@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="2_aknrp"]
 [ext_resource type="Texture2D" uid="uid://detvd6y1myxd1" path="res://assets/textures/samples_examples/items/gun_shape02.png" id="3_id0jt"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="3_vi5fn"]
-[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/projectile.tscn" id="4_0uwnp"]
+[ext_resource type="PackedScene" uid="uid://bogrt5ry8rdcv" path="res://assets/scenes/game_objects/projectile.tscn" id="4_0uwnp"]
 [ext_resource type="Script" uid="uid://dypstvdhvi7pi" path="res://assets/scripts/entities/items/components/ranged_weapon_component.gd" id="4_qan2r"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="5_0uwnp"]
 [ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_bhye6"]

@@ -4,7 +4,7 @@ extends Node2D
 class_name Room
 
 const ENEMY_GROUP = "Enemy"
-const ITEM_PICKUP_SCENE = preload("res://assets/scenes/item_pickup.tscn")
+const ITEM_PICKUP_SCENE = preload("res://assets/scenes/game_objects/item_pickup.tscn")
 
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)

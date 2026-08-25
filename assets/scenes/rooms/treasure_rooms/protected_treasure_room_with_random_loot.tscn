@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cixwnresmohro"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_q1l54"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_q1l54"]
 [ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="2_v1lau"]
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="3_v1lau"]
 

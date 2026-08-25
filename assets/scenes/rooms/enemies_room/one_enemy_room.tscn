@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://qounlbmw2876"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_trt0r"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_trt0r"]
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="2_trt0r"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_beak3"]
