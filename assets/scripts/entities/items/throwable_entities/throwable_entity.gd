@@ -5,6 +5,7 @@ class_name ThrowableEntity
 @export var lifetime: float = 3.0 ## Czas do zniszczenia/wybuchu
 @export var destroy_on_impact: bool = true ## True: Nóż (wybucha od razu), False: Bomba (czeka na lifetime)
 @export var friendly_fire: bool = false ## Czy wybuch/trafienie może zranić strzelającego (Gracza)?
+@export var is_infinite: bool = false ## True: Obiekt leży w nieskończoność (np. Mina)
 @export var arming_delay: float = 0.4 ## Czas (w sekundach) zanim fizyczny obiekt (RigidBody) zacznie kolidować ze strzelcem.
 
 @export_category("Obszar Działania (Opcjonalne)")
@@ -53,7 +54,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_time_alive += delta
-	if _time_alive >= lifetime:
+	if not is_infinite and _time_alive >= lifetime:
 		trigger_effect(null) # Wywołanie przez upływ czasu (brak bezpośredniego celu)
 		return
 
