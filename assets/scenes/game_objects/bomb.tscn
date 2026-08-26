@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://sp1q5lo3d7t0"]
 
-[ext_resource type="Script" uid="uid://c5lq2rjee8gej" path="res://assets/scripts/entities/items/throwable_entities/throwable_entity.gd" id="1_7yb6a"]
+[ext_resource type="Script" uid="uid://ce6yrm52sb2dy" path="res://assets/scripts/entities/items/throwable_entities/throwable_physics.gd" id="1_7yb6a"]
 [ext_resource type="Texture2D" uid="uid://ckbh76sp8io31" path="res://assets/textures/samples_examples/items/black_potion_v2.png" id="2_s48il"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q7pnx"]
@@ -13,7 +13,7 @@ radius = 120.0
 collision_layer = 32
 collision_mask = 47
 script = ExtResource("1_7yb6a")
-destroy_on_impact = false
+activate_on_trigger = false
 friendly_fire = true
 aoe_area = NodePath("ExplosionArea")
 

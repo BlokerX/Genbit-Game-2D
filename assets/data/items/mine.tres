@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_fu5vr"]
 [ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="4_xejun"]
 [ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/knockback_effect.gd" id="5_cwepj"]
+[ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/trigger_effect.gd" id="6_2jdk1"]
 [ext_resource type="PackedScene" uid="uid://bd62a77tsjoc4" path="res://assets/scenes/game_objects/mine.tscn" id="6_m5np2"]
 [ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="7_ir6b4"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="8_el0co"]
@@ -22,13 +23,17 @@ knockback_force = 1000.0
 effect_name = "Knockback"
 effect_color = Color(0.85882354, 0.4392157, 0.5764706, 1)
 
+[sub_resource type="Resource" id="Resource_fu5vr"]
+script = ExtResource("6_2jdk1")
+metadata/_custom_type_script = "uid://rdfgyo20o1gx"
+
 [sub_resource type="Resource" id="Resource_08dcj"]
 script = ExtResource("7_ir6b4")
 entity_scene = ExtResource("6_m5np2")
 throw_force = 0.0
 friction = 0.0
 use_cooldown = 1.5
-effects = Array[ExtResource("3_fu5vr")]([SubResource("Resource_8iyh5"), SubResource("Resource_ms1ex")])
+effects = Array[ExtResource("3_fu5vr")]([SubResource("Resource_8iyh5"), SubResource("Resource_ms1ex"), SubResource("Resource_fu5vr")])
 
 [sub_resource type="Resource" id="Resource_54rd2"]
 script = ExtResource("8_el0co")

@@ -186,19 +186,21 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 		8: # Wybuchowy (Bomba) -> Leci i się toczy/zwalnia
 			var thr = ThrowableComponent.new()
 			thr.throw_force = 500.0
-			thr.friction = 200.0 # Będzie ładnie zwalniać
+			thr.friction = 200.0 
 			thr.use_cooldown = 1.0
 			
-			# Efekt obrażeń
 			var dmg = DamageEffect.new()
 			dmg.damage_amount = 50
 			thr.effects.append(dmg)
 			
-			# Efekt odrzutu (Knockback)
 			var kb = KnockbackEffect.new()
 			kb.knockback_force = 800.0
 			kb.duration = 0.25
 			thr.effects.append(kb)
+			
+			# NOWOŚĆ: Dodajemy Trigger, aby fala uderzeniowa aktywowała inne pułapki!
+			var trig = TriggerEffect.new()
+			thr.effects.append(trig)
 			
 			new_components.append(thr)
 			var stack = StackComponent.new()
@@ -207,20 +209,22 @@ func _apply_template(item: ItemData, template_idx: int) -> void:
 			
 		9: # Pułapka (Mina) -> Zostaje postawiona w miejscu
 			var thr = ThrowableComponent.new()
-			thr.throw_force = 0.0 # Zero siły = spada pod nogi
+			thr.throw_force = 0.0 
 			thr.friction = 0.0
 			thr.use_cooldown = 1.5
 			
-			# Efekt obrażeń
 			var dmg = DamageEffect.new()
 			dmg.damage_amount = 75
 			thr.effects.append(dmg)
 			
-			# Efekt odrzutu (Miny też mocno odrzucają!)
 			var kb = KnockbackEffect.new()
 			kb.knockback_force = 1000.0
 			kb.duration = 0.25
 			thr.effects.append(kb)
+			
+			# NOWOŚĆ: Miny też wyzwalają reakcję łańcuchową innych min
+			var trig = TriggerEffect.new()
+			thr.effects.append(trig)
 			
 			new_components.append(thr)
 			var stack = StackComponent.new()

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dvgmw3t8c8a83"]
 
-[ext_resource type="Script" uid="uid://c5lq2rjee8gej" path="res://assets/scripts/entities/items/throwable_entities/throwable_entity.gd" id="1_oebot"]
+[ext_resource type="Script" uid="uid://bfqu8a5hgtjkb" path="res://assets/scripts/entities/items/throwable_entities/throwable_projectile.gd" id="1_oebot"]
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/items/knife.png" id="2_oebot"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oebot"]
@@ -10,7 +10,7 @@ size = Vector2(20, 10)
 collision_layer = 32
 collision_mask = 39
 script = ExtResource("1_oebot")
-lifetime = 2.0
+lifetime = 10.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1049323652]
 texture_filter = 5

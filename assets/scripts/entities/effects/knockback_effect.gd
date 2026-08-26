@@ -17,23 +17,18 @@ func apply_effect(target: Node2D) -> bool:
 	if dir == Vector2.ZERO:
 		dir = Vector2.RIGHT 
 		
-	# 1. Nasze rzucane obiekty (Bomby fizyczne, wirtualne Noże, Miny)
-	if target is ThrowableEntity:
-		var me: Node = target
-		# Jeśli zrobiliśmy bombę jako RigidBody2D
-		if me is RigidBody2D:
-			(me as RigidBody2D).apply_central_impulse(dir * knockback_force)
-		# Jeśli zrobiliśmy nóż/minę jako Area2D, dodajemy wektor prędkości
-		elif me is Area2D:
-			target.current_velocity += dir * knockback_force
-		return true
-
-	# 2. Obiekty fizyczne na scenie (np. upuszczony loot ItemPickup lub dynamiczne beczki)
-	elif target is RigidBody2D:
+	# 1. WSZYSTKIE OBIEKTY FIZYCZNE 
+	# (To automatycznie obsłuży loot: ItemPickup, beczki, a także Twoje bomby z ThrowablePhysics!)
+	if target is RigidBody2D:
 		target.apply_central_impulse(dir * knockback_force)
 		return true
 		
-	# 3. Postacie (Gracz, Pająki i inni wrogowie z klas CharacterBody2D)
+	# 2. NASZE NIEMATERIALNE RZUTKI (Noże, Miny, Śnieżki oparte na ThrowableProjectile)
+	elif target is ThrowableProjectile:
+		target.current_velocity += dir * knockback_force
+		return true
+		
+	# 3. POSTACIE (Gracz, Wrogowie np. Pająki na bazie CharacterBody2D)
 	elif target is CharacterBody2D:
 		var tween = target.create_tween()
 		tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
