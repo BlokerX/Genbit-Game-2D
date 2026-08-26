@@ -59,14 +59,28 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		if not friendly_fire or _time_alive < 0.1:
 			return
 
-	# --- ZABEZPIECZENIE PRZED NIESKOŃCZONĄ PĘTLĄ I DUPLIKACJĄ ---
+	# --- ZABEZPIECZENIE PRZED DUPLIKACJĄ ---
 	if is_queued_for_deletion() or has_meta("is_triggered"):
 		return
 	set_meta("is_triggered", true)
 
+	# TODO zapalnik animacja tu
+
+	# --- 1. ODLICZANIE ZAPALNIKA (Oczekiwanie na wybuch) ---
+	# Odliczamy czas opóźnienia ZANIM obiekt roześle efekty do otoczenia.
+	# Nie chowamy grafiki, mina po prostu fizycznie czeka na detonację.
+	if activation_delay > 0.0 and direct_hit == null:
+		await get_tree().create_timer(activation_delay).timeout
+		
+		# Upewniamy się, że obiekt nie zniknął podczas odliczania
+		if not is_inside_tree():
+			return
+
+	# TODO wybuch animacja tu
+
+	# --- 2. BUM! (Faktyczny wybuch i rozesłanie fali uderzeniowej) ---
 	var targets: Array[Node2D] = []
 	
-	# 1. Pobieramy cele natychmiast
 	if aoe_area != null:
 		targets.append_array(aoe_area.get_overlapping_bodies())
 		for area in aoe_area.get_overlapping_areas():
@@ -76,10 +90,10 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		# Zabezpieczenie: RigidBody2D nie potrafi samo sprawdzać obszaru bez węzła Area2D!
 		push_warning("BŁĄD: ThrowablePhysics (Bomba) wybuchła, ale nie ma przypisanego 'aoe_area' w Inspektorze!")
 		
+		
 	if direct_hit != null and not targets.has(direct_hit):
 		targets.append(direct_hit)
 		
-	# 2. Rozsyłamy efekty do wszystkich w zasięgu (wywołujemy kolejne miny)
 	for body in targets:
 		if body == shooter and not friendly_fire:
 			continue
@@ -90,19 +104,7 @@ func trigger_effect(direct_hit: Node2D) -> void:
 					effect.source_position = self.global_position
 				body.receive_effect(effect)
 
-	# --- BEZPIECZNE OPÓŹNIENIE WIZUALNE (BEZ ZAMRAŻANIA FIZYKI) ---
-	if activation_delay > 0.0 and direct_hit == null:
-		# Wyłączamy tylko kolizje i grafikę, żeby obiekt nie przyjmował nowych hitów, 
-		# ale nie blokujemy drzewa węzłów za pomocą dziwnych stanów process_mode.
-		var coll = find_child("CollisionShape2D", true, false)
-		if coll: coll.disabled = true
-		
-		var sprite = find_child("Sprite2D", true, false)
-		if sprite: sprite.visible = false
-		
-		# Tworzymy bezpieczny timer kaskadowy
-		await get_tree().create_timer(activation_delay).timeout
-
+	# --- 3. USUNIĘCIE OBIEKTU PO WYBUCHU ---
 	queue_free()
 
 ## Odbieranie efektów (zarządzanie tym, co aktywuje ten obiekt)
