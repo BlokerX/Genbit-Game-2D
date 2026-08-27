@@ -22,7 +22,7 @@ func execute(actor: Node2D, target: Node2D, _item_instance: ItemInstance) -> voi
 	stats.actual_extra_effects = effects
 	
 	# 2. Wykonujemy cios (Twoja oryginalna funkcja!)
-	stats.execute_attack_on_target(target)
+	stats.execute_attack_on_target(actor, target)
 	
 	# 3. Psujemy broń (Zlecamy to instancji!)
 	_item_instance.consume_durability(1)

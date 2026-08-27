@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="5_0uwnp"]
 [ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_bhye6"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_bhye6"]
+[ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/knockback_effect.gd" id="8_0uwnp"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_3b6gh"]
 
 [sub_resource type="Resource" id="Resource_aknrp"]
@@ -17,10 +18,16 @@ damage = 0
 max_range = 1500.0
 stun_time = 0.5
 
+[sub_resource type="Resource" id="Resource_bhye6"]
+script = ExtResource("8_0uwnp")
+knockback_force = 50.0
+metadata/_custom_type_script = "uid://barho03v1ogy0"
+
 [sub_resource type="Resource" id="Resource_vi5fn"]
 script = ExtResource("4_qan2r")
 use_cooldown = 0.25
 attack_data = SubResource("Resource_aknrp")
+weapon_effects = Array[ExtResource("5_0uwnp")]([SubResource("Resource_bhye6")])
 accepted_ammunition_type = 7
 magazine_capacity = 25
 reload_time = 2.8

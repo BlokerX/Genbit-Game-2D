@@ -61,6 +61,10 @@ func _on_body_entered(body: Node2D):
 	# Aplikowanie efektów na ofiarę (zadziała na wrogów, skrzynki, beczki itp.)
 	if body.has_method("receive_effect"):
 		for effect in effects_to_apply:
+			# UNIWERSALNE WSTRZYKIWANIE (Epicentrum to pocisk)
+			if "source_position" in effect:
+				effect.source_position = self.global_position
+				
 			body.receive_effect(effect)
 			
 	# Zniszcz pocisk po trafieniu w cokolwiek (wroga, drzwi lub ścianę)

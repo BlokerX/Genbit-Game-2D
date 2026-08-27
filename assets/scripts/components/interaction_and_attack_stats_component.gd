@@ -97,19 +97,24 @@ func apply_stun_to_self(seconds : float) -> void :
 	cooldown_timer -= seconds
 
 ## Ujednolicona funkcja ataku. Nakłada wygenerowane Efekty na cel.
-func execute_attack_on_target(target : Node2D) -> void :
+func execute_attack_on_target(actor: Node2D, target: Node2D) -> void :
 	# 1. Generujemy gotową listę bazowych efektów z actual_attack_data (Damage i Stun)
 	var all_effects : Array[Effect] = generate_attack_effects()
 	
-	# 2. Dorzucamy do listy dodatkowe efekty (np. PoisonEffect, FireEffect z broni)
-	all_effects.append_array(actual_extra_effects)
-	
-	# 3. Nakładamy WSZYSTKIE efekty na wroga w jednej spójnej pętli
+	# Klonujemy i dorzucamy efekty specjalne (np. z broni)
+	for eff in actual_extra_effects:
+		if eff != null:
+			all_effects.append(eff.duplicate(true))
+			
+	# UNIWERSALNE WSTRZYKIWANIE (Duck Typing)
 	for effect in all_effects:
+		# Jeśli jakikolwiek efekt potrzebuje pozycji źródła, dajemy mu ją:
+		if "source_position" in effect:
+			effect.source_position = actor.global_position
+			
 		if target.has_method("receive_effect"):
 			target.receive_effect(effect)
 		else:
-			# Fallback dla obiektów, które nie obsługują receive_effect
 			effect.apply_effect(target)
 			
 	# Resetujemy cooldown
