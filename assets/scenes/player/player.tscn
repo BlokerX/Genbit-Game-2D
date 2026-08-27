@@ -56,6 +56,19 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_b3dqe"]
 radius = 40.0
 
+[sub_resource type="Gradient" id="Gradient_f0e17"]
+interpolation_color_space = 2
+offsets = PackedFloat32Array(0, 0.12260536, 0.6781609)
+colors = PackedColorArray(1, 1, 1, 0.11372549, 1, 1, 1, 0.29411766, 0, 0, 0, 0.9019608)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_xflxm"]
+gradient = SubResource("Gradient_f0e17")
+width = 1024
+height = 1024
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("attack_component", "inventory", "item_thrower_component", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
@@ -119,5 +132,11 @@ texture_filter = 5
 shape = SubResource("CircleShape2D_b3dqe")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
+[node name="PointLight2D" type="PointLight2D" parent="." unique_id=1686410531]
+enabled = false
+texture = SubResource("GradientTexture2D_xflxm")
+
 [node name="DynamicCamera2D" type="Camera2D" parent="." unique_id=957091546]
 script = ExtResource("21_xflxm")
+
+[node name="AudioListener2D" type="AudioListener2D" parent="." unique_id=1175445845]

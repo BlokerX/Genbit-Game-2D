@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ctls1l7pgyirg"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_r8kns"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="2_76b7h"]
+[ext_resource type="Texture2D" uid="uid://uooe1hbaklrt" path="res://assets/textures/samples_examples/items/yellow_potion_v2.png" id="2_dykrb"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_r22a7"]
+[ext_resource type="Script" uid="uid://b3dk7g7wl0tkt" path="res://assets/scripts/entities/items/components/light_source_component.gd" id="3_r22a7"]
+
+[sub_resource type="Resource" id="Resource_vigi8"]
+script = ExtResource("3_r22a7")
+metadata/_custom_type_script = "uid://b3dk7g7wl0tkt"
+
+[resource]
+script = ExtResource("2_76b7h")
+item_id = &"torch"
+item_name = "Torch"
+item_description = "Light it!"
+item_icon = ExtResource("2_dykrb")
+components = Array[ExtResource("1_r8kns")]([SubResource("Resource_vigi8")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

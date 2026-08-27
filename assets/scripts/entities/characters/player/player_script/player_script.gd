@@ -43,6 +43,8 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 
 #endregion
 
+@onready var player_light: PointLight2D = $PointLight2D
+
 #region Podłączone komponenty indywidualne dla gracza
 
 ## Komponent obsługujący wykonywanie ataków
@@ -557,6 +559,24 @@ func on_inventory_update() :
 					break
 		if not is_placeable:
 			_cancel_building()
+	
+	# --- SYSTEM OŚWIETLENIA (Dynamiczna moc) ---
+	var light_applied = false
+	if current_item != null and current_item.data.components != null:
+		for comp in current_item.data.components:
+			if comp is LightSourceComponent:
+				# Aplikujemy parametry prosto z komponentu przedmiotu!
+				player_light.enabled = true
+				player_light.energy = comp.light_energy
+				player_light.texture_scale = comp.light_scale
+				player_light.color = comp.light_color
+				light_applied = true
+				break
+				
+	# Jeśli przedmiot nie ma komponentu świecenia (lub mamy puste ręce), gasimy światło
+	if not light_applied:
+		player_light.energy = 0.0
+		player_light.enabled = false
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
