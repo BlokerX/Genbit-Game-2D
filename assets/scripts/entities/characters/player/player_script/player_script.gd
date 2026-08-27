@@ -123,6 +123,9 @@ var is_input_locked: bool = false
 # Blokada pacyfistyczna
 var is_in_pacifist_zone: bool = false
 
+# --- TARCZA RESPAWNU ---
+var is_respawning: bool = false
+
 #endregion
 
 #region Główne funkcje silnikowe
@@ -339,8 +342,15 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 		
 	# RESPAWN
 	if event.is_action_pressed(INPUT_RESPAWN):
+		if is_respawning: return true # Ignoruj, jeśli gracz już się odradza
+		
+		var level_manager = get_tree().get_first_node_in_group("Map")
+		if level_manager and level_manager.get("is_transitioning") == true:
+			print("Blokada: Menedżer Przejść jest zajęty animacją ekranu!")
+			return true # Ignoruj klawisz R, jeśli mapa się przesuwa
+			
+		is_respawning = true
 		call_deferred("respawn_sequence")
-		print("Gracz się odrodził!")
 		return true
 	
 	#endregion
@@ -565,6 +575,17 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 
 # Nadpisanie bazowej funkcji z CharacterEntity
 func respawn_sequence() -> void:
+	# Natychmiastowe zamrożenie gracza!
+	# Zapobiega wbieganiu w drzwi na ślepo, gdy ekran powoli ciemnieje.
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+	process_mode = Node.PROCESS_MODE_DISABLED
+	
+	# --- NAPRAWA KRYTYCZNA: Czekamy na SYGNAŁ od menedżera, a nie na funkcję ---
+	TransitionManager.fade_to_black(1.0)
+	await TransitionManager.on_fade_out_finished
+	# -------------------------------------------------------------------------
+	
 	# 1. Odpalamy całą logikę bazową (leczenie, zerowanie prędkości, usuwanie efektów)
 	super() 
 	
@@ -575,9 +596,12 @@ func respawn_sequence() -> void:
 	var level_manager = get_tree().get_first_node_in_group("Map")
 	if level_manager:
 		if level_manager.has_method("handle_player_respawn"):
-			level_manager.handle_player_respawn(self)
+			await level_manager.handle_player_respawn(self)
 	else:
 		push_warning("Nie znaleziono Map podczas respawnu!")
+	
+	# Po rozjaśnieniu ekranu zdejmujemy tarczę klawisza "R"
+	is_respawning = false
 
 #endregion
 

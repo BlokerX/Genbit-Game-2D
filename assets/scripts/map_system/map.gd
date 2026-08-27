@@ -459,7 +459,7 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 			print("Menedżer Mapy: Miękki reset (odtworzenie proceduralnych zasobów pokoju).")
 			
 		# Zdejmujemy ewentualne zaciemnienie po śmierci
-		TransitionManager.fade_to_black(0.0) # Usuwa alfę
+		TransitionManager.fade_to_normal(1) # Usuwa alfę
 		
 		# Przenosimy gracza z powrotem do pokoju startowego 
 		change_room(starting_room)
