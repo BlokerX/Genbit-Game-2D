@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://l7xke78p4uby"]
+
+[ext_resource type="Script" uid="uid://dsfkcceq8hnpx" path="res://assets/scripts/scene_scripts/settings/settings_menu.gd" id="1_1xbw0"]
+
+[node name="SettingsMenu" type="Control" unique_id=85935389]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1xbw0")
+
+[node name="Background" type="ColorRect" parent="." unique_id=284666526]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+color = Color(0.2627451, 0.35686275, 1, 0.49803922)
+
+[node name="CenterBackground" type="ColorRect" parent="." unique_id=1363670606]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -375.0
+offset_top = -450.0
+offset_right = 375.0
+offset_bottom = 450.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+color = Color(0.39607844, 0, 1, 0.7490196)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=362976374]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="CenterContainer" unique_id=2079367992]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CenterContainer/MainVBox" unique_id=1538319627]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 40
+text = "USTAWIENIA STEROWANIA"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/MainVBox" unique_id=1648467259]
+custom_minimum_size = Vector2(700, 650)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="ActionList" type="VBoxContainer" parent="CenterContainer/MainVBox/ScrollContainer" unique_id=1811817524]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/MainVBox" unique_id=646860090]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="CenterContainer/MainVBox/HBoxContainer" unique_id=1039172881]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 60
+text = "RESET"
+
+[node name="BackButton" type="Button" parent="CenterContainer/MainVBox/HBoxContainer" unique_id=2140388745]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 60
+text = "BACK"

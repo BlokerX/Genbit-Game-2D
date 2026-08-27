@@ -7,7 +7,7 @@
 [ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="6_yfi7d"]
 [ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="7_2tf2h"]
 [ext_resource type="Texture2D" uid="uid://d2bmsjlmavcat" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_right.png" id="7_f0e17"]
-[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/interactable_component.tscn" id="7_oet4l"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="7_oet4l"]
 [ext_resource type="Script" uid="uid://t84hjcd18438" path="res://assets/scripts/components/inventory.gd" id="8_2tf2h"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="8_hsamt"]
 [ext_resource type="Texture2D" uid="uid://c4bw7p50ib1ff" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_right.png" id="8_rrkuk"]
@@ -59,6 +59,9 @@ animations = [{
 [sub_resource type="Resource" id="Resource_37c74"]
 script = ExtResource("18_yswgg")
 data = ExtResource("17_jnpjv")
+state = {
+"amount": 1
+}
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="Resource" id="Resource_u63vv"]
@@ -72,20 +75,18 @@ radius = 40.0
 [node name="Player" type="CharacterBody2D" unique_id=1016659893 node_paths=PackedStringArray("attack_component", "inventory", "item_thrower_component", "builder_component", "character_sprite", "effects_collector") groups=["Player"]]
 texture_filter = 5
 collision_layer = 2
-collision_mask = 7
+collision_mask = 39
 motion_mode = 1
 script = ExtResource("1_hyvrl")
 attack_component = NodePath("AttackComponent")
 inventory = NodePath("Inventory")
 item_thrower_component = NodePath("ItemThrowerComponent")
 builder_component = NodePath("BuilderComponent")
-push_force = null
 respawnVector = Vector2(960, 540)
 movement_universal_script = ExtResource("3_hsamt")
 health_stats_script = ExtResource("4_b3dqe")
 interaction_and_attack_stats_script = ExtResource("5_u84jc")
 loot_drop_script = ExtResource("6_yfi7d")
-combat_radius = null
 character_sprite = NodePath("CharacterAnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
@@ -121,7 +122,7 @@ metadata/_custom_type_script = "uid://cpra3wi61tf27"
 script = ExtResource("10_jf6n8")
 
 [node name="AimScanner" type="RayCast2D" parent="AimController" unique_id=674220857]
-collision_mask = 13
+collision_mask = 45
 hit_from_inside = true
 
 [node name="HeldItemHandler" type="Node2D" parent="." unique_id=878024246]
@@ -132,7 +133,6 @@ scale = Vector2(2, 2)
 texture_filter = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1127700823]
-position = Vector2(-0.5, 0)
 shape = SubResource("CircleShape2D_b3dqe")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 

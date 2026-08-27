@@ -1,16 +1,16 @@
 [gd_scene format=3 uid="uid://vc0xtgb4d68j"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_hp8qi"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_hp8qi"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/enemies/spider.tscn" id="4_ywiaw"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="5_j1nxu"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="6_cblon"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="7_kegip"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="8_8sg7u"]
-[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/chest.tscn" id="9_tx8yf"]
+[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/chest.tscn" id="9_tx8yf"]
 [ext_resource type="Script" uid="uid://cla0ou6p42xsx" path="res://assets/scripts/entities/items/slot_data.gd" id="10_kh7tt"]
 [ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="11_fv8qv"]
 [ext_resource type="Script" uid="uid://cv5afe6geisca" path="res://assets/scripts/entities/items/item_instance.gd" id="12_af46w"]
-[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/item_pickup.tscn" id="13_2ciny"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="13_2ciny"]
 [ext_resource type="Script" uid="uid://cxqidx2whm468" path="res://assets/scripts/dev_ops/dev_chest_filler.gd" id="13_gde2r"]
 [ext_resource type="Resource" uid="uid://chssjufigosbf" path="res://assets/data/items/haste_potion.tres" id="14_6rlbj"]
 [ext_resource type="Resource" uid="uid://dks8varf4o3m3" path="res://assets/data/items/slow_potion.tres" id="15_jxa5q"]
@@ -36,16 +36,16 @@
 [ext_resource type="Resource" uid="uid://1ill1kife1mh" path="res://assets/data/items/big_backpack.tres" id="34_4wr1w"]
 [ext_resource type="Resource" uid="uid://3u70th2n4bo" path="res://assets/data/items/purse.tres" id="35_5ulm5"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_vjgq3"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_ncirm"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[sub_resource type="Resource" id="Resource_dns1c"]
+[sub_resource type="Resource" id="Resource_vjgq3"]
 resource_local_to_scene = true
 script = ExtResource("5_j1nxu")
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_pmdun"]
+[sub_resource type="Resource" id="Resource_dns1c"]
 resource_local_to_scene = true
 script = ExtResource("6_cblon")
 health = 1000000000000000
@@ -56,7 +56,7 @@ script = ExtResource("7_kegip")
 damage = 0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_hn4ck"]
+[sub_resource type="Resource" id="Resource_pmdun"]
 resource_local_to_scene = true
 script = ExtResource("8_8sg7u")
 hand_attack_data = SubResource("Resource_p05go")
@@ -64,6 +64,9 @@ hand_attack_data = SubResource("Resource_p05go")
 [sub_resource type="Resource" id="Resource_yg0s7"]
 script = ExtResource("12_af46w")
 data = ExtResource("11_fv8qv")
+state = {
+"amount": 1
+}
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="Resource" id="Resource_1gk60"]
@@ -79,6 +82,9 @@ metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 [sub_resource type="Resource" id="Resource_dg17h"]
 script = ExtResource("12_af46w")
 data = ExtResource("26_yewhi")
+state = {
+"amount": 999
+}
 amount = 999
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
@@ -90,6 +96,9 @@ metadata/_custom_type_script = "uid://cla0ou6p42xsx"
 [sub_resource type="Resource" id="Resource_j1nxu"]
 script = ExtResource("12_af46w")
 data = ExtResource("32_2338t")
+state = {
+"amount": 1
+}
 metadata/_custom_type_script = "uid://cv5afe6geisca"
 
 [sub_resource type="Resource" id="Resource_cblon"]
@@ -106,14 +115,14 @@ is_secret = true
 ignore_combat_lock = true
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
-navigation_polygon = SubResource("NavigationPolygon_vjgq3")
+navigation_polygon = SubResource("NavigationPolygon_ncirm")
 
 [node name="InfinitySpider" parent="." index="2" unique_id=1198211542 instance=ExtResource("4_ywiaw")]
 position = Vector2(960, 384)
 rotation = 1.5707964
-movement_universal_script = SubResource("Resource_dns1c")
-health_stats_script = SubResource("Resource_pmdun")
-interaction_and_attack_stats_script = SubResource("Resource_hn4ck")
+movement_universal_script = SubResource("Resource_vjgq3")
+health_stats_script = SubResource("Resource_dns1c")
+interaction_and_attack_stats_script = SubResource("Resource_pmdun")
 
 [node name="Chest(Building)" parent="." index="3" unique_id=1382818356 instance=ExtResource("9_tx8yf")]
 position = Vector2(1376, 160)

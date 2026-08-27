@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bpalvm4aaiwe5" path="res://assets/scripts/scene_scripts/main_menu/main_menu.gd" id="1_4qj7h"]
 [ext_resource type="Script" uid="uid://mvfc1lpl1iyy" path="res://assets/scripts/scene_scripts/main_menu/credits_button.gd" id="2_6r5fw"]
+[ext_resource type="Script" uid="uid://bf83t5hpycmcm" path="res://assets/scripts/scene_scripts/main_menu/settings_button.gd" id="2_v71do"]
 [ext_resource type="Script" uid="uid://d1u13mv3i3t0n" path="res://assets/scripts/scene_scripts/main_menu/quit_button.gd" id="3_6x8q2"]
-[ext_resource type="PackedScene" uid="uid://uuss2dodm1na" path="res://assets/scenes/credits.tscn" id="3_f2xsc"]
+[ext_resource type="PackedScene" uid="uid://uuss2dodm1na" path="res://assets/scenes/main_menu/credits.tscn" id="3_f2xsc"]
+[ext_resource type="PackedScene" uid="uid://l7xke78p4uby" path="res://assets/scenes/main_menu/settings_menu.tscn" id="3_xmmar"]
 [ext_resource type="AudioStream" uid="uid://giwx4maycjpr" path="res://assets/audio/main_menu/rougelike_main_menu_ambience.wav" id="4_h8d3m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_77rv3"]
@@ -234,8 +236,9 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_6qsvb")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tanm1")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_cbhea")
 theme_override_styles/focus = SubResource("StyleBoxFlat_fsbqx")
-disabled = true
 text = "Settings"
+script = ExtResource("2_v71do")
+settings_scene = ExtResource("3_xmmar")
 metadata/_edit_lock_ = true
 
 [node name="CreditsButton" type="Button" parent="MenuPanel/MenuOptions/MenuButtons" unique_id=418561509]

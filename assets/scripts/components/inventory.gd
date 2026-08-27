@@ -122,8 +122,12 @@ func cycle_weapon_ammunition() -> void:
 	var inst = slot.item
 	var current_pref_id = inst.state.get("preferred_ammo_id", &"")
 	
-	if (current_pref_id == null or str(current_pref_id) == "") and inst.state.get("ammo_data") != null:
-		current_pref_id = inst.state["ammo_data"].item_id
+	# --- ZMIANA: Szukamy w bazie po ID ---
+	var current_ammo_id = inst.state.get("ammo_id", &"")
+	var current_ammo_data = ItemDatabase.get_item(current_ammo_id) if current_ammo_id != &"" else null
+	
+	if (current_pref_id == null or str(current_pref_id) == "") and current_ammo_data != null:
+		current_pref_id = current_ammo_data.item_id
 		
 	var next_index = 0
 	for i in range(available_ammo.size()):
@@ -136,7 +140,7 @@ func cycle_weapon_ammunition() -> void:
 	print(">>> Zmieniono preferencję na: ", next_ammo_data.item_name)
 	
 	var current_ammo_count = inst.state.get("ammo_count", 0)
-	var current_ammo_data = inst.state.get("ammo_data", null)
+	# Zmienna current_ammo_data została już zadeklarowana i pobrana bezpiecznie wyżej!
 	
 	if current_ammo_count > 0 and current_ammo_data != null:
 		var old_instance = ItemInstance.new(current_ammo_data.duplicate(true), current_ammo_count)
@@ -145,7 +149,7 @@ func cycle_weapon_ammunition() -> void:
 			item_dropped.emit(leftovers, false)
 			
 	inst.state["ammo_count"] = 0
-	inst.state["ammo_data"] = null
+	inst.state["ammo_id"] = &"" # <--- ZMIANA z ammo_data na ammo_id
 	reload_current_weapon()
 
 ## Główna funkcja ładująca broń
@@ -174,7 +178,10 @@ func _try_load_ammo(inst: ItemInstance, weapon_comp: RangedWeaponComponent, requ
 	var current_ammo = inst.state.get("ammo_count", 0)
 	var ammo_needed = weapon_comp.magazine_capacity - current_ammo
 	var ammo_found = 0
-	var ammo_reference: ItemData = inst.state.get("ammo_data", null)
+	
+	# --- ZMIANA: Odczyt po ID z bazy ---
+	var current_ammo_id = inst.state.get("ammo_id", &"")
+	var ammo_reference: ItemData = ItemDatabase.get_item(current_ammo_id) if current_ammo_id != &"" else null
 	
 	for i in range(slots.size()):
 		if not slots[i].is_empty():
@@ -207,7 +214,7 @@ func _try_load_ammo(inst: ItemInstance, weapon_comp: RangedWeaponComponent, requ
 					
 	if ammo_found > 0:
 		inst.state["ammo_count"] = current_ammo + ammo_found
-		inst.state["ammo_data"] = ammo_reference
+		inst.state["ammo_id"] = ammo_reference.item_id # <--- ZMIANA
 		inventory_updated.emit()
 		print("Załadowano: ", ammo_found, " sztuk typu: ", ammo_reference.item_name)
 		

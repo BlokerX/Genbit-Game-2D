@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://bd62a77tsjoc4"]
+
+[ext_resource type="Script" uid="uid://bfqu8a5hgtjkb" path="res://assets/scripts/entities/items/throwable_entities/throwable_projectile.gd" id="1_i666p"]
+[ext_resource type="Texture2D" uid="uid://nw0in0beb0bg" path="res://assets/textures/samples_examples/items/mine.png" id="2_rspoa"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1erfi"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_bkrfn"]
+radius = 120.0
+
+[node name="Mine" type="Area2D" unique_id=672361054 node_paths=PackedStringArray("aoe_area")]
+collision_layer = 32
+collision_mask = 6
+script = ExtResource("1_i666p")
+activation_delay = 0.2
+friendly_fire = true
+is_infinite = true
+can_be_knocked_back = false
+aoe_area = NodePath("CollisionShape2D/ExplosionArea")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1659495432]
+texture_filter = 5
+scale = Vector2(4, 4)
+texture = ExtResource("2_rspoa")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1676972437]
+shape = SubResource("CircleShape2D_1erfi")
+
+[node name="ExplosionArea" type="Area2D" parent="CollisionShape2D" unique_id=1894217196]
+collision_layer = 32
+collision_mask = 47
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CollisionShape2D/ExplosionArea" unique_id=275490048]
+shape = SubResource("CircleShape2D_bkrfn")

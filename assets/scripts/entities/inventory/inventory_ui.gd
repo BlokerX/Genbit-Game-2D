@@ -5,7 +5,7 @@ enum InfoMode { NONE, BASIC, ADVANCED }
 const INPUT_TOGGLE_INFO = "ToggleInfoMode"
 
 @export var player : PlayerCharacter
-@export var slot_scene: PackedScene = preload("res://assets/scenes/inventory_slot.tscn")
+@export var slot_scene: PackedScene = preload("res://assets/scenes/gui/inventory_slot.tscn")
 @onready var hotbar_panel = $HotbarPanel # Używamy węzła zamiast stałej listy dzieci
 @export var info_label: Label
 

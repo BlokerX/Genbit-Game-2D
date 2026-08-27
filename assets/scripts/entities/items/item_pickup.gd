@@ -38,13 +38,6 @@ func _ready() -> void:
 			child.untargeted.connect(_on_untargeted)
 			break
 	
-	set_collision_mask_value(1, false)
-	await get_tree().create_timer(0.5).timeout
-	
-	if not is_instance_valid(self) or is_queued_for_deletion():
-		return # Obiekt nie istnieje, przerywamy kod!
-		
-	set_collision_mask_value(1, true)
 	can_pick_up = true
 	
 	# Pobieramy nazwę poprzez item.data
@@ -113,3 +106,8 @@ func _on_interacted(interactor: Node) -> void:
 			else:
 				# Plecak jest pełny, aktualizujemy naszą instancję na ziemi by zachowała resztki
 				item = leftovers
+
+## Odbieranie efektów środowiskowych (np. fali uderzeniowej z bomby)
+func receive_effect(effect: Effect) -> bool:
+	# Przekazuje siebie (obiekt fizyczny) do efektu, pozwalając mu podziałać na ciało
+	return effect.apply_effect(self)

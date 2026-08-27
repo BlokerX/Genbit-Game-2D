@@ -18,6 +18,8 @@ signal storage_updated
 ## Sygnał wysyłany do UI po wejściu w interakcję ze skrzynią
 signal storage_opened(storage_reference: StorageComponent)
 
+signal storage_destroyed
+
 #endregion
 
 @onready var interactable_comp: Node = $"../InteractableComponent" # todo rozwiązać to lepiej

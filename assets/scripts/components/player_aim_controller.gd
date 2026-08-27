@@ -16,6 +16,8 @@ class_name PlayerAimController
 @export var auto_lock_closest_enemy: bool = true
 ## Czy celownik ma być aktywny cały czas (True), czy tylko podczas wychylania gałki/strzałek (False)?
 @export var continuous_gamepad_aiming: bool = false
+## Czy po puszczeniu gałki laser ma znikać (wracać do zera)? Jeśli odznaczone, promień zostaje tam, gdzie celowałeś.
+@export var hide_laser_on_stick_release: bool = true
 ## Czy myszka ma trzymać cel dopóki z niego nie odejdziemy (True), czy odznaczać go od razu po zjechaniu kursorem w pustą przestrzeń (False)?
 @export var sticky_mouse_aiming: bool = false
 
@@ -119,19 +121,38 @@ func handle_gamepad_aiming(current_attack_range: float, disable_targeting: bool 
 	virtual_cursor_pos += aim_vector.normalized() * virtual_cursor_speed * delta
 	
 	var raw_aim_dir = aim_vector.normalized()
-	final_aim_dir = raw_aim_dir
 
-	# Magnetyzm celownika dla strzelania (Całkowicie zablokowany podczas budowy)
+	# --- 1. KIERUNEK ---
+	if is_pad_aiming:
+		final_aim_dir = raw_aim_dir
+	else:
+		final_aim_dir = global_position.direction_to(virtual_cursor_pos)
+		if final_aim_dir == Vector2.ZERO:
+			final_aim_dir = Vector2.DOWN
+
+	# --- 2. USTAWIENIE SKANERA (Chowanie celownika) ---
+	# Ukrywamy promień TYLKO wtedy, gdy gałka jest puszczona, nowa opcja jest włączona i nie trzymamy celu
+	if not is_pad_aiming and hide_laser_on_stick_release and current_target == null:
+		aim_scanner.target_position = Vector2.ZERO
+	else:
+		# Jeśli opcja wyłączona (lub mamy cel/wychylamy gałkę) -> zostawiamy laser wysunięty
+		aim_scanner.target_position = final_aim_dir * aim_distance
+
+	# --- 3. MAGNETYZM I ZATRZYMANIE NA CELU ---
 	if not disable_targeting and current_target != null and is_instance_valid(current_target):
 		var target_parent = current_target.get_parent()
 		if target_parent != null:
 			var dir_to_target = global_position.direction_to(target_parent.global_position)
-			if abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8: 
+			
+			# Jeśli gracz wychyla gałkę (szuka celu) i kąt się zgadza - przyciągamy laser
+			if raw_aim_dir != Vector2.ZERO and abs(raw_aim_dir.angle_to(dir_to_target)) < 0.8:
 				final_aim_dir = dir_to_target
 				aim_scanner.target_position = final_aim_dir * aim_distance
-	else:
-		if not continuous_gamepad_aiming:
-			aim_scanner.target_position = Vector2.ZERO
+				
+			# Jeśli gracz PUŚCIŁ gałkę, ale nadal ma aktywny cel - laser musi sztywno na niego wskazywać
+			elif not is_pad_aiming:
+				final_aim_dir = dir_to_target
+				aim_scanner.target_position = final_aim_dir * aim_distance
 
 	# --- SMYCZ WIRTUALNEGO KURSORA (Zabezpieczenie przed ucieczką) ---
 	var limit_range = current_attack_range if current_attack_range > 0 else aim_distance
@@ -141,7 +162,6 @@ func handle_gamepad_aiming(current_attack_range: float, disable_targeting: bool 
 			dir_to_cursor = Vector2.DOWN
 		virtual_cursor_pos = global_position + (dir_to_cursor * limit_range)
 		
-	# -----------------------------------------------------------------
 	# 2. Aktualizacja Raycastu
 	aim_scanner.force_raycast_update()
 	

@@ -10,6 +10,9 @@
 [ext_resource type="Script" uid="uid://cmsn2kpgdc7r" path="res://assets/scripts/entities/items/components/melee_weapon_component.gd" id="6_l5bdc"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_g0fm1"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="7_rqs12"]
+[ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="7_w8ndq"]
+[ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="8_l5bdc"]
+[ext_resource type="PackedScene" uid="uid://dvgmw3t8c8a83" path="res://assets/scenes/game_objects/knife.tscn" id="8_rqs12"]
 
 [sub_resource type="Resource" id="Resource_j4jxd"]
 script = ExtResource("2_g0fm1")
@@ -30,6 +33,26 @@ attack_data = SubResource("Resource_j4jxd")
 use_cooldown = 0.3
 effects = Array[ExtResource("4_b06ah")]([SubResource("Resource_28a2h")])
 
+[sub_resource type="Resource" id="Resource_rqs12"]
+script = ExtResource("7_w8ndq")
+damage_amount = 5
+effect_name = "Damage"
+
+[sub_resource type="Resource" id="Resource_v1150"]
+script = ExtResource("5_w8ndq")
+poison_damage_per_tick = 1
+duration = 10.0
+tick_interval = 0.5
+metadata/_custom_type_script = "uid://csdcvcev8ylem"
+
+[sub_resource type="Resource" id="Resource_eophl"]
+script = ExtResource("8_l5bdc")
+entity_scene = ExtResource("8_rqs12")
+throw_force = 800.0
+friction = 0.0
+use_cooldown = 0.3
+effects = Array[ExtResource("4_b06ah")]([SubResource("Resource_rqs12"), SubResource("Resource_v1150")])
+
 [sub_resource type="Resource" id="Resource_b06ah"]
 script = ExtResource("7_rqs12")
 metadata/_custom_type_script = "uid://l7xgpk2wjbr4"
@@ -45,4 +68,4 @@ item_id = &"knife"
 item_name = "Knife"
 item_description = "Bleeding! It deals 5 damage."
 item_icon = ExtResource("3_3ienj")
-components = Array[ExtResource("2_0akag")]([SubResource("Resource_go2b2"), SubResource("Resource_b06ah"), SubResource("Resource_faath")])
+components = Array[ExtResource("2_0akag")]([SubResource("Resource_go2b2"), SubResource("Resource_eophl"), SubResource("Resource_b06ah"), SubResource("Resource_faath")])

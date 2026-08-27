@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dlqyv1khnsruk"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/room.tscn" id="1_iasij"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_iasij"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_iasij"]
-vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1080, 0, 1080)
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_q8eeg"]
+vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
 [sub_resource type="SystemFont" id="SystemFont_iasij"]
@@ -13,7 +13,7 @@ subpixel_positioning = 0
 room_type = 1
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
-navigation_polygon = SubResource("NavigationPolygon_iasij")
+navigation_polygon = SubResource("NavigationPolygon_q8eeg")
 
 [node name="RespawnPoint" type="Marker2D" parent="." index="2" unique_id=924314961 groups=["RespawnPoint"]]
 position = Vector2(960, 540)

@@ -1,17 +1,52 @@
+@tool
 class_name ItemInstance
 extends Resource
 
 ## Sygnał emitowany zawsze, gdy stan (ilość/wytrzymałość) ulegnie zmianie
 signal state_changed
 
-@export var data: ItemData
+# TARCZA 1: Setter na data. Kiedy w Inspektorze przypniesz "Miecz", 
+# natychmiast odpali się konfiguracja jego komponentów!
+@export var data: ItemData:
+	set(value):
+		data = value
+		_initialize_components()
+		emit_changed()
+
 ## Uniwersalny kontener na całkowity stan przedmiotu (ilość, ładunki, zepsucie)
 @export var state: Dictionary = {}
 
+@export_group("Szybka Edycja (Inspektor)")
+
+## Pozwala ustawić ilość bezpośrednio w Inspektorze (1 nic nie ustawia)
+@export var amount: int = 1:
+	set(value):
+		if value == 1:
+			return
+		if not state: state = {}
+		state["amount"] = value
+		emit_changed()
+	get:
+		return state.get("amount", 1) if state else 1
+
+## Pozwala ręcznie uszkodzić przedmiot w Inspektorze (0 to pełna wytrzymałość)
+@export var durability: int = 0:
+	set(value):
+		if value == 0:
+			return
+		if not state: state = {}
+		state["durability"] = value
+		emit_changed()
+	get:
+		return state.get("durability", 0) if state else 0
+
 func _init(p_data: ItemData = null, p_amount: int = 1) -> void:
+	state = {}
 	data = p_data
 	state["amount"] = p_amount # Zapisujemy początkową ilość
-	
+	_initialize_components()
+
+func _initialize_components() -> void:
 	if data != null and data.components != null:
 		for comp in data.components:
 			if comp != null and comp.has_method("initialize_state"):
