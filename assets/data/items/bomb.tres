@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_py6sb"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="2_31wnc"]
-[ext_resource type="Texture2D" uid="uid://ckbh76sp8io31" path="res://assets/textures/samples_examples/items/black_potion_v2.png" id="2_i7i4n"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_p8ac1"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_w8bgg"]
 [ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="4_se31b"]
@@ -11,6 +10,7 @@
 [ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/trigger_effect.gd" id="6_se31b"]
 [ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="6_t4u01"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_m6cy1"]
+[ext_resource type="Texture2D" uid="uid://cas2tmrqa63pe" path="res://assets/textures/samples_examples/items/bomb.png" id="10_se31b"]
 
 [sub_resource type="Resource" id="Resource_lce6m"]
 script = ExtResource("4_se31b")
@@ -44,6 +44,6 @@ script = ExtResource("2_31wnc")
 item_id = &"bomb"
 item_name = "Bomb"
 item_description = "Throwable bomb."
-item_icon = ExtResource("2_i7i4n")
+item_icon = ExtResource("10_se31b")
 components = Array[ExtResource("1_py6sb")]([SubResource("Resource_tn24o"), SubResource("Resource_bpggp")])
 metadata/_custom_type_script = "uid://civbd34phwaj1"
