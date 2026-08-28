@@ -3,7 +3,7 @@ class_name GameScene
 
 # --- NAPRAWA KLUCZY: Używamy ścieżki tekstowej (String) zamiast PackedScene! ---
 # Dzięki temu klucz początkowy na 100% dopasuje się do tego z portali.
-@export_file("*.tscn") var initial_map_path: String = "res://assets/scenes/maps/level_1_test_map.tscn"
+@export_file("*.tscn") var initial_map_path: String
 
 @onready var level_container: Node2D = $LevelContainer
 

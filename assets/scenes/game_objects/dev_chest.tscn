@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://bgw5wrpi2jlkq"]
+
+[ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/chest.tscn" id="1_y5bnl"]
+[ext_resource type="Script" uid="uid://cxqidx2whm468" path="res://assets/scripts/dev_ops/dev_chest_filler.gd" id="2_jdqkt"]
+
+[node name="DevChest" unique_id=1382818356 instance=ExtResource("1_y5bnl")]
+
+[node name="DevChestFiller" type="Node" parent="." index="5" unique_id=147890217 node_paths=PackedStringArray("storage_component")]
+script = ExtResource("2_jdqkt")
+storage_component = NodePath("../StorageComponent")

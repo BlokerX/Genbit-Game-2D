@@ -52,6 +52,7 @@ hand_attack_data = SubResource("Resource_osvyu")
 
 [node name="TestGameScene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_ge8p3")
+initial_map_path = "uid://cbecj7vxyv5rc"
 
 [node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
 process_mode = 3
