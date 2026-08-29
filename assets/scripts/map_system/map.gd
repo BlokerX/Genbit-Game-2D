@@ -109,7 +109,10 @@ func initialize_level() -> void:
 			
 		# Czyścimy ID w chmurze, żeby przy kolejnym respawnie (np. po śmierci) nie psuło logiki
 		GlobalLevelManager.target_entrance_id = ""
-	
+	else:
+		# Wymuszenie czarnego ekranu przy pierwszym wczytaniu gry, aby ukryć reset kamery
+		TransitionManager.color_rect.color = Color.BLACK
+		
 	# Ładujemy ustalony pokój i WWRZUCAMY do niego wyjętego wcześniej gracza
 	if room_to_load:
 		# Ustawiamy natychmiastowy kolor mroku dla pierwszego pokoju
@@ -120,10 +123,10 @@ func initialize_level() -> void:
 		
 		# Wywołujemy change_room. Nasza funkcja w map.gd automatycznie 
 		# znajdzie gracza (nawet jeśli był tymczasowo w root) i wsadzi go do "Entities"!
-		call_deferred("change_room", room_to_load, spawn_node)
+		call_deferred("change_room", room_to_load, spawn_node, true)
 		
-		# Rozjaśniamy ekran na nowej mapie!
-		TransitionManager.fade_to_normal(0.4)
+		# WAŻNE: Usunięto TransitionManager.fade_to_normal(0.4) stąd, 
+		# ponieważ change_room robi to w bezpieczniejszym momencie.
 
 ## Funkcja pomocnicza: Szuka po ID wejścia na całej mapie
 func _find_entrance_by_id(id: String) -> LevelEntrance:
@@ -201,7 +204,7 @@ func _discover_neighboring_rooms(room: Room) -> void:
 				discover_room(neighbor_room) # Odkrywamy go na mapie
 
 ## Funkcja zmiany pokoju
-func change_room(new_room: Room, target_door: Node2D = null) -> void:
+func change_room(new_room: Room, target_door: Node2D = null, force_teleport: bool = false) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
@@ -214,9 +217,10 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 	var do_fade = (mode == 0 or mode == 2) # FADE lub BOTH
 	var do_slide = (mode == 1 or mode == 2) # SLIDE lub BOTH
 	
-	# --- Zabezpieczenie pierwszego pokoju (Start Gry / Miękki Respawn) ---
-	if old_room == null or is_same_room:
-		do_slide = false # Wymuszamy brak przesuwania na starcie i przy respawnie
+	# Zabezpieczenie: jeśli wymuszamy teleport, wyłączamy Slide i upewniamy się, że ekran zgaśnie
+	if old_room == null or is_same_room or force_teleport:
+		do_slide = false
+		do_fade = true
 	
 	# ZAMROŻENIE GRACZA NA CZAS ZMIANY
 	if player:
