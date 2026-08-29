@@ -32,26 +32,28 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	var tree = get_tree()
 	var player = tree.get_first_node_in_group("Player")
 	
-	# 1. ZAMRAŻAMY GRACZA I ZERUJEMY JEGO PĘD
+	# 1. ZAMRAŻAMY RUCH GRACZA, ALE NIE ODPINAMY GO JESZCZE OD DRZEWA
 	if player:
 		if player.has_method("set_physics_process"):
 			player.set_physics_process(false)
-		player.process_mode = Node.PROCESS_MODE_DISABLED
 		
 		if player.has_method("clear_all_environment_effects"):
 			player.clear_all_environment_effects()
 		
 		if "velocity" in player:
 			player.velocity = Vector2.ZERO
-		
-		var current_parent = player.get_parent()
-		if current_parent:
-			current_parent.remove_child(player)
-		tree.root.add_child(player)
 	
 	# 2. ŚCIEMNIENIE EKRANU
 	TransitionManager.fade_to_black(0.3)
 	await TransitionManager.on_fade_out_finished
+	
+	# 2.5. EKRAN JEST CZARNY - ODPINAMY GRACZA I WYŁĄCZAMY MU PROCESY
+	if player:
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+		var current_parent = player.get_parent()
+		if current_parent:
+			current_parent.remove_child(player)
+		tree.root.add_child(player)
 	
 	# 3. ZARZĄDZANIE STARĄ MAPĄ
 	var main_scene = tree.current_scene

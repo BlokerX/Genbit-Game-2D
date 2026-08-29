@@ -121,6 +121,16 @@ func initialize_level() -> void:
 		if not room_to_load.is_inside_tree():
 			add_child(room_to_load)
 		
+		# --- NOWOŚĆ: PRE-POZYCJONOWANIE GRACZA ---
+		# (Żeby od samej pierwszej klatki kamera widziała poprawne koordynaty zamiast tych z Volcano)
+		var player = get_player()
+		if player:
+			if spawn_node:
+				player.global_position = spawn_node.global_position
+			elif room_to_load.spawn_points.size() > 0:
+				player.global_position = room_to_load.spawn_points[0].global_position
+		# ----------------------------------------
+		
 		# Wywołujemy change_room. Nasza funkcja w map.gd automatycznie 
 		# znajdzie gracza (nawet jeśli był tymczasowo w root) i wsadzi go do "Entities"!
 		call_deferred("change_room", room_to_load, spawn_node, true)
@@ -226,12 +236,6 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 	if player:
 		if player.has_method("set_physics_process"):
 			player.set_physics_process(false)
-		# WYŁĄCZENIE FIZYKI GRACZA (żeby ściany go nie wyrzuciły przy przesuwaniu!)
-		player.process_mode = Node.PROCESS_MODE_DISABLED
-	
-	# Wyłączamy fizykę tylko jeśli faktycznie opuszczamy stary pokój
-	if old_room and not is_same_room:
-		old_room.process_mode = Node.PROCESS_MODE_DISABLED
 
 	# ŚCIEMNIENIE EKRANU
 	if do_fade:
@@ -240,6 +244,12 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 	
 	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
 	current_room = new_room
+	
+	# TERAZ bezpiecznie wyłączamy fizykę graczowi i staremu pokojowi
+	if player:
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+	if old_room and not is_same_room:
+		old_room.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURĘ!)
 	if old_room and player:

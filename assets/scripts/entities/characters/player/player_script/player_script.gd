@@ -599,12 +599,14 @@ func respawn_sequence() -> void:
 	# Zapobiega wbieganiu w drzwi na ślepo, gdy ekran powoli ciemnieje.
 	velocity = Vector2.ZERO
 	set_physics_process(false)
-	process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# --- NAPRAWA KRYTYCZNA: Czekamy na SYGNAŁ od menedżera, a nie na funkcję ---
 	TransitionManager.fade_to_black(1.0)
 	await TransitionManager.on_fade_out_finished
 	# -------------------------------------------------------------------------
+	
+	# DOPIERO GDY JEST CIEMNO blokujemy procesy, by kamera nie skoczyła przedwcześnie
+	process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# 1. Odpalamy całą logikę bazową (leczenie, zerowanie prędkości, usuwanie efektów)
 	super() 
