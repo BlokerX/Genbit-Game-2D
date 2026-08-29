@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="6_b0as1"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="7_1k26m"]
 [ext_resource type="Script" uid="uid://bxnwbo7kegnht" path="res://assets/scripts/ui/cooldown_ui.gd" id="8_1t2iv"]
-[ext_resource type="Texture2D" uid="uid://w4qqko4f3o7e" path="res://assets/textures/samples_examples/entities/example_avatar.png" id="9_5fad1"]
+[ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="10_1y80r"]
 [ext_resource type="Script" uid="uid://bdvo2uoscy5aa" path="res://assets/scripts/entities/inventory/inventory_ui.gd" id="10_tjy5o"]
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/gui/inventory_slot.tscn" id="11_mbo3l"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="12_64dql"]
@@ -30,13 +30,13 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="Resource" id="Resource_1y80r"]
+[sub_resource type="Resource" id="Resource_wmbyi"]
 resource_local_to_scene = true
 script = ExtResource("17_vhw88")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_wmbyi"]
+[sub_resource type="Resource" id="Resource_iftva"]
 resource_local_to_scene = true
 script = ExtResource("18_uvlnc")
 
@@ -45,7 +45,7 @@ script = ExtResource("19_elt3u")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_iftva"]
+[sub_resource type="Resource" id="Resource_5c861"]
 resource_local_to_scene = true
 script = ExtResource("20_2y4le")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -204,8 +204,9 @@ custom_minimum_size = Vector2(7, 7)
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
-texture = ExtResource("9_5fad1")
+texture = ExtResource("10_1y80r")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="InventoryUIGroup" type="Node" parent="UI_Canvas" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("10_tjy5o")
@@ -354,6 +355,6 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_1y80r")
-health_stats_script = SubResource("Resource_wmbyi")
-interaction_and_attack_stats_script = SubResource("Resource_iftva")
+movement_universal_script = SubResource("Resource_wmbyi")
+health_stats_script = SubResource("Resource_iftva")
+interaction_and_attack_stats_script = SubResource("Resource_5c861")
