@@ -17,16 +17,9 @@ class_name LevelEntrance
 ## Domyślnie false – portal jest w pełni dostępny, gdy podchodzisz do niego z zewnątrz
 var has_triggered: bool = false
 
-# --- TARCZA CZASOWA ---
-var is_just_loaded: bool = true
-
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
-	
-	# --- ZDEJMOWANIE TARCZY ---
-	# Po pół sekundy portal staje się w pełni aktywny
-	get_tree().create_timer(0.5).timeout.connect(func(): is_just_loaded = false)
 	
 	# INTELIGENTNY START:
 	# Jeśli GlobalLevelManager ma zapisane ID, które pasuje do mojego ID,
@@ -38,10 +31,6 @@ func _ready() -> void:
 		has_triggered = false
 
 func _on_body_entered(body: Node2D) -> void:
-	# --- ODRZUCANIE FAŁSZYWEJ KOLIZJI ---
-	if is_just_loaded:
-		return
-		
 	# Jeśli portal jest zablokowany, ignorujemy wejście
 	if has_triggered:
 		return
