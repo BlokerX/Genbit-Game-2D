@@ -64,6 +64,9 @@ func respawn_sequence():
 	velocity.x = 0
 	velocity.y = 0
 	
+	# przywrócenie domyślnej orientacji
+	character_sprite.frame = 0
+	
 	purge_absolutely_everything()
 
 #endregion
