@@ -1,5 +1,8 @@
 extends Node
 
+## Schowek na gracza, gdy jest wyciągnięty z drzewa podczas ładowania
+var stored_player: Node2D = null
+
 ## ID wejścia, w którym gracz ma się pojawić po załadowaniu nowej mapy
 var target_entrance_id: String = ""
 
@@ -53,7 +56,10 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 		var current_parent = player.get_parent()
 		if current_parent:
 			current_parent.remove_child(player)
-		tree.root.add_child(player)
+			
+		# ZAMIAST DODAWANIA DO ROOT:
+		# Zapisujemy gracza w bezpiecznej zmiennej. Od teraz nie istnieje dla fizyki!
+		stored_player = player
 	
 	# 3. ZARZĄDZANIE STARĄ MAPĄ
 	var main_scene = tree.current_scene
@@ -110,7 +116,7 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			if new_map_instance.has_method("initialize_level"):
 				new_map_instance.initialize_level()
 	
-	is_changing_level = false
+	get_tree().create_timer(0.5).timeout.connect(func(): is_changing_level = false)
 	
 func clear_level_cache() -> void:
 	for map_node in _cached_persistent_levels.values():

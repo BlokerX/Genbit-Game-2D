@@ -172,10 +172,10 @@ movement_universal_script = SubResource("Resource_7jo7x")
 health_stats_script = SubResource("Resource_cnavv")
 interaction_and_attack_stats_script = SubResource("Resource_350hj")
 
-[node name="DevChestL" parent="." unique_id=1382818356 instance=ExtResource("10_5aga0")]
+[node name="DevChestL" parent="OpenWorld" unique_id=1382818356 instance=ExtResource("10_5aga0")]
 position = Vector2(7264, 3168)
 
-[node name="DevChestR" parent="." unique_id=1480076922 instance=ExtResource("10_5aga0")]
+[node name="DevChestR" parent="OpenWorld" unique_id=1480076922 instance=ExtResource("10_5aga0")]
 position = Vector2(8096, 3168)
 
 [editable path="OpenWorld"]

@@ -302,6 +302,9 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 			target_parent = current_room
 		target_parent.add_child(player)
 		
+		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
+		GlobalLevelManager.stored_player = null
+		
 		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
 		if target_door:
 			if "spawn_point" in target_door and target_door.spawn_point != null:
@@ -498,9 +501,16 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 		push_error("Menedżer Mapy: Brak 'starting_room'. Twardy reset sceny.")
 		get_tree().reload_current_scene()
 
-## Zwrócenie gracza ze sceny
-func get_player() -> PlayerCharacter :
-	return get_tree().get_first_node_in_group(PLAYER_GROUP)
+## Zwrócenie gracza ze sceny lub ze schowka (między-poziomowego)
+func get_player() -> PlayerCharacter:
+	# 1. Próbujemy znaleźć gracza normalnie w drzewie
+	var player = get_tree().get_first_node_in_group(PLAYER_GROUP)
+	
+	# 2. Jeśli go nie ma, bo ładuje się poziom, bierzemy go ze schowka Menedżera!
+	if player == null and GlobalLevelManager.get("stored_player") != null:
+		player = GlobalLevelManager.stored_player
+		
+	return player as PlayerCharacter
 
 # Odpala się automatycznie, gdy węzeł mapy opuszcza ekran (np. trafia do "zamrażarki" RAM-u)
 func _exit_tree() -> void:
