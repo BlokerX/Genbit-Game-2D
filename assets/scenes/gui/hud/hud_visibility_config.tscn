@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bisrdlaqm3bxa"]
+
+[ext_resource type="Script" uid="uid://bn4o7a2uu5puk" path="res://assets/scripts/ui/hud_visibility_config.gd" id="1_qw3i4"]
+
+[node name="HUDVisibilityConfig" type="Node" unique_id=460875978]
+script = ExtResource("1_qw3i4")

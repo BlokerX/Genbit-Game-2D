@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cycvvw1tn66k3" path="res://assets/scripts/scene_scripts/game_scene/game_scene.gd" id="1_ge8p3"]
 [ext_resource type="Script" uid="uid://b0ps68vr8aav7" path="res://assets/scripts/ui/playtime_monitor.gd" id="2_ge8p3"]
 [ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="3_b4kdy"]
+[ext_resource type="PackedScene" uid="uid://bisrdlaqm3bxa" path="res://assets/scenes/gui/hud/hud_visibility_config.tscn" id="4_iftva"]
 [ext_resource type="Script" uid="uid://by75yrn6lcipi" path="res://assets/scripts/ui/active_effects_ui.gd" id="4_whqo5"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="5_32wio"]
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="6_b0as1"]
@@ -91,6 +92,8 @@ theme_override_font_sizes/font_size = 40
 horizontal_alignment = 1
 script = ExtResource("2_ge8p3")
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/PlaytimeLabel" unique_id=460875978 instance=ExtResource("4_iftva")]
+
 [node name="MarginContainer" type="MarginContainer" parent="UI_Canvas/Game_UI_Layout" unique_id=435628434]
 layout_mode = 1
 anchors_preset = 15
@@ -143,6 +146,8 @@ theme_override_constants/outline_size = 10
 text = "Active effects:"
 uppercase = true
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/MarginContainer" unique_id=265991567 instance=ExtResource("4_iftva")]
+
 [node name="PlayerUIGroup" type="Node" parent="UI_Canvas" unique_id=748282068]
 
 [node name="HealthPointsBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=1547176443 node_paths=PackedStringArray("character_entity")]
@@ -168,6 +173,8 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/HealthPointsBar" unique_id=1652438321 instance=ExtResource("4_iftva")]
+
 [node name="CooldownProgressBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
 texture_filter = 5
 offset_left = 16.0
@@ -189,6 +196,8 @@ offset_bottom = 24.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CooldownProgressBar" unique_id=912995909 instance=ExtResource("4_iftva")]
+
 [node name="CharacterSlotTextureRect" type="TextureRect" parent="UI_Canvas/PlayerUIGroup" unique_id=854278161]
 texture_filter = 5
 custom_minimum_size = Vector2(7, 7)
@@ -209,6 +218,8 @@ texture = ExtResource("10_1y80r")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CharacterSlotTextureRect" unique_id=807394628 instance=ExtResource("4_iftva")]
+
 [node name="InventoryUIGroup" type="Node" parent="UI_Canvas" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("10_tjy5o")
 player = NodePath("../../Player")
@@ -228,6 +239,8 @@ layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/ItemInfoPanelContainer" unique_id=1354687177 instance=ExtResource("4_iftva")]
 
 [node name="HotbarPanel" type="HBoxContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=682378422]
 offset_left = 8.0
@@ -271,6 +284,8 @@ show_tooltip = false
 layout_mode = 2
 show_tooltip = false
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=867877150 instance=ExtResource("4_iftva")]
+
 [node name="Minimap" type="Control" parent="UI_Canvas" unique_id=726594060]
 clip_contents = true
 layout_mode = 3
@@ -287,6 +302,9 @@ mouse_filter = 2
 script = ExtResource("12_64dql")
 cell_size = 35.0
 metadata/_edit_group_ = true
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Minimap" unique_id=1765969916 instance=ExtResource("4_iftva")]
+hide_in_map = false
 
 [node name="CraftingUI" parent="UI_Canvas" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
 process_mode = 3
@@ -349,6 +367,7 @@ grow_vertical = 0
 visible = false
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1318962840]
+process_mode = 3
 stream = ExtResource("17_1y80r")
 autoplay = true
 parameters/looping = true

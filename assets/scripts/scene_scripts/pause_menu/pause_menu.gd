@@ -23,6 +23,10 @@ func _ready() -> void:
 # gdy nie został zjedzony przez _input() (np. przez CraftingUI)
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("Game_Pause"):
+		# --- TARCZA DIALOGOWA ---
+		if DialogueManager.is_active:
+			return
+		
 		# Tarcza: Od razu informujemy silnik, że zjedliśmy ten klawisz
 		get_viewport().set_input_as_handled()
 		
@@ -38,9 +42,15 @@ func _toggle_pause() -> void:
 	# Odwracamy stan pauzy na przeciwny
 	var is_paused = !get_tree().paused
 	get_tree().paused = is_paused
-	
 	# Pokazujemy lub ukrywamy interfejs pauzy
 	visible = is_paused
+	
+	EventBus.set_menu_state("pause", is_paused) # Nowy system!
+	
+	# --- RĘCZNE WSTRZYMYWANIE MUZYKI ---
+	var music_player = get_tree().current_scene.find_child("MusicPlayer", true, false)
+	if music_player and music_player is AudioStreamPlayer:
+		music_player.stream_paused = is_paused
 
 func _on_resume_pressed() -> void:
 	_toggle_pause()

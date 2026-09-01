@@ -10,6 +10,9 @@ func start_dialogue(line: DialogueLine, interactor: Node) -> void:
 	if is_active: 
 		return
 	is_active = true
+	
+	EventBus.set_menu_state("dialogue", true)
+	
 	current_interactor = interactor
 	
 	# Całkowite zatrzymanie świata gry (fale wrogów, potwory, pociski)
@@ -31,6 +34,9 @@ func make_choice(choice: DialogueChoice) -> void:
 
 func end_dialogue() -> void:
 	is_active = false
+	
+	EventBus.set_menu_state("dialogue", false)
+	
 	current_interactor = null
 	
 	# Odmrożenie świata gry po zakończeniu rozmowy
