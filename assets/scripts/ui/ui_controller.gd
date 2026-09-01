@@ -695,7 +695,7 @@ func _update_cursor_visuals() -> void:
 
 # Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
 func is_any_ui_open() -> bool:
-	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open
+	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open or DialogueManager.is_active
 
 # Bezpieczna symulacja kliknięcia uwzględniająca zarówno przyciski, jak i sloty
 func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:

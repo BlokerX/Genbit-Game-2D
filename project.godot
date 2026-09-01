@@ -26,6 +26,8 @@ EventBus="*uid://wl0j2wnuvqic"
 TransitionManager="*uid://bm8kgsgt4kdpo"
 GlobalLevelManager="*uid://b2gvk2mec22nr"
 ItemDatabase="*uid://cmooht25yo8gh"
+DialogueManager="*uid://bsrgw27nre7hq"
+DialogueState="*uid://ccfce3demxxkj"
 
 [display]
 
