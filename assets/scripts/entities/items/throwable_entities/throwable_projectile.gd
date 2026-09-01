@@ -1,6 +1,10 @@
 extends Area2D
 class_name ThrowableProjectile
 
+@export_category("Wizualizacje")
+@export var main_sprite: Sprite2D ## Przeciągnij tutaj węzeł Sprite2D ze swojej sceny.
+@export var activated_texture: Texture2D ## Grafika, na którą zmieni się obiekt po aktywacji.
+
 @export_category("Ustawienia Obiektu")
 @export var destroy_on_impact: bool = true
 @export var activation_delay: float = 0.0 ## Opóźnienie (w sekundach) przed faktycznym wyzwoleniem efektu wybuchu/aktywacji.
@@ -67,12 +71,14 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		return
 	set_meta("is_triggered", true)
 
-	# TODO zapalnik animacja tu
+	# --- ZMIANA GRAFIKI AKTYWACJA ---
+	if main_sprite != null and activated_texture != null:
+		main_sprite.texture = activated_texture
 
 	# --- 1. ODLICZANIE ZAPALNIKA (Oczekiwanie na wybuch) ---
 	# Odliczamy czas opóźnienia ZANIM obiekt roześle efekty do otoczenia.
 	# Nie chowamy grafiki, mina po prostu fizycznie czeka na detonację.
-	if activation_delay > 0.0 and direct_hit == null:
+	if activation_delay > 0.0:
 		await get_tree().create_timer(activation_delay).timeout
 		
 		# Upewniamy się, że obiekt nie zniknął podczas odliczania
@@ -104,8 +110,10 @@ func trigger_effect(direct_hit: Node2D) -> void:
 			
 		if body.has_method("receive_effect"):
 			for effect in effects_to_apply:
-				if effect is KnockbackEffect:
+				# UNIWERSALNE WSTRZYKIWANIE (Obejmuje odrzut, przyciąganie itp.)
+				if "source_position" in effect:
 					effect.source_position = self.global_position
+					
 				body.receive_effect(effect)
 
 	# --- 3. USUNIĘCIE OBIEKTU PO WYBUCHU ---

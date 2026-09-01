@@ -1,5 +1,8 @@
 extends Node
 
+## Schowek na gracza, gdy jest wyciągnięty z drzewa podczas ładowania
+var stored_player: Node2D = null
+
 ## ID wejścia, w którym gracz ma się pojawić po załadowaniu nowej mapy
 var target_entrance_id: String = ""
 
@@ -32,26 +35,31 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	var tree = get_tree()
 	var player = tree.get_first_node_in_group("Player")
 	
-	# 1. ZAMRAŻAMY GRACZA I ZERUJEMY JEGO PĘD
+	# 1. ZAMRAŻAMY RUCH GRACZA, ALE NIE ODPINAMY GO JESZCZE OD DRZEWA
 	if player:
 		if player.has_method("set_physics_process"):
 			player.set_physics_process(false)
-		player.process_mode = Node.PROCESS_MODE_DISABLED
 		
 		if player.has_method("clear_all_environment_effects"):
 			player.clear_all_environment_effects()
 		
 		if "velocity" in player:
 			player.velocity = Vector2.ZERO
-		
-		var current_parent = player.get_parent()
-		if current_parent:
-			current_parent.remove_child(player)
-		tree.root.add_child(player)
 	
 	# 2. ŚCIEMNIENIE EKRANU
 	TransitionManager.fade_to_black(0.3)
 	await TransitionManager.on_fade_out_finished
+	
+	# 2.5. EKRAN JEST CZARNY - ODPINAMY GRACZA I WYŁĄCZAMY MU PROCESY
+	if player:
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+		var current_parent = player.get_parent()
+		if current_parent:
+			current_parent.remove_child(player)
+			
+		# ZAMIAST DODAWANIA DO ROOT:
+		# Zapisujemy gracza w bezpiecznej zmiennej. Od teraz nie istnieje dla fizyki!
+		stored_player = player
 	
 	# 3. ZARZĄDZANIE STARĄ MAPĄ
 	var main_scene = tree.current_scene
@@ -108,7 +116,7 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			if new_map_instance.has_method("initialize_level"):
 				new_map_instance.initialize_level()
 	
-	is_changing_level = false
+	get_tree().create_timer(0.5).timeout.connect(func(): is_changing_level = false)
 	
 func clear_level_cache() -> void:
 	for map_node in _cached_persistent_levels.values():

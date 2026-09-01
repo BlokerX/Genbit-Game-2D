@@ -9,6 +9,10 @@
 [ext_resource type="Resource" uid="uid://dtx4553mfd2b2" path="res://assets/scripts/map_system/resources/templates/Test_Loot.tres" id="4_cve4a"]
 [ext_resource type="Texture2D" uid="uid://cres07hr3d2gp" path="res://assets/textures/samples_examples/tilesets/concrete_tiles_big.png" id="4_l852n"]
 [ext_resource type="Texture2D" uid="uid://luhwy3ng6ptp" path="res://assets/textures/samples_examples/tilesets/test_tileset.png" id="5_8jlt0"]
+[ext_resource type="Texture2D" uid="uid://b82n40dgp1sj2" path="res://assets/textures/samples_examples/tilesets/nature_tileset_one.png" id="10_t7xeo"]
+[ext_resource type="Texture2D" uid="uid://jvhpv6jhcomu" path="res://assets/textures/samples_examples/tilesets/water_tileset_one.png" id="11_b4ssa"]
+[ext_resource type="Texture2D" uid="uid://co0qvnaqi24qq" path="res://assets/textures/samples_examples/tilesets/water_tileset_two.png" id="12_llpfj"]
+[ext_resource type="Texture2D" uid="uid://cov4ie2uvmyva" path="res://assets/textures/samples_examples/tilesets/lava_tileset.png" id="13_8t6mr"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_r7ala"]
 shader = ExtResource("2_pl0hj")
@@ -32,12 +36,44 @@ texture_region_size = Vector2i(64, 64)
 1:0/1/material = SubResource("ShaderMaterial_jj5mx")
 1:0/1/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_04q3u"]
+texture = ExtResource("10_t7xeo")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_po6li"]
+texture = ExtResource("11_b4ssa")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_21fro"]
+texture = ExtResource("12_llpfj")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_h2orb"]
+texture = ExtResource("13_8t6mr")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
 [sub_resource type="TileSet" id="TileSet_ogun7"]
 tile_size = Vector2i(64, 64)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_cve4a")
+sources/1 = SubResource("TileSetAtlasSource_04q3u")
+sources/2 = SubResource("TileSetAtlasSource_po6li")
+sources/3 = SubResource("TileSetAtlasSource_21fro")
+sources/4 = SubResource("TileSetAtlasSource_h2orb")
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_8jlt0"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_t7xeo"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
@@ -58,4 +94,4 @@ tile_set = SubResource("TileSet_ogun7")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=1239899796]
 visible = false
-navigation_polygon = SubResource("NavigationPolygon_8jlt0")
+navigation_polygon = SubResource("NavigationPolygon_t7xeo")

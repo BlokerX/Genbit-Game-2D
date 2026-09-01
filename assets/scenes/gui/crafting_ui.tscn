@@ -301,6 +301,7 @@ size_flags_stretch_ratio = 2.0
 theme_override_constants/separation = 15
 
 [node name="ResultIcon" type="TextureRect" parent="BackgroundPanel/HBoxContainer/RightPanel" unique_id=2079679796]
+texture_filter = 5
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 size_flags_vertical = 3

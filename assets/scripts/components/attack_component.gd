@@ -33,7 +33,7 @@ func execute_attack(
 			return false
 			
 		print("Gracz trafia pięścią (używając przedmiotu niespecjalizowanego)!")
-		stats_script.execute_attack_on_target(target)
+		stats_script.execute_attack_on_target(shooter, target)
 		return true 
 
 	# 2. ATAK Z BRONI (Skoro ma komponent broni, delegujemy do klocków ECS)

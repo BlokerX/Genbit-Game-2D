@@ -100,8 +100,10 @@ func trigger_effect(direct_hit: Node2D) -> void:
 			
 		if body.has_method("receive_effect"):
 			for effect in effects_to_apply:
-				if effect is KnockbackEffect:
+				# UNIWERSALNE WSTRZYKIWANIE (Obejmuje odrzut, przyciąganie itp.)
+				if "source_position" in effect:
 					effect.source_position = self.global_position
+					
 				body.receive_effect(effect)
 
 	# --- 3. USUNIĘCIE OBIEKTU PO WYBUCHU ---

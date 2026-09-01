@@ -109,7 +109,10 @@ func initialize_level() -> void:
 			
 		# Czyścimy ID w chmurze, żeby przy kolejnym respawnie (np. po śmierci) nie psuło logiki
 		GlobalLevelManager.target_entrance_id = ""
-	
+	else:
+		# Wymuszenie czarnego ekranu przy pierwszym wczytaniu gry, aby ukryć reset kamery
+		TransitionManager.color_rect.color = Color.BLACK
+		
 	# Ładujemy ustalony pokój i WWRZUCAMY do niego wyjętego wcześniej gracza
 	if room_to_load:
 		# Ustawiamy natychmiastowy kolor mroku dla pierwszego pokoju
@@ -118,12 +121,22 @@ func initialize_level() -> void:
 		if not room_to_load.is_inside_tree():
 			add_child(room_to_load)
 		
+		# --- NOWOŚĆ: PRE-POZYCJONOWANIE GRACZA ---
+		# (Żeby od samej pierwszej klatki kamera widziała poprawne koordynaty zamiast tych z Volcano)
+		var player = get_player()
+		if player:
+			if spawn_node:
+				player.global_position = spawn_node.global_position
+			elif room_to_load.spawn_points.size() > 0:
+				player.global_position = room_to_load.spawn_points[0].global_position
+		# ----------------------------------------
+		
 		# Wywołujemy change_room. Nasza funkcja w map.gd automatycznie 
 		# znajdzie gracza (nawet jeśli był tymczasowo w root) i wsadzi go do "Entities"!
-		call_deferred("change_room", room_to_load, spawn_node)
+		call_deferred("change_room", room_to_load, spawn_node, true)
 		
-		# Rozjaśniamy ekran na nowej mapie!
-		TransitionManager.fade_to_normal(0.4)
+		# WAŻNE: Usunięto TransitionManager.fade_to_normal(0.4) stąd, 
+		# ponieważ change_room robi to w bezpieczniejszym momencie.
 
 ## Funkcja pomocnicza: Szuka po ID wejścia na całej mapie
 func _find_entrance_by_id(id: String) -> LevelEntrance:
@@ -201,7 +214,7 @@ func _discover_neighboring_rooms(room: Room) -> void:
 				discover_room(neighbor_room) # Odkrywamy go na mapie
 
 ## Funkcja zmiany pokoju
-func change_room(new_room: Room, target_door: Node2D = null) -> void:
+func change_room(new_room: Room, target_door: Node2D = null, force_teleport: bool = false) -> void:
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
@@ -214,20 +227,15 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 	var do_fade = (mode == 0 or mode == 2) # FADE lub BOTH
 	var do_slide = (mode == 1 or mode == 2) # SLIDE lub BOTH
 	
-	# --- Zabezpieczenie pierwszego pokoju (Start Gry / Miękki Respawn) ---
-	if old_room == null or is_same_room:
-		do_slide = false # Wymuszamy brak przesuwania na starcie i przy respawnie
+	# Zabezpieczenie: jeśli wymuszamy teleport, wyłączamy Slide i upewniamy się, że ekran zgaśnie
+	if old_room == null or is_same_room or force_teleport:
+		do_slide = false
+		do_fade = true
 	
 	# ZAMROŻENIE GRACZA NA CZAS ZMIANY
 	if player:
 		if player.has_method("set_physics_process"):
 			player.set_physics_process(false)
-		# WYŁĄCZENIE FIZYKI GRACZA (żeby ściany go nie wyrzuciły przy przesuwaniu!)
-		player.process_mode = Node.PROCESS_MODE_DISABLED
-	
-	# Wyłączamy fizykę tylko jeśli faktycznie opuszczamy stary pokój
-	if old_room and not is_same_room:
-		old_room.process_mode = Node.PROCESS_MODE_DISABLED
 
 	# ŚCIEMNIENIE EKRANU
 	if do_fade:
@@ -236,6 +244,12 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 	
 	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
 	current_room = new_room
+	
+	# TERAZ bezpiecznie wyłączamy fizykę graczowi i staremu pokojowi
+	if player:
+		player.process_mode = Node.PROCESS_MODE_DISABLED
+	if old_room and not is_same_room:
+		old_room.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURĘ!)
 	if old_room and player:
@@ -282,12 +296,6 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
 			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
 		
-		# Szukamy węzła Y-Sort i dodajemy gracza
-		var target_parent = current_room.find_child("Entities")
-		if not target_parent:
-			target_parent = current_room
-		target_parent.add_child(player)
-		
 		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
 		if target_door:
 			if "spawn_point" in target_door and target_door.spawn_point != null:
@@ -308,6 +316,15 @@ func change_room(new_room: Room, target_door: Node2D = null) -> void:
 			else:
 				player.global_position = current_room.global_position + (current_room.size_px / 2.0)
 		# ------------------------------------------------------------------------
+		
+		# Szukamy węzła Y-Sort i dodajemy gracza
+		var target_parent = current_room.find_child("Entities")
+		if not target_parent:
+			target_parent = current_room
+		target_parent.add_child(player)
+		
+		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
+		GlobalLevelManager.stored_player = null
 		
 		# Nakładamy nowe efekty typu AURA (nieskończone)
 		for effect in current_room.ambient_aura_effects:
@@ -484,9 +501,16 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 		push_error("Menedżer Mapy: Brak 'starting_room'. Twardy reset sceny.")
 		get_tree().reload_current_scene()
 
-## Zwrócenie gracza ze sceny
-func get_player() -> PlayerCharacter :
-	return get_tree().get_first_node_in_group(PLAYER_GROUP)
+## Zwrócenie gracza ze sceny lub ze schowka (między-poziomowego)
+func get_player() -> PlayerCharacter:
+	# 1. Próbujemy znaleźć gracza normalnie w drzewie
+	var player = get_tree().get_first_node_in_group(PLAYER_GROUP)
+	
+	# 2. Jeśli go nie ma, bo ładuje się poziom, bierzemy go ze schowka Menedżera!
+	if player == null and GlobalLevelManager.get("stored_player") != null:
+		player = GlobalLevelManager.stored_player
+		
+	return player as PlayerCharacter
 
 # Odpala się automatycznie, gdy węzeł mapy opuszcza ekran (np. trafia do "zamrażarki" RAM-u)
 func _exit_tree() -> void:

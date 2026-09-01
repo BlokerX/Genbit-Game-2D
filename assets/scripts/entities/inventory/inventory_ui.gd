@@ -98,7 +98,7 @@ func update_info_panel() -> void:
 						text += "Ilość: " + str(item.state.get("amount", 1)) + "\n"
 				
 			# --- DURABILITY ---
-			elif comp is DurabilityComponent:
+			if comp is DurabilityComponent:
 				var cur_dur = item.state.get("durability", comp.max_durability)
 				if is_advanced:
 					text += "Wytrzymałość: " + str(cur_dur) + " / " + str(comp.max_durability) + " HP\n"
@@ -107,7 +107,7 @@ func update_info_panel() -> void:
 					text += "Stan Przedmiotu: " + str(pct) + "%\n"
 					
 			# --- MELEE WEAPON ---
-			elif comp is MeleeWeaponComponent:
+			if comp is MeleeWeaponComponent:
 				if comp.attack_data != null:
 					text += "Obrażenia: " + str(comp.attack_data.damage) + "\n"
 					if comp.attack_data.critical_rate > 0.0:
@@ -122,7 +122,7 @@ func update_info_panel() -> void:
 							text += "Ogłuszenie: " + str(comp.attack_data.stun_time) + "s\n"
 						
 			# --- RANGED WEAPON ---
-			elif comp is RangedWeaponComponent:
+			if comp is RangedWeaponComponent:
 				if comp.attack_data != null:
 					if is_advanced:
 						text += "Obrażenia (Baza): " + str(comp.attack_data.damage) + "\n"
@@ -153,7 +153,7 @@ func update_info_panel() -> void:
 					text += "Zasilanie: Nieskończone\n"
 					
 			# --- AMMUNITION ---
-			elif comp is AmmunitionComponent:
+			if comp is AmmunitionComponent:
 				text += "Typ Naboju: " + RangedWeaponComponent.AmmoType.keys()[comp.ammunition_type] + "\n"
 				text += "Moc Pocisku: +" + str(comp.damage) + "\n"
 				if is_advanced:
@@ -162,13 +162,13 @@ func update_info_panel() -> void:
 						text += "Efekty Naboju: " + str(comp.effects.size()) + "\n"
 				
 			# --- EQUIPPABLE ---
-			elif comp is EquippableComponent:
+			if comp is EquippableComponent:
 				text += "Zakładany na: " + EquippableComponent.EquipSlot.keys()[comp.equip_slot_type] + "\n"
 				if is_advanced and comp.passive_buffs.size() > 0:
 					text += "Ilość Buffów Pasywnych: " + str(comp.passive_buffs.size()) + "\n"
 					
 			# --- CONSUMABLE ---
-			elif comp is ConsumableComponent:
+			if comp is ConsumableComponent:
 				if is_advanced:
 					text += "Efekty Konsumpcji (" + str(comp.effects.size()) + "):\n"
 					text += "Szybkość użycia: " + str(comp.use_cooldown) + "s\n"
@@ -191,11 +191,17 @@ func update_info_panel() -> void:
 								text += "  - Zablokowane warunkiem\n"
 			
 			# --- PLACEABLE ---
-			elif comp is PlaceableComponent:
+			if comp is PlaceableComponent:
 				if is_advanced:
 					text += "Obiekt Konstrukcyjny\n"
 					if comp.scene_path != null and comp.scene_path != "":
 						text += "Model: " + comp.scene_path.get_file() + "\n"
+			
+			# --- LIGHT SOURCE ---
+			if comp is LightSourceComponent:
+				text += "Moc Światła: " + str(comp.light_energy) + "\n"
+				if is_advanced:
+					text += "Zasięg Światła: " + str(comp.light_scale) + "\n"
 
 	# 3. OPIS PRZEDMIOTU
 	if item.data.item_description != "":

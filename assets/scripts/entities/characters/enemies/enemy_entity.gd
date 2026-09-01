@@ -78,7 +78,7 @@ func process_melee_attack(delta: float):
 	if get_edge_distance_to_target() <= attack_reach:
 		if interaction_and_attack_stats_script.can_attack():
 			print(name + " atakuje gracza!")
-			interaction_and_attack_stats_script.execute_attack_on_target(target)
+			interaction_and_attack_stats_script.execute_attack_on_target(self, target)
 	
 # --- NOWOŚĆ: Funkcja popychania dla wrogów ---
 func _handle_pushing() -> void:
