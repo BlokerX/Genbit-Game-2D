@@ -9,3 +9,6 @@ func set_flag(flag_name: String, value: bool = true) -> void:
 ## Sprawdza, czy flaga narracyjna istnieje i ma wartość 'true'
 func has_flag(flag_name: String) -> bool:
 	return flags.get(flag_name, false)
+
+func reset_state() -> void:
+	flags.clear()

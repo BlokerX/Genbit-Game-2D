@@ -46,3 +46,14 @@ func is_any_menu_open() -> bool:
 	for is_open in active_menus.values():
 		if is_open: return true
 	return false
+
+## Resetuje stan wszystkich menu do wartości domyślnych (zamknięte)
+func reset(emit_update: bool = true) -> void:
+	var was_any_open = is_any_menu_open()
+	
+	for menu_name in active_menus.keys():
+		active_menus[menu_name] = false
+		
+	if emit_update and was_any_open:
+		hud_visibility_requested.emit()
+		ui_state_changed.emit(false)

@@ -59,6 +59,10 @@ func _on_quit_pressed() -> void:
 	# BARDZO WAŻNE: Przed wyjściem do Menu Głównego, MUSIMY odmrozić grę!
 	get_tree().paused = false 
 	
+	# Reset globalnych zmiennych:
+	DialogueState.reset_state()
+	EventBus.reset()
+	
 	# Korzystamy z nowego systemu z main.gd, szukając go po grupie
 	var main_node = get_tree().get_first_node_in_group("Main")
 	if main_node and main_node.has_method("to_main_menu"):
