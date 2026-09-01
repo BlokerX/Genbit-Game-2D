@@ -1,9 +1,11 @@
 [gd_scene format=3 uid="uid://dulfknsrwu6la"]
 
 [ext_resource type="StyleBox" uid="uid://r7uv8dwgp8lj" path="res://assets/dialogue_system/themes/dialogue_box.stylebox" id="1_1a0eb"]
+[ext_resource type="Script" uid="uid://cwxahda3ok5jp" path="res://assets/dialogue_system/dialogue_ui/dialogue_ui.gd" id="1_omkmw"]
 
 [node name="DialogueUI" type="CanvasLayer" unique_id=936559167]
 process_mode = 3
+script = ExtResource("1_omkmw")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1566029184]
 anchors_preset = 15
@@ -34,17 +36,32 @@ theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 15
 theme_override_constants/margin_bottom = 15
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin" unique_id=934750976]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin" unique_id=322286483]
 layout_mode = 2
+theme_override_constants/separation = 20
 
-[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/VBoxContainer" unique_id=1652295506]
+[node name="PortraitRect" type="TextureRect" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer" unique_id=443812241]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer" unique_id=934750976]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer" unique_id=1652295506]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.54509807, 0.95686275, 1, 1)
 theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
 
-[node name="TextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/VBoxContainer" unique_id=2000882745]
+[node name="TextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer" unique_id=2000882745]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/outline_size = 4
+fit_content = true
 
-[node name="ChoicesContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/VBoxContainer" unique_id=1197827731]
+[node name="ChoicesContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer" unique_id=1197827731]
 layout_mode = 2

@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/gui/crafting_ui.tscn" id="13_4mn4o"]
 [ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/gui/grid_panel.tscn" id="14_1gqv0"]
 [ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/main_menu/pause_menu.tscn" id="15_grwg2"]
+[ext_resource type="PackedScene" uid="uid://dulfknsrwu6la" path="res://assets/dialogue_system/scenes/dialogue_ui.tscn" id="16_wmbyi"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="AudioStream" uid="uid://dbu2b1polluso" path="res://assets/audio/entities/player/dark_orchestra_one.mp3" id="17_1y80r"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="17_vhw88"]
@@ -30,13 +31,13 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="Resource" id="Resource_wmbyi"]
+[sub_resource type="Resource" id="Resource_iftva"]
 resource_local_to_scene = true
 script = ExtResource("17_vhw88")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_iftva"]
+[sub_resource type="Resource" id="Resource_5c861"]
 resource_local_to_scene = true
 script = ExtResource("18_uvlnc")
 
@@ -45,7 +46,7 @@ script = ExtResource("19_elt3u")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_5c861"]
+[sub_resource type="Resource" id="Resource_vlsbn"]
 resource_local_to_scene = true
 script = ExtResource("20_2y4le")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -342,6 +343,8 @@ offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
 
+[node name="DialogueUI" parent="." unique_id=936559167 instance=ExtResource("16_wmbyi")]
+
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
 visible = false
 
@@ -355,6 +358,6 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_wmbyi")
-health_stats_script = SubResource("Resource_iftva")
-interaction_and_attack_stats_script = SubResource("Resource_5c861")
+movement_universal_script = SubResource("Resource_iftva")
+health_stats_script = SubResource("Resource_5c861")
+interaction_and_attack_stats_script = SubResource("Resource_vlsbn")

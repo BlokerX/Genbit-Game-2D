@@ -1,10 +1,10 @@
 extends CanvasLayer
 class_name DialogueUI
 
-@onready var name_label: Label = $Panel/NameLabel
-@onready var portrait_rect: TextureRect = $Panel/PortraitRect # Dopasuj ścieżkę do swojego drzewa
-@onready var text_label: RichTextLabel = $Panel/RichTextLabel
-@onready var choices_container: VBoxContainer = $Panel/ChoicesContainer
+@onready var name_label: Label = $MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer/NameLabel
+@onready var portrait_rect: TextureRect = $MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/PortraitRect
+@onready var text_label: RichTextLabel = $MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer/TextLabel
+@onready var choices_container: VBoxContainer = $MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer/ChoicesContainer
 
 var text_tween: Tween
 var current_line: DialogueLine # Dodana zmienna do pamiętania obecnej linii
@@ -68,16 +68,40 @@ func _show_choices(line: DialogueLine) -> void:
 		if conditions_met:
 			var btn = Button.new()
 			btn.text = choice.choice_text
-			btn.flat = true
+			
+			# Wyrównanie tekstu przycisku ściśle do lewej strony
 			btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			
-			var style_hover = StyleBoxFlat.new()
-			style_hover.bg_color = Color(0, 0, 0, 0.5)
-			style_hover.border_width_left = 2
-			style_hover.border_color = Color.WHITE
+			# Styl dla stanu spoczynkowego (szary znacznik z lewej + odstęp tekstu)
+			var style_normal = StyleBoxFlat.new()
+			style_normal.bg_color = Color(0, 0, 0, 0)
+			style_normal.border_width_left = 4
+			style_normal.border_width_top = 0
+			style_normal.border_width_right = 0
+			style_normal.border_width_bottom = 0
+			style_normal.border_color = Color(0.4, 0.4, 0.4, 1)
+			# Kluczowe: Odsunięcie tekstu w prawo od paska krawędziowego
+			style_normal.content_margin_left = 16 
+			style_normal.content_margin_top = 4
+			style_normal.content_margin_bottom = 4
 			
-			btn.add_theme_stylebox_override("focus", style_hover)
+			# Styl po najechaniu (podświetlenie)
+			var style_hover = StyleBoxFlat.new()
+			style_hover.bg_color = Color(0.2, 0.2, 0.2, 0.5)
+			style_hover.border_width_left = 4
+			style_hover.border_width_top = 0
+			style_hover.border_width_right = 0
+			style_hover.border_width_bottom = 0
+			style_hover.border_color = Color(1, 1, 1, 1)
+			# Ten sam lewy margines, żeby tekst nie skakał przy najechaniu
+			style_hover.content_margin_left = 16 
+			style_hover.content_margin_top = 4
+			style_hover.content_margin_bottom = 4
+			
+			btn.add_theme_stylebox_override("normal", style_normal)
 			btn.add_theme_stylebox_override("hover", style_hover)
+			btn.add_theme_stylebox_override("focus", style_hover)
+			btn.add_theme_stylebox_override("pressed", style_hover)
 			
 			btn.pressed.connect(func(): DialogueManager.make_choice(choice))
 			choices_container.add_child(btn)
@@ -85,8 +109,29 @@ func _show_choices(line: DialogueLine) -> void:
 	if choices_container.get_child_count() == 0:
 		var btn = Button.new()
 		btn.text = "Zakończ."
-		btn.flat = true
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		
+		var style_normal = StyleBoxFlat.new()
+		style_normal.bg_color = Color(0, 0, 0, 0)
+		style_normal.border_width_left = 4
+		style_normal.border_color = Color(0.4, 0.4, 0.4, 1)
+		style_normal.content_margin_left = 16
+		style_normal.content_margin_top = 4
+		style_normal.content_margin_bottom = 4
+		
+		var style_hover = StyleBoxFlat.new()
+		style_hover.bg_color = Color(0.2, 0.2, 0.2, 0.5)
+		style_hover.border_width_left = 4
+		style_hover.border_color = Color(1, 1, 1, 1)
+		style_hover.content_margin_left = 16
+		style_hover.content_margin_top = 4
+		style_hover.content_margin_bottom = 4
+		
+		btn.add_theme_stylebox_override("normal", style_normal)
+		btn.add_theme_stylebox_override("hover", style_hover)
+		btn.add_theme_stylebox_override("focus", style_hover)
+		btn.add_theme_stylebox_override("pressed", style_hover)
+		
 		btn.pressed.connect(func(): DialogueManager.end_dialogue())
 		choices_container.add_child(btn)
 		
