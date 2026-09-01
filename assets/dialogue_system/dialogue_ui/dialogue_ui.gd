@@ -55,7 +55,7 @@ func _on_dialogue_started(line: DialogueLine) -> void:
 	portrait_rect.texture = line.speaker_portrait
 	portrait_rect.visible = (line.speaker_portrait != null)
 	
-	EventBus.set_menu_state("dialogue", true)
+	EventBus.set_menu_state(EventBus.MENU_DIALOGUE, true)
 
 func _show_choices(line: DialogueLine) -> void:
 	for choice in line.choices:
@@ -145,4 +145,4 @@ func _on_dialogue_ended() -> void:
 	if focus_owner:
 		focus_owner.release_focus()
 	hide()
-	EventBus.set_menu_state("dialogue", false)
+	EventBus.set_menu_state(EventBus.MENU_DIALOGUE, false)

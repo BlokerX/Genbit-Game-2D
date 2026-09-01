@@ -34,6 +34,8 @@ var is_player_inventory_open: bool = false
 var is_crafting_open: bool = false
 var is_map_open: bool = false
 
+var _hud_tween: Tween
+
 # --- NOWOŚĆ: Liczniki do auto-wyrzucania przedmiotów ---
 var _drop_hold_time: float = 0.0
 var _drop_tick_time: float = 0.0
@@ -151,9 +153,7 @@ func toggle_player_inventory() -> void:
 		is_player_inventory_open = true
 		
 		# --- NOWE: Aktualizujemy słownik i wysyłamy sygnał HUD ---
-		EventBus.set_menu_state("inventory", true)
-		# Wysyłamy sygnał, że okno się otworzyło
-		EventBus.ui_state_changed.emit(true)
+		EventBus.set_menu_state(EventBus.MENU_INVENTORY, true)
 		
 		player_panel.open_panel(player_inventory)
 		
@@ -177,9 +177,7 @@ func toggle_crafting_ui() -> void:
 		is_crafting_open = true
 		
 		# --- NOWE: Aktualizujemy słownik ---
-		EventBus.set_menu_state("crafting", true)
-		# Wysyłamy sygnał, że okno się otworzyło
-		EventBus.ui_state_changed.emit(true)
+		EventBus.set_menu_state(EventBus.MENU_CRAFTING, true)
 		
 		if crafting_ui:
 			crafting_ui.show()
@@ -196,9 +194,7 @@ func toggle_map_ui() -> void:
 		is_map_open = true
 		
 		# --- NOWE: Aktualizujemy słownik ---
-		EventBus.set_menu_state("map", true)
-		# Wysyłamy sygnał zamrożenia gracza
-		EventBus.ui_state_changed.emit(true)
+		EventBus.set_menu_state(EventBus.MENU_MAP, true)
 		
 		if minimap_ui:
 			minimap_ui.toggle_large_map(true)
@@ -217,8 +213,7 @@ func _on_storage_opened(storage_ref: Node) -> void:
 	is_player_inventory_open = true
 	
 	# --- NOWE: Aktualizujemy słownik ---
-	EventBus.set_menu_state("storage", true)
-	EventBus.ui_state_changed.emit(true)
+	EventBus.set_menu_state(EventBus.MENU_STORAGE, true)
 	
 	player_panel.open_panel(player_inventory)
 	chest_panel.open_panel(storage_ref)
@@ -267,13 +262,10 @@ func _close_all_ui() -> void:
 		hotbar_panel.show()
 	
 	# --- NOWE: Resetujemy wszystkie stany w słowniku ZANIM wyślemy sygnał zakończenia ---
-	EventBus.set_menu_state("inventory", false)
-	EventBus.set_menu_state("crafting", false)
-	EventBus.set_menu_state("map", false)
-	EventBus.set_menu_state("storage", false)
-	
-	# Wysyłamy sygnał, że wszystkie okna są zamknięte
-	EventBus.ui_state_changed.emit(false)
+	EventBus.set_menu_state(EventBus.MENU_INVENTORY, false, false)
+	EventBus.set_menu_state(EventBus.MENU_CRAFTING, false, false)
+	EventBus.set_menu_state(EventBus.MENU_MAP, false, false)
+	EventBus.set_menu_state(EventBus.MENU_STORAGE, false, true) # Tutaj "true" odpala animację!
 
 # DODAJEMY NOWĄ FUNKCJĘ _input, KTÓRA JEST PIERWSZA W KOLEJCE:
 func _input(event: InputEvent) -> void:
@@ -770,38 +762,36 @@ func _set_backpack_ui_visible(show_slot: bool) -> void:
 
 # --- ZAAWANSOWANY SYSTEM UKRYWANIA HUD ---
 func _on_hud_visibility_requested() -> void:
-	var tween = create_tween().set_parallel(true)
-	
-	# --- TA LINIJKA NAPRAWIA WSZYSTKO (Ignorowanie pauzy w grze) ---
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	
-	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if _hud_tween and _hud_tween.is_valid():
+		_hud_tween.kill()
+		
+	_hud_tween = create_tween().set_parallel(true)
+	_hud_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_hud_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
 	for element in get_tree().get_nodes_in_group("HUD_Element"):
 		if element is CanvasItem:
 			var should_hide = false
-			
-			# Szukamy naszego klocka konfiguracyjnego w tym elemencie
 			var config = element.get_node_or_null("HUDVisibilityConfig")
 			
 			if config:
-				# Logika wygaszania na podstawie checkboxów z Inspektora
-				if config.hide_in_inventory and EventBus.active_menus["inventory"]: should_hide = true
-				if config.hide_in_storage and EventBus.active_menus["storage"]: should_hide = true
-				if config.hide_in_crafting and EventBus.active_menus["crafting"]: should_hide = true
-				if config.hide_in_map and EventBus.active_menus["map"]: should_hide = true
-				if config.hide_in_dialogue and EventBus.active_menus["dialogue"]: should_hide = true
-				if config.hide_in_pause and EventBus.active_menus["pause"]: should_hide = true
+				if config.hide_in_inventory and EventBus.active_menus[EventBus.MENU_INVENTORY]: should_hide = true
+				if config.hide_in_storage and EventBus.active_menus[EventBus.MENU_STORAGE]: should_hide = true
+				if config.hide_in_crafting and EventBus.active_menus[EventBus.MENU_CRAFTING]: should_hide = true
+				if config.hide_in_map and EventBus.active_menus[EventBus.MENU_MAP]: should_hide = true
+				if config.hide_in_dialogue and EventBus.active_menus[EventBus.MENU_DIALOGUE]: should_hide = true
+				if config.hide_in_pause and EventBus.active_menus[EventBus.MENU_PAUSE]: should_hide = true
 			else:
-				# Fallback: Jeśli zapomnisz dodać konfiguratora, zniknie przy czymkolwiek
-				for key in EventBus.active_menus:
-					if EventBus.active_menus[key]:
-						should_hide = true
-						break
+				should_hide = EventBus.is_any_menu_open()
 			
-			# Animujemy
 			var target_alpha = 0.0 if should_hide else 1.0
-			tween.tween_property(element, "modulate:a", target_alpha, 0.25)
+			_hud_tween.tween_property(element, "modulate:a", target_alpha, 0.25)
 			
 			if element is Control:
-				element.mouse_filter = Control.MOUSE_FILTER_IGNORE if should_hide else Control.MOUSE_FILTER_PASS
+				if not element.has_meta("original_mouse_filter"):
+					element.set_meta("original_mouse_filter", element.mouse_filter)
+				
+				if should_hide:
+					element.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				else:
+					element.mouse_filter = element.get_meta("original_mouse_filter")

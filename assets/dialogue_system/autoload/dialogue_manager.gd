@@ -11,14 +11,13 @@ func start_dialogue(line: DialogueLine, interactor: Node) -> void:
 		return
 	is_active = true
 	
-	EventBus.set_menu_state("dialogue", true)
-	
 	current_interactor = interactor
 	
 	# Całkowite zatrzymanie świata gry (fale wrogów, potwory, pociski)
 	get_tree().paused = true 
 	
-	EventBus.ui_state_changed.emit(true) # Blokada ruchu gracza
+	EventBus.set_menu_state(EventBus.MENU_DIALOGUE, true)
+	
 	dialogue_started.emit(line)
 
 func make_choice(choice: DialogueChoice) -> void:
@@ -35,12 +34,10 @@ func make_choice(choice: DialogueChoice) -> void:
 func end_dialogue() -> void:
 	is_active = false
 	
-	EventBus.set_menu_state("dialogue", false)
-	
 	current_interactor = null
 	
 	# Odmrożenie świata gry po zakończeniu rozmowy
 	get_tree().paused = false 
 	
-	EventBus.ui_state_changed.emit(false) # Odmrożenie wejść gracza
+	EventBus.set_menu_state(EventBus.MENU_DIALOGUE, false)
 	dialogue_ended.emit()

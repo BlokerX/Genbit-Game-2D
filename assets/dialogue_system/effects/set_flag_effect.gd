@@ -1,7 +1,7 @@
 extends Effect
 class_name SetFlagEffect
 
-@export var flag_name: String = "rozwmawial_ze_straznikiem"
+@export var flag_name: String = "quest_name"
 @export var flag_value: bool = true
 
 func _init() -> void:

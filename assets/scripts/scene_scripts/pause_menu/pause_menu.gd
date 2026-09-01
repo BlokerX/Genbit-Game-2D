@@ -45,7 +45,7 @@ func _toggle_pause() -> void:
 	# Pokazujemy lub ukrywamy interfejs pauzy
 	visible = is_paused
 	
-	EventBus.set_menu_state("pause", is_paused) # Nowy system!
+	EventBus.set_menu_state(EventBus.MENU_PAUSE, is_paused)
 	
 	# --- RĘCZNE WSTRZYMYWANIE MUZYKI ---
 	var music_player = get_tree().current_scene.find_child("MusicPlayer", true, false)
