@@ -7,3 +7,7 @@ class_name DialogueLine
 @export_multiline var dialogue_text: String = "Dialogue text..."
 ## Lista możliwych odpowiedzi gracza
 @export var choices: Array[DialogueChoice] = []
+
+@export_group("Płynne Przejścia (Brak Wyborów)")
+## Ładuje kolejną linię, omijając wybory (NPC mówi dalej sam).
+@export var next_line: DialogueLine

@@ -8,8 +8,10 @@
 [ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="4_gml88"]
 [ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="5_ekonr"]
 [ext_resource type="Script" uid="uid://s4qttequvgcs" path="res://assets/dialogue_system/effects/set_flag_effect.gd" id="5_lhrsc"]
+[ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeter.png" id="6_d7n87"]
 [ext_resource type="Resource" uid="uid://dllqy6sftdcy1" path="res://assets/dialogue_system/data/speakers/narrator.tres" id="9_ekonr"]
 [ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/dialogue_system/data/speakers/flandere_scarlet_avatar.tres" id="10_e87rb"]
+[ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="11_5nfwo"]
 [ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/items/_blank_item.png" id="11_ruqci"]
 [ext_resource type="Script" uid="uid://oxel7jrossyy" path="res://assets/dialogue_system/effects/open_menu_effect.gd" id="12_ruqci"]
 
@@ -52,7 +54,8 @@ metadata/_custom_type_script = "uid://dlbuwseh1l3px"
 
 [sub_resource type="Resource" id="Resource_ruqci"]
 script = ExtResource("1_171hs")
-choice_text = "(Weź przedmiot.)"
+choice_text = "(Weź przedmiot)"
+choice_icon = ExtResource("6_d7n87")
 next_line = SubResource("Resource_ug6i6")
 consequences = Array[ExtResource("3_68ts2")]([SubResource("Resource_e87rb")])
 metadata/_custom_type_script = "uid://n3vhdaelqrx0"
@@ -60,6 +63,7 @@ metadata/_custom_type_script = "uid://n3vhdaelqrx0"
 [sub_resource type="Resource" id="Resource_np5xb"]
 script = ExtResource("1_171hs")
 choice_text = "Nie chce mi się z tobą rozmawiać. Żegnaj!"
+choice_icon = ExtResource("11_5nfwo")
 metadata/_custom_type_script = "uid://n3vhdaelqrx0"
 
 [sub_resource type="Resource" id="Resource_tknn6"]
@@ -72,12 +76,6 @@ W ramach moich najszczerszych przeprosin masz tutaj coś odemnie."
 choices = Array[ExtResource("1_171hs")]([SubResource("Resource_ruqci"), SubResource("Resource_np5xb")])
 metadata/_custom_type_script = "uid://dlbuwseh1l3px"
 
-[sub_resource type="Resource" id="Resource_d7n87"]
-script = ExtResource("1_171hs")
-choice_text = "..."
-next_line = SubResource("Resource_tknn6")
-metadata/_custom_type_script = "uid://n3vhdaelqrx0"
-
 [sub_resource type="Resource" id="Resource_5nfwo"]
 script = ExtResource("2_oj3w1")
 speaker = ExtResource("10_e87rb")
@@ -85,14 +83,8 @@ dialogue_text = "Ej to nie było miłe!
 Chociaż przeproś mnie, nie jestem odmienna ... 
 
 bruhhh!..."
-choices = Array[ExtResource("1_171hs")]([SubResource("Resource_d7n87")])
+next_line = SubResource("Resource_tknn6")
 metadata/_custom_type_script = "uid://dlbuwseh1l3px"
-
-[sub_resource type="Resource" id="Resource_3r85o"]
-script = ExtResource("1_171hs")
-choice_text = "Hmmm?"
-next_line = SubResource("Resource_5nfwo")
-metadata/_custom_type_script = "uid://n3vhdaelqrx0"
 
 [sub_resource type="Resource" id="Resource_68ts2"]
 script = ExtResource("2_oj3w1")
@@ -100,7 +92,7 @@ speaker = ExtResource("9_ekonr")
 dialogue_text = "Jestem poprzednim obrazkiem gracza.
 [color=red]Prototyp alpha[/color].
 Nie to co ta nowa postać, taka odmienna."
-choices = Array[ExtResource("1_171hs")]([SubResource("Resource_3r85o")])
+next_line = SubResource("Resource_5nfwo")
 metadata/_custom_type_script = "uid://dlbuwseh1l3px"
 
 [sub_resource type="Resource" id="Resource_gml88"]
@@ -134,7 +126,6 @@ metadata/_custom_type_script = "uid://n3vhdaelqrx0"
 
 [sub_resource type="Resource" id="Resource_yupr0"]
 script = ExtResource("12_ruqci")
-menu_name = "Inventory"
 metadata/_custom_type_script = "uid://oxel7jrossyy"
 
 [sub_resource type="Resource" id="Resource_m7ky5"]

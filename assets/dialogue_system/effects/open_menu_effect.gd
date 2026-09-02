@@ -12,5 +12,5 @@ func apply_effect(_target: Node2D) -> bool:
 	EventBus.emit_signal("open_fullscreen_menu", menu_name)
 	
 	# 2. Zamykamy aktualne okno dialogowe
-	DialogueManager.end_dialogue()
+	DialogueManager.end_dialogue(true)
 	return true

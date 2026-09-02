@@ -29,6 +29,7 @@ func _input(event: InputEvent) -> void:
 
 func open_log() -> void:
 	show()
+	DialogueManager.is_log_open = true # Zabezpieczenie globalne
 	# Zatrzymujemy grę na czas czytania historii
 	get_tree().paused = true 
 	
@@ -67,6 +68,7 @@ func close_log() -> void:
 		return
 		
 	hide()
+	DialogueManager.is_log_open = false
 	
 	if not DialogueManager.is_active:
 		get_tree().paused = false
