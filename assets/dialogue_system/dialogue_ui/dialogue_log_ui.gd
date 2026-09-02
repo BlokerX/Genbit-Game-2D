@@ -52,8 +52,6 @@ func open_log() -> void:
 		line_text += "[indent][color=#cccccc]" + entry["text"] + "[/color][/indent]\n\n"
 		
 		history_text.text += line_text
-		
-		history_text.text += line_text
 	
 	# Zabieramy focus klawiatury opcjom dialogowym i dajemy przyciskowi "X"
 	close_button.grab_focus()
