@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://btqnlmwljfsgp"]
+
+[ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="1_jtqnj"]
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="1_yo8ih"]
+
+[resource]
+script = ExtResource("1_yo8ih")
+speaker_name = "Flandere Scarlet (player's avatar)"
+name_color = Color(1, 1, 0.3372549, 1)
+portrait = ExtResource("1_jtqnj")
+metadata/_custom_type_script = "uid://blc87iblglwxv"

@@ -58,6 +58,8 @@ func _ready() -> void:
 	EventBus.close_storage_ui.connect(_on_storage_closed)
 	EventBus.slot_clicked.connect(_on_slot_clicked)
 	
+	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
+	
 	# --- NOWOŚĆ: Automatyczne GENEROWANIE slotu plecaka ---
 	if backpack_panel:
 		# 1. Czyścimy panel ze starych śmieci (jeśli jakieś zostały w Edytorze)
@@ -795,3 +797,30 @@ func _on_hud_visibility_requested() -> void:
 					element.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				else:
 					element.mouse_filter = element.get_meta("original_mouse_filter")
+
+# Obsługa żądania z dialogu
+func _on_open_fullscreen_menu(menu_name: String) -> void:
+	# 1. Zabezpieczamy focus. Jeśli myszka uciekła, resetujemy go.
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	if focus_owner:
+		focus_owner.release_focus()
+		
+	# 2. Jeśli coś było otwarte (np. pozostałości po starych oknach), czyścimy stan.
+	_close_all_ui()
+		
+	match menu_name:
+		"Crafting":
+			# Wywołujemy natywne otwarcie z pauzowaniem i flagami
+			toggle_crafting_ui()
+		"Shop":
+			# toggle_shop_ui() # Gdy stworzysz sklep
+			pass
+		"Inventory":
+			toggle_player_inventory()
+		"Map":
+			toggle_map_ui()
+		"QuestLog":
+			# toggle_quest_log() # Gdy stworzysz Dziennik Zadań
+			pass
+		_:
+			push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)

@@ -61,6 +61,7 @@ theme_override_font_sizes/font_size = 18
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/outline_size = 4
+bbcode_enabled = true
 fit_content = true
 
 [node name="ChoicesContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer" unique_id=1197827731]

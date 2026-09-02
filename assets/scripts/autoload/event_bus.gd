@@ -12,6 +12,8 @@ signal ui_state_changed(is_open: bool)
 # --- ZAAWANSOWANY SYSTEM WIDOCZNOŚCI HUD ---
 signal hud_visibility_requested()
 
+signal open_fullscreen_menu(menu_name: String)
+
 
 # --- STAŁE (Eliminacja literówek) ---
 const MENU_INVENTORY = "inventory"
