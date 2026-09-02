@@ -8,6 +8,10 @@ class_name DialogueLine
 ## Lista możliwych odpowiedzi gracza
 @export var choices: Array[DialogueChoice] = []
 
+@export_group("Opcje Systemowe")
+## Jeśli włączone, na końcu listy wyborów (lub w trakcie przejścia) pojawi się opcja "Odejdź", która od razu zamknie okno.
+@export var allow_cancel: bool = false
+
 @export_group("Płynne Przejścia (Brak Wyborów)")
 ## Ładuje kolejną linię, omijając wybory (NPC mówi dalej sam).
 @export var next_line: DialogueLine

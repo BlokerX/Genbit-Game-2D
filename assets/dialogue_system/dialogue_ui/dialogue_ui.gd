@@ -116,6 +116,16 @@ func _show_choices(line: DialogueLine) -> void:
 			)
 			choices_container.add_child(btn)
 			
+	# Opcjonalny przycisk wymuszonego wyjścia z dialogu ---
+	if line.allow_cancel:
+		var cancel_btn = _create_styled_button(DialogueManager.DEFAULT_END_CONVERSATION_MESSAGE, null)
+		cancel_btn.pressed.connect(func():
+			_disable_all_choices()
+			DialogueManager.end_dialogue()
+		)
+		choices_container.add_child(cancel_btn)
+	
+	# Co zrobić, gdy kontener jest całkowicie pusty?
 	if choices_container.get_child_count() == 0:
 		if line.next_line != null:
 			var btn = _create_styled_button(DialogueManager.DEFAULT_SKIP_MESSAGE, null)

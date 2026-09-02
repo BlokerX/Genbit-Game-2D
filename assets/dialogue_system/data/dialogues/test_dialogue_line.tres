@@ -130,7 +130,7 @@ metadata/_custom_type_script = "uid://oxel7jrossyy"
 
 [sub_resource type="Resource" id="Resource_m7ky5"]
 script = ExtResource("1_171hs")
-choice_text = "Okej, wszystko jasne!"
+choice_text = "Czekaj, sprawdzę ekwipunek!"
 consequences = Array[ExtResource("3_68ts2")]([SubResource("Resource_yupr0")])
 metadata/_custom_type_script = "uid://n3vhdaelqrx0"
 
@@ -139,4 +139,5 @@ script = ExtResource("2_oj3w1")
 speaker = ExtResource("9_ekonr")
 dialogue_text = "Witaj, oto okno dialogu!"
 choices = Array[ExtResource("1_171hs")]([SubResource("Resource_gml88"), SubResource("Resource_tyr57"), SubResource("Resource_m7ky5")])
+allow_cancel = true
 metadata/_custom_type_script = "uid://dlbuwseh1l3px"
