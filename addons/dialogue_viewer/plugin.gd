@@ -13,10 +13,12 @@ func _exit_tree() -> void:
 		remove_control_from_bottom_panel(viewer_instance)
 		viewer_instance.queue_free()
 
-# Nasłuchiwanie kliknięć w Inspektorze
+# Nasłuchiwanie kliknięć w Inspektorze (zmieniony warunek!)
 func _handles(object: Object) -> bool:
 	if object is Resource and object.get_script() != null:
-		if "dialogue_branch.gd" in object.get_script().resource_path:
+		var script_name = object.get_script().resource_path.get_file()
+		# Reaguje na każdy plik, który w nazwie skryptu ma "dialogue" lub "speaker"
+		if "dialogue" in script_name or "speaker" in script_name:
 			return true
 	return false
 

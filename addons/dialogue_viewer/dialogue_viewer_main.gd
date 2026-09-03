@@ -21,7 +21,7 @@ func _ready() -> void:
 	toolbar.move_child(load_btn, 0)
 	
 	var refresh_btn = Button.new()
-	refresh_btn.text = "🔄 Odśwież Graf"
+	refresh_btn.text = "🔄 Odśwież"
 	refresh_btn.pressed.connect(_on_refresh_pressed)
 	toolbar.add_child(refresh_btn)
 	toolbar.move_child(refresh_btn, 1)
@@ -32,28 +32,34 @@ func _ready() -> void:
 	toolbar.add_child(save_btn)
 	toolbar.move_child(save_btn, 2)
 	
+	var reset_btn = Button.new()
+	reset_btn.text = "🗑️ Reset Układu"
+	reset_btn.pressed.connect(_reset_layout)
+	toolbar.add_child(reset_btn)
+	toolbar.move_child(reset_btn, 3)
+	
 	var arrange_btn = Button.new()
 	arrange_btn.text = "✨ Auto-Rozmieść"
 	arrange_btn.pressed.connect(_arrange_graph)
 	toolbar.add_child(arrange_btn)
-	toolbar.move_child(arrange_btn, 3)
+	toolbar.move_child(arrange_btn, 4)
 	
 	var sep = VSeparator.new()
 	toolbar.add_child(sep)
-	toolbar.move_child(sep, 4)
+	toolbar.move_child(sep, 5)
 	
 	var info_lbl = Label.new()
-	info_lbl.text = " Podgląd z Inspektora (Odepnij panel ikoną w prawym górnym rogu) "
+	info_lbl.text = " Podgląd z Inspektora "
 	info_lbl.modulate = Color(0.7, 0.7, 1.0)
 	info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_lbl.clip_text = true
 	toolbar.add_child(info_lbl)
-	toolbar.move_child(info_lbl, 5)
+	toolbar.move_child(info_lbl, 6)
 	
 	file_dialog = EditorFileDialog.new()
 	file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
-	file_dialog.add_filter("*.tres", "Dialogue Branch Resource")
+	file_dialog.add_filter("*.tres", "Dialogue Resource")
 	file_dialog.file_selected.connect(_on_file_selected)
 	EditorInterface.get_base_control().add_child(file_dialog)
 
@@ -128,7 +134,7 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 		lbl.text = "Plik:\n" + current_file_path.get_file()
 		lbl.modulate = Color(0.6, 0.9, 0.6)
 		gnode.add_child(lbl)
-		gnode.set_slot(0, false, 0, Color.WHITE, true, 0, Color.GREEN)
+		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.GREEN)
 		
 		node_y_counter += 1
 		if res.get("start_line"):
@@ -136,15 +142,15 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			if child_name != "": connect_node(node_name, 0, child_name, 0)
 			
 	elif "dialogue_line" in script_path:
-		gnode.title = "Linia Dialogowa"
-		var port_idx = 0
+		gnode.title = "▶ START (Linia Dialogowa)" if depth == 0 else "Linia Dialogowa"
 		var current_out_port = 0
+		var in_port_set = false
 		
 		var speaker_res = res.get("speaker")
 		if speaker_res:
 			_build_speaker_ui(gnode, speaker_res)
-			gnode.set_slot(port_idx, true, 0, Color.WHITE, false, 0, Color.WHITE)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			in_port_set = true
 		
 		var text_edit = TextEdit.new()
 		text_edit.text = str(res.get("dialogue_text"))
@@ -152,15 +158,15 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 		text_edit.editable = false
 		text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 		gnode.add_child(text_edit)
-		if port_idx == 0:
-			gnode.set_slot(port_idx, true, 0, Color.WHITE, false, 0, Color.WHITE)
-		port_idx += 1
+		if port_idx_check(in_port_set): 
+			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			in_port_set = true
 		
 		var params_lbl = Label.new()
 		params_lbl.text = "Min. Skip Time: " + str(res.get("min_skip_time")) + "s | Allow Cancel: " + str(res.get("allow_cancel"))
 		params_lbl.modulate = Color.GRAY
 		gnode.add_child(params_lbl)
-		port_idx += 1
+		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
 		
 		node_y_counter += 1
 		
@@ -171,11 +177,10 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 				c_lbl.text = "➔ Wybór: " + str(choices[i].get("choice_text"))
 				c_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 				gnode.add_child(c_lbl)
-				gnode.set_slot(port_idx, false, 0, Color.WHITE, true, 0, Color.YELLOW)
+				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.YELLOW)
 				
 				var child_name = _traverse(choices[i], node_name, current_out_port, depth + 1)
 				if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-				port_idx += 1
 				current_out_port += 1
 		else:
 			var next_line = res.get("next_line")
@@ -184,11 +189,10 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 				next_lbl.text = "➔ Dalej"
 				next_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 				gnode.add_child(next_lbl)
-				gnode.set_slot(port_idx, false, 0, Color.WHITE, true, 0, Color.WHITE)
+				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.WHITE)
 				
 				var child_name = _traverse(next_line, node_name, current_out_port, depth + 1)
 				if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-				port_idx += 1
 				current_out_port += 1
 			else:
 				var end_lbl = Label.new()
@@ -196,7 +200,7 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 				end_lbl.modulate = Color(0.5, 0.5, 0.5)
 				end_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 				gnode.add_child(end_lbl)
-				port_idx += 1
+				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
 
 		if res.get("allow_cancel"):
 			var cancel_lbl = Label.new()
@@ -204,29 +208,28 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			cancel_lbl.modulate = Color(1.0, 0.4, 0.4)
 			cancel_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			gnode.add_child(cancel_lbl)
-			gnode.set_slot(port_idx, false, 0, Color.WHITE, true, 0, Color.RED)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.RED)
 			current_out_port += 1
 
 	elif "dialogue_choice" in script_path:
-		gnode.title = "Wybór"
-		var port_idx = 0
+		gnode.title = "▶ START (Wybór)" if depth == 0 else "Wybór"
 		var current_out_port = 0
+		var in_port_set = false
 		
 		var speaker_res = res.get("custom_speaker")
 		if speaker_res:
 			_build_speaker_ui(gnode, speaker_res)
-			gnode.set_slot(port_idx, true, 0, Color.YELLOW, false, 0, Color.WHITE)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.YELLOW, false, 0, Color.WHITE)
+			in_port_set = true
 		
 		var lbl = Label.new()
 		lbl.text = str(res.get("choice_text"))
 		lbl.custom_minimum_size = Vector2(250, 40)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 		gnode.add_child(lbl)
-		if port_idx == 0:
-			gnode.set_slot(port_idx, true, 0, Color.YELLOW, false, 0, Color.WHITE)
-		port_idx += 1
+		if port_idx_check(in_port_set):
+			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.YELLOW, false, 0, Color.WHITE)
+			in_port_set = true
 		
 		var conds = res.get("conditions")
 		if conds and conds.size() > 0:
@@ -234,7 +237,7 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			cond_lbl.text = "🔒 Warunki: " + str(conds.size())
 			cond_lbl.modulate = Color(1.0, 0.7, 0.3)
 			gnode.add_child(cond_lbl)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
 			
 		var effs = res.get("effects")
 		if not effs: effs = res.get("consequences")
@@ -243,7 +246,7 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			eff_lbl.text = "⚡ Efekty: " + str(effs.size())
 			eff_lbl.modulate = Color(0.4, 0.8, 1.0)
 			gnode.add_child(eff_lbl)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
 		
 		node_y_counter += 1
 		
@@ -253,11 +256,10 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			next_lbl.text = "➔ Konsekwencja (Dalej)"
 			next_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			gnode.add_child(next_lbl)
-			gnode.set_slot(port_idx, false, 0, Color.WHITE, true, 0, Color.WHITE)
+			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.WHITE)
 			
 			var child_name = _traverse(next_line, node_name, current_out_port, depth + 1)
 			if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-			port_idx += 1
 			current_out_port += 1
 		else:
 			var end_lbl = Label.new()
@@ -265,9 +267,24 @@ func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int)
 			end_lbl.modulate = Color(0.5, 0.5, 0.5)
 			end_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			gnode.add_child(end_lbl)
-			port_idx += 1
+			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
+
+	elif "speaker" in script_path:
+		gnode.title = "Postać (Speaker)"
+		_build_speaker_ui(gnode, res)
+		gnode.set_slot(gnode.get_child_count() - 1, depth != 0, 0, Color.WHITE, false, 0, Color.WHITE)
+		
+		var info = Label.new()
+		info.text = "Podgląd danych postaci."
+		info.modulate = Color.GRAY
+		gnode.add_child(info)
+		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		node_y_counter += 1
 
 	return node_name
+
+func port_idx_check(val: bool) -> bool:
+	return true
 
 func _build_speaker_ui(gnode: GraphNode, speaker: Resource) -> void:
 	if not speaker: return
@@ -296,6 +313,15 @@ func _build_speaker_ui(gnode: GraphNode, speaker: Resource) -> void:
 
 func _arrange_graph() -> void:
 	arrange_nodes()
+
+func _reset_layout() -> void:
+	if current_file_path == "": return
+	var layout_path = current_file_path + ".layout"
+	if FileAccess.file_exists(layout_path):
+		var err = DirAccess.remove_absolute(layout_path)
+		if err == OK:
+			print("PK Dialogues: Usunięto plik layoutu.")
+			_on_refresh_pressed()
 
 func _save_layout() -> void:
 	if current_file_path == "": return
