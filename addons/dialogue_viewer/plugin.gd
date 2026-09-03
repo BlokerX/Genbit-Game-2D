@@ -13,17 +13,14 @@ func _exit_tree() -> void:
 		remove_control_from_bottom_panel(viewer_instance)
 		viewer_instance.queue_free()
 
-# Nasłuchiwanie kliknięć w Inspektorze (zmieniony warunek!)
 func _handles(object: Object) -> bool:
+	# REAGUJE TYLKO NA BRANCH. Ignoruje klikanie w Choice, Line i Speaker.
 	if object is Resource and object.get_script() != null:
 		var script_name = object.get_script().resource_path.get_file()
-		# Reaguje na każdy plik, który w nazwie skryptu ma "dialogue" lub "speaker"
-		if "dialogue" in script_name or "speaker" in script_name:
+		if "dialogue_branch" in script_name:
 			return true
 	return false
 
-# Akcja po kliknięciu prawidłowego pliku
 func _edit(object: Object) -> void:
-	if object and viewer_instance and viewer_instance.has_method("load_from_inspector"):
+	if object and viewer_instance and is_instance_valid(viewer_instance) and viewer_instance.has_method("load_from_inspector"):
 		viewer_instance.load_from_inspector(object)
-		make_bottom_panel_item_visible(viewer_instance)

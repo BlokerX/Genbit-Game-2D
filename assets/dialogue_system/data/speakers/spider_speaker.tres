@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://pvoup05donj"]
+
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="1_treaa"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="1_ux7k6"]
+
+[resource]
+script = ExtResource("1_treaa")
+speaker_name = "Spider"
+name_color = Color(0.27450982, 0, 0, 1)
+portrait = ExtResource("1_ux7k6")
+metadata/_custom_type_script = "uid://blc87iblglwxv"

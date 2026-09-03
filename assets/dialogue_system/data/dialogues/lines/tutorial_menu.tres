@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="DialogueLine" format=3 uid="uid://cepmeognhyugr"]
+
+[ext_resource type="Script" uid="uid://n3vhdaelqrx0" path="res://assets/dialogue_system/resources/dialogue_choice.gd" id="1_6e70c"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_qvmom"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_ujqqj"]
+[ext_resource type="Resource" uid="uid://bdvbqko7hh87w" path="res://assets/dialogue_system/data/dialogues/lines/control_tutorial.tres" id="4_5w78r"]
+[ext_resource type="Script" uid="uid://dlbuwseh1l3px" path="res://assets/dialogue_system/resources/dialogue_line.gd" id="5_eadhk"]
+[ext_resource type="Resource" uid="uid://cq15k3j6vanvo" path="res://assets/dialogue_system/data/speakers/samouczek.tres" id="6_3dr43"]
+
+[sub_resource type="Resource" id="Resource_r7og5"]
+script = ExtResource("1_6e70c")
+choice_text = "Sterowanie i Interakcje."
+next_line = ExtResource("4_5w78r")
+metadata/_custom_type_script = "uid://n3vhdaelqrx0"
+
+[sub_resource type="Resource" id="Resource_i5e7u"]
+script = ExtResource("1_6e70c")
+choice_text = "Walka i Przetrwanie."
+metadata/_custom_type_script = "uid://n3vhdaelqrx0"
+
+[sub_resource type="Resource" id="Resource_fkwuc"]
+script = ExtResource("1_6e70c")
+choice_text = "Ekwipunek i Wytwarzanie."
+metadata/_custom_type_script = "uid://n3vhdaelqrx0"
+
+[sub_resource type="Resource" id="Resource_ghyoy"]
+script = ExtResource("1_6e70c")
+choice_text = "O co tu chodzi?"
+metadata/_custom_type_script = "uid://n3vhdaelqrx0"
+
+[resource]
+script = ExtResource("5_eadhk")
+speaker = ExtResource("6_3dr43")
+dialogue_text = "Witaj! 
+Znajdujesz się w trybie samouczka. 
+Wybierz temat, który chcesz zgłębić w pierwszej kolejności."
+choices = Array[ExtResource("1_6e70c")]([SubResource("Resource_r7og5"), SubResource("Resource_i5e7u"), SubResource("Resource_fkwuc"), SubResource("Resource_ghyoy")])
+allow_cancel = true
+metadata/_custom_type_script = "uid://dlbuwseh1l3px"
