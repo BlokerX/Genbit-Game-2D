@@ -20,6 +20,10 @@ func _ready() -> void:
 		_on_inventory_updated()
 
 func _unhandled_input(event: InputEvent) -> void:
+	# --- TARCZA DIALOGOWA ---
+	if DialogueManager.is_active:
+		return
+	
 	# Przełącza tryb w pętli: BASIC (1) -> ADVANCED (2) -> NONE (0) -> BASIC (1)...
 	if event.is_action_pressed(INPUT_TOGGLE_INFO): 
 		current_info_mode = (current_info_mode + 1) % 3 as InfoMode

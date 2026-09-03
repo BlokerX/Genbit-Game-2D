@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cycvvw1tn66k3" path="res://assets/scripts/scene_scripts/game_scene/game_scene.gd" id="1_ge8p3"]
 [ext_resource type="Script" uid="uid://b0ps68vr8aav7" path="res://assets/scripts/ui/playtime_monitor.gd" id="2_ge8p3"]
 [ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="3_b4kdy"]
+[ext_resource type="PackedScene" uid="uid://bisrdlaqm3bxa" path="res://assets/scenes/gui/hud/hud_visibility_config.tscn" id="4_iftva"]
 [ext_resource type="Script" uid="uid://by75yrn6lcipi" path="res://assets/scripts/ui/active_effects_ui.gd" id="4_whqo5"]
 [ext_resource type="StyleBox" uid="uid://j67byj2f5ftg" path="res://assets/themes/theme_overrides/HealthPointsBarStyleBoxFlat.tres" id="5_32wio"]
 [ext_resource type="Script" uid="uid://b6depxeth7358" path="res://assets/scripts/ui/health_bar.gd" id="6_b0as1"]
@@ -16,9 +17,11 @@
 [ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/gui/crafting_ui.tscn" id="13_4mn4o"]
 [ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/gui/grid_panel.tscn" id="14_1gqv0"]
 [ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/main_menu/pause_menu.tscn" id="15_grwg2"]
+[ext_resource type="PackedScene" uid="uid://dulfknsrwu6la" path="res://assets/dialogue_system/scenes/dialogue_ui.tscn" id="16_wmbyi"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="AudioStream" uid="uid://dbu2b1polluso" path="res://assets/audio/entities/player/dark_orchestra_one.mp3" id="17_1y80r"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="17_vhw88"]
+[ext_resource type="PackedScene" uid="uid://batykymhuwsen" path="res://assets/dialogue_system/scenes/dialogue_log_ui.tscn" id="18_5c861"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="18_uvlnc"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="19_elt3u"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="20_2y4le"]
@@ -30,13 +33,13 @@ colors = PackedColorArray(0.39607844, 0.42352942, 0.43529412, 0.8156863, 1, 1, 1
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_totju"]
 gradient = SubResource("Gradient_mjw3m")
 
-[sub_resource type="Resource" id="Resource_wmbyi"]
+[sub_resource type="Resource" id="Resource_5c861"]
 resource_local_to_scene = true
 script = ExtResource("17_vhw88")
 moveSpeed = 450.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_iftva"]
+[sub_resource type="Resource" id="Resource_vlsbn"]
 resource_local_to_scene = true
 script = ExtResource("18_uvlnc")
 
@@ -45,7 +48,7 @@ script = ExtResource("19_elt3u")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_5c861"]
+[sub_resource type="Resource" id="Resource_dkl2x"]
 resource_local_to_scene = true
 script = ExtResource("20_2y4le")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -89,6 +92,8 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.6862745)
 theme_override_font_sizes/font_size = 40
 horizontal_alignment = 1
 script = ExtResource("2_ge8p3")
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/PlaytimeLabel" unique_id=460875978 instance=ExtResource("4_iftva")]
 
 [node name="MarginContainer" type="MarginContainer" parent="UI_Canvas/Game_UI_Layout" unique_id=435628434]
 layout_mode = 1
@@ -142,6 +147,8 @@ theme_override_constants/outline_size = 10
 text = "Active effects:"
 uppercase = true
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/MarginContainer" unique_id=265991567 instance=ExtResource("4_iftva")]
+
 [node name="PlayerUIGroup" type="Node" parent="UI_Canvas" unique_id=748282068]
 
 [node name="HealthPointsBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=1547176443 node_paths=PackedStringArray("character_entity")]
@@ -167,6 +174,8 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/HealthPointsBar" unique_id=1652438321 instance=ExtResource("4_iftva")]
+
 [node name="CooldownProgressBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
 texture_filter = 5
 offset_left = 16.0
@@ -188,6 +197,8 @@ offset_bottom = 24.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CooldownProgressBar" unique_id=912995909 instance=ExtResource("4_iftva")]
+
 [node name="CharacterSlotTextureRect" type="TextureRect" parent="UI_Canvas/PlayerUIGroup" unique_id=854278161]
 texture_filter = 5
 custom_minimum_size = Vector2(7, 7)
@@ -208,6 +219,8 @@ texture = ExtResource("10_1y80r")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CharacterSlotTextureRect" unique_id=807394628 instance=ExtResource("4_iftva")]
+
 [node name="InventoryUIGroup" type="Node" parent="UI_Canvas" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("10_tjy5o")
 player = NodePath("../../Player")
@@ -227,6 +240,8 @@ layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/ItemInfoPanelContainer" unique_id=1354687177 instance=ExtResource("4_iftva")]
 
 [node name="HotbarPanel" type="HBoxContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=682378422]
 offset_left = 8.0
@@ -270,6 +285,8 @@ show_tooltip = false
 layout_mode = 2
 show_tooltip = false
 
+[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=867877150 instance=ExtResource("4_iftva")]
+
 [node name="Minimap" type="Control" parent="UI_Canvas" unique_id=726594060]
 clip_contents = true
 layout_mode = 3
@@ -286,6 +303,9 @@ mouse_filter = 2
 script = ExtResource("12_64dql")
 cell_size = 35.0
 metadata/_edit_group_ = true
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/Minimap" unique_id=1765969916 instance=ExtResource("4_iftva")]
+hide_in_map = false
 
 [node name="CraftingUI" parent="UI_Canvas" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
 process_mode = 3
@@ -342,10 +362,17 @@ offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
 
+[node name="DialogueUI" parent="." unique_id=936559167 instance=ExtResource("16_wmbyi")]
+visible = false
+
+[node name="DialogueLogUI" parent="." unique_id=1881172957 instance=ExtResource("18_5c861")]
+visible = false
+
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
 visible = false
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1318962840]
+process_mode = 3
 stream = ExtResource("17_1y80r")
 autoplay = true
 parameters/looping = true
@@ -355,6 +382,6 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_wmbyi")
-health_stats_script = SubResource("Resource_iftva")
-interaction_and_attack_stats_script = SubResource("Resource_5c861")
+movement_universal_script = SubResource("Resource_5c861")
+health_stats_script = SubResource("Resource_vlsbn")
+interaction_and_attack_stats_script = SubResource("Resource_dkl2x")

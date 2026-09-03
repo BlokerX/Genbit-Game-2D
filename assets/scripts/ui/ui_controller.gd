@@ -34,11 +34,15 @@ var is_player_inventory_open: bool = false
 var is_crafting_open: bool = false
 var is_map_open: bool = false
 
+var _hud_tween: Tween
+
 # --- NOWOŚĆ: Liczniki do auto-wyrzucania przedmiotów ---
 var _drop_hold_time: float = 0.0
 var _drop_tick_time: float = 0.0
 
 func _ready() -> void:
+	EventBus.hud_visibility_requested.connect(_on_hud_visibility_requested)
+	
 	# Automatycznie szukamy gracza w scenie po grupie "player"
 	var player = get_tree().get_first_node_in_group("Player")
 	if player:
@@ -53,6 +57,8 @@ func _ready() -> void:
 	EventBus.open_storage_ui.connect(_on_storage_opened)
 	EventBus.close_storage_ui.connect(_on_storage_closed)
 	EventBus.slot_clicked.connect(_on_slot_clicked)
+	
+	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
 	
 	# --- NOWOŚĆ: Automatyczne GENEROWANIE slotu plecaka ---
 	if backpack_panel:
@@ -85,6 +91,10 @@ func _ready() -> void:
 	_set_backpack_ui_visible(false)
 
 func _process(delta: float) -> void:
+	# --- TARCZA DIALOGOWA: Zamrażamy kursor, gdy jest dialog ---
+	if DialogueManager.is_active:
+		return
+		
 	# --- 1. WIRTUALNY KURSOR DLA PADA ---
 	if is_any_ui_open():
 		# Odczytujemy lewą gałkę (używamy akcji ruchu Gracza)
@@ -144,8 +154,8 @@ func toggle_player_inventory() -> void:
 		
 		is_player_inventory_open = true
 		
-		# Wysyłamy sygnał, że okno się otworzyło
-		EventBus.ui_state_changed.emit(true)
+		# --- NOWE: Aktualizujemy słownik i wysyłamy sygnał HUD ---
+		EventBus.set_menu_state(EventBus.MENU_INVENTORY, true)
 		
 		player_panel.open_panel(player_inventory)
 		
@@ -168,8 +178,8 @@ func toggle_crafting_ui() -> void:
 		
 		is_crafting_open = true
 		
-		# Wysyłamy sygnał, że okno się otworzyło
-		EventBus.ui_state_changed.emit(true)
+		# --- NOWE: Aktualizujemy słownik ---
+		EventBus.set_menu_state(EventBus.MENU_CRAFTING, true)
 		
 		if crafting_ui:
 			crafting_ui.show()
@@ -185,8 +195,8 @@ func toggle_map_ui() -> void:
 		_close_all_ui() # Zamyka ekwipunek/crafting
 		is_map_open = true
 		
-		# Wysyłamy sygnał zamrożenia gracza
-		EventBus.ui_state_changed.emit(true)
+		# --- NOWE: Aktualizujemy słownik ---
+		EventBus.set_menu_state(EventBus.MENU_MAP, true)
 		
 		if minimap_ui:
 			minimap_ui.toggle_large_map(true)
@@ -203,7 +213,10 @@ func _on_storage_opened(storage_ref: Node) -> void:
 		current_open_chest.storage_destroyed.connect(_on_storage_destroyed)
 
 	is_player_inventory_open = true
-	EventBus.ui_state_changed.emit(true)
+	
+	# --- NOWE: Aktualizujemy słownik ---
+	EventBus.set_menu_state(EventBus.MENU_STORAGE, true)
+	
 	player_panel.open_panel(player_inventory)
 	chest_panel.open_panel(storage_ref)
 	if hotbar_panel:
@@ -250,11 +263,18 @@ func _close_all_ui() -> void:
 	if hotbar_panel:
 		hotbar_panel.show()
 	
-	# Wysyłamy sygnał, że wszystkie okna są zamknięte
-	EventBus.ui_state_changed.emit(false)
+	# --- NOWE: Resetujemy wszystkie stany w słowniku ZANIM wyślemy sygnał zakończenia ---
+	EventBus.set_menu_state(EventBus.MENU_INVENTORY, false, false)
+	EventBus.set_menu_state(EventBus.MENU_CRAFTING, false, false)
+	EventBus.set_menu_state(EventBus.MENU_MAP, false, false)
+	EventBus.set_menu_state(EventBus.MENU_STORAGE, false, true) # Tutaj "true" odpala animację!
 
 # DODAJEMY NOWĄ FUNKCJĘ _input, KTÓRA JEST PIERWSZA W KOLEJCE:
 func _input(event: InputEvent) -> void:
+	# --- TARCZA DIALOGOWA ---
+	if DialogueManager.is_active:
+		return
+		
 	# Obsługa Pauzy (Zamykanie aktywnych okien)
 	if event.is_action_pressed(INPUT_GAME_PAUSE):
 		if is_any_ui_open(): # <--- Skrócone i obejmujące mapę!
@@ -419,6 +439,10 @@ func _try_drop_hovered_slot(drop_all: bool) -> void:
 
 # ZMIENIAMY _unhandled_input TAK, ŻEBY OTWIERAŁO TYLKO EKWIPUNEK:
 func _unhandled_input(event: InputEvent) -> void:
+	# --- TARCZA DIALOGOWA: Całkowicie blokujemy otwieranie UI ---
+	if DialogueManager.is_active:
+		return
+		
 	# Otwieranie/Zamykanie ekwipunku
 	if event.is_action_pressed(INPUT_TOGGLE_INVENTORY):
 		if current_open_chest == null:
@@ -441,6 +465,9 @@ func _unhandled_input(event: InputEvent) -> void:
 # --- LOGIKA MINECRAFTOWA (KLIKNIĘCIA) ---
 
 func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> void:
+	if DialogueManager.is_active:
+		return
+		
 	var target_slot: SlotData
 	
 	if parent_node is StorageComponent:
@@ -695,7 +722,7 @@ func _update_cursor_visuals() -> void:
 
 # Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
 func is_any_ui_open() -> bool:
-	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open
+	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open or DialogueManager.is_active
 
 # Bezpieczna symulacja kliknięcia uwzględniająca zarówno przyciski, jak i sloty
 func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
@@ -734,3 +761,66 @@ func _on_gui_focus_changed(control: Control) -> void:
 func _set_backpack_ui_visible(show_slot: bool) -> void:
 	if backpack_panel:
 		backpack_panel.visible = show_slot
+
+# --- ZAAWANSOWANY SYSTEM UKRYWANIA HUD ---
+func _on_hud_visibility_requested() -> void:
+	if _hud_tween and _hud_tween.is_valid():
+		_hud_tween.kill()
+		
+	_hud_tween = create_tween().set_parallel(true)
+	_hud_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_hud_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	for element in get_tree().get_nodes_in_group("HUD_Element"):
+		if element is CanvasItem:
+			var should_hide = false
+			var config = element.get_node_or_null("HUDVisibilityConfig")
+			
+			if config:
+				if config.hide_in_inventory and EventBus.active_menus[EventBus.MENU_INVENTORY]: should_hide = true
+				if config.hide_in_storage and EventBus.active_menus[EventBus.MENU_STORAGE]: should_hide = true
+				if config.hide_in_crafting and EventBus.active_menus[EventBus.MENU_CRAFTING]: should_hide = true
+				if config.hide_in_map and EventBus.active_menus[EventBus.MENU_MAP]: should_hide = true
+				if config.hide_in_dialogue and EventBus.active_menus[EventBus.MENU_DIALOGUE]: should_hide = true
+				if config.hide_in_pause and EventBus.active_menus[EventBus.MENU_PAUSE]: should_hide = true
+			else:
+				should_hide = EventBus.is_any_menu_open()
+			
+			var target_alpha = 0.0 if should_hide else 1.0
+			_hud_tween.tween_property(element, "modulate:a", target_alpha, 0.25)
+			
+			if element is Control:
+				if not element.has_meta("original_mouse_filter"):
+					element.set_meta("original_mouse_filter", element.mouse_filter)
+				
+				if should_hide:
+					element.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				else:
+					element.mouse_filter = element.get_meta("original_mouse_filter")
+
+# Obsługa żądania z dialogu
+func _on_open_fullscreen_menu(menu_name: String) -> void:
+	# 1. Zabezpieczamy focus. Jeśli myszka uciekła, resetujemy go.
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	if focus_owner:
+		focus_owner.release_focus()
+		
+	# 2. Jeśli coś było otwarte (np. pozostałości po starych oknach), czyścimy stan.
+	_close_all_ui()
+		
+	match menu_name:
+		"Crafting":
+			# Wywołujemy natywne otwarcie z pauzowaniem i flagami
+			toggle_crafting_ui()
+		"Shop":
+			# toggle_shop_ui() # Gdy stworzysz sklep
+			pass
+		"Inventory":
+			toggle_player_inventory()
+		"Map":
+			toggle_map_ui()
+		"QuestLog":
+			# toggle_quest_log() # Gdy stworzysz Dziennik Zadań
+			pass
+		_:
+			push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)

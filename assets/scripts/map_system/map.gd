@@ -296,6 +296,15 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
 			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
 		
+		# Szukamy węzła Y-Sort i dodajemy gracza
+		var target_parent = current_room.find_child("Entities")
+		if not target_parent:
+			target_parent = current_room
+		target_parent.add_child(player)
+		
+		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
+		GlobalLevelManager.stored_player = null
+		
 		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
 		if target_door:
 			if "spawn_point" in target_door and target_door.spawn_point != null:
@@ -316,15 +325,6 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 			else:
 				player.global_position = current_room.global_position + (current_room.size_px / 2.0)
 		# ------------------------------------------------------------------------
-		
-		# Szukamy węzła Y-Sort i dodajemy gracza
-		var target_parent = current_room.find_child("Entities")
-		if not target_parent:
-			target_parent = current_room
-		target_parent.add_child(player)
-		
-		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
-		GlobalLevelManager.stored_player = null
 		
 		# Nakładamy nowe efekty typu AURA (nieskończone)
 		for effect in current_room.ambient_aura_effects:
