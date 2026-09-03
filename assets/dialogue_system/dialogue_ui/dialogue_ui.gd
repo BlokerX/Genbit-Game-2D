@@ -7,7 +7,7 @@ class_name DialogueUI
 @onready var choices_container: VBoxContainer = $MarginContainer/VBoxContainer/DialogueBox/InnerMargin/HBoxContainer/VBoxContainer/ChoicesContainer
 
 var text_tween: Tween
-var current_line: DialogueLine # Dodana zmienna do pamiętania obecnej linii
+var current_node: DialogueNode
 var _time_in_line: float = 0.0
 
 func _ready() -> void:
@@ -31,7 +31,7 @@ func _input(event: InputEvent) -> void:
 		return
 	
 	# Blokada czasowa zapobiegająca przypadkowemu pominięciu
-	if current_line != null and _time_in_line < current_line.min_skip_time:
+	if current_node != null and _time_in_line < current_node.min_skip_time:
 		return
 	
 	var is_mouse_click = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
@@ -44,103 +44,84 @@ func _input(event: InputEvent) -> void:
 			# Odsłaniamy natychmiast cały tekst
 			text_label.visible_characters = -1
 			# Wywołujemy od razu pokazanie przycisków
-			_show_choices(current_line)
+			_show_choices(current_node)
 			
 			# Zapobiegamy przeniknięciu tego kliknięcia na przycisk wyboru
 			get_viewport().set_input_as_handled()
 
-func _on_dialogue_started(line: DialogueLine) -> void:
-	current_line = line # Zapisujemy linię na wypadek, gdyby gracz pominął tekst
-	_time_in_line = 0.0 # Resetujemy zegar linii
+func _on_dialogue_started(node: DialogueNode) -> void:
+	current_node = node
+	_time_in_line = 0.0 
 	
-	# Odczyt danych z obiektu SpeakerData
-	if line.speaker != null:
-		name_label.text = line.speaker.speaker_name
-		name_label.add_theme_color_override("font_color", line.speaker.name_color)
-		portrait_rect.texture = line.speaker.portrait
-		portrait_rect.visible = (line.speaker.portrait != null)
+	if node.speaker != null:
+		name_label.text = node.speaker.speaker_name
+		name_label.add_theme_color_override("font_color", node.speaker.name_color)
+		portrait_rect.texture = node.speaker.portrait
+		portrait_rect.visible = (node.speaker.portrait != null)
 	else:
 		name_label.text = "???"
 		portrait_rect.visible = false
-
+		
 	show()
-	text_label.text = line.dialogue_text
+	text_label.text = node.dialogue_text
 	text_label.visible_characters = 0
 	
-	# TARCZA: Bezpieczne, fizyczne wyrywanie węzłów z drzewa (Memory fix)
 	for child in choices_container.get_children():
 		choices_container.remove_child(child)
 		child.queue_free()
-
-	if text_tween: 
-		text_tween.kill()
+		
+	if text_tween: text_tween.kill()
 	text_tween = create_tween()
-	var duration = line.dialogue_text.length() * 0.03
-	text_tween.tween_property(text_label, "visible_characters", line.dialogue_text.length(), duration)
-	text_tween.finished.connect(_show_choices.bind(line))
+	var duration = node.dialogue_text.length() * 0.03
+	text_tween.tween_property(text_label, "visible_characters", node.dialogue_text.length(), duration)
+	text_tween.finished.connect(_show_choices.bind(node))
 	
-	# --- ZAKTUALIZOWANY ZAPIS HISTORII ---
 	var current_color: Color = Color.WHITE
 	var current_portrait: Texture2D = null
-	
-	if line.speaker != null:
-		current_color = line.speaker.name_color
-		current_portrait = line.speaker.portrait
-		
-	DialogueManager.add_to_history(name_label.text, line.dialogue_text, current_color, current_portrait)
-	# -------------------------------------
-	
-	# Zapis historii
+	if node.speaker != null:
+		current_color = node.speaker.name_color
+		current_portrait = node.speaker.portrait
+	DialogueManager.add_to_history(name_label.text, node.dialogue_text, current_color, current_portrait)
 	EventBus.set_menu_state(EventBus.MENU_DIALOGUE, true)
 
-func _show_choices(line: DialogueLine) -> void:
-	# TARCZA: Race Condition Guard. Zapobiega tworzeniu przycisków dwa razy.
-	if choices_container.get_child_count() > 0:
-		return
-
-	for choice in line.choices:
-		if choice == null: continue
-		
+func _show_choices(node: DialogueNode) -> void:
+	if choices_container.get_child_count() > 0: return
+	
+	# ZMIANA: iterujemy po "outputs" zamiast "choices"
+	for connection in node.outputs:
+		if connection == null: continue
 		var conditions_met = true
-		for cond in choice.conditions:
+		for cond in connection.conditions:
 			if cond != null and not cond.check_condition(DialogueManager.current_interactor, null):
 				conditions_met = false
 				break
 				
 		if conditions_met:
-			var btn = _create_styled_button(choice.choice_text, choice.choice_icon)
+			# Jeżeli tekst jest pusty, traktujemy to jako ciche przejście (dawne 'next_line')
+			var btn_text = connection.text if connection.text != "" else DialogueManager.DEFAULT_SKIP_MESSAGE
+			var btn = _create_styled_button(btn_text, connection.choice_icon)
 			
 			btn.pressed.connect(func():
-				_disable_all_choices() # TARCZA: Debouncing
-				DialogueManager.make_choice(choice)
+				_disable_all_choices()
+				DialogueManager.make_choice(connection)
 			)
 			choices_container.add_child(btn)
 			
-	# Opcjonalny przycisk wymuszonego wyjścia z dialogu ---
-	if line.allow_cancel:
+	if node.allow_cancel:
 		var cancel_btn = _create_styled_button(DialogueManager.DEFAULT_END_CONVERSATION_MESSAGE, null)
 		cancel_btn.pressed.connect(func():
 			_disable_all_choices()
 			DialogueManager.end_dialogue()
 		)
 		choices_container.add_child(cancel_btn)
-	
-	# Co zrobić, gdy kontener jest całkowicie pusty?
+		
 	if choices_container.get_child_count() == 0:
-		if line.next_line != null:
-			var btn = _create_styled_button(DialogueManager.DEFAULT_SKIP_MESSAGE, null)
-			btn.pressed.connect(func(): 
-				_disable_all_choices() # TARCZA: Debouncing
-				DialogueManager.continue_dialogue(line.next_line)
-			)
-			choices_container.add_child(btn)
-		else:
-			var btn = _create_styled_button(DialogueManager.DEFAULT_END_CONVERSATION_MESSAGE, null)
-			btn.pressed.connect(func(): 
-				_disable_all_choices() # TARCZA: Debouncing
-				DialogueManager.end_dialogue()
-			)
-			choices_container.add_child(btn)
+		var btn = _create_styled_button(DialogueManager.DEFAULT_END_CONVERSATION_MESSAGE, null)
+		btn.pressed.connect(func(): 
+			_disable_all_choices()
+			DialogueManager.end_dialogue()
+		)
+		choices_container.add_child(btn)
 		
 	choices_container.get_child(0).grab_focus()
 
