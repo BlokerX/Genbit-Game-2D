@@ -102,9 +102,10 @@ func _render_graph(graph: Resource) -> void:
 		if child is GraphNode or child is Label:
 			remove_child(child)
 			child.queue_free()
-	
+			
+	await get_tree().process_frame
+
 	var nodes_dict = graph.get("nodes")
-	
 	if nodes_dict == null:
 		var err_lbl = Label.new()
 		err_lbl.text = "WYBRANY PLIK NIE JEST GRAFEM (DialogueGraph).\nUżyj skryptu konwertera, aby zmigrować ten stary zasób."
@@ -134,30 +135,30 @@ func _render_graph(graph: Resource) -> void:
 		g_node.resizable = true
 		g_node.resize_request.connect(func(new_size): g_node.size = new_size)
 		
-		var grid_x = (fallback_index % 3) * 450
+		var grid_x = (fallback_index % 3) * 480
 		var grid_y = int(fallback_index / 3) * 350
 		g_node.position_offset = Vector2(grid_x, grid_y)
 		fallback_index += 1
 		
 		var title_str = "▶ " + n_id_str
-		if d_node.get("speaker") != null:
-			title_str += " (" + d_node.get("speaker").speaker_name + ")"
+		var speaker_res = d_node.get("speaker")
+		if speaker_res and speaker_res.get("speaker_name") != null:
+			title_str += " (" + str(speaker_res.get("speaker_name")) + ")"
 			
 		var is_start = (n_id_str == start_id)
-		if is_start:
+		if is_start: 
 			title_str = "⭐ START: " + title_str
-			g_node.self_modulate = Color(0.8, 1.0, 0.8)
+			g_node.self_modulate = Color(0.8, 1.0, 0.8) 
 			
 		g_node.title = title_str
 
 		var child_idx = 0
 		var in_port_set = false
 
-		var speaker_res = d_node.get("speaker")
 		if speaker_res:
 			_build_speaker_ui(g_node, speaker_res)
-			g_node.set_slot(child_idx, not is_start and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
-			if not is_start: in_port_set = true
+			g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			in_port_set = true
 			child_idx += 1
 
 		if is_start:
@@ -165,7 +166,8 @@ func _render_graph(graph: Resource) -> void:
 			file_lbl.text = "Plik:\n" + current_file_path.get_file()
 			file_lbl.modulate = Color(0.6, 0.9, 0.6)
 			g_node.add_child(file_lbl)
-			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
+			g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			in_port_set = true
 			child_idx += 1
 			
 		var text_edit = TextEdit.new()
@@ -175,13 +177,17 @@ func _render_graph(graph: Resource) -> void:
 		text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 		g_node.add_child(text_edit)
 		
-		g_node.set_slot(child_idx, not is_start and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
-		if not is_start: in_port_set = true
+		g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+		in_port_set = true
 		child_idx += 1
 		
-		# POPRAWKA BŁĘDU .get() DLA ZASOBÓW:
+		var skip_time = d_node.get("min_skip_time")
+		if skip_time == null: skip_time = 0.5
+		var allow_cancel = d_node.get("allow_cancel")
+		if allow_cancel == null: allow_cancel = false
+		
 		var params_lbl = Label.new()
-		params_lbl.text = "Min. Skip: " + str(d_node.get("min_skip_time")) + "s | Cancel: " + str(d_node.get("allow_cancel"))
+		params_lbl.text = "Min. Skip: " + str(skip_time) + "s | Cancel: " + str(allow_cancel).to_lower()
 		params_lbl.modulate = Color.GRAY
 		g_node.add_child(params_lbl)
 		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
@@ -203,9 +209,10 @@ func _render_graph(graph: Resource) -> void:
 					
 				var conds = conn.get("conditions")
 				var effs = conn.get("consequences")
-				if (conds and conds.size() > 0) or (effs and effs.size() > 0):
-					var c_size = conds.size() if conds else 0
-					var e_size = effs.size() if effs else 0
+				var c_size = conds.size() if (conds and typeof(conds) == TYPE_ARRAY) else 0
+				var e_size = effs.size() if (effs and typeof(effs) == TYPE_ARRAY) else 0
+				
+				if c_size > 0 or e_size > 0:
 					out_lbl.text += " [C:%d|E:%d]" % [c_size, e_size]
 					out_lbl.modulate = Color(1.0, 0.8, 0.4)
 					
@@ -222,7 +229,7 @@ func _render_graph(graph: Resource) -> void:
 			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
 			child_idx += 1
 		
-		if d_node.get("allow_cancel"):
+		if allow_cancel:
 			var cancel_lbl = Label.new()
 			cancel_lbl.text = "✖ Opuść dialog (Anuluj)"
 			cancel_lbl.modulate = Color(1.0, 0.4, 0.4)
@@ -251,9 +258,6 @@ func _render_graph(graph: Resource) -> void:
 				valid_out_index += 1
 
 	_load_layout()
-
-func port_idx_check(val: bool) -> bool:
-	return true
 
 func _build_speaker_ui(gnode: GraphNode, speaker: Resource) -> void:
 	if not speaker: return
