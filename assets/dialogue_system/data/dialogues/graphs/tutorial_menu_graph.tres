@@ -1,0 +1,94 @@
+[gd_resource type="Resource" script_class="DialogueGraph" format=3 uid="uid://dfaf0l08y0mbs"]
+
+[ext_resource type="Script" uid="uid://dl7pf0vyf2fnh" path="res://assets/dialogue_system/resources/graph/dialogue_connection.gd" id="1_q1iu6"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_65hrx"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_4ywsg"]
+[ext_resource type="Script" uid="uid://c8vdk5bssyshm" path="res://assets/dialogue_system/resources/graph/dialogue_node.gd" id="4_5n5r8"]
+[ext_resource type="Resource" uid="uid://cq15k3j6vanvo" path="res://assets/dialogue_system/data/speakers/samouczek.tres" id="5_x2xrh"]
+[ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/graph/dialogue_graph.gd" id="6_f2eun"]
+
+[sub_resource type="Resource" id="Resource_85h2n"]
+script = ExtResource("1_q1iu6")
+text = "Sterowanie i Interakcje."
+target_id = &"node_002"
+
+[sub_resource type="Resource" id="Resource_sobhi"]
+script = ExtResource("1_q1iu6")
+text = "Walka i Przetrwanie."
+
+[sub_resource type="Resource" id="Resource_8jm5a"]
+script = ExtResource("1_q1iu6")
+text = "Ekwipunek i Wytwarzanie."
+
+[sub_resource type="Resource" id="Resource_kxij4"]
+script = ExtResource("1_q1iu6")
+text = "O co tu chodzi?"
+
+[sub_resource type="Resource" id="Resource_xte5n"]
+script = ExtResource("4_5n5r8")
+id = &"node_001"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Witaj! 
+Znajdujesz się w trybie samouczka. 
+Wybierz temat, który chcesz zgłębić w pierwszej kolejności."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_85h2n"), SubResource("Resource_sobhi"), SubResource("Resource_8jm5a"), SubResource("Resource_kxij4")])
+allow_cancel = true
+
+[sub_resource type="Resource" id="Resource_hmhn7"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_003"
+
+[sub_resource type="Resource" id="Resource_gvauh"]
+script = ExtResource("4_5n5r8")
+id = &"node_002"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Okej!
+Oto podstawy sterowania..."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_hmhn7")])
+
+[sub_resource type="Resource" id="Resource_s0tgj"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_004"
+
+[sub_resource type="Resource" id="Resource_trpbm"]
+script = ExtResource("4_5n5r8")
+id = &"node_003"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Okej! Zaczniemy od podstaw. Do poruszania się postacią używaj standardowych klawiszy: W, A, S, D."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_s0tgj")])
+
+[sub_resource type="Resource" id="Resource_16gwh"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_005"
+
+[sub_resource type="Resource" id="Resource_dum3x"]
+script = ExtResource("4_5n5r8")
+id = &"node_004"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Świat pełen jest przedmiotów. Gdy znajdziesz coś ciekawego, wciśnij F, aby to podnieść. Do interakcji z otoczeniem i NPC używaj klawisza E."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_16gwh")])
+
+[sub_resource type="Resource" id="Resource_q1iu6"]
+script = ExtResource("1_q1iu6")
+text = "Wróć do menu."
+target_id = &"node_001"
+metadata/_custom_type_script = "uid://dl7pf0vyf2fnh"
+
+[sub_resource type="Resource" id="Resource_5ngd5"]
+script = ExtResource("4_5n5r8")
+id = &"node_005"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Aby sprawdzić, gdzie się znajdujesz, włącz podgląd minimapy naciskając klawisz M."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_q1iu6")])
+allow_cancel = true
+
+[resource]
+script = ExtResource("6_f2eun")
+start_node_id = &"node_001"
+nodes = {
+&"node_001": SubResource("Resource_xte5n"),
+&"node_002": SubResource("Resource_gvauh"),
+&"node_003": SubResource("Resource_trpbm"),
+&"node_004": SubResource("Resource_dum3x"),
+&"node_005": SubResource("Resource_5ngd5")
+}

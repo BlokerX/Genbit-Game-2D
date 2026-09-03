@@ -14,10 +14,10 @@ func _exit_tree() -> void:
 		viewer_instance.queue_free()
 
 func _handles(object: Object) -> bool:
-	# REAGUJE TYLKO NA BRANCH. Ignoruje klikanie w Choice, Line i Speaker.
 	if object is Resource and object.get_script() != null:
 		var script_name = object.get_script().resource_path.get_file()
-		if "dialogue_branch" in script_name:
+		# Reaguje na nowe grafy i na stare branche!
+		if "dialogue_graph" in script_name or "dialogue_branch" in script_name:
 			return true
 	return false
 

@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://b47in61ub5684" path="res://assets/dialogue_system/components/dialogue_component.tscn" id="13_0tgc8"]
 [ext_resource type="Script" uid="uid://b6hb48822kkmk" path="res://assets/dialogue_system/resources/dialogue_branch.gd" id="14_u0cfs"]
 [ext_resource type="Resource" uid="uid://df1agsrrotf1j" path="res://assets/dialogue_system/data/dialogues/branches/test_dialogue_branch.tres" id="15_n1edl"]
+[ext_resource type="Resource" uid="uid://bgqk6xdsp2vg" path="res://assets/dialogue_system/data/dialogues/branches/tutorial_dialogue.tres" id="16_n1edl"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/rooms/level_entrance.tscn" id="42_xy8dj"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_u0cfs"]
@@ -202,6 +203,6 @@ target_collision = NodePath("../CollisionShape2D")
 shape = SubResource("RectangleShape2D_1hvyy")
 
 [node name="DialogueComponent" parent="OpenWorld/DialogManTest" unique_id=1639514121 instance=ExtResource("13_0tgc8")]
-branches = Array[ExtResource("14_u0cfs")]([ExtResource("15_n1edl")])
+branches = Array[ExtResource("14_u0cfs")]([ExtResource("16_n1edl"), ExtResource("15_n1edl")])
 
 [editable path="OpenWorld"]

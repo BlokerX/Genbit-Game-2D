@@ -9,8 +9,8 @@ var node_counter: int = 0
 
 func _run() -> void:
 	# 1. ZMIEŃ TE ŚCIEŻKI na własne!
-	var source_path = "res://assets/dialogue_system/data/dialogues/lines/test_dialogue_line.tres"
-	var dest_path = "res://assets/dialogue_system/data/dialogues/test_dialogue_graph.tres"
+	var source_path = "__res://assets/dialogue_system/data/dialogues/lines/.tres"
+	var dest_path = "__res://assets/dialogue_system/data/dialogues/graphs/.tres"
 	
 	print("--- ROZPOCZYNAM MIGRACJĘ DIALOGU ---")
 	
