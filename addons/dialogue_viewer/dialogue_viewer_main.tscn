@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://b6dkgigta4sfe"]
+
+[ext_resource type="Script" uid="uid://vlhs2fffhgph" path="res://addons/dialogue_viewer/dialogue_viewer_main.gd" id="1_vwr"]
+
+[node name="DialogueViewerMain" type="GraphEdit" unique_id=249738858]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vwr")
