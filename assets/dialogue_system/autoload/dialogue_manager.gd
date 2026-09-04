@@ -36,7 +36,6 @@ func start_dialogue(graph: DialogueGraph, interactor: Node, start_id: StringName
 	var first_id = start_id if start_id != &"" else graph.start_node_id
 	go_to_node(first_id)
 
-# NOWA METODA: Główny motor napędowy grafu
 func go_to_node(node_id: StringName) -> void:
 	if current_graph == null or not current_graph.nodes.has(node_id):
 		push_warning("Błąd: Nie znaleziono węzła '" + str(node_id) + "' w grafie!")
@@ -46,11 +45,20 @@ func go_to_node(node_id: StringName) -> void:
 	current_node_id = node_id
 	var node: DialogueNode = current_graph.nodes[node_id]
 	
-	# Zapisujemy w stanie gry odwiedziny (np. res://...graph.tres_node_01)
 	var visit_key = str(current_graph.resource_path) + "_" + str(node_id)
 	DialogueState.increment_counter(visit_key)
 	
-	dialogue_started.emit(node)
+	# ROZWIDLENIE LOGIKI:
+	if node.is_auto_advance():
+		# Węzeł automatyczny (np. Condition, Action, Random)
+		var next_node_id = node.process_auto_logic(current_interactor)
+		if next_node_id != &"":
+			go_to_node(next_node_id) # Natychmiastowy przeskok (rekurencja)
+		else:
+			end_dialogue()
+	else:
+		# Węzeł interaktywny (wymaga UI)
+		dialogue_started.emit(node)
 
 # ZMIANA: Przyjmuje Connection, wywołuje efekty i wykonuje skok
 func make_choice(connection: DialogueConnection) -> void:

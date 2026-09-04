@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="DialogueBranch" format=3 uid="uid://bgqk6xdsp2vg"]
+[gd_resource type="Resource" script_class="DialogueEntryPoint" format=3 uid="uid://bgqk6xdsp2vg"]
 
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="1_l3bxh"]
-[ext_resource type="Script" uid="uid://b6hb48822kkmk" path="res://assets/dialogue_system/resources/dialogue_branch.gd" id="2_dnqsj"]
+[ext_resource type="Script" uid="uid://b6hb48822kkmk" path="res://assets/dialogue_system/resources/dialogue_entry_point.gd" id="2_dnqsj"]
 [ext_resource type="Resource" uid="uid://dfaf0l08y0mbs" path="res://assets/dialogue_system/data/dialogues/graphs/tutorial_menu_graph.tres" id="2_loc6j"]
 
 [resource]

@@ -1,5 +1,5 @@
 extends Resource
-class_name DialogueBranch
+class_name DialogueEntryPoint
 
 @export var graph: DialogueGraph
 @export var start_node_id: StringName = &"" # Pozwala nadpisać domyślny początek!

@@ -1,8 +1,8 @@
 extends Area2D
 class_name DialogueTriggerArea
 
-## Lista powitań sprawdzana od góry do dołu.
-@export var branches: Array[DialogueBranch] = []
+## Lista punktów wejścia sprawdzana od góry do dołu.
+@export var dialogue_entries: Array[DialogueEntryPoint] = []
 @export var fallback_graph: DialogueGraph
 @export var one_shot: bool = true
 
@@ -16,16 +16,16 @@ func _on_body_entered(body: Node2D) -> void:
 	var graph_to_play: DialogueGraph = fallback_graph
 	var override_id: StringName = &""
 
-	for branch in branches:
-		if branch == null or branch.graph == null: continue
+	for entry in dialogue_entries:
+		if entry == null or entry.graph == null: continue
 		var conditions_met = true
-		for cond in branch.conditions:
+		for cond in entry.conditions:
 			if cond != null and not cond.check_condition(body, null):
 				conditions_met = false
 				break
 		if conditions_met:
-			graph_to_play = branch.graph
-			override_id = branch.start_node_id
+			graph_to_play = entry.graph
+			override_id = entry	.start_node_id
 			break
 
 	if graph_to_play != null:

@@ -16,8 +16,9 @@ func _exit_tree() -> void:
 func _handles(object: Object) -> bool:
 	if object is Resource and object.get_script() != null:
 		var script_name = object.get_script().resource_path.get_file()
-		# Reaguje na nowe grafy i na stare branche!
-		if "dialogue_graph" in script_name or "dialogue_branch" in script_name:
+		# Reaguje na nowe grafy!
+		# TODO dodać punkty wejścia aby można było je oglądać w tym pluginie
+		if "dialogue_graph" in script_name:
 			return true
 	return false
 

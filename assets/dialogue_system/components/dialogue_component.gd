@@ -1,8 +1,8 @@
 extends Node
 class_name DialogueComponent
 
-## Lista powitań sprawdzana od góry do dołu. Gra wybierze pierwsze, które spełnia warunki.
-@export var branches: Array[DialogueBranch] = []
+## Lista punktów wejścia sprawdzana od góry do dołu. Gra wybierze pierwszy, który spełnia warunki.
+@export var entry_points: Array[DialogueEntryPoint] = []
 ## Domyślne powitanie, jeśli żadne warunki z gałęzi nie są spełnione
 @export var fallback_graph: DialogueGraph 
 
@@ -16,16 +16,16 @@ func _on_interacted(_interactor: Node) -> void:
 	var graph_to_play: DialogueGraph = fallback_graph
 	var override_id: StringName = &""
 
-	for branch in branches:
-		if branch == null or branch.graph == null: continue
+	for entry_point in entry_points:
+		if entry_point == null or entry_point.graph == null: continue
 		var conditions_met = true
-		for cond in branch.conditions:
+		for cond in entry_point.conditions:
 			if cond != null and not cond.check_condition(_interactor, null):
 				conditions_met = false
 				break
 		if conditions_met:
-			graph_to_play = branch.graph
-			override_id = branch.start_node_id
+			graph_to_play = entry_point.graph
+			override_id = entry_point.start_node_id
 			break
 
 	if graph_to_play != null:
