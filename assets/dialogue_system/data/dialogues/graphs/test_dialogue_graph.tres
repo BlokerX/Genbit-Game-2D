@@ -16,60 +16,6 @@
 [ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="14_dfh8v"]
 [ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="15_4g1br"]
 
-[sub_resource type="Resource" id="Resource_xe426"]
-script = ExtResource("3_vwq27")
-flag_name = "narrator's gift"
-required_state = false
-metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
-
-[sub_resource type="Resource" id="Resource_2jtp5"]
-script = ExtResource("5_jxpxa")
-flag_name = "narrator's gift"
-metadata/_custom_type_script = "uid://s4qttequvgcs"
-
-[sub_resource type="Resource" id="Resource_xvdfj"]
-script = ExtResource("1_xvdfj")
-text = "Kim jesteś?"
-target_id = &"node_002"
-conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_xe426")])
-consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_2jtp5")])
-
-[sub_resource type="Resource" id="Resource_42wcd"]
-script = ExtResource("3_vwq27")
-flag_name = "narrator's gift"
-metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
-
-[sub_resource type="Resource" id="Resource_e87rb"]
-script = ExtResource("8_5lxb5")
-item_to_give = ExtResource("7_d0pmh")
-metadata/_custom_type_script = "uid://rlbaeabbej6v"
-
-[sub_resource type="Resource" id="Resource_f3k5i"]
-script = ExtResource("1_xvdfj")
-text = "Hej, masz jeszcze tamten przedmiot?"
-target_id = &"node_007"
-choice_icon = ExtResource("6_lisb8")
-conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_42wcd")])
-consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_e87rb")])
-
-[sub_resource type="Resource" id="Resource_yupr0"]
-script = ExtResource("9_1l1ov")
-metadata/_custom_type_script = "uid://oxel7jrossyy"
-
-[sub_resource type="Resource" id="Resource_vwq27"]
-script = ExtResource("1_xvdfj")
-text = "Czekaj, sprawdzę ekwipunek!"
-target_id = &"node_0080"
-consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
-
-[sub_resource type="Resource" id="Resource_ek4rl"]
-script = ExtResource("10_xjmfk")
-id = &"node_001"
-speaker = ExtResource("11_52oi1")
-dialogue_text = "Witaj, oto okno dialogu!"
-outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27")])
-allow_cancel = true
-
 [sub_resource type="Resource" id="Resource_jxpxa"]
 script = ExtResource("1_xvdfj")
 target_id = &"node_003"
@@ -96,6 +42,11 @@ Chociaż przeproś mnie, nie jestem odmienna ...
 
 bruhhh!..."
 outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_d0pmh")])
+
+[sub_resource type="Resource" id="Resource_e87rb"]
+script = ExtResource("8_5lxb5")
+item_to_give = ExtResource("7_d0pmh")
+metadata/_custom_type_script = "uid://rlbaeabbej6v"
 
 [sub_resource type="Resource" id="Resource_1l1ov"]
 script = ExtResource("1_xvdfj")
@@ -164,11 +115,59 @@ speaker = ExtResource("11_52oi1")
 dialogue_text = "-09"
 allow_cancel = true
 
+[sub_resource type="Resource" id="Resource_xe426"]
+script = ExtResource("3_vwq27")
+flag_name = "narrator's gift"
+required_state = false
+metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
+
+[sub_resource type="Resource" id="Resource_2jtp5"]
+script = ExtResource("5_jxpxa")
+flag_name = "narrator's gift"
+metadata/_custom_type_script = "uid://s4qttequvgcs"
+
+[sub_resource type="Resource" id="Resource_xvdfj"]
+script = ExtResource("1_xvdfj")
+text = "Kim jesteś?"
+target_id = &"node_002"
+conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_xe426")])
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_2jtp5")])
+
+[sub_resource type="Resource" id="Resource_42wcd"]
+script = ExtResource("3_vwq27")
+flag_name = "narrator's gift"
+metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
+
+[sub_resource type="Resource" id="Resource_f3k5i"]
+script = ExtResource("1_xvdfj")
+text = "Hej, masz jeszcze tamten przedmiot?"
+target_id = &"node_007"
+choice_icon = ExtResource("6_lisb8")
+conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_42wcd")])
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_e87rb")])
+
+[sub_resource type="Resource" id="Resource_yupr0"]
+script = ExtResource("9_1l1ov")
+metadata/_custom_type_script = "uid://oxel7jrossyy"
+
+[sub_resource type="Resource" id="Resource_vwq27"]
+script = ExtResource("1_xvdfj")
+text = "Czekaj, sprawdzę ekwipunek!"
+target_id = &"node_0080"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
+
+[sub_resource type="Resource" id="Resource_ek4rl"]
+script = ExtResource("10_xjmfk")
+id = &"node_01"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Witaj, oto okno dialogu!"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27")])
+allow_cancel = true
+
 [resource]
 script = ExtResource("15_4g1br")
-start_node_id = &"node_001"
+start_node_id = &"node_01"
 nodes = {
-&"node_001": SubResource("Resource_ek4rl"),
 &"node_002": SubResource("Resource_lisb8"),
 &"node_003": SubResource("Resource_5lxb5"),
 &"node_004": SubResource("Resource_52oi1"),
@@ -176,5 +175,6 @@ nodes = {
 &"node_006": SubResource("Resource_dfh8v"),
 &"node_007": SubResource("Resource_4g1br"),
 &"node_0080": SubResource("Resource_15ho7"),
+&"node_01": SubResource("Resource_ek4rl"),
 &"node_2933": SubResource("Resource_yx2o6")
 }

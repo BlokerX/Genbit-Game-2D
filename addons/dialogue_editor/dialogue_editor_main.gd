@@ -25,7 +25,7 @@ func _ready() -> void:
 	connection_to_empty.connect(_on_connection_to_empty)
 	popup_request.connect(_on_popup_request)
 	
-	# --- SYGNAŁY KOPIOWANIA I WKLEJANIA (Ctrl-C, Ctrl-V, Ctrl-D) ---
+	# --- SYGNAŁY KOPIOWANIA I WKLEJANIA ---
 	copy_nodes_request.connect(_on_copy_nodes_request)
 	paste_nodes_request.connect(_on_paste_nodes_request)
 	duplicate_nodes_request.connect(_on_duplicate_nodes_request)
@@ -184,17 +184,62 @@ func _do_render() -> void:
 
 		var child_idx = 0
 		
-		# --- SLOT 0: NAGŁÓWEK ---
+		# --- SLOT 0: NAGŁÓWEK (Edycja ID i Szybkie Usuwanie) ---
 		var top_hbox = HBoxContainer.new()
-		var top_lbl = Label.new()
-		top_lbl.text = "ID: " + n_id_str
-		top_lbl.modulate = Color(0.6, 0.6, 0.6)
-		top_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		top_hbox.add_child(top_lbl)
+		
+		var id_lbl = Label.new()
+		id_lbl.text = "ID:"
+		id_lbl.modulate = Color(0.6, 0.6, 0.6)
+		top_hbox.add_child(id_lbl)
+		
+		var id_edit = LineEdit.new()
+		id_edit.text = n_id_str
+		id_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		id_edit.focus_entered.connect(func(): _is_typing = true)
+		id_edit.focus_exited.connect(func():
+			_is_typing = false
+			var new_id = id_edit.text.strip_edges()
+			if new_id != n_id_str and new_id != "" and not nodes_dict.has(StringName(new_id)):
+				# Proces bezpiecznej zmiany ID węzła
+				var old_id = StringName(n_id_str)
+				var new_id_sn = StringName(new_id)
+				d_node.set("id", new_id_sn)
+				nodes_dict[new_id_sn] = d_node
+				nodes_dict.erase(old_id)
+				
+				if graph.get("start_node_id") == old_id:
+					graph.set("start_node_id", new_id_sn)
+					
+				# Aktualizacja wszystkich połączeń prowadzących do starego ID
+				for other_id in nodes_dict:
+					var other_node = nodes_dict[other_id]
+					var outputs = other_node.get("outputs")
+					if outputs:
+						for conn in outputs:
+							if conn and conn.get("target_id") == old_id:
+								conn.set("target_id", new_id_sn)
+				ResourceSaver.save(graph, current_file_path)
+				_on_refresh_pressed()
+			elif new_id == n_id_str:
+				pass # Nic się nie zmieniło
+			else:
+				id_edit.text = n_id_str # Cofnięcie (złe ID)
+		)
+		top_hbox.add_child(id_edit)
+
+		var rand_id_btn = Button.new()
+		rand_id_btn.text = "🎲"
+		rand_id_btn.tooltip_text = "Generuj losowe ID"
+		rand_id_btn.pressed.connect(func():
+			id_edit.text = "node_" + str(Time.get_ticks_msec()).substr(3, 5)
+			id_edit.release_focus() # Wymusza zapis poprzez sygnał focus_exited
+		)
+		top_hbox.add_child(rand_id_btn)
 		
 		if not is_start:
 			var set_start_btn = Button.new()
-			set_start_btn.text = "Ustaw START"
+			set_start_btn.text = "⭐"
+			set_start_btn.tooltip_text = "Ustaw jako START"
 			set_start_btn.pressed.connect(func():
 				graph.set("start_node_id", StringName(n_id_str))
 				ResourceSaver.save(graph, current_file_path)
@@ -215,12 +260,13 @@ func _do_render() -> void:
 		g_node.set_slot(child_idx, true, 0, Color.WHITE, false, 0, Color.WHITE) # WEJŚCIE
 		child_idx += 1
 
-		# --- SLOT 1: GŁOŚNIK (Zarządzanie Mówcą z poziomu grafu) ---
+		# --- SLOT 1: GŁOŚNIK (Zarządzanie Mówcą z ograniczeniem do SpeakerData) ---
 		var speaker_box = HBoxContainer.new()
 		var spk_lbl = Label.new()
 		spk_lbl.text = "Mówca:"
+		
 		var spk_picker = EditorResourcePicker.new()
-		spk_picker.base_type = "Resource"
+		spk_picker.base_type = "SpeakerData" # <-- Kluczowa zmiana (ograniczenie listy)
 		spk_picker.edited_resource = d_node.get("speaker")
 		spk_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		spk_picker.resource_changed.connect(func(res):
@@ -229,41 +275,12 @@ func _do_render() -> void:
 		)
 		speaker_box.add_child(spk_lbl)
 		speaker_box.add_child(spk_picker)
+		
 		g_node.add_child(speaker_box)
 		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
 		child_idx += 1
 
-		# --- SLOT 2: PARAMETRY (Min Skip & Cancel) ---
-		var params_box = HBoxContainer.new()
-		var skip_lbl = Label.new()
-		skip_lbl.text = "Min. Skip:"
-		var skip_spin = SpinBox.new()
-		skip_spin.step = 0.1
-		skip_spin.max_value = 10.0
-		var current_skip = d_node.get("min_skip_time")
-		skip_spin.value = current_skip if current_skip != null else 0.5
-		skip_spin.value_changed.connect(func(val):
-			d_node.set("min_skip_time", val)
-			ResourceSaver.save(graph, current_file_path)
-		)
-		
-		var cancel_cb = CheckBox.new()
-		cancel_cb.text = "Opuść Dialog (Cancel)"
-		cancel_cb.button_pressed = d_node.get("allow_cancel") if d_node.get("allow_cancel") != null else false
-		cancel_cb.toggled.connect(func(pressed):
-			d_node.set("allow_cancel", pressed)
-			ResourceSaver.save(graph, current_file_path)
-			_on_refresh_pressed() # Odśwież, by zaktualizować czerwony X na dole węzła
-		)
-		
-		params_box.add_child(skip_lbl)
-		params_box.add_child(skip_spin)
-		params_box.add_child(cancel_cb)
-		g_node.add_child(params_box)
-		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
-		child_idx += 1
-
-		# --- SLOT 3: POLE TEKSTOWE ---
+		# --- SLOT 2: POLE TEKSTOWE ---
 		var text_edit = TextEdit.new()
 		text_edit.text = str(d_node.get("dialogue_text"))
 		text_edit.custom_minimum_size = Vector2(320, 80)
@@ -285,6 +302,38 @@ func _do_render() -> void:
 		g_node.add_child(text_edit)
 		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
 		child_idx += 1
+		
+		# --- SLOT 3: PARAMETRY MIN. SKIP I CANCEL ---
+		var params_box = HBoxContainer.new()
+		var skip_lbl = Label.new()
+		skip_lbl.text = "Min. Skip:"
+		skip_lbl.modulate = Color.GRAY
+		var skip_spin = SpinBox.new()
+		skip_spin.step = 0.1
+		skip_spin.max_value = 10.0
+		var current_skip = d_node.get("min_skip_time")
+		skip_spin.value = current_skip if current_skip != null else 0.5
+		skip_spin.value_changed.connect(func(val):
+			d_node.set("min_skip_time", val)
+			ResourceSaver.save(graph, current_file_path)
+		)
+		
+		var cancel_cb = CheckBox.new()
+		cancel_cb.text = "Opuść Dialog (Cancel)"
+		cancel_cb.modulate = Color.GRAY
+		cancel_cb.button_pressed = d_node.get("allow_cancel") if d_node.get("allow_cancel") != null else false
+		cancel_cb.toggled.connect(func(pressed):
+			d_node.set("allow_cancel", pressed)
+			ResourceSaver.save(graph, current_file_path)
+			_on_refresh_pressed() # Odśwież, by zaktualizować informację o anulowaniu na dole
+		)
+		
+		params_box.add_child(skip_lbl)
+		params_box.add_child(skip_spin)
+		params_box.add_child(cancel_cb)
+		g_node.add_child(params_box)
+		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		child_idx += 1
 
 		# --- SLOTY 4+: PORTY WYJŚCIOWE I EDYCJA NAZW WYBORÓW ---
 		var outputs = d_node.get("outputs")
@@ -295,7 +344,6 @@ func _do_render() -> void:
 				var out_hbox = HBoxContainer.new()
 				var port_color = Color.CYAN 
 				
-				# Pole tekstowe dla nazwy wyboru
 				var conn_text_edit = LineEdit.new()
 				var conn_text = str(conn.get("text"))
 				conn_text_edit.text = conn_text
@@ -324,7 +372,6 @@ func _do_render() -> void:
 						_on_refresh_pressed()
 				)
 				
-				# Przycisk C:1|E:2 przenoszący do Inspektora
 				var inspect_btn = Button.new()
 				var c_size = conn.get("conditions").size() if conn.get("conditions") else 0
 				var e_size = conn.get("consequences").size() if conn.get("consequences") else 0
@@ -338,7 +385,6 @@ func _do_render() -> void:
 				
 				inspect_btn.pressed.connect(func(): EditorInterface.edit_resource(conn))
 				
-				# Przycisk Usuwania Wyjścia
 				var del_conn_btn = Button.new()
 				del_conn_btn.text = "x"
 				del_conn_btn.modulate = Color.RED
@@ -356,29 +402,32 @@ func _do_render() -> void:
 				g_node.set_slot(child_idx, false, 0, Color.WHITE, true, 0, port_color) # WYJŚCIE
 				child_idx += 1
 
-		# --- PRZYCISK DODAWANIA WYJŚĆ ---
+		# --- OSTATNI SLOT: PRZYCISK DODAWANIA WYJŚĆ ORAZ OPCJA CANCEL ---
+		var bottom_hbox = HBoxContainer.new()
+		
 		var add_out_btn = Button.new()
 		add_out_btn.text = "➕ Dodaj Wyjście"
+		add_out_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		add_out_btn.pressed.connect(func():
 			if outputs != null:
 				outputs.append(load("res://assets/dialogue_system/resources/dialogue_connection.gd").new())
 				ResourceSaver.save(graph, current_file_path)
 				_on_refresh_pressed()
 		)
-		g_node.add_child(add_out_btn)
-		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
-		child_idx += 1
-
-		# --- WIZUALIZACJA "CANCEL" (Na samym dole węzła) ---
-		var allow_cancel = d_node.get("allow_cancel")
-		if allow_cancel:
+		bottom_hbox.add_child(add_out_btn)
+		
+		if d_node.get("allow_cancel"):
 			var cancel_lbl = Label.new()
-			cancel_lbl.text = "❌ Opuść dialog (Anuluj)"
+			cancel_lbl.text = " ❌ Opuść dialog "
 			cancel_lbl.modulate = Color(1.0, 0.4, 0.4)
 			cancel_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			g_node.add_child(cancel_lbl)
+			bottom_hbox.add_child(cancel_lbl)
+			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.RED)
+		else:
 			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
-			child_idx += 1
+
+		g_node.add_child(bottom_hbox)
+		child_idx += 1
 
 		add_child(g_node)
 
