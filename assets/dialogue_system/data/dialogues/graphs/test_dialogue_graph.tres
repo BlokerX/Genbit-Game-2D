@@ -149,12 +149,16 @@ text = "Czekaj, sprawdzę ekwipunek!"
 target_id = &"node_0080"
 consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
 
+[sub_resource type="Resource" id="Resource_6ortg"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_02"
+
 [sub_resource type="Resource" id="Resource_ek4rl"]
 script = ExtResource("10_xjmfk")
 id = &"node_01"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "Witaj, oto okno dialogu!"
-outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27")])
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg")])
 allow_cancel = true
 
 [sub_resource type="Resource" id="Resource_yx2o6"]
@@ -163,6 +167,15 @@ id = &"node_2933"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "-09"
 allow_cancel = true
+
+[sub_resource type="Resource" id="Resource_kfeh3"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_01"
+
+[sub_resource type="Resource" id="Resource_vnhip"]
+script = ExtResource("10_xjmfk")
+id = &"node_02"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_kfeh3")])
 
 [resource]
 script = ExtResource("15_4g1br")
@@ -176,5 +189,6 @@ nodes = {
 &"node_007": SubResource("Resource_4g1br"),
 &"node_0080": SubResource("Resource_15ho7"),
 &"node_01": SubResource("Resource_ek4rl"),
+&"node_02": SubResource("Resource_vnhip"),
 &"node_2933": SubResource("Resource_yx2o6")
 }

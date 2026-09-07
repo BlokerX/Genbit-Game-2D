@@ -34,6 +34,7 @@ func _ready() -> void:
 	context_menu = PopupMenu.new()
 	context_menu.add_item("➕ Dodaj Węzeł", 0)
 	context_menu.add_item("📋 Wklej", 1)
+	context_menu.add_item("🔧 Uporządkuj nazwy ID (Uwaga: zmienia referencje!)", 2)
 	context_menu.id_pressed.connect(_on_context_menu_pressed)
 	add_child(context_menu)
 
@@ -93,11 +94,46 @@ func _ready() -> void:
 func _generate_next_node_id(nodes_dict: Dictionary) -> StringName:
 	var idx = 1
 	while true:
-		var test_id = StringName("node_%02d" % idx)
+		var test_id = StringName("node_" + str(idx).pad_zeros(2))
 		if not nodes_dict.has(test_id):
 			return test_id
 		idx += 1
 	return &"node_err"
+
+func _fix_all_node_ids() -> void:
+	if not _resource_to_render or current_file_path == "": return
+	
+	var graph = _resource_to_render
+	var nodes_dict = graph.get("nodes")
+	var new_dict = {}
+	var id_map = {} # stare_id -> nowe_id
+	
+	var idx = 1
+	for old_id in nodes_dict:
+		var new_id = StringName("node_" + str(idx).pad_zeros(2))
+		id_map[old_id] = new_id
+		
+		var node = nodes_dict[old_id]
+		node.set("id", new_id)
+		new_dict[new_id] = node
+		idx += 1
+		
+	# Aktualizacja krawędzi i startu
+	if id_map.has(graph.get("start_node_id")):
+		graph.set("start_node_id", id_map[graph.get("start_node_id")])
+		
+	for node_id in new_dict:
+		var node = new_dict[node_id]
+		var outputs = node.get("outputs")
+		if outputs:
+			for conn in outputs:
+				if conn and conn.get("target_id") != &"" and id_map.has(conn.get("target_id")):
+					conn.set("target_id", id_map[conn.get("target_id")])
+					
+	graph.set("nodes", new_dict)
+	ResourceSaver.save(graph, current_file_path)
+	_on_refresh_pressed()
+	print("Dialogue Editor: Zresetowano nazewnictwo wszystkich węzłów!")
 
 # --- OBSŁUGA PLIKÓW ---
 func _on_load_pressed() -> void:
@@ -235,15 +271,6 @@ func _do_render() -> void:
 		)
 		top_hbox.add_child(id_edit)
 
-		var rand_id_btn = Button.new()
-		rand_id_btn.text = "🎲"
-		rand_id_btn.tooltip_text = "Generuj kolejne ID"
-		rand_id_btn.pressed.connect(func():
-			id_edit.text = _generate_next_node_id(nodes_dict)
-			id_edit.release_focus() # Wymusza zapis poprzez sygnał focus_exited
-		)
-		top_hbox.add_child(rand_id_btn)
-		
 		if not is_start:
 			var set_start_btn = Button.new()
 			set_start_btn.text = "⭐"
@@ -333,7 +360,6 @@ func _do_render() -> void:
 		cancel_cb.toggled.connect(func(pressed):
 			d_node.set("allow_cancel", pressed)
 			ResourceSaver.save(graph, current_file_path)
-			_on_refresh_pressed() 
 		)
 		
 		params_box.add_child(skip_lbl)
@@ -465,6 +491,8 @@ func _on_context_menu_pressed(id: int) -> void:
 		_add_new_node(local_pos)
 	elif id == 1:
 		_paste_nodes_at(local_pos)
+	elif id == 2:
+		_fix_all_node_ids()
 
 func _on_connection_to_empty(from_node: StringName, from_port: int, release_position: Vector2) -> void:
 	if not _resource_to_render or current_file_path == "": return
