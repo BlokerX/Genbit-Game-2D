@@ -203,6 +203,6 @@ target_collision = NodePath("../CollisionShape2D")
 shape = SubResource("RectangleShape2D_1hvyy")
 
 [node name="DialogueComponent" parent="OpenWorld/DialogManTest" unique_id=1639514121 instance=ExtResource("13_0tgc8")]
-entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("16_n1edl"), ExtResource("15_n1edl")])
+entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("15_n1edl"), ExtResource("16_n1edl")])
 
 [editable path="OpenWorld"]
