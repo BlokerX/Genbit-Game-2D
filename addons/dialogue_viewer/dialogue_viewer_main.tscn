@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b6dkgigta4sfe"]
 
-[ext_resource type="Script" uid="uid://vlhs2fffhgph" path="res://addons/dialogue_viewer/dialogue_viewer_main.gd" id="1_vwr"]
+[ext_resource type="Script" uid="uid://dv2xvmthbopyj" path="res://addons/dialogue_viewer/dialogue_viewer_main.gd" id="1_vwr"]
 
 [node name="DialogueViewerMain" type="GraphEdit" unique_id=249738858]
 anchors_preset = 15

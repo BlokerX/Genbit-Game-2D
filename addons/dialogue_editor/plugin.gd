@@ -4,9 +4,9 @@ extends EditorPlugin
 var viewer_instance: Control
 
 func _enter_tree() -> void:
-	viewer_instance = preload("res://addons/dialogue_viewer/dialogue_viewer_main.tscn").instantiate()
+	viewer_instance = preload("res://addons/dialogue_editor/dialogue_editor_main.tscn").instantiate()
 	viewer_instance.custom_minimum_size = Vector2(0, 350)
-	add_control_to_bottom_panel(viewer_instance, "Podgląd Dialogu")
+	add_control_to_bottom_panel(viewer_instance, "Edytor Dialogu")
 
 func _exit_tree() -> void:
 	if viewer_instance:

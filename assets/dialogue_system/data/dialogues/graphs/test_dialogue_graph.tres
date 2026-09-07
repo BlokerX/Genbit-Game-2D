@@ -14,6 +14,7 @@
 [ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/dialogue_system/data/speakers/flandere_scarlet_avatar_speaker.tres" id="12_1xtxj"]
 [ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeter.png" id="13_v1bkx"]
 [ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="14_dfh8v"]
+[ext_resource type="Resource" uid="uid://chsxf33koft8c" path="res://assets/dialogue_system/data/speakers/player_speaker.tres" id="15_3upv8"]
 [ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="15_4g1br"]
 
 [sub_resource type="Resource" id="Resource_xe426"]
@@ -61,12 +62,18 @@ script = ExtResource("1_xvdfj")
 text = "Czekaj, sprawdzę ekwipunek!"
 consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
 
+[sub_resource type="Resource" id="Resource_15ho7"]
+script = ExtResource("1_xvdfj")
+text = "Test tworzenia"
+target_id = &"node_985"
+metadata/_custom_type_script = "uid://dl7pf0vyf2fnh"
+
 [sub_resource type="Resource" id="Resource_ek4rl"]
 script = ExtResource("10_xjmfk")
 id = &"node_001"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "Witaj, oto okno dialogu!"
-outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27")])
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_15ho7")])
 allow_cancel = true
 
 [sub_resource type="Resource" id="Resource_jxpxa"]
@@ -145,6 +152,16 @@ speaker = ExtResource("11_52oi1")
 dialogue_text = "Trzymaj przedmiot.
 Wpadaj po więcej jeśli będziesz chciał!"
 
+[sub_resource type="Resource" id="Resource_3upv8"]
+script = ExtResource("1_xvdfj")
+
+[sub_resource type="Resource" id="Resource_yx2o6"]
+script = ExtResource("10_xjmfk")
+id = &"node_985"
+speaker = ExtResource("15_3upv8")
+dialogue_text = "O kurka wodna! Działa!"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_3upv8")])
+
 [resource]
 script = ExtResource("15_4g1br")
 start_node_id = &"node_001"
@@ -155,5 +172,6 @@ nodes = {
 &"node_004": SubResource("Resource_52oi1"),
 &"node_005": SubResource("Resource_v1bkx"),
 &"node_006": SubResource("Resource_dfh8v"),
-&"node_007": SubResource("Resource_4g1br")
+&"node_007": SubResource("Resource_4g1br"),
+&"node_985": SubResource("Resource_yx2o6")
 }
