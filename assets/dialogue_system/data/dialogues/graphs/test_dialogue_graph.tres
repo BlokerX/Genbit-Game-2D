@@ -108,13 +108,6 @@ speaker = ExtResource("11_52oi1")
 dialogue_text = "s"
 outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_3upv8")])
 
-[sub_resource type="Resource" id="Resource_yx2o6"]
-script = ExtResource("10_xjmfk")
-id = &"node_2933"
-speaker = ExtResource("11_52oi1")
-dialogue_text = "-09"
-allow_cancel = true
-
 [sub_resource type="Resource" id="Resource_xe426"]
 script = ExtResource("3_vwq27")
 flag_name = "narrator's gift"
@@ -162,6 +155,13 @@ id = &"node_01"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "Witaj, oto okno dialogu!"
 outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27")])
+allow_cancel = true
+
+[sub_resource type="Resource" id="Resource_yx2o6"]
+script = ExtResource("10_xjmfk")
+id = &"node_2933"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "-09"
 allow_cancel = true
 
 [resource]

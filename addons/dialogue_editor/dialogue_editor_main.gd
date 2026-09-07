@@ -25,7 +25,7 @@ func _ready() -> void:
 	connection_to_empty.connect(_on_connection_to_empty)
 	popup_request.connect(_on_popup_request)
 	
-	# --- SYGNAŁY KOPIOWANIA I WKLEJANIA ---
+	# --- SYGNAŁY KOPIOWANIA I WKLEJANIA (Ctrl-C, Ctrl-V, Ctrl-D) ---
 	copy_nodes_request.connect(_on_copy_nodes_request)
 	paste_nodes_request.connect(_on_paste_nodes_request)
 	duplicate_nodes_request.connect(_on_duplicate_nodes_request)
@@ -88,6 +88,16 @@ func _ready() -> void:
 	file_dialog.add_filter("*.tres", "Dialogue Resource")
 	file_dialog.file_selected.connect(_on_file_selected)
 	EditorInterface.get_base_control().add_child(file_dialog)
+
+# --- POMOCNICZE: ITERACYJNE ID ---
+func _generate_next_node_id(nodes_dict: Dictionary) -> StringName:
+	var idx = 1
+	while true:
+		var test_id = StringName("node_%02d" % idx)
+		if not nodes_dict.has(test_id):
+			return test_id
+		idx += 1
+	return &"node_err"
 
 # --- OBSŁUGA PLIKÓW ---
 func _on_load_pressed() -> void:
@@ -200,7 +210,6 @@ func _do_render() -> void:
 			_is_typing = false
 			var new_id = id_edit.text.strip_edges()
 			if new_id != n_id_str and new_id != "" and not nodes_dict.has(StringName(new_id)):
-				# Proces bezpiecznej zmiany ID węzła
 				var old_id = StringName(n_id_str)
 				var new_id_sn = StringName(new_id)
 				d_node.set("id", new_id_sn)
@@ -210,7 +219,6 @@ func _do_render() -> void:
 				if graph.get("start_node_id") == old_id:
 					graph.set("start_node_id", new_id_sn)
 					
-				# Aktualizacja wszystkich połączeń prowadzących do starego ID
 				for other_id in nodes_dict:
 					var other_node = nodes_dict[other_id]
 					var outputs = other_node.get("outputs")
@@ -221,17 +229,17 @@ func _do_render() -> void:
 				ResourceSaver.save(graph, current_file_path)
 				_on_refresh_pressed()
 			elif new_id == n_id_str:
-				pass # Nic się nie zmieniło
+				pass
 			else:
-				id_edit.text = n_id_str # Cofnięcie (złe ID)
+				id_edit.text = n_id_str
 		)
 		top_hbox.add_child(id_edit)
 
 		var rand_id_btn = Button.new()
 		rand_id_btn.text = "🎲"
-		rand_id_btn.tooltip_text = "Generuj losowe ID"
+		rand_id_btn.tooltip_text = "Generuj kolejne ID"
 		rand_id_btn.pressed.connect(func():
-			id_edit.text = "node_" + str(Time.get_ticks_msec()).substr(3, 5)
+			id_edit.text = _generate_next_node_id(nodes_dict)
 			id_edit.release_focus() # Wymusza zapis poprzez sygnał focus_exited
 		)
 		top_hbox.add_child(rand_id_btn)
@@ -266,7 +274,7 @@ func _do_render() -> void:
 		spk_lbl.text = "Mówca:"
 		
 		var spk_picker = EditorResourcePicker.new()
-		spk_picker.base_type = "SpeakerData" # <-- Kluczowa zmiana (ograniczenie listy)
+		spk_picker.base_type = "SpeakerData"
 		spk_picker.edited_resource = d_node.get("speaker")
 		spk_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		spk_picker.resource_changed.connect(func(res):
@@ -325,7 +333,7 @@ func _do_render() -> void:
 		cancel_cb.toggled.connect(func(pressed):
 			d_node.set("allow_cancel", pressed)
 			ResourceSaver.save(graph, current_file_path)
-			_on_refresh_pressed() # Odśwież, by zaktualizować informację o anulowaniu na dole
+			_on_refresh_pressed() 
 		)
 		
 		params_box.add_child(skip_lbl)
@@ -402,7 +410,7 @@ func _do_render() -> void:
 				g_node.set_slot(child_idx, false, 0, Color.WHITE, true, 0, port_color) # WYJŚCIE
 				child_idx += 1
 
-		# --- OSTATNI SLOT: PRZYCISK DODAWANIA WYJŚĆ ORAZ OPCJA CANCEL ---
+		# --- OSTATNI SLOT: TYLKO PRZYCISK DODAWANIA WYJŚĆ ---
 		var bottom_hbox = HBoxContainer.new()
 		
 		var add_out_btn = Button.new()
@@ -416,17 +424,8 @@ func _do_render() -> void:
 		)
 		bottom_hbox.add_child(add_out_btn)
 		
-		if d_node.get("allow_cancel"):
-			var cancel_lbl = Label.new()
-			cancel_lbl.text = " ❌ Opuść dialog "
-			cancel_lbl.modulate = Color(1.0, 0.4, 0.4)
-			cancel_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			bottom_hbox.add_child(cancel_lbl)
-			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.RED)
-		else:
-			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
-
 		g_node.add_child(bottom_hbox)
+		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
 		child_idx += 1
 
 		add_child(g_node)
@@ -476,12 +475,13 @@ func _on_connection_to_empty(from_node: StringName, from_port: int, release_posi
 
 func _add_new_node(spawn_pos: Vector2) -> StringName:
 	var graph: DialogueGraph = _resource_to_render
-	var new_id = StringName("node_" + str(Time.get_ticks_msec()).substr(3, 5))
+	var nodes_dict = graph.get("nodes")
+	var new_id = _generate_next_node_id(nodes_dict)
+	
 	var new_node = load("res://assets/dialogue_system/resources/dialogue_node.gd").new()
 	new_node.set("id", new_id)
 	new_node.set("outputs", [load("res://assets/dialogue_system/resources/dialogue_connection.gd").new()]) 
 	
-	var nodes_dict = graph.get("nodes")
 	nodes_dict[new_id] = new_node
 	if str(graph.get("start_node_id")) == &"" or nodes_dict.size() == 1:
 		graph.set("start_node_id", new_id)
@@ -514,7 +514,7 @@ func _paste_nodes_at(pos: Vector2) -> void:
 	
 	for i in range(_clipboard_nodes.size()):
 		var copied_node = _clipboard_nodes[i].duplicate(true)
-		var new_id = StringName("node_" + str(Time.get_ticks_msec() + i).substr(3, 5))
+		var new_id = _generate_next_node_id(nodes_dict)
 		copied_node.set("id", new_id)
 		nodes_dict[new_id] = copied_node
 		_pending_node_positions[str(new_id)] = pos + Vector2(i * 50, i * 50)
