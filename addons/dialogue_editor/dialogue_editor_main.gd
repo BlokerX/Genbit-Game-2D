@@ -13,6 +13,7 @@ var _pending_node_positions: Dictionary = {}
 var _clipboard_nodes: Array = []
 
 var context_menu: PopupMenu
+var node_context_menu: PopupMenu
 
 func _ready() -> void:
 	right_disconnects = true 
@@ -30,13 +31,21 @@ func _ready() -> void:
 	paste_nodes_request.connect(_on_paste_nodes_request)
 	duplicate_nodes_request.connect(_on_duplicate_nodes_request)
 
-	# --- MENU KONTEKSTOWE ---
+	# --- MENU KONTEKSTOWE TŁA ---
 	context_menu = PopupMenu.new()
 	context_menu.add_item("➕ Dodaj Węzeł", 0)
 	context_menu.add_item("📋 Wklej", 1)
 	context_menu.add_item("🔧 Uporządkuj nazwy ID (Uwaga: zmienia referencje!)", 2)
+	context_menu.add_item("🧹 Posortuj słownik wg gałęzi (od startu)", 3)
 	context_menu.id_pressed.connect(_on_context_menu_pressed)
 	add_child(context_menu)
+
+	# --- MENU KONTEKSTOWE WĘZŁA ---
+	node_context_menu = PopupMenu.new()
+	node_context_menu.add_item("📋 Kopiuj", 0)
+	node_context_menu.add_item("📑 Duplikuj", 1)
+	node_context_menu.id_pressed.connect(_on_node_context_menu_pressed)
+	add_child(node_context_menu)
 
 	# --- GÓRNY PASEK NARZĘDZI ---
 	var toolbar = get_menu_hbox()
@@ -67,7 +76,7 @@ func _ready() -> void:
 
 	var arrange_btn = Button.new()
 	arrange_btn.text = "✨ Auto-Rozmieść"
-	arrange_btn.pressed.connect(arrange_nodes)
+	arrange_btn.pressed.connect(_smart_arrange_nodes) # ZMIANA NA INTELIGENTNE ROZMIESZCZANIE
 	toolbar.add_child(arrange_btn)
 	toolbar.move_child(arrange_btn, 4)
 
@@ -90,6 +99,64 @@ func _ready() -> void:
 	file_dialog.file_selected.connect(_on_file_selected)
 	EditorInterface.get_base_control().add_child(file_dialog)
 
+# --- POMOCNICZE: INTELIGENTNE ROZMIESZCZANIE ---
+func _smart_arrange_nodes() -> void:
+	if not _resource_to_render or current_file_path == "": return
+	
+	var graph = _resource_to_render
+	var nodes_dict = graph.get("nodes")
+	if not nodes_dict or nodes_dict.size() == 0: return
+	
+	var start_id = str(graph.get("start_node_id"))
+	if start_id == "": return
+	
+	var visited = {}
+	var back_edges = []
+	var queue = [start_id]
+	visited[start_id] = true
+	
+	# 1. Przeszukiwanie wszerz (BFS) aby wykryć krawędzie powrotne (cykle)
+	while queue.size() > 0:
+		var current = queue.pop_front()
+		var node = nodes_dict.get(StringName(current))
+		if not node: continue
+		
+		var outputs = node.get("outputs")
+		if outputs:
+			for i in range(outputs.size()):
+				var conn = outputs[i]
+				if not conn: continue
+				var target = str(conn.get("target_id"))
+				if target != "" and nodes_dict.has(StringName(target)):
+					if visited.has(target):
+						# Znaleziono cykl/powrót! Zapamiętujemy, by go zignorować
+						back_edges.append({"from": current, "port": i, "to": target})
+					else:
+						visited[target] = true
+						queue.append(target)
+	
+	# 2. Tymczasowo odpinamy kable powrotne, by GraphEdit się nie zdezorientował
+	for edge in back_edges:
+		var from_name = edge.from + "_" + str(render_generation)
+		var to_name = edge.to + "_" + str(render_generation)
+		disconnect_node(from_name, edge.port, to_name, 0)
+		
+	# 3. Wywołujemy natywne ułożenie (teraz widzi idealne drzewo)
+	arrange_nodes()
+	
+	# 4. Odczekujemy dwie klatki, aby silnik UI zdążył przeliczyć pozycje
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# 5. Przypinamy kable powrotne na swoje miejsce
+	for edge in back_edges:
+		var from_name = edge.from + "_" + str(render_generation)
+		var to_name = edge.to + "_" + str(render_generation)
+		connect_node(from_name, edge.port, to_name, 0)
+		
+	_save_layout()
+	print("Dialogue Editor: Zastosowano inteligentne rozmieszczenie (zignorowano " + str(back_edges.size()) + " krawędzi powrotnych).")
+
 # --- POMOCNICZE: ITERACYJNE ID ---
 func _generate_next_node_id(nodes_dict: Dictionary) -> StringName:
 	var idx = 1
@@ -106,7 +173,7 @@ func _fix_all_node_ids() -> void:
 	var graph = _resource_to_render
 	var nodes_dict = graph.get("nodes")
 	var new_dict = {}
-	var id_map = {} # stare_id -> nowe_id
+	var id_map = {} 
 	
 	var idx = 1
 	for old_id in nodes_dict:
@@ -118,7 +185,6 @@ func _fix_all_node_ids() -> void:
 		new_dict[new_id] = node
 		idx += 1
 		
-	# Aktualizacja krawędzi i startu
 	if id_map.has(graph.get("start_node_id")):
 		graph.set("start_node_id", id_map[graph.get("start_node_id")])
 		
@@ -134,6 +200,45 @@ func _fix_all_node_ids() -> void:
 	ResourceSaver.save(graph, current_file_path)
 	_on_refresh_pressed()
 	print("Dialogue Editor: Zresetowano nazewnictwo wszystkich węzłów!")
+
+func _sort_dictionary_by_branching() -> void:
+	if not _resource_to_render or current_file_path == "": return
+	
+	var graph = _resource_to_render
+	var nodes_dict = graph.get("nodes")
+	if nodes_dict == null or nodes_dict.size() == 0: return
+	
+	var start_id = graph.get("start_node_id")
+	var new_dict = {}
+	var queue = []
+	
+	if nodes_dict.has(start_id):
+		queue.append(start_id)
+		
+	while queue.size() > 0:
+		var current_id = queue.pop_front()
+		
+		if not new_dict.has(current_id):
+			var node = nodes_dict[current_id]
+			new_dict[current_id] = node
+			
+			var outputs = node.get("outputs")
+			if outputs:
+				for conn in outputs:
+					if conn:
+						var target_id = conn.get("target_id")
+						if target_id != &"" and nodes_dict.has(target_id):
+							if not new_dict.has(target_id) and not queue.has(target_id):
+								queue.append(target_id)
+								
+	for id in nodes_dict:
+		if not new_dict.has(id):
+			new_dict[id] = nodes_dict[id]
+
+	graph.set("nodes", new_dict)
+	ResourceSaver.save(graph, current_file_path)
+	_on_refresh_pressed()
+	print("Dialogue Editor: Uporządkowano słownik węzłów na podstawie rozgałęzień!")
 
 # --- OBSŁUGA PLIKÓW ---
 func _on_load_pressed() -> void:
@@ -216,6 +321,16 @@ func _do_render() -> void:
 		g_node.resize_request.connect(func(new_size): g_node.size = new_size)
 		
 		g_node.node_selected.connect(func(): EditorInterface.edit_resource(d_node))
+		
+		g_node.gui_input.connect(func(event):
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+				for child in get_children():
+					if child is GraphNode:
+						child.selected = false
+				g_node.selected = true
+				node_context_menu.position = get_screen_position() + get_local_mouse_position()
+				node_context_menu.popup()
+		)
 
 		var grid_x = (fallback_index % 3) * 480
 		var grid_y = int(fallback_index / 3) * 350
@@ -230,7 +345,7 @@ func _do_render() -> void:
 
 		var child_idx = 0
 		
-		# --- SLOT 0: NAGŁÓWEK (Edycja ID i Szybkie Usuwanie) ---
+		# --- SLOT 0: NAGŁÓWEK ---
 		var top_hbox = HBoxContainer.new()
 		
 		var id_lbl = Label.new()
@@ -270,7 +385,7 @@ func _do_render() -> void:
 				id_edit.text = n_id_str
 		)
 		top_hbox.add_child(id_edit)
-
+		
 		if not is_start:
 			var set_start_btn = Button.new()
 			set_start_btn.text = "⭐"
@@ -295,7 +410,7 @@ func _do_render() -> void:
 		g_node.set_slot(child_idx, true, 0, Color.WHITE, false, 0, Color.WHITE) # WEJŚCIE
 		child_idx += 1
 
-		# --- SLOT 1: GŁOŚNIK (Zarządzanie Mówcą z ograniczeniem do SpeakerData) ---
+		# --- SLOT 1: GŁOŚNIK ---
 		var speaker_box = HBoxContainer.new()
 		var spk_lbl = Label.new()
 		spk_lbl.text = "Mówca:"
@@ -318,7 +433,8 @@ func _do_render() -> void:
 		# --- SLOT 2: POLE TEKSTOWE ---
 		var text_edit = TextEdit.new()
 		text_edit.text = str(d_node.get("dialogue_text"))
-		text_edit.custom_minimum_size = Vector2(320, 80)
+		text_edit.custom_minimum_size = Vector2(320, 40) # ULEPSZENIE: mniejsze minimum
+		text_edit.scroll_fit_content_height = true # ULEPSZENIE: Magiczne auto-dopasowanie wysokości!
 		text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 		
 		text_edit.focus_entered.connect(func(): _is_typing = true)
@@ -493,6 +609,14 @@ func _on_context_menu_pressed(id: int) -> void:
 		_paste_nodes_at(local_pos)
 	elif id == 2:
 		_fix_all_node_ids()
+	elif id == 3:
+		_sort_dictionary_by_branching()
+
+func _on_node_context_menu_pressed(id: int) -> void:
+	if id == 0:
+		_on_copy_nodes_request()
+	elif id == 1:
+		_on_duplicate_nodes_request()
 
 func _on_connection_to_empty(from_node: StringName, from_port: int, release_position: Vector2) -> void:
 	if not _resource_to_render or current_file_path == "": return
@@ -544,6 +668,13 @@ func _paste_nodes_at(pos: Vector2) -> void:
 		var copied_node = _clipboard_nodes[i].duplicate(true)
 		var new_id = _generate_next_node_id(nodes_dict)
 		copied_node.set("id", new_id)
+		
+		# Czyścimy kable podczas wklejania, by nie prowadziły do tych samych starych celów
+		var outputs = copied_node.get("outputs")
+		if outputs:
+			for conn in outputs:
+				if conn: conn.set("target_id", &"")
+				
 		nodes_dict[new_id] = copied_node
 		_pending_node_positions[str(new_id)] = pos + Vector2(i * 50, i * 50)
 		
@@ -628,9 +759,7 @@ func _save_layout() -> void:
 		if child is GraphNode and child.has_meta("base_name"):
 			layout_data[child.get_meta("base_name")] = {
 				"pos_x": child.position_offset.x,
-				"pos_y": child.position_offset.y,
-				"size_x": child.size.x,
-				"size_y": child.size.y
+				"pos_y": child.position_offset.y
 			}
 	var file = FileAccess.open(layout_path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(layout_data))
@@ -650,10 +779,12 @@ func _load_layout() -> void:
 		if child is GraphNode and child.has_meta("base_name"):
 			var b_name = child.get_meta("base_name")
 			
+			# NOWOŚĆ: Skurczamy węzeł na starcie! Zignoruje stare, duże rozmiary
+			child.size = Vector2.ZERO 
+			
 			if layout_data.has(b_name):
 				var d = layout_data[b_name]
 				child.position_offset = Vector2(d["pos_x"], d["pos_y"])
-				child.size = Vector2(d["size_x"], d["size_y"])
 			elif _pending_node_positions.has(b_name):
 				child.position_offset = _pending_node_positions[b_name]
 				_pending_node_positions.erase(b_name)

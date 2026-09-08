@@ -10,23 +10,26 @@
 [sub_resource type="Resource" id="Resource_85h2n"]
 script = ExtResource("1_q1iu6")
 text = "Sterowanie i Interakcje."
-target_id = &"node_002"
+target_id = &"node_02"
 
 [sub_resource type="Resource" id="Resource_sobhi"]
 script = ExtResource("1_q1iu6")
 text = "Walka i Przetrwanie."
+target_id = &"node_06"
 
 [sub_resource type="Resource" id="Resource_8jm5a"]
 script = ExtResource("1_q1iu6")
 text = "Ekwipunek i Wytwarzanie."
+target_id = &"node_09"
 
 [sub_resource type="Resource" id="Resource_kxij4"]
 script = ExtResource("1_q1iu6")
 text = "O co tu chodzi?"
+target_id = &"node_12"
 
 [sub_resource type="Resource" id="Resource_xte5n"]
 script = ExtResource("4_5n5r8")
-id = &"node_001"
+id = &"node_01"
 speaker = ExtResource("5_x2xrh")
 dialogue_text = "Witaj! 
 Znajdujesz się w trybie samouczka. 
@@ -36,11 +39,11 @@ allow_cancel = true
 
 [sub_resource type="Resource" id="Resource_hmhn7"]
 script = ExtResource("1_q1iu6")
-target_id = &"node_003"
+target_id = &"node_03"
 
 [sub_resource type="Resource" id="Resource_gvauh"]
 script = ExtResource("4_5n5r8")
-id = &"node_002"
+id = &"node_02"
 speaker = ExtResource("5_x2xrh")
 dialogue_text = "Okej!
 Oto podstawy sterowania..."
@@ -48,22 +51,22 @@ outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_hmhn7")])
 
 [sub_resource type="Resource" id="Resource_s0tgj"]
 script = ExtResource("1_q1iu6")
-target_id = &"node_004"
+target_id = &"node_04"
 
 [sub_resource type="Resource" id="Resource_trpbm"]
 script = ExtResource("4_5n5r8")
-id = &"node_003"
+id = &"node_03"
 speaker = ExtResource("5_x2xrh")
 dialogue_text = "Okej! Zaczniemy od podstaw. Do poruszania się postacią używaj standardowych klawiszy: W, A, S, D."
 outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_s0tgj")])
 
 [sub_resource type="Resource" id="Resource_16gwh"]
 script = ExtResource("1_q1iu6")
-target_id = &"node_005"
+target_id = &"node_05"
 
 [sub_resource type="Resource" id="Resource_dum3x"]
 script = ExtResource("4_5n5r8")
-id = &"node_004"
+id = &"node_04"
 speaker = ExtResource("5_x2xrh")
 dialogue_text = "Świat pełen jest przedmiotów. Gdy znajdziesz coś ciekawego, wciśnij F, aby to podnieść. Do interakcji z otoczeniem i NPC używaj klawisza E."
 outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_16gwh")])
@@ -71,24 +74,122 @@ outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_16gwh")])
 [sub_resource type="Resource" id="Resource_q1iu6"]
 script = ExtResource("1_q1iu6")
 text = "Wróć do menu."
-target_id = &"node_001"
+target_id = &"node_01"
 metadata/_custom_type_script = "uid://dl7pf0vyf2fnh"
 
 [sub_resource type="Resource" id="Resource_5ngd5"]
 script = ExtResource("4_5n5r8")
-id = &"node_005"
+id = &"node_05"
 speaker = ExtResource("5_x2xrh")
 dialogue_text = "Aby sprawdzić, gdzie się znajdujesz, włącz podgląd minimapy naciskając klawisz M."
 outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_q1iu6")])
-allow_cancel = true
+
+[sub_resource type="Resource" id="Resource_fr5r6"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_07"
+
+[sub_resource type="Resource" id="Resource_vfl1s"]
+script = ExtResource("4_5n5r8")
+id = &"node_06"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Ten świat nie wybacza błędów. Podstawowy atak bronią białą lub strzał wykonujesz Lewym Przyciskiem Myszy"
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_fr5r6")])
+
+[sub_resource type="Resource" id="Resource_vrpac"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_08"
+
+[sub_resource type="Resource" id="Resource_mjtis"]
+script = ExtResource("4_5n5r8")
+id = &"node_07"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Jeśli korzystasz z broni dystansowej, pamiętaj o poziomie amunicji. Przeładowanie broni to klawisz R."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_vrpac")])
+
+[sub_resource type="Resource" id="Resource_oy8np"]
+script = ExtResource("1_q1iu6")
+text = "Wróć do menu."
+target_id = &"node_01"
+
+[sub_resource type="Resource" id="Resource_t0a71"]
+script = ExtResource("4_5n5r8")
+id = &"node_08"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Zwracaj uwagę na statusy swojej postaci! Kolorowe aury mogą oznaczać truciznę, zamrożenie lub inne negatywne efekty, które szybko uszczuplą twoje zdrowie."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_oy8np")])
+
+[sub_resource type="Resource" id="Resource_8er6p"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_10"
+
+[sub_resource type="Resource" id="Resource_8j060"]
+script = ExtResource("4_5n5r8")
+id = &"node_09"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Zarządzanie zasobami to klucz do sukcesu. Swój plecak ze zdobytym lootem otworzysz naciskając klawisz I."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_8er6p")])
+
+[sub_resource type="Resource" id="Resource_7b3j5"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_11"
+
+[sub_resource type="Resource" id="Resource_i0xh4"]
+script = ExtResource("4_5n5r8")
+id = &"node_10"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Szybkie użycie przedmiotu przypisanego do ręki (np. mikstury leczącej) wykonasz wciskając Spację. Jeśli zabraknie ci miejsca, wyrzuć przedmiot klawiszem Q."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_7b3j5")])
+
+[sub_resource type="Resource" id="Resource_hwkp2"]
+script = ExtResource("1_q1iu6")
+text = "Wróć do menu."
+target_id = &"node_01"
+
+[sub_resource type="Resource" id="Resource_b6sda"]
+script = ExtResource("4_5n5r8")
+id = &"node_11"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "Znalezione materiały możesz łączyć w potężniejszy sprzęt. Okno craftingu wywołasz klawiszem C."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_hwkp2")])
+
+[sub_resource type="Resource" id="Resource_hhpxi"]
+script = ExtResource("1_q1iu6")
+target_id = &"node_13"
+
+[sub_resource type="Resource" id="Resource_7gkty"]
+script = ExtResource("4_5n5r8")
+id = &"node_12"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "- opis gry (krótki) -"
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_hhpxi")])
+
+[sub_resource type="Resource" id="Resource_tyt8v"]
+script = ExtResource("1_q1iu6")
+text = "Wróć do menu."
+target_id = &"node_01"
+
+[sub_resource type="Resource" id="Resource_jdcjh"]
+script = ExtResource("4_5n5r8")
+id = &"node_13"
+speaker = ExtResource("5_x2xrh")
+dialogue_text = "W lochach przechodź przez kolejne drzwi, szukaj skrzyń ze skarbami i przygotuj się na starcia z Bossami. Pamiętaj: śmierć to tylko kolejna lekcja."
+outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_tyt8v")])
 
 [resource]
 script = ExtResource("6_f2eun")
-start_node_id = &"node_001"
+start_node_id = &"node_01"
 nodes = {
-&"node_001": SubResource("Resource_xte5n"),
-&"node_002": SubResource("Resource_gvauh"),
-&"node_003": SubResource("Resource_trpbm"),
-&"node_004": SubResource("Resource_dum3x"),
-&"node_005": SubResource("Resource_5ngd5")
+&"node_01": SubResource("Resource_xte5n"),
+&"node_02": SubResource("Resource_gvauh"),
+&"node_03": SubResource("Resource_trpbm"),
+&"node_04": SubResource("Resource_dum3x"),
+&"node_05": SubResource("Resource_5ngd5"),
+&"node_06": SubResource("Resource_vfl1s"),
+&"node_07": SubResource("Resource_mjtis"),
+&"node_08": SubResource("Resource_t0a71"),
+&"node_09": SubResource("Resource_8j060"),
+&"node_10": SubResource("Resource_i0xh4"),
+&"node_11": SubResource("Resource_b6sda"),
+&"node_12": SubResource("Resource_7gkty"),
+&"node_13": SubResource("Resource_jdcjh")
 }

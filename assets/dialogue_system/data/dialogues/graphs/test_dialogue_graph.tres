@@ -161,13 +161,6 @@ dialogue_text = "Witaj, oto okno dialogu!"
 outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg")])
 allow_cancel = true
 
-[sub_resource type="Resource" id="Resource_yx2o6"]
-script = ExtResource("10_xjmfk")
-id = &"node_2933"
-speaker = ExtResource("11_52oi1")
-dialogue_text = "-09"
-allow_cancel = true
-
 [sub_resource type="Resource" id="Resource_kfeh3"]
 script = ExtResource("1_xvdfj")
 target_id = &"node_01"
@@ -176,6 +169,13 @@ target_id = &"node_01"
 script = ExtResource("10_xjmfk")
 id = &"node_02"
 outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_kfeh3")])
+
+[sub_resource type="Resource" id="Resource_yx2o6"]
+script = ExtResource("10_xjmfk")
+id = &"node_2933"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "-09"
+allow_cancel = true
 
 [resource]
 script = ExtResource("15_4g1br")
