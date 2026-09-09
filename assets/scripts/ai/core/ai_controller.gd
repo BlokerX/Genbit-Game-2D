@@ -1,34 +1,34 @@
 extends Node
-
 class_name AIController
 
-
-#region References
-
-## Postać, którą kontroluje ten AI.
 var entity: EnemyEntity
-
-
-## Blackboard przechowujący aktualne informacje AI.
 var blackboard: AIBlackboard
 
-
-#endregion
-
-
-#region Initialization
+@export var state_machine: AIStateMachine
+@export var perception: PerceptionComponent
 
 func initialize(owner_entity: EnemyEntity) -> void:
 	entity = owner_entity
-
+	
 	blackboard = AIBlackboard.new()
-
 	blackboard.initialize(entity)
+	
+	# AUTO-RESOLVE: Zapobiega błędom, gdy zapomnisz przeciągnąć w Inspektorze
+	if not perception:
+		perception = get_node_or_null("PerceptionComponent")
+	if not state_machine:
+		state_machine = get_node_or_null("AIStateMachine")
+	
+	if perception:
+		perception.initialize(self)
+	else:
+		push_error("AIController: Brak węzła PerceptionComponent!")
+		
+	if state_machine:
+		state_machine.initialize(self)
+	else:
+		push_error("AIController: Brak węzła AIStateMachine!")
 
-	print(
-		"AIController initialized for: ",
-		entity.name
-	)
-
-
-#endregion
+func _physics_process(delta: float) -> void:
+	if state_machine:
+		state_machine.process_physics(delta)

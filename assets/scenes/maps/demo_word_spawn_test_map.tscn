@@ -224,8 +224,8 @@ shape = SubResource("RectangleShape2D_1hvyy")
 [node name="DialogueComponent" parent="OpenWorld/DialogManTest" unique_id=1639514121 instance=ExtResource("13_0tgc8")]
 entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("15_n1edl"), ExtResource("16_n1edl")])
 
-[node name="Spider" parent="OpenWorld/DialogManTest" unique_id=13435238 instance=ExtResource("5_5x3wm")]
-position = Vector2(672, 248)
+[node name="Spider" parent="OpenWorld" unique_id=855689518 instance=ExtResource("5_5x3wm")]
+position = Vector2(8240, 4288)
 movement_universal_script = SubResource("Resource_v7gjx")
 health_stats_script = SubResource("Resource_18iqk")
 interaction_and_attack_stats_script = SubResource("Resource_67f4b")

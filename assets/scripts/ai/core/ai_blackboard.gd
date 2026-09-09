@@ -35,6 +35,7 @@ var target_distance: float = INF
 ## Kierunek od AI do celu.
 var target_direction: Vector2 = Vector2.ZERO
 
+var want_to_move: bool = false
 
 #endregion
 

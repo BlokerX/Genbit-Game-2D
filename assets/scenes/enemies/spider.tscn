@@ -14,6 +14,11 @@
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
 [ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="11_ninxk"]
+[ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="12_2nv85"]
+[ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="15_lkvbf"]
+[ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="16_2nv85"]
+[ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="17_dixon"]
+[ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="18_ml77n"]
 
 [sub_resource type="Resource" id="Resource_k1opt"]
 resource_local_to_scene = true
@@ -110,9 +115,33 @@ collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
 
-[node name="AIController" type="Node" parent="." unique_id=666546109]
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("state_machine", "perception")]
 script = ExtResource("11_ninxk")
+state_machine = NodePath("AIStateMachine")
+perception = NodePath("PerceptionComponent")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"
+
+[node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
+script = ExtResource("12_2nv85")
+los_ray = NodePath("../../LineOfSight")
+metadata/_custom_type_script = "uid://dlqnxvfcnebwe"
+
+[node name="AIStateMachine" type="Node" parent="AIController" unique_id=179778988 node_paths=PackedStringArray("initial_state")]
+script = ExtResource("15_lkvbf")
+initial_state = NodePath("StateIdle")
+metadata/_custom_type_script = "uid://0wottg54ble"
+
+[node name="StateIdle" type="Node" parent="AIController/AIStateMachine" unique_id=257902515]
+script = ExtResource("16_2nv85")
+metadata/_custom_type_script = "uid://cw3arxlunoxni"
+
+[node name="StateChase" type="Node" parent="AIController/AIStateMachine" unique_id=70319089]
+script = ExtResource("17_dixon")
+metadata/_custom_type_script = "uid://cuxi2c1wsn8ec"
+
+[node name="StateSearch" type="Node" parent="AIController/AIStateMachine" unique_id=1197604719]
+script = ExtResource("18_ml77n")
+metadata/_custom_type_script = "uid://bip6dhdts57cg"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
 texture_filter = 5
