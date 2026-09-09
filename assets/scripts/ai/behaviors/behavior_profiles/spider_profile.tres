@@ -4,5 +4,4 @@
 
 [resource]
 script = ExtResource("1_wbfk2")
-can_rotate_to_target = false
 metadata/_custom_type_script = "uid://bmrx514bvhhvj"

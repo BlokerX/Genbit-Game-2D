@@ -13,13 +13,16 @@
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="8_ninxk"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
+[ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="10_3yo02"]
 [ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="11_ninxk"]
 [ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="12_2nv85"]
 [ext_resource type="Resource" uid="uid://5c80iqu27spr" path="res://assets/scripts/ai/behaviors/behavior_profiles/spider_profile.tres" id="12_dixon"]
 [ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="15_lkvbf"]
 [ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="16_2nv85"]
 [ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="17_dixon"]
+[ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="18_h48t6"]
 [ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="18_ml77n"]
+[ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="19_3yo02"]
 
 [sub_resource type="Resource" id="Resource_k1opt"]
 resource_local_to_scene = true
@@ -104,6 +107,13 @@ loot_drop_script = SubResource("Resource_yn8as")
 character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 
+[node name="FactionComponent" type="Node" parent="." unique_id=276466438]
+script = ExtResource("10_3yo02")
+faction_relations = {
+&"Player": 0
+}
+metadata/_custom_type_script = "uid://is5av5rx4obe"
+
 [node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("6_ninxk")]
 outline_material = null
 target_sprite = NodePath("../AnimatedSprite2D")
@@ -116,11 +126,13 @@ collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
 
-[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("state_machine", "perception")]
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
 script = ExtResource("11_ninxk")
 behavior_profile = ExtResource("12_dixon")
-state_machine = NodePath("AIStateMachine")
 perception = NodePath("PerceptionComponent")
+state_machine = NodePath("AIStateMachine")
+navigation = NodePath("AINavigationController")
+combat = NodePath("AICombatController")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"
 
 [node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
@@ -144,6 +156,14 @@ metadata/_custom_type_script = "uid://cuxi2c1wsn8ec"
 [node name="StateSearch" type="Node" parent="AIController/AIStateMachine" unique_id=1197604719]
 script = ExtResource("18_ml77n")
 metadata/_custom_type_script = "uid://bip6dhdts57cg"
+
+[node name="AINavigationController" type="Node" parent="AIController" unique_id=1639129802]
+script = ExtResource("18_h48t6")
+metadata/_custom_type_script = "uid://c8iewgurqtnad"
+
+[node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
+script = ExtResource("19_3yo02")
+metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
 texture_filter = 5

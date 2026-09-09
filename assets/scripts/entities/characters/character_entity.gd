@@ -3,6 +3,8 @@ extends CharacterBody2D
 
 class_name CharacterEntity
 
+@export var faction_component: FactionComponent
+
 # Zmienne respawnu:
 @export var respawnVector := Vector2(512, 360)
 
@@ -24,6 +26,12 @@ class_name CharacterEntity
 #region Główne funkcje silnikowe
 
 func _ready():
+	add_to_group("Character") # Wymagane, by AI mogło skanować świat w poszukiwaniu celów
+	
+	# AUTO-RESOLVE: Jeśli zapomniałeś podpiąć frakcję w Inspektorze, gra i tak ją znajdzie
+	if faction_component == null:
+		faction_component = get_node_or_null("FactionComponent")
+	
 	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
 	if health_stats_script:
 		health_stats_script.died.connect(_on_character_died)
