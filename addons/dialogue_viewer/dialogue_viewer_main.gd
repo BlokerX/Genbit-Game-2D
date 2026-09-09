@@ -2,10 +2,7 @@
 extends GraphEdit
 
 var current_file_path: String = ""
-var visited_nodes: Dictionary = {}
-var node_y_counter: float = 0.0
 var render_generation: int = 0
-
 var _render_queued: bool = false
 var _resource_to_render: Resource = null
 var file_dialog: EditorFileDialog
@@ -43,7 +40,7 @@ func _ready() -> void:
 	
 	var arrange_btn = Button.new()
 	arrange_btn.text = "✨ Auto-Rozmieść"
-	arrange_btn.pressed.connect(_arrange_graph)
+	arrange_btn.pressed.connect(arrange_nodes)
 	toolbar.add_child(arrange_btn)
 	toolbar.move_child(arrange_btn, 4)
 	
@@ -52,7 +49,7 @@ func _ready() -> void:
 	toolbar.move_child(sep, 5)
 	
 	var info_lbl = Label.new()
-	info_lbl.text = " Podgląd z Inspektora (Tylko do odczytu) "
+	info_lbl.text = " Podgląd Grafu (Tylko do odczytu) "
 	info_lbl.modulate = Color(0.7, 0.7, 1.0)
 	info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -81,12 +78,12 @@ func _on_file_selected(path: String) -> void:
 	else:
 		printerr("Podgląd: Nie można wczytać pliku.")
 
-func load_from_inspector(branch: Resource) -> void:
-	if not branch: return
-	if branch.resource_path != "" and not "::" in branch.resource_path:
-		current_file_path = branch.resource_path
+func load_from_inspector(graph: Resource) -> void:
+	if not graph: return
+	if graph.resource_path != "" and not "::" in graph.resource_path:
+		current_file_path = graph.resource_path
 		
-	_resource_to_render = branch
+	_resource_to_render = graph
 	
 	if not _render_queued:
 		_render_queued = true
@@ -97,221 +94,170 @@ func _do_render() -> void:
 	if _resource_to_render:
 		_render_graph(_resource_to_render)
 
-func _render_graph(branch: Resource) -> void:
-	render_generation += 1 
+func _render_graph(graph: Resource) -> void:
+	render_generation += 1
 	
 	clear_connections()
 	for child in get_children():
-		if child is GraphNode:
+		if child is GraphNode or child is Label:
+			remove_child(child)
 			child.queue_free()
-	
-	await get_tree().process_frame
-	
-	visited_nodes.clear()
-	node_y_counter = 0.0
-	
-	if branch:
-		_traverse(branch, "", 0, 0)
-		_load_layout()
-
-func _get_stable_id(res: Resource) -> String:
-	if not res: return "null_node"
-	var t = res.get("dialogue_text")
-	if t != null and str(t) != "": return str(t).md5_text().substr(0, 10)
-	var ct = res.get("choice_text")
-	if ct != null and str(ct) != "": return str(ct).md5_text().substr(0, 10)
-	return str(res.get_instance_id())
-
-func _traverse(res: Resource, parent_name: String, parent_port: int, depth: int) -> String:
-	if not res: return ""
-	
-	if depth > 50:
-		printerr("PK Dialogues: Przerwano rysowanie. Zbyt duże zagnieżdżenie.")
-		return ""
-	
-	if visited_nodes.has(res):
-		if parent_name != "":
-			connect_node(parent_name, parent_port, visited_nodes[res], 0)
-		return visited_nodes[res]
-		
-	var gnode = GraphNode.new()
-	var base_name = "Node_" + _get_stable_id(res) + "_" + str(res.get_instance_id())
-	var node_name = base_name + "_" + str(render_generation) 
-	
-	gnode.name = node_name
-	gnode.set_meta("base_name", base_name)
-	gnode.resizable = true
-	gnode.resize_request.connect(func(new_size): gnode.size = new_size)
-	add_child(gnode)
-	
-	visited_nodes[res] = node_name
-	gnode.position_offset = Vector2(depth * 480, node_y_counter * 280)
-	
-	var script_path = ""
-	if res.get_script():
-		script_path = res.get_script().resource_path.get_file()
-
-	if "dialogue_branch" in script_path or "start_line" in res:
-		gnode.title = "▶ START Kaskady"
-		
-		var lbl = Label.new()
-		lbl.text = "Plik:\n" + current_file_path.get_file()
-		lbl.modulate = Color(0.6, 0.9, 0.6)
-		gnode.add_child(lbl)
-		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.GREEN)
-		
-		node_y_counter += 1
-		if res.get("start_line"):
-			var child_name = _traverse(res.get("start_line"), node_name, 0, depth + 1)
-			if child_name != "": connect_node(node_name, 0, child_name, 0)
 			
-	elif "dialogue_line" in script_path or "dialogue_text" in res:
-		gnode.title = "▶ START (Linia Dialogowa)" if depth == 0 else "Linia Dialogowa"
-		var current_out_port = 0
+	await get_tree().process_frame
+
+	var nodes_dict = graph.get("nodes")
+	if nodes_dict == null:
+		var err_lbl = Label.new()
+		err_lbl.text = "WYBRANY PLIK NIE JEST GRAFEM (DialogueGraph).\nUżyj skryptu konwertera, aby zmigrować ten stary zasób."
+		err_lbl.modulate = Color.RED
+		err_lbl.position = Vector2(50, 50)
+		add_child(err_lbl)
+		return
+		
+	if typeof(nodes_dict) != TYPE_DICTIONARY:
+		return
+
+	var start_id = str(graph.get("start_node_id"))
+	var fallback_index = 0
+	
+	# PASS 1: Generowanie klocków
+	for node_id in nodes_dict:
+		var d_node = nodes_dict[node_id]
+		if not d_node: continue
+		
+		var g_node = GraphNode.new()
+		var n_id_str = str(node_id)
+		
+		var actual_node_name = n_id_str + "_" + str(render_generation) 
+		
+		g_node.name = actual_node_name
+		g_node.set_meta("base_name", n_id_str)
+		g_node.resizable = true
+		g_node.resize_request.connect(func(new_size): g_node.size = new_size)
+		
+		var grid_x = (fallback_index % 3) * 480
+		var grid_y = int(fallback_index / 3) * 350
+		g_node.position_offset = Vector2(grid_x, grid_y)
+		fallback_index += 1
+		
+		var title_str = "▶ " + n_id_str
+		var speaker_res = d_node.get("speaker")
+		if speaker_res and speaker_res.get("speaker_name") != null:
+			title_str += " (" + str(speaker_res.get("speaker_name")) + ")"
+			
+		var is_start = (n_id_str == start_id)
+		if is_start: 
+			title_str = "⭐ START: " + title_str
+			g_node.self_modulate = Color(0.8, 1.0, 0.8) 
+			
+		g_node.title = title_str
+
+		var child_idx = 0
 		var in_port_set = false
-		
-		var speaker_res = res.get("speaker")
+
 		if speaker_res:
-			_build_speaker_ui(gnode, speaker_res)
-			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			_build_speaker_ui(g_node, speaker_res)
+			g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
 			in_port_set = true
-		
+			child_idx += 1
+
+		if is_start:
+			var file_lbl = Label.new()
+			file_lbl.text = "Plik:\n" + current_file_path.get_file()
+			file_lbl.modulate = Color(0.6, 0.9, 0.6)
+			g_node.add_child(file_lbl)
+			g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+			in_port_set = true
+			child_idx += 1
+			
 		var text_edit = TextEdit.new()
-		text_edit.text = str(res.get("dialogue_text"))
+		text_edit.text = str(d_node.get("dialogue_text"))
 		text_edit.custom_minimum_size = Vector2(320, 80)
 		text_edit.editable = false
 		text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-		gnode.add_child(text_edit)
-		if port_idx_check(in_port_set): 
-			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
-			in_port_set = true
+		g_node.add_child(text_edit)
+		
+		g_node.set_slot(child_idx, not in_port_set, 0, Color.WHITE, false, 0, Color.WHITE)
+		in_port_set = true
+		child_idx += 1
+		
+		var skip_time = d_node.get("min_skip_time")
+		if skip_time == null: skip_time = 0.5
+		var allow_cancel = d_node.get("allow_cancel")
+		if allow_cancel == null: allow_cancel = false
 		
 		var params_lbl = Label.new()
-		params_lbl.text = "Min. Skip Time: " + str(res.get("min_skip_time")) + "s | Allow Cancel: " + str(res.get("allow_cancel"))
+		params_lbl.text = "Min. Skip: " + str(skip_time) + "s | Cancel: " + str(allow_cancel).to_lower()
 		params_lbl.modulate = Color.GRAY
-		gnode.add_child(params_lbl)
-		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		g_node.add_child(params_lbl)
+		g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		child_idx += 1
 		
-		node_y_counter += 1
-		
-		var choices = res.get("choices")
-		if choices != null and typeof(choices) == TYPE_ARRAY and choices.size() > 0:
-			for i in range(choices.size()):
-				var choice_res = choices[i]
-				if not choice_res: continue
+		var outputs = d_node.get("outputs")
+		if outputs and typeof(outputs) == TYPE_ARRAY and outputs.size() > 0:
+			for conn in outputs:
+				if conn == null: continue
 				
-				var c_lbl = Label.new()
-				c_lbl.text = "➔ Wybór: " + str(choice_res.get("choice_text"))
-				c_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-				gnode.add_child(c_lbl)
-				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.YELLOW)
+				var out_lbl = Label.new()
+				var conn_text = str(conn.get("text"))
 				
-				var child_name = _traverse(choice_res, node_name, current_out_port, depth + 1)
-				if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-				current_out_port += 1
+				if conn_text != "":
+					out_lbl.text = "➔ Wybór: " + conn_text
+					out_lbl.modulate = Color.YELLOW
+				else:
+					out_lbl.text = "➔ Dalej"
+					
+				var conds = conn.get("conditions")
+				var effs = conn.get("consequences")
+				var c_size = conds.size() if (conds and typeof(conds) == TYPE_ARRAY) else 0
+				var e_size = effs.size() if (effs and typeof(effs) == TYPE_ARRAY) else 0
+				
+				if c_size > 0 or e_size > 0:
+					out_lbl.text += " [C:%d|E:%d]" % [c_size, e_size]
+					out_lbl.modulate = Color(1.0, 0.8, 0.4)
+					
+				out_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+				g_node.add_child(out_lbl)
+				g_node.set_slot(child_idx, false, 0, Color.WHITE, true, 0, Color.YELLOW if conn_text != "" else Color.WHITE)
+				child_idx += 1
 		else:
-			var next_line = res.get("next_line")
-			if next_line:
-				var next_lbl = Label.new()
-				next_lbl.text = "➔ Dalej"
-				next_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-				gnode.add_child(next_lbl)
-				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.WHITE)
-				
-				var child_name = _traverse(next_line, node_name, current_out_port, depth + 1)
-				if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-				current_out_port += 1
-			else:
-				var end_lbl = Label.new()
-				end_lbl.text = "⬛ Koniec"
-				end_lbl.modulate = Color(0.5, 0.5, 0.5)
-				end_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-				gnode.add_child(end_lbl)
-				gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
-
-		if res.get("allow_cancel"):
+			var end_lbl = Label.new()
+			end_lbl.text = "⬛ Koniec"
+			end_lbl.modulate = Color(0.5, 0.5, 0.5)
+			end_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			g_node.add_child(end_lbl)
+			g_node.set_slot(child_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
+			child_idx += 1
+		
+		if allow_cancel:
 			var cancel_lbl = Label.new()
 			cancel_lbl.text = "✖ Opuść dialog (Anuluj)"
 			cancel_lbl.modulate = Color(1.0, 0.4, 0.4)
 			cancel_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			gnode.add_child(cancel_lbl)
-			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.RED)
-			current_out_port += 1
+			g_node.add_child(cancel_lbl)
+			g_node.set_slot(child_idx, false, 0, Color.WHITE, true, 0, Color.RED)
+			child_idx += 1
 
-	elif "dialogue_choice" in script_path or "choice_text" in res:
-		gnode.title = "▶ START (Wybór)" if depth == 0 else "Wybór"
-		var current_out_port = 0
-		var in_port_set = false
-		
-		var speaker_res = res.get("custom_speaker")
-		if speaker_res:
-			_build_speaker_ui(gnode, speaker_res)
-			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.YELLOW, false, 0, Color.WHITE)
-			in_port_set = true
-		
-		var lbl = Label.new()
-		lbl.text = str(res.get("choice_text"))
-		lbl.custom_minimum_size = Vector2(250, 40)
-		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-		gnode.add_child(lbl)
-		if port_idx_check(in_port_set):
-			gnode.set_slot(gnode.get_child_count() - 1, depth != 0 and not in_port_set, 0, Color.YELLOW, false, 0, Color.WHITE)
-			in_port_set = true
-		
-		var conds = res.get("conditions")
-		if conds != null and typeof(conds) == TYPE_ARRAY and conds.size() > 0:
-			var cond_lbl = Label.new()
-			cond_lbl.text = "🔒 Warunki: " + str(conds.size())
-			cond_lbl.modulate = Color(1.0, 0.7, 0.3)
-			gnode.add_child(cond_lbl)
-			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
-			
-		var effs = res.get("effects")
-		if not effs: effs = res.get("consequences")
-		if effs != null and typeof(effs) == TYPE_ARRAY and effs.size() > 0:
-			var eff_lbl = Label.new()
-			eff_lbl.text = "⚡ Efekty: " + str(effs.size())
-			eff_lbl.modulate = Color(0.4, 0.8, 1.0)
-			gnode.add_child(eff_lbl)
-			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
-		
-		node_y_counter += 1
-		
-		var next_line = res.get("next_line")
-		if next_line:
-			var next_lbl = Label.new()
-			next_lbl.text = "➔ Konsekwencja (Dalej)"
-			next_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			gnode.add_child(next_lbl)
-			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, true, 0, Color.WHITE)
-			
-			var child_name = _traverse(next_line, node_name, current_out_port, depth + 1)
-			if child_name != "": connect_node(node_name, current_out_port, child_name, 0)
-			current_out_port += 1
-		else:
-			var end_lbl = Label.new()
-			end_lbl.text = "⬛ Koniec po wyborze"
-			end_lbl.modulate = Color(0.5, 0.5, 0.5)
-			end_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			gnode.add_child(end_lbl)
-			gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		add_child(g_node)
 
-	elif "speaker" in script_path or "speaker_name" in res:
-		gnode.title = "▶ START (Postać)" if depth == 0 else "Postać (Speaker)"
-		_build_speaker_ui(gnode, res)
-		gnode.set_slot(gnode.get_child_count() - 1, depth != 0, 0, Color.WHITE, false, 0, Color.WHITE)
+	# PASS 2: Łączenie krawędzi (Cykle)
+	for node_id in nodes_dict:
+		var d_node = nodes_dict[node_id]
+		if not d_node: continue
 		
-		var info = Label.new()
-		info.text = "Podgląd danych postaci."
-		info.modulate = Color.GRAY
-		gnode.add_child(info)
-		gnode.set_slot(gnode.get_child_count() - 1, false, 0, Color.WHITE, false, 0, Color.WHITE)
-		node_y_counter += 1
+		var outputs = d_node.get("outputs")
+		if outputs and typeof(outputs) == TYPE_ARRAY:
+			var valid_out_index = 0
+			for conn in outputs:
+				if conn == null: continue
+				var target_id_str = str(conn.get("target_id"))
+				if target_id_str != "" and nodes_dict.has(StringName(target_id_str)):
+					var from_name = str(node_id) + "_" + str(render_generation)
+					var to_name = target_id_str + "_" + str(render_generation)
+					connect_node(from_name, valid_out_index, to_name, 0)
+				valid_out_index += 1
 
-	return node_name
-
-func port_idx_check(val: bool) -> bool:
-	return true
+	_load_layout()
 
 func _build_speaker_ui(gnode: GraphNode, speaker: Resource) -> void:
 	if not speaker: return
@@ -338,22 +284,9 @@ func _build_speaker_ui(gnode: GraphNode, speaker: Resource) -> void:
 	hbox.add_child(name_lbl)
 	gnode.add_child(hbox)
 
-func _arrange_graph() -> void:
-	arrange_nodes()
-
-func _reset_layout() -> void:
-	if current_file_path == "": return
-	var layout_path = current_file_path + ".layout"
-	if FileAccess.file_exists(layout_path):
-		var err = DirAccess.remove_absolute(layout_path)
-		if err == OK:
-			print("PK Dialogues: Usunięto plik layoutu.")
-			_on_refresh_pressed()
-
 func _save_layout() -> void:
 	if current_file_path == "": return
 	var layout_path = current_file_path + ".layout"
-	
 	var layout_data = {}
 	for child in get_children():
 		if child is GraphNode and child.has_meta("base_name"):
@@ -363,7 +296,6 @@ func _save_layout() -> void:
 				"size_x": child.size.x,
 				"size_y": child.size.y
 			}
-			
 	var file = FileAccess.open(layout_path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(layout_data))
 	print("PK Dialogues: Zapisano układ podglądu.")
@@ -372,7 +304,6 @@ func _load_layout() -> void:
 	if current_file_path == "": return
 	var layout_path = current_file_path + ".layout"
 	if not FileAccess.file_exists(layout_path): return
-	
 	var file = FileAccess.open(layout_path, FileAccess.READ)
 	var json = JSON.new()
 	if json.parse(file.get_as_text()) == OK:
@@ -384,3 +315,12 @@ func _load_layout() -> void:
 					var d = layout_data[b_name]
 					child.position_offset = Vector2(d["pos_x"], d["pos_y"])
 					child.size = Vector2(d["size_x"], d["size_y"])
+
+func _reset_layout() -> void:
+	if current_file_path == "": return
+	var layout_path = current_file_path + ".layout"
+	if FileAccess.file_exists(layout_path):
+		var err = DirAccess.remove_absolute(layout_path)
+		if err == OK:
+			print("PK Dialogues: Usunięto plik layoutu.")
+			_on_refresh_pressed()

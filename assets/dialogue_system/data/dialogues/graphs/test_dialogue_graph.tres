@@ -1,0 +1,194 @@
+[gd_resource type="Resource" script_class="DialogueGraph" format=3 uid="uid://dya2n8vc5khbx"]
+
+[ext_resource type="Script" uid="uid://dl7pf0vyf2fnh" path="res://assets/dialogue_system/resources/dialogue_connection.gd" id="1_xvdfj"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_f3k5i"]
+[ext_resource type="Script" uid="uid://pkqfnbgnbb1d" path="res://assets/dialogue_system/conditions/flag_condition.gd" id="3_vwq27"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="4_ek4rl"]
+[ext_resource type="Script" uid="uid://s4qttequvgcs" path="res://assets/dialogue_system/effects/set_flag_effect.gd" id="5_jxpxa"]
+[ext_resource type="Texture2D" uid="uid://dky0w2n4e8fwk" path="res://assets/textures/samples_examples/items/_blank_item.png" id="6_lisb8"]
+[ext_resource type="Resource" uid="uid://dgvi1351teqg1" path="res://assets/data/items/just_item.tres" id="7_d0pmh"]
+[ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="8_5lxb5"]
+[ext_resource type="Script" uid="uid://oxel7jrossyy" path="res://assets/dialogue_system/effects/open_menu_effect.gd" id="9_1l1ov"]
+[ext_resource type="Script" uid="uid://c8vdk5bssyshm" path="res://assets/dialogue_system/resources/dialogue_node.gd" id="10_xjmfk"]
+[ext_resource type="Resource" uid="uid://dllqy6sftdcy1" path="res://assets/dialogue_system/data/speakers/narrator_speaker.tres" id="11_52oi1"]
+[ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/dialogue_system/data/speakers/flandere_scarlet_avatar_speaker.tres" id="12_1xtxj"]
+[ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeter.png" id="13_v1bkx"]
+[ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="14_dfh8v"]
+[ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="15_4g1br"]
+
+[sub_resource type="Resource" id="Resource_jxpxa"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_003"
+
+[sub_resource type="Resource" id="Resource_lisb8"]
+script = ExtResource("10_xjmfk")
+id = &"node_002"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Jestem poprzednim obrazkiem gracza.
+[color=red]Prototyp alpha[/color].
+Nie to co ta nowa postać, taka odmienna."
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_jxpxa")])
+
+[sub_resource type="Resource" id="Resource_d0pmh"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_004"
+
+[sub_resource type="Resource" id="Resource_5lxb5"]
+script = ExtResource("10_xjmfk")
+id = &"node_003"
+speaker = ExtResource("12_1xtxj")
+dialogue_text = "Ej to nie było miłe!
+Chociaż przeproś mnie, nie jestem odmienna ... 
+
+bruhhh!..."
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_d0pmh")])
+
+[sub_resource type="Resource" id="Resource_e87rb"]
+script = ExtResource("8_5lxb5")
+item_to_give = ExtResource("7_d0pmh")
+metadata/_custom_type_script = "uid://rlbaeabbej6v"
+
+[sub_resource type="Resource" id="Resource_1l1ov"]
+script = ExtResource("1_xvdfj")
+text = "(Weź przedmiot)"
+target_id = &"node_005"
+choice_icon = ExtResource("13_v1bkx")
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_e87rb")])
+
+[sub_resource type="Resource" id="Resource_xjmfk"]
+script = ExtResource("1_xvdfj")
+text = "Nie chce mi się z tobą rozmawiać. Żegnaj!"
+choice_icon = ExtResource("14_dfh8v")
+
+[sub_resource type="Resource" id="Resource_52oi1"]
+script = ExtResource("10_xjmfk")
+id = &"node_004"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Nie znasz się na żartach.
+Niech ci będzie, przepraszam...
+
+W ramach moich najszczerszych przeprosin masz tutaj coś odemnie."
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_1l1ov"), SubResource("Resource_xjmfk")])
+
+[sub_resource type="Resource" id="Resource_1xtxj"]
+script = ExtResource("1_xvdfj")
+text = "Dzięki za przedmiot."
+target_id = &"node_006"
+
+[sub_resource type="Resource" id="Resource_v1bkx"]
+script = ExtResource("10_xjmfk")
+id = &"node_005"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "To już wszystko z mojej strony.."
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_1xtxj")])
+
+[sub_resource type="Resource" id="Resource_dfh8v"]
+script = ExtResource("10_xjmfk")
+id = &"node_006"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Nie ma za co, jak będziesz chciał więcej to wiesz gdzie mnie znaleźć.
+
+Życzę miłej rozgrywki!"
+
+[sub_resource type="Resource" id="Resource_4g1br"]
+script = ExtResource("10_xjmfk")
+id = &"node_007"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Trzymaj przedmiot.
+Wpadaj po więcej jeśli będziesz chciał!"
+
+[sub_resource type="Resource" id="Resource_3upv8"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_2933"
+
+[sub_resource type="Resource" id="Resource_15ho7"]
+script = ExtResource("10_xjmfk")
+id = &"node_0080"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "s"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_3upv8")])
+
+[sub_resource type="Resource" id="Resource_xe426"]
+script = ExtResource("3_vwq27")
+flag_name = "narrator's gift"
+required_state = false
+metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
+
+[sub_resource type="Resource" id="Resource_2jtp5"]
+script = ExtResource("5_jxpxa")
+flag_name = "narrator's gift"
+metadata/_custom_type_script = "uid://s4qttequvgcs"
+
+[sub_resource type="Resource" id="Resource_xvdfj"]
+script = ExtResource("1_xvdfj")
+text = "Kim jesteś?"
+target_id = &"node_002"
+conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_xe426")])
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_2jtp5")])
+
+[sub_resource type="Resource" id="Resource_42wcd"]
+script = ExtResource("3_vwq27")
+flag_name = "narrator's gift"
+metadata/_custom_type_script = "uid://pkqfnbgnbb1d"
+
+[sub_resource type="Resource" id="Resource_f3k5i"]
+script = ExtResource("1_xvdfj")
+text = "Hej, masz jeszcze tamten przedmiot?"
+target_id = &"node_007"
+choice_icon = ExtResource("6_lisb8")
+conditions = Array[ExtResource("2_f3k5i")]([SubResource("Resource_42wcd")])
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_e87rb")])
+
+[sub_resource type="Resource" id="Resource_yupr0"]
+script = ExtResource("9_1l1ov")
+metadata/_custom_type_script = "uid://oxel7jrossyy"
+
+[sub_resource type="Resource" id="Resource_vwq27"]
+script = ExtResource("1_xvdfj")
+text = "Czekaj, sprawdzę ekwipunek!"
+target_id = &"node_0080"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
+
+[sub_resource type="Resource" id="Resource_6ortg"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_02"
+
+[sub_resource type="Resource" id="Resource_ek4rl"]
+script = ExtResource("10_xjmfk")
+id = &"node_01"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "Witaj, oto okno dialogu!"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg")])
+allow_cancel = true
+
+[sub_resource type="Resource" id="Resource_kfeh3"]
+script = ExtResource("1_xvdfj")
+target_id = &"node_01"
+
+[sub_resource type="Resource" id="Resource_vnhip"]
+script = ExtResource("10_xjmfk")
+id = &"node_02"
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_kfeh3")])
+
+[sub_resource type="Resource" id="Resource_yx2o6"]
+script = ExtResource("10_xjmfk")
+id = &"node_2933"
+speaker = ExtResource("11_52oi1")
+dialogue_text = "-09"
+allow_cancel = true
+
+[resource]
+script = ExtResource("15_4g1br")
+start_node_id = &"node_01"
+nodes = {
+&"node_002": SubResource("Resource_lisb8"),
+&"node_003": SubResource("Resource_5lxb5"),
+&"node_004": SubResource("Resource_52oi1"),
+&"node_005": SubResource("Resource_v1bkx"),
+&"node_006": SubResource("Resource_dfh8v"),
+&"node_007": SubResource("Resource_4g1br"),
+&"node_0080": SubResource("Resource_15ho7"),
+&"node_01": SubResource("Resource_ek4rl"),
+&"node_02": SubResource("Resource_vnhip"),
+&"node_2933": SubResource("Resource_yx2o6")
+}
