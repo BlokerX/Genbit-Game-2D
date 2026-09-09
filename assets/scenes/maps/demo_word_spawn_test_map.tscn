@@ -51,6 +51,25 @@ hand_attack_data = SubResource("Resource_p05go")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1hvyy"]
 size = Vector2(60, 60)
 
+[sub_resource type="Resource" id="Resource_v7gjx"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_18iqk"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+
+[sub_resource type="Resource" id="Resource_hlxsh"]
+script = ExtResource("8_nxa7u")
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_67f4b"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_hlxsh")
+
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
 starting_room = NodePath("OpenWorld")
@@ -204,5 +223,11 @@ shape = SubResource("RectangleShape2D_1hvyy")
 
 [node name="DialogueComponent" parent="OpenWorld/DialogManTest" unique_id=1639514121 instance=ExtResource("13_0tgc8")]
 entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("15_n1edl"), ExtResource("16_n1edl")])
+
+[node name="Spider" parent="OpenWorld/DialogManTest" unique_id=13435238 instance=ExtResource("5_5x3wm")]
+position = Vector2(672, 248)
+movement_universal_script = SubResource("Resource_v7gjx")
+health_stats_script = SubResource("Resource_18iqk")
+interaction_and_attack_stats_script = SubResource("Resource_67f4b")
 
 [editable path="OpenWorld"]

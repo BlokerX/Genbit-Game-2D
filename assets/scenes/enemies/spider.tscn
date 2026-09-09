@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="8_ninxk"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
+[ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="11_ninxk"]
 
 [sub_resource type="Resource" id="Resource_k1opt"]
 resource_local_to_scene = true
@@ -24,14 +25,14 @@ metadata/_custom_type_script = "uid://qggqcqys4ruj"
 resource_local_to_scene = true
 script = ExtResource("3_rcp11")
 
-[sub_resource type="Resource" id="Resource_p05go"]
+[sub_resource type="Resource" id="Resource_hlxsh"]
 script = ExtResource("4_nj7ig")
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [sub_resource type="Resource" id="Resource_vfc7k"]
 resource_local_to_scene = true
 script = ExtResource("5_r73tf")
-hand_attack_data = SubResource("Resource_p05go")
+hand_attack_data = SubResource("Resource_hlxsh")
 
 [sub_resource type="Resource" id="Resource_3xyyd"]
 script = ExtResource("7_ninxk")
@@ -83,11 +84,12 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
 
-[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("character_sprite", "effects_collector") groups=["Enemy", "NPC"]]
+[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("ai_controller", "character_sprite", "effects_collector") groups=["Enemy", "NPC"]]
 collision_layer = 4
 collision_mask = 39
 motion_mode = 1
 script = ExtResource("1_ydunf")
+ai_controller = NodePath("AIController")
 respawnVector = Vector2(968, 928)
 movement_universal_script = SubResource("Resource_k1opt")
 health_stats_script = SubResource("Resource_d8532")
@@ -107,6 +109,10 @@ target_collision = NodePath("../CollisionShape2D")
 collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
+
+[node name="AIController" type="Node" parent="." unique_id=666546109]
+script = ExtResource("11_ninxk")
+metadata/_custom_type_script = "uid://0r6n7qknad1h"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
 texture_filter = 5
