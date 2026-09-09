@@ -9,14 +9,16 @@ func physics_process(_delta: float) -> void:
 		return
 		
 	var entity = controller.entity
+	var profile = controller.behavior_profile
+	if profile == null: return
+		
 	if controller.perception.can_see_target(blackboard.target):
 		controller.state_machine.change_state("Chase")
 		
 	elif entity.get("navigation_agent") and entity.navigation_agent.is_navigation_finished():
 		blackboard.has_last_known_position = false
 		
-		# W przyszłości ten timer trafi do osobnego profilu zachowań
 		if entity.get("wanderTimer") != null:
-			entity.wanderTimer = randf_range(1.0, 6.0)
+			entity.wanderTimer = randf_range(profile.wander_interval_min, profile.wander_interval_max)
 			
 		controller.state_machine.change_state("Idle")

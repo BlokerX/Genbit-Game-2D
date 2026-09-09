@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
 [ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="11_ninxk"]
 [ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="12_2nv85"]
+[ext_resource type="Resource" uid="uid://5c80iqu27spr" path="res://assets/scripts/ai/behaviors/behavior_profiles/spider_profile.tres" id="12_dixon"]
 [ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="15_lkvbf"]
 [ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="16_2nv85"]
 [ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="17_dixon"]
@@ -117,6 +118,7 @@ collision_mask = 3
 
 [node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("state_machine", "perception")]
 script = ExtResource("11_ninxk")
+behavior_profile = ExtResource("12_dixon")
 state_machine = NodePath("AIStateMachine")
 perception = NodePath("PerceptionComponent")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"

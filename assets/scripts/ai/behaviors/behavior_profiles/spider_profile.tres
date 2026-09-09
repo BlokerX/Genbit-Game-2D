@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AIBehaviorProfile" format=3 uid="uid://5c80iqu27spr"]
+
+[ext_resource type="Script" uid="uid://bmrx514bvhhvj" path="res://assets/scripts/ai/behaviors/ai_behavior_profile.gd" id="1_wbfk2"]
+
+[resource]
+script = ExtResource("1_wbfk2")
+can_rotate_to_target = false
+metadata/_custom_type_script = "uid://bmrx514bvhhvj"

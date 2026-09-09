@@ -8,22 +8,27 @@ func physics_process(delta: float) -> void:
 	if blackboard.target == null or controller.perception == null:
 		return
 		
-	var spider = controller.entity as NewEnemySpider
+	var entity = controller.entity
+	var profile = controller.behavior_profile
+	
+	# Zabezpieczenie przed brakiem profilu
+	if profile == null:
+		return
+		
 	if controller.perception.can_see_target(blackboard.target):
 		blackboard.last_known_position = blackboard.target.global_position
 		blackboard.has_last_known_position = true
 		
-		# Tymczasowo przypisane bezpośrednio tutaj (w następnym kroku przejmie to Nawigacja)
-		if spider and spider.has_method("set_movement_target"):
-			spider.set_movement_target(blackboard.last_known_position)
+		if entity.has_method("set_movement_target"):
+			entity.set_movement_target(blackboard.last_known_position)
 			
-		var target_angle = spider.global_position.angle_to_point(blackboard.target.global_position)
-		spider.rotation = lerp_angle(spider.rotation, target_angle, spider.rotationSpeed * delta)
+		# TWOJA POPRAWKA: Pytamy profil, czy ten wróg w ogóle umie się obracać!
+		if profile.can_rotate_to_target:
+			var target_angle = entity.global_position.angle_to_point(blackboard.target.global_position)
+			entity.rotation = lerp_angle(entity.rotation, target_angle, profile.rotation_speed * delta)
 		
-		var distance = spider.global_position.distance_to(blackboard.target.global_position)
-		
-		# Używamy zmiennej z Pająka zamiast "sztywnego" 95.0
-		blackboard.want_to_move = distance > spider.min_stopping_distance
+		var distance = entity.global_position.distance_to(blackboard.target.global_position)
+		blackboard.want_to_move = distance > profile.min_stopping_distance
 	else:
 		if blackboard.has_last_known_position:
 			controller.state_machine.change_state("Search")
