@@ -39,3 +39,7 @@ class_name AIBehaviorProfile
 ## Maksymalny czas (w sekundach), przez jaki wróg będzie stał w miejscu, 
 ## zanim podejmie kolejny losowy krok podczas wędrówki.
 @export var wander_interval_max: float = 6.0
+
+@export_category("Walka i Wybór Broni")
+## Dystans, poniżej którego AI schowa broń palną i wyciągnie broń białą (np. nóż).
+@export var melee_switch_distance: float = 60.0

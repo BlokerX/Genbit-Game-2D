@@ -26,10 +26,10 @@
 [ext_resource type="Texture2D" uid="uid://cgcrhsef8d5pn" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back.png" id="25_pj7l0"]
 [ext_resource type="Script" uid="uid://cck3c4bk7qr6b" path="res://assets/scripts/ai/inventory/ai_inventory_entry.gd" id="26_6d24p"]
 [ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="26_cxe2y"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="26_dth1k"]
 [ext_resource type="Texture2D" uid="uid://clte5xhfgckqh" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_left.png" id="27_mlpbi"]
-[ext_resource type="Resource" uid="uid://ca4bdf1bpffxh" path="res://assets/data/items/assault_rifle.tres" id="28_6d24p"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="28_fkygi"]
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="28_wvv3y"]
-[ext_resource type="Resource" uid="uid://t1k1i25ddbhn" path="res://assets/data/items/assault_rifle_ammunation.tres" id="29_fkygi"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="29_mlpbi"]
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="31_6d24p"]
 
@@ -67,13 +67,13 @@ animations = [{
 
 [sub_resource type="Resource" id="Resource_fkygi"]
 script = ExtResource("26_6d24p")
-item_data = ExtResource("28_6d24p")
+item_data = ExtResource("26_dth1k")
 metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
 
 [sub_resource type="Resource" id="Resource_2a7xa"]
 script = ExtResource("26_6d24p")
-item_data = ExtResource("29_fkygi")
-amount = 25
+item_data = ExtResource("28_fkygi")
+amount = 5
 metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
@@ -97,6 +97,7 @@ effects_collector = NodePath("EffectsCollector")
 script = ExtResource("10_65b62")
 faction_name = &"Soldiers"
 faction_relations = {
+&"Monsters": 1,
 &"Player": 0
 }
 metadata/_custom_type_script = "uid://is5av5rx4obe"

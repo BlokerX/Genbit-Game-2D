@@ -90,6 +90,98 @@ resource_local_to_scene = true
 script = ExtResource("9_mncir")
 hand_attack_data = SubResource("Resource_jnda7")
 
+[sub_resource type="Resource" id="Resource_21p3e"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_3ym74"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_ia6xd"]
+script = ExtResource("8_nxa7u")
+damage = 15
+critical_damage = 5
+critical_rate = 0.2
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_555d6"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_ia6xd")
+
+[sub_resource type="Resource" id="Resource_adf2l"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_45hfp"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_1k5co"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_ia6xd")
+
+[sub_resource type="Resource" id="Resource_70f8u"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_sp68i"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_1kajp"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_ia6xd")
+
+[sub_resource type="Resource" id="Resource_tyxje"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_eigro"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_vud8p"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_ia6xd")
+
+[sub_resource type="Resource" id="Resource_r5gfr"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 250.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_e3gm0"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 50
+max_health = 50
+
+[sub_resource type="Resource" id="Resource_scjsf"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_jnda7")
+
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
 starting_room = NodePath("OpenWorld")
@@ -251,9 +343,39 @@ health_stats_script = SubResource("Resource_67f4b")
 interaction_and_attack_stats_script = SubResource("Resource_hlvp1")
 
 [node name="Soldier" parent="OpenWorld" unique_id=1152164127 instance=ExtResource("17_tpm7i")]
-position = Vector2(6800, 4408)
+position = Vector2(7096, 6176)
 movement_universal_script = SubResource("Resource_hxu0g")
 health_stats_script = SubResource("Resource_luww0")
 interaction_and_attack_stats_script = SubResource("Resource_8805h")
+
+[node name="Soldier2" parent="OpenWorld" unique_id=997905772 instance=ExtResource("17_tpm7i")]
+position = Vector2(7344, 6176)
+movement_universal_script = SubResource("Resource_21p3e")
+health_stats_script = SubResource("Resource_3ym74")
+interaction_and_attack_stats_script = SubResource("Resource_555d6")
+
+[node name="Soldier3" parent="OpenWorld" unique_id=1155266842 instance=ExtResource("17_tpm7i")]
+position = Vector2(7624, 6200)
+movement_universal_script = SubResource("Resource_adf2l")
+health_stats_script = SubResource("Resource_45hfp")
+interaction_and_attack_stats_script = SubResource("Resource_1k5co")
+
+[node name="Soldier4" parent="OpenWorld" unique_id=98248787 instance=ExtResource("17_tpm7i")]
+position = Vector2(7904, 6208)
+movement_universal_script = SubResource("Resource_70f8u")
+health_stats_script = SubResource("Resource_sp68i")
+interaction_and_attack_stats_script = SubResource("Resource_1kajp")
+
+[node name="Soldier5" parent="OpenWorld" unique_id=913475774 instance=ExtResource("17_tpm7i")]
+position = Vector2(8264, 6216)
+movement_universal_script = SubResource("Resource_tyxje")
+health_stats_script = SubResource("Resource_eigro")
+interaction_and_attack_stats_script = SubResource("Resource_vud8p")
+
+[node name="Spider2" parent="OpenWorld" unique_id=1824925034 instance=ExtResource("5_5x3wm")]
+position = Vector2(7080, 5864)
+movement_universal_script = SubResource("Resource_r5gfr")
+health_stats_script = SubResource("Resource_e3gm0")
+interaction_and_attack_stats_script = SubResource("Resource_scjsf")
 
 [editable path="OpenWorld"]

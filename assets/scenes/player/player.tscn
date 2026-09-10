@@ -92,7 +92,7 @@ destroy_entity_after_die = false
 
 [node name="FactionComponent" type="Node" parent="." unique_id=1413011526]
 script = ExtResource("6_xflxm")
-faction_name = &"Player"
+faction_name = &"Players"
 metadata/_custom_type_script = "uid://is5av5rx4obe"
 
 [node name="CharacterAnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1475973053]

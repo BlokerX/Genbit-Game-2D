@@ -23,9 +23,14 @@ func process_combat(delta: float) -> void:
 	
 	var ai_inventory = controller.get_node_or_null("AIInventoryController")
 	
+	# Pobranie dystansu wyciągnięcia broni białej z profilu AI (Domyślnie 60.0, jeśli profil nie istnieje)
+	var switch_dist = 60.0
+	if controller.behavior_profile and "melee_switch_distance" in controller.behavior_profile:
+		switch_dist = controller.behavior_profile.melee_switch_distance
+	
 	# Opcja 1: AI używa Ekwipunku (Wybiera broń odpowiednią do dystansu!)
 	if ai_inventory and not ai_inventory.items.is_empty():
-		_select_best_weapon(ai_inventory, edge_dist)
+		_select_best_weapon(ai_inventory, edge_dist, switch_dist)
 		
 		var weapon = ai_inventory.get_current_item()
 		if weapon != null:
@@ -41,23 +46,23 @@ func process_combat(delta: float) -> void:
 			stats.execute_attack_on_target(entity, blackboard.target)
 
 ## Funkcja decyzyjna: Wybiera broń na podstawie odległości
-func _select_best_weapon(inventory: AIInventoryController, distance: float) -> void:
+func _select_best_weapon(inventory: AIInventoryController, distance: float, switch_dist: float) -> void:
 	var best_index = inventory.current_item_index
 	
 	for i in range(inventory.items.size()):
 		var item = inventory.items[i]
 		if item.data.components == null: continue
 		for comp in item.data.components:
-			# Wyciągnij broń białą, jeśli cel jest bardzo blisko (np. < 60 pikseli)
-			if comp is MeleeWeaponComponent and distance < 60.0:
+			# Wyciągnij broń białą, jeśli cel jest bliżej niż 'switch_dist' z Inspektora
+			if comp is MeleeWeaponComponent and distance < switch_dist:
 				best_index = i
 				break
-			# Wyciągnij broń dystansową, jeśli cel jest daleko
-			elif comp is RangedWeaponComponent and distance >= 60.0:
+			# Wyciągnij broń dystansową, jeśli cel jest poza tym zakresem
+			elif comp is RangedWeaponComponent and distance >= switch_dist:
 				best_index = i
 				break
 
-	# NAPRAWA: Zmieniamy statystyki jeśli zmienił się indeks LUB jeśli to nasz pierwszy wybór (_last_weapon_index == -1)
+	# Zmieniamy statystyki jeśli zmienił się indeks LUB jeśli to nasz pierwszy wybór (_last_weapon_index == -1)
 	if best_index != _last_weapon_index:
 		_last_weapon_index = best_index
 		inventory.current_item_index = best_index
@@ -69,4 +74,3 @@ func _select_best_weapon(inventory: AIInventoryController, distance: float) -> v
 					# Synchronizacja dystansu i obrażeń
 					controller.entity.interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
 					controller.entity.interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
-					print("AI załadowało statystyki broni. Nowy zasięg: ", comp.attack_data.max_range)
