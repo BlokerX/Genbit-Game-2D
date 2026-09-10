@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://b56d8pmb4go24"]
 
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="1_1y2py"]
-[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/movement/special_instations/spider_movement_component.tres" id="2_dth1k"]
-[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider_monitored_life_stats_component.tres" id="3_lk6kg"]
-[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider_interaction_and_attack_stats_component.tres" id="4_6d24p"]
-[ext_resource type="Resource" uid="uid://ckvgekjro1wv1" path="res://assets/scripts/entities/stats/special_instations/player_loot_drop_component.tres" id="5_fkygi"]
+[ext_resource type="Resource" uid="uid://cc4b01wcxwdqt" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_movement_component.tres" id="2_6d24p"]
+[ext_resource type="Resource" uid="uid://eu0stiyexa7w" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_monitored_life_stats_component.tres" id="3_fkygi"]
+[ext_resource type="Resource" uid="uid://bk3oea42uipv6" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_interaction_and_attack_stats_component.tres" id="4_2a7xa"]
+[ext_resource type="Resource" uid="uid://cyj22qg70b803" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_loot_drop_component.tres" id="5_6d24p"]
 [ext_resource type="Resource" uid="uid://cxw8je180hpd3" path="res://assets/scripts/ai/behaviors/behavior_profiles/soldier_profile.tres" id="9_2a7xa"]
 [ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="10_65b62"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="11_ymgfb"]
@@ -24,13 +24,14 @@
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="23_up0qx"]
 [ext_resource type="Texture2D" uid="uid://xkgbe5eaic1s" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_right.png" id="24_2a7xa"]
 [ext_resource type="Texture2D" uid="uid://cgcrhsef8d5pn" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back.png" id="25_pj7l0"]
+[ext_resource type="Script" uid="uid://cck3c4bk7qr6b" path="res://assets/scripts/ai/inventory/ai_inventory_entry.gd" id="26_6d24p"]
 [ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="26_cxe2y"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="26_dth1k"]
-[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="26_lk6kg"]
 [ext_resource type="Texture2D" uid="uid://clte5xhfgckqh" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_left.png" id="27_mlpbi"]
-[ext_resource type="Resource" uid="uid://cb8cn5vk3trmf" path="res://assets/data/items/sword.tres" id="28_6d24p"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="28_fkygi"]
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="28_wvv3y"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="29_mlpbi"]
+[ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="31_6d24p"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{
@@ -64,6 +65,16 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="Resource" id="Resource_fkygi"]
+script = ExtResource("26_6d24p")
+item_data = ExtResource("26_dth1k")
+metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
+
+[sub_resource type="Resource" id="Resource_2a7xa"]
+script = ExtResource("26_6d24p")
+item_data = ExtResource("28_fkygi")
+metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
 
@@ -74,10 +85,10 @@ motion_mode = 1
 script = ExtResource("1_1y2py")
 ai_controller = NodePath("AIController")
 faction_component = NodePath("FactionComponent")
-movement_universal_script = ExtResource("2_dth1k")
-health_stats_script = ExtResource("3_lk6kg")
-interaction_and_attack_stats_script = ExtResource("4_6d24p")
-loot_drop_script = ExtResource("5_fkygi")
+movement_universal_script = ExtResource("2_6d24p")
+health_stats_script = ExtResource("3_fkygi")
+interaction_and_attack_stats_script = ExtResource("4_2a7xa")
+loot_drop_script = ExtResource("5_6d24p")
 character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 
@@ -88,6 +99,10 @@ faction_relations = {
 &"Player": 0
 }
 metadata/_custom_type_script = "uid://is5av5rx4obe"
+
+[node name="ItemThrowerComponent" type="Node" parent="." unique_id=319181608]
+script = ExtResource("31_6d24p")
+metadata/_custom_type_script = "uid://70mdhpj1lg2d"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
 texture_filter = 5
@@ -149,7 +164,7 @@ metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]
 script = ExtResource("17_pj7l0")
-starting_items = Array[ExtResource("26_lk6kg")]([ExtResource("26_dth1k"), ExtResource("28_6d24p")])
+starting_equipment = Array[ExtResource("26_6d24p")]([SubResource("Resource_fkygi"), SubResource("Resource_2a7xa")])
 metadata/_custom_type_script = "uid://bsdwh1fc83f21"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]

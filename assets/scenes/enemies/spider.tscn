@@ -1,16 +1,12 @@
 [gd_scene format=3 uid="uid://q4xj7lh64e4s"]
 
 [ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="1_ydunf"]
-[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/entities/movement/movement_component.gd" id="2_hlt0w"]
-[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="3_rcp11"]
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="4_nj7ig"]
-[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="5_r73tf"]
+[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/stats/special_instations/spider/spider_movement_component.tres" id="2_2nv85"]
+[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider/spider_monitored_life_stats_component.tres" id="3_2nv85"]
+[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider/spider_interaction_and_attack_stats_component.tres" id="4_dixon"]
+[ext_resource type="Resource" uid="uid://3gu8etcxejxm" path="res://assets/scripts/entities/stats/special_instations/spider/spider_loot_drop_component.tres" id="6_dixon"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="6_ninxk"]
-[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="6_r73tf"]
 [ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="7_3xyyd"]
-[ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="7_ninxk"]
-[ext_resource type="Resource" uid="uid://bqxxg8gmcq814" path="res://assets/data/items/simple_potion.tres" id="7_r73tf"]
-[ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="8_ninxk"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
 [ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="10_3yo02"]
@@ -23,36 +19,6 @@
 [ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="18_h48t6"]
 [ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="18_ml77n"]
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="19_3yo02"]
-
-[sub_resource type="Resource" id="Resource_k1opt"]
-resource_local_to_scene = true
-script = ExtResource("2_hlt0w")
-moveSpeed = 250.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_d8532"]
-resource_local_to_scene = true
-script = ExtResource("3_rcp11")
-
-[sub_resource type="Resource" id="Resource_hlxsh"]
-script = ExtResource("4_nj7ig")
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
-
-[sub_resource type="Resource" id="Resource_vfc7k"]
-resource_local_to_scene = true
-script = ExtResource("5_r73tf")
-hand_attack_data = SubResource("Resource_hlxsh")
-
-[sub_resource type="Resource" id="Resource_3xyyd"]
-script = ExtResource("7_ninxk")
-item_data = ExtResource("7_r73tf")
-metadata/_custom_type_script = "uid://1f2qvv7y72gg"
-
-[sub_resource type="Resource" id="Resource_yn8as"]
-script = ExtResource("8_ninxk")
-item_pickup_scene = ExtResource("6_r73tf")
-loot_table = Array[ExtResource("7_ninxk")]([SubResource("Resource_3xyyd")])
-metadata/_custom_type_script = "uid://brgrsjbml6fve"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
 atlas = ExtResource("7_3xyyd")
@@ -101,10 +67,10 @@ script = ExtResource("1_ydunf")
 ai_controller = NodePath("AIController")
 faction_component = NodePath("FactionComponent")
 respawnVector = Vector2(968, 928)
-movement_universal_script = SubResource("Resource_k1opt")
-health_stats_script = SubResource("Resource_d8532")
-interaction_and_attack_stats_script = SubResource("Resource_vfc7k")
-loot_drop_script = SubResource("Resource_yn8as")
+movement_universal_script = ExtResource("2_2nv85")
+health_stats_script = ExtResource("3_2nv85")
+interaction_and_attack_stats_script = ExtResource("4_dixon")
+loot_drop_script = ExtResource("6_dixon")
 character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 

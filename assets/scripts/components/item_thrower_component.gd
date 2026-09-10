@@ -98,7 +98,6 @@ func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown
 	# 3. ZGŁASZAMY SPAWN (przekazujemy obliczoną pozycję)
 	entity_spawn_requested.emit(drop, final_spawn_position)
 	
-	# 4. APLIKUJEMY FIZYKĘ
-	# Jeżeli nasz upuszczony przedmiot wykorzystuje silnik fizyczny
+	# 4. APLIKUJEMY FIZYKĘ W ZGODZIE Z KOLEJKĄ SILNIKA
 	if drop is RigidBody2D:
-		drop.apply_central_impulse(drop_direction * drop_force)
+		drop.call_deferred("apply_central_impulse", drop_direction * drop_force)

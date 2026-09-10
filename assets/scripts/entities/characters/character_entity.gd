@@ -22,15 +22,19 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var movement_universal_script : MovementComponent
 @export var health_stats_script : MonitoredLifeStatsComponent 
 @export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
+
+
+# KONFIGURACJA ŹRÓDEŁ DROPu:
+@export_category("System Łupu (Loot)")
+@export var drop_from_loot_table: bool = true
+@export var drop_from_inventory: bool = true
 @export var loot_drop_script : LootDropComponent
 
+@export_category("Dane Fizyczne")
 ## Indywidualna grubość postaci do walki ---
 @export var combat_radius: float = 40.0
-
 @export var character_sprite : AnimatedSprite2D
-
 @export var effects_collector : Node
-
 @export var destroy_entity_after_die : bool = true
 
 #region Główne funkcje silnikowe
@@ -58,20 +62,27 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
-	# Jeśli przypisaliśmy skrypt w Inspektorze
-	if loot_drop_script:
+	print(self.name + " zginął! Przetwarzanie łupu...")
+	
+	# 1. Źródło: Tabela Łupu (LootDropComponent)
+	if drop_from_loot_table and loot_drop_script:
 		loot_drop_script.perform_drop(self)
+		
+	# 2. Źródło: Aktualny Ekwipunek (Upuść wszystko, co trzymał/miał w plecaku)
+	if drop_from_inventory and has_method("get_inventory"):
+		# ZMIANA: call("nazwa_metody") omija sprawdzanie statyczne!
+		var inv = call("get_inventory") 
+		if inv:
+			if inv is Inventory:
+				pass
+			elif inv.has_method("drop_all_items"):
+				inv.drop_all_items(self)
 	
-	print(self.name + " has been killed successfully!")
-	
-	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
-	# call_deferred("respawn_sequence")
-	
-	# todo poprowadzić tu jakoś koniec rozgrywki
-	if destroy_entity_after_die :
+	if destroy_entity_after_die:
 		self.queue_free()
-		print(self.name + " został zwolniony z istnienia.")
-	else : call_deferred("respawn_sequence")
+		print(self.name + " usunięty ze sceny.")
+	else:
+		call_deferred("respawn_sequence")
 	
 
 # Sekwencja respawnu, Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
