@@ -4,10 +4,18 @@ class_name AIController
 var entity: EnemyEntity
 var blackboard: AIBlackboard
 
+@export_category("Główne Profile")
+## Profil zachowania definiujący zasięg widzenia, dystans zatrzymywania się (min_stopping_distance) i prędkość obrotu.
 @export var behavior_profile: AIBehaviorProfile
+
+@export_category("Komponenty Modułowe")
+## Odpowiada za zmysły (wzrok, zasięg widzenia) i wykrywanie celów (Gracza) w otoczeniu.
 @export var perception: PerceptionComponent
+## Mózg AI zarządzający logiką stanów i decyzyjnością (Idle, Chase, Search, etc.).
 @export var state_machine: AIStateMachine
+## Odpowiada za fizyczne poruszanie się po siatce NavigationRegion2D oraz wyznaczanie ścieżek.
 @export var navigation: AINavigationController
+## Kontroluje logikę walki, dobór odpowiedniej broni z AIInventoryController oraz moment oddania strzału.
 @export var combat: AICombatController
 
 func initialize(owner_entity: EnemyEntity) -> void:
@@ -35,7 +43,7 @@ func initialize(owner_entity: EnemyEntity) -> void:
 
 func _physics_process(delta: float) -> void:
 	if perception:
-		perception.process_perception(delta) # DODANE: Zmysły szukają celów
+		perception.process_perception(delta) # Zmysły szukają celów
 	if state_machine:
 		state_machine.process_physics(delta)
 	if navigation:

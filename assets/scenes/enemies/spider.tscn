@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://q4xj7lh64e4s"]
 
-[ext_resource type="Script" uid="uid://djnkp0d0mgtku" path="res://assets/scripts/entities/characters/enemies/new_enemy_spider.gd" id="1_ydunf"]
+[ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/enemy_entity.gd" id="1_2nv85"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/stats/special_instations/spider/spider_movement_component.tres" id="2_2nv85"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider/spider_monitored_life_stats_component.tres" id="3_2nv85"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider/spider_interaction_and_attack_stats_component.tres" id="4_dixon"]
@@ -63,7 +63,7 @@ radius = 40.0
 collision_layer = 4
 collision_mask = 39
 motion_mode = 1
-script = ExtResource("1_ydunf")
+script = ExtResource("1_2nv85")
 ai_controller = NodePath("AIController")
 faction_component = NodePath("FactionComponent")
 respawnVector = Vector2(968, 928)
