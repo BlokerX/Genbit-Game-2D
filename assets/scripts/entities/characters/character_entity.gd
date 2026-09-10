@@ -3,6 +3,16 @@ extends CharacterBody2D
 
 class_name CharacterEntity
 
+#region Signals
+
+## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
+signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
+
+# ## Sygnał wykonywany po skończonej inicjalizacji entity
+#signal setup_complete
+
+#endregion
+
 @export var faction_component: FactionComponent
 
 # Zmienne respawnu:

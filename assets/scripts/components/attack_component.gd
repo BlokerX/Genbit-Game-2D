@@ -7,7 +7,7 @@ func execute_attack(
 	shooter: CharacterEntity, 
 	target: Node2D, 
 	weapon_instance: ItemInstance, 
-	inventory: Inventory, 
+	inventory: Variant, 
 	stats_script: InteractionAndAttackStatsComponent, 
 	has_line_of_sight: bool
 ) -> bool:

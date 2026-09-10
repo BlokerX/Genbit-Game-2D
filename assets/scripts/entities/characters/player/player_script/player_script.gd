@@ -33,16 +33,6 @@ const INPUT_ROTATE = "RotateBuilding"
 
 #endregion
 
-#region Signals
-
-## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
-signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
-
-# ## Sygnał wykonywany po skończonej inicjalizacji gracza
-#signal setup_complete
-
-#endregion
-
 @onready var player_light: PointLight2D = $PointLight2D
 
 #region Podłączone komponenty indywidualne dla gracza

@@ -14,15 +14,57 @@ func process_combat(delta: float) -> void:
 	if not stats or blackboard.target == null:
 		return
 		
-	# Odliczanie czasu do następnego ataku
 	stats.interaction_cooldown_process(delta)
 	
-	# Proste sprawdzanie kolizji wręcz (dokładnie to, co robił Pająk)
-	for i in entity.get_slide_collision_count():
-		var collision = entity.get_slide_collision(i)
-		var collider = collision.get_collider()
+	var dist = entity.global_position.distance_to(blackboard.target.global_position)
+	var my_radius = entity.combat_radius if "combat_radius" in entity else 20.0
+	var target_radius = blackboard.target.combat_radius if "combat_radius" in blackboard.target else 20.0
+	var edge_dist = max(0.0, dist - (my_radius + target_radius))
+	
+	var ai_inventory = controller.get_node_or_null("AIInventoryController")
+	
+	# Opcja 1: AI używa Ekwipunku (Wybiera broń odpowiednią do dystansu!)
+	if ai_inventory and not ai_inventory.items.is_empty():
+		_select_best_weapon(ai_inventory, edge_dist)
 		
-		# Jeśli AI uderza w swój cel i ma gotowy cooldown
-		if collider == blackboard.target and stats.can_attack():
-			print("AI ", entity.name, " atakuje wręcz cel: ", collider.name)
-			stats.execute_attack_on_target(entity, collider)
+		var weapon = ai_inventory.get_current_item()
+		if weapon != null:
+			var attack_comp = entity.get_node_or_null("AttackComponent")
+			
+			if edge_dist <= stats.get_total_range() and stats.can_attack():
+				var has_los = controller.perception.can_see_target(blackboard.target)
+				if attack_comp and has_los:
+					attack_comp.execute_attack(entity, blackboard.target, weapon, ai_inventory, stats, has_los)
+					
+	# Opcja 2: Dzikie potwory bez ekwipunku (Gryzienie/Zwierzęta)
+	else:
+		if edge_dist <= stats.get_total_range() and stats.can_attack():
+			stats.execute_attack_on_target(entity, blackboard.target)
+
+## Funkcja decyzyjna: Wybiera broń na podstawie odległości
+func _select_best_weapon(inventory: AIInventoryController, distance: float) -> void:
+	var best_index = inventory.current_item_index
+	
+	for i in range(inventory.items.size()):
+		var item = inventory.items[i]
+		if item.data.components == null: continue
+		
+		for comp in item.data.components:
+			# Wyciągnij broń białą, jeśli cel jest bardzo blisko (np. < 60 pikseli)
+			if comp is MeleeWeaponComponent and distance < 60.0:
+				best_index = i
+				break
+			# Wyciągnij broń dystansową, jeśli cel jest daleko
+			elif comp is RangedWeaponComponent and distance >= 60.0:
+				best_index = i
+				break
+				
+	# Jeśli AI zdecydowało się na zmianę broni, wymuszamy odświeżenie statystyk z nowej broni!
+	if best_index != inventory.current_item_index:
+		inventory.current_item_index = best_index
+		
+		var new_weapon = inventory.get_current_item()
+		for comp in new_weapon.data.components:
+			if comp is MeleeWeaponComponent or comp is RangedWeaponComponent:
+				controller.entity.interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				controller.entity.interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
