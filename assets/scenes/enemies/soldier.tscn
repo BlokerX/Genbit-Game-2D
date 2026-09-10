@@ -73,7 +73,6 @@ metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
 [sub_resource type="Resource" id="Resource_2a7xa"]
 script = ExtResource("26_6d24p")
 item_data = ExtResource("28_fkygi")
-amount = 5
 metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
@@ -100,6 +99,8 @@ faction_relations = {
 &"Monsters": 1,
 &"Player": 0
 }
+revenge_target = 1
+call_for_help_radius = 1000.0
 metadata/_custom_type_script = "uid://is5av5rx4obe"
 
 [node name="ItemThrowerComponent" type="Node" parent="." unique_id=319181608]

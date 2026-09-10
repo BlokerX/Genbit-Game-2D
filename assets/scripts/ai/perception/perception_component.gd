@@ -37,10 +37,9 @@ func process_perception(_delta: float) -> void:
 	blackboard.target = best_target
 
 func can_see_target(target: Node2D) -> bool:
-	if not target or not controller or not controller.entity:
-		return false
-		
+	if not target or not controller or not controller.entity: return false
 	var entity = controller.entity
+	
 	if entity.global_position.distance_to(target.global_position) > detection_distance:
 		return false
 		
@@ -48,14 +47,22 @@ func can_see_target(target: Node2D) -> bool:
 		los_ray.target_position = entity.to_local(target.global_position)
 		los_ray.force_raycast_update()
 		if los_ray.is_colliding():
-			return los_ray.get_collider() == target
-	else:
-		# KULOODPORNY FALLBACK: Używamy wirtualnego promienia fizyki, jeśli węzeł zniknął
-		var space_state = entity.get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(entity.global_position, target.global_position)
-		query.exclude = [entity.get_rid()]
-		var result = space_state.intersect_ray(query)
-		if result:
-			return result.collider == target
+			var col = los_ray.get_collider()
+			# Sprawdzamy czy trafiliśmy cel LUB w którąś z jego pod-części (np. Area2D Hurtbox)
+			return col == target or target.is_ancestor_of(col) or col.is_ancestor_of(target)
+		else:
+			# Jeśli promień nie natrafił na NIC, droga jest wolna!
+			return true
 			
-	return false
+	# KULOODPORNY FALLBACK: Używamy wirtualnego promienia fizyki
+	var space_state = entity.get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(entity.global_position, target.global_position)
+	query.exclude = [entity.get_rid()]
+	
+	var result = space_state.intersect_ray(query)
+	if result:
+		var col = result.collider
+		return col == target or target.is_ancestor_of(col) or col.is_ancestor_of(target)
+		
+	# Jeśli rzut fizyki nie trafił w żadną ścianę ani przeszkodę - AI widzi cel idealnie
+	return true

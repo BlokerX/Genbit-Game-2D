@@ -44,3 +44,15 @@ func get_inventory() -> Node:
 func set_movement_target(movement_target: Vector2) -> void:
 	if navigation_agent:
 		navigation_agent.target_position = movement_target
+
+# --- SYSTEM ZEMSTY ---
+func receive_effect(effect: Effect) -> bool:
+	var success = super.receive_effect(effect)
+	
+	if success and effect is DamageEffect and effect.source_entity != null:
+		var attacker = effect.source_entity
+		if attacker is CharacterEntity and attacker != self and faction_component:
+			# Uruchamiamy złożoną procedurę z Frakcji (Zemsta + Wołanie o pomoc)
+			faction_component.process_revenge(attacker)
+			
+	return success

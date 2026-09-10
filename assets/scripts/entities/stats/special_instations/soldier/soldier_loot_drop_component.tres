@@ -1,17 +1,19 @@
 [gd_resource type="Resource" script_class="LootDropComponent" format=3 uid="uid://cyj22qg70b803"]
 
-[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="1_2gsob"]
-[ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="2_ufm6v"]
-[ext_resource type="Resource" uid="uid://ctls1l7pgyirg" path="res://assets/data/items/torch.tres" id="3_6oecf"]
-[ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="4_pv50c"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="1_idbtf"]
+[ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="2_ha1e0"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="3_xulls"]
+[ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/entities/items/loot_drop_component.gd" id="4_r43aq"]
 
 [sub_resource type="Resource" id="Resource_q1r83"]
-script = ExtResource("2_ufm6v")
-item_data = ExtResource("3_6oecf")
+script = ExtResource("2_ha1e0")
+item_data = ExtResource("3_xulls")
+max_amount = 10
+drop_chance = 0.9
 metadata/_custom_type_script = "uid://1f2qvv7y72gg"
 
 [resource]
-script = ExtResource("4_pv50c")
-item_pickup_scene = ExtResource("1_2gsob")
-loot_table = Array[ExtResource("2_ufm6v")]([SubResource("Resource_q1r83")])
+script = ExtResource("4_r43aq")
+item_pickup_scene = ExtResource("1_idbtf")
+loot_table = Array[ExtResource("2_ha1e0")]([SubResource("Resource_q1r83"), null])
 metadata/_custom_type_script = "uid://brgrsjbml6fve"

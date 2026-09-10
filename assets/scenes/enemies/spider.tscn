@@ -78,8 +78,9 @@ effects_collector = NodePath("EffectsCollector")
 script = ExtResource("10_3yo02")
 faction_relations = {
 &"Player": 0,
-&"Soldiers": 0
+&"Soldiers": 1
 }
+call_for_help_radius = 500.0
 metadata/_custom_type_script = "uid://is5av5rx4obe"
 
 [node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("6_ninxk")]
