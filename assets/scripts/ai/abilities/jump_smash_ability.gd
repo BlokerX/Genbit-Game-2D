@@ -3,10 +3,11 @@ class_name JumpSmashAbility
 
 @export var damage: int = 30
 @export var stun_duration: float = 1.5
+@export var knockback_force: float = 800.0 ## <--- NOWA ZMIENNA (Siła odrzutu)
 @export var aoe_radius: float = 80.0
-@export var cast_time: float = 1.2     ## Całkowity czas od momentu narysowania plamy do wybuchu
-@export var jump_duration: float = 0.5 ## Czas samego lotu (zawsze musi być mniejszy niż cast_time!)
-@export var recovery_time: float = 0.5 ## Odpoczynek bossa po skoku
+@export var cast_time: float = 1.2      ## Całkowity czas od momentu narysowania plamy do wybuchu
+@export var jump_duration: float = 0.5  ## Czas samego lotu (zawsze musi być mniejszy niż cast_time!)
+@export var recovery_time: float = 0.5  ## Odpoczynek bossa po skoku
 @export_flags_2d_physics var obstacles_mask: int = 1 ## Warstwa fizyki, na której są ściany
 
 func _init():
@@ -36,12 +37,13 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var aoe = TelegraphedAOE.new()
 	var dmg_eff = DamageEffect.new(damage)
 	var stun_eff = StunEffect.new(stun_duration)
+	var knock_eff = KnockbackEffect.new(knockback_force) # <--- TWORZYMY EFEKT ODRZUTU
 	
-	# --- TUTAJ ZMIANA: Przekazujemy 'target' na samym końcu! ---
-	aoe.setup(safe_target_pos, aoe_radius, cast_time, [dmg_eff, stun_eff], attacker, target)
-	# -------------------------------------------------------------
+	# Dodajemy 'knock_eff' do tablicy efektów!
+	aoe.setup(safe_target_pos, aoe_radius, cast_time, [dmg_eff, stun_eff, knock_eff], attacker, target)
 	
 	attacker.get_tree().current_scene.add_child(aoe)
+	print(attacker.name + " ładuje skok! Gracz ma " + str(cast_time) + "s na unik!")
 
 	var windup_time = max(0.0, cast_time - jump_duration)
 	if windup_time > 0.0:
