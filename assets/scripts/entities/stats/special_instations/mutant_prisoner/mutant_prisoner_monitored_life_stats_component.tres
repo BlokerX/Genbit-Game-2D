@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="MonitoredLifeStatsComponent" format=3 uid="uid://d3g0732o5ekkj"]
+
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="1_lbkgl"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("1_lbkgl")
+health = 200
+max_health = 200

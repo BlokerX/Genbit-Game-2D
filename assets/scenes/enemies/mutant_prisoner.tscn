@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://blqj3v8dcpldy"]
 
 [ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/ai_character_entity.gd" id="1_5xsyh"]
-[ext_resource type="Resource" uid="uid://cc4b01wcxwdqt" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_movement_component.tres" id="2_mairh"]
-[ext_resource type="Resource" uid="uid://eu0stiyexa7w" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_monitored_life_stats_component.tres" id="3_mxfyb"]
-[ext_resource type="Resource" uid="uid://bk3oea42uipv6" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_interaction_and_attack_stats_component.tres" id="4_xfn32"]
-[ext_resource type="Resource" uid="uid://cyj22qg70b803" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_loot_drop_component.tres" id="5_opdpk"]
+[ext_resource type="Resource" uid="uid://d3ouvdboeskd8" path="res://assets/scripts/entities/stats/special_instations/mutant_prisoner/mutant_prisoner_movement_component.tres" id="2_mxfyb"]
+[ext_resource type="Resource" uid="uid://d3g0732o5ekkj" path="res://assets/scripts/entities/stats/special_instations/mutant_prisoner/mutant_prisoner_monitored_life_stats_component.tres" id="3_xfn32"]
+[ext_resource type="Resource" uid="uid://trittckqc2bg" path="res://assets/scripts/entities/stats/special_instations/mutant_prisoner/mutant_prisoner_interaction_and_attack_stats_component.tres" id="4_opdpk"]
+[ext_resource type="Resource" uid="uid://du50g57lel7t3" path="res://assets/scripts/entities/stats/special_instations/mutant_prisoner/mutant_prisoner_loot_drop_component.tres" id="5_synj6"]
 [ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="6_synj6"]
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="7_r242b"]
 [ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="8_b42c7"]
@@ -17,7 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="15_pyo2m"]
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="16_kere8"]
 [ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="17_wy6ta"]
-[ext_resource type="Resource" uid="uid://cxw8je180hpd3" path="res://assets/scripts/ai/behaviors/behavior_profiles/soldier_profile.tres" id="18_vqm1x"]
+[ext_resource type="Resource" uid="uid://ddaifq5br1jnj" path="res://assets/scripts/ai/behaviors/behavior_profiles/mutant_prisoner_profile.tres" id="18_mxfyb"]
 [ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="19_csxlk"]
 [ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="20_rq1xn"]
 [ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="21_e6db7"]
@@ -28,10 +28,7 @@
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="25_2pkew"]
 [ext_resource type="Script" uid="uid://bsdwh1fc83f21" path="res://assets/scripts/ai/inventory/ai_inventory_controller.gd" id="26_myjwo"]
 [ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="27_synj6"]
-[ext_resource type="Script" uid="uid://cck3c4bk7qr6b" path="res://assets/scripts/ai/inventory/ai_inventory_entry.gd" id="27_wym17"]
 [ext_resource type="Resource" uid="uid://b2ekbgwuyl38v" path="res://assets/scripts/ai/abilities/resources/mutant_smash.tres" id="28_r242b"]
-[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="28_stm50"]
-[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="29_al38p"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="30_8cq5w"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="31_n18bc"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="32_lokir"]
@@ -70,16 +67,6 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="Resource" id="Resource_fkygi"]
-script = ExtResource("27_wym17")
-item_data = ExtResource("28_stm50")
-metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
-
-[sub_resource type="Resource" id="Resource_2a7xa"]
-script = ExtResource("27_wym17")
-item_data = ExtResource("29_al38p")
-metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
 
@@ -90,11 +77,10 @@ motion_mode = 1
 script = ExtResource("1_5xsyh")
 ai_controller = NodePath("AIController")
 faction_component = NodePath("FactionComponent")
-movement_universal_script = ExtResource("2_mairh")
-health_stats_script = ExtResource("3_mxfyb")
-interaction_and_attack_stats_script = ExtResource("4_xfn32")
-drop_from_inventory = false
-loot_drop_script = ExtResource("5_opdpk")
+movement_universal_script = ExtResource("2_mxfyb")
+health_stats_script = ExtResource("3_xfn32")
+interaction_and_attack_stats_script = ExtResource("4_opdpk")
+loot_drop_script = ExtResource("5_synj6")
 character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 
@@ -104,6 +90,7 @@ faction_name = &"Prisoners"
 default_disposition = 1
 revenge_target = 1
 call_for_help_radius = 1000.0
+forgive_after_seconds = 3.0
 metadata/_custom_type_script = "uid://is5av5rx4obe"
 
 [node name="ItemThrowerComponent" type="Node" parent="." unique_id=319181608]
@@ -130,7 +117,7 @@ collision_mask = 3
 
 [node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
 script = ExtResource("17_wy6ta")
-behavior_profile = ExtResource("18_vqm1x")
+behavior_profile = ExtResource("18_mxfyb")
 perception = NodePath("PerceptionComponent")
 state_machine = NodePath("AIStateMachine")
 navigation = NodePath("AINavigationController")
@@ -175,7 +162,6 @@ metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]
 script = ExtResource("26_myjwo")
-starting_equipment = Array[ExtResource("27_wym17")]([SubResource("Resource_fkygi"), SubResource("Resource_2a7xa")])
 metadata/_custom_type_script = "uid://bsdwh1fc83f21"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]

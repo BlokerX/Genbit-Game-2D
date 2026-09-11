@@ -42,6 +42,17 @@ func _physics_process(delta: float) -> void:
 	if forgive_after_seconds <= 0.0 or active_grudges.is_empty():
 		return
 		
+	# --- PAUZA ZAPOMINANIA (POŚCIG I POSZUKIWANIA) ---
+	var ai_controller = get_parent().get_node_or_null("AIController")
+	if ai_controller and ai_controller.blackboard:
+		# Jeśli AI kogoś widzi (cel != null) LUB wciąż myszkuje w krzakach (has_last_known_position)
+		if ai_controller.blackboard.target != null or ai_controller.blackboard.has_last_known_position:
+			# Utrzymujemy urazę "na świeżo". Odliczanie zacznie się od zera po powrocie do Idle!
+			for key in active_grudges.keys():
+				active_grudges[key] = forgive_after_seconds
+			return # Przerywamy odliczanie
+	# -------------------------------------------------
+		
 	var keys_to_remove = []
 	for key in active_grudges.keys():
 		active_grudges[key] -= delta
@@ -54,6 +65,8 @@ func _physics_process(delta: float) -> void:
 			personal_relations.erase(key)
 		else:
 			faction_relations.erase(key)
+			
+		print(get_parent().name + ": Zgubiłem trop. Wybaczam napastnikowi.")
 
 func get_disposition_toward(other_character: CharacterEntity) -> Disposition:
 	if other_character == null or other_character == get_parent():

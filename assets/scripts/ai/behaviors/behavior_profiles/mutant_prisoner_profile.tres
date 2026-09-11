@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AIBehaviorProfile" format=3 uid="uid://ddaifq5br1jnj"]
+
+[ext_resource type="Script" uid="uid://bmrx514bvhhvj" path="res://assets/scripts/ai/behaviors/ai_behavior_profile.gd" id="1_bd3n4"]
+
+[resource]
+script = ExtResource("1_bd3n4")
+detection_distance = 850.0
+min_stopping_distance = 100.0
+can_rotate_to_target = false
+wander_radius = 300.0
+melee_switch_distance = 0.0
+metadata/_custom_type_script = "uid://bmrx514bvhhvj"
