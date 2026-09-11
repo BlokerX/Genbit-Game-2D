@@ -1,0 +1,213 @@
+[gd_scene format=3 uid="uid://blqj3v8dcpldy"]
+
+[ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/ai_character_entity.gd" id="1_5xsyh"]
+[ext_resource type="Resource" uid="uid://cc4b01wcxwdqt" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_movement_component.tres" id="2_mairh"]
+[ext_resource type="Resource" uid="uid://eu0stiyexa7w" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_monitored_life_stats_component.tres" id="3_mxfyb"]
+[ext_resource type="Resource" uid="uid://bk3oea42uipv6" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_interaction_and_attack_stats_component.tres" id="4_xfn32"]
+[ext_resource type="Resource" uid="uid://cyj22qg70b803" path="res://assets/scripts/entities/stats/special_instations/soldier/soldier_loot_drop_component.tres" id="5_opdpk"]
+[ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="6_synj6"]
+[ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="7_r242b"]
+[ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="8_b42c7"]
+[ext_resource type="Texture2D" uid="uid://d2bmsjlmavcat" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_right.png" id="9_lb1ql"]
+[ext_resource type="Texture2D" uid="uid://c4bw7p50ib1ff" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_right.png" id="10_ycc30"]
+[ext_resource type="Texture2D" uid="uid://xkgbe5eaic1s" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_right.png" id="11_qcsgh"]
+[ext_resource type="Texture2D" uid="uid://cgcrhsef8d5pn" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back.png" id="12_8dlj0"]
+[ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="13_eucyp"]
+[ext_resource type="Texture2D" uid="uid://clte5xhfgckqh" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_left.png" id="14_ox5am"]
+[ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="15_pyo2m"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="16_kere8"]
+[ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="17_wy6ta"]
+[ext_resource type="Resource" uid="uid://cxw8je180hpd3" path="res://assets/scripts/ai/behaviors/behavior_profiles/soldier_profile.tres" id="18_vqm1x"]
+[ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="19_csxlk"]
+[ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="20_rq1xn"]
+[ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="21_e6db7"]
+[ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="22_r5hmp"]
+[ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="23_oaiv4"]
+[ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="24_87cr1"]
+[ext_resource type="Script" uid="uid://dfeei3x7826u3" path="res://assets/scripts/ai/core/state_dialogue.gd" id="24_xfn32"]
+[ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="25_2pkew"]
+[ext_resource type="Script" uid="uid://bsdwh1fc83f21" path="res://assets/scripts/ai/inventory/ai_inventory_controller.gd" id="26_myjwo"]
+[ext_resource type="Script" uid="uid://cck3c4bk7qr6b" path="res://assets/scripts/ai/inventory/ai_inventory_entry.gd" id="27_wym17"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="28_stm50"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="29_al38p"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="30_8cq5w"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="31_n18bc"]
+[ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="32_lokir"]
+[ext_resource type="Script" uid="uid://cmjrm377enyxi" path="res://assets/scripts/ai/components/npc_dialogue_component.gd" id="33_mairh"]
+[ext_resource type="Resource" uid="uid://dya2n8vc5khbx" path="res://assets/dialogue_system/data/dialogues/graphs/test_dialogue_graph.tres" id="34_mxfyb"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_b42c7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_lb1ql")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_ycc30")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_qcsgh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_8dlj0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_eucyp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_ox5am")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_pyo2m")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="Resource" id="Resource_fkygi"]
+script = ExtResource("27_wym17")
+item_data = ExtResource("28_stm50")
+metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
+
+[sub_resource type="Resource" id="Resource_2a7xa"]
+script = ExtResource("27_wym17")
+item_data = ExtResource("29_al38p")
+metadata/_custom_type_script = "uid://cck3c4bk7qr6b"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
+radius = 40.0
+
+[node name="MutantPrisoner" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("ai_controller", "faction_component", "character_sprite", "effects_collector") groups=["Enemy", "NPC"]]
+collision_layer = 4
+collision_mask = 39
+motion_mode = 1
+script = ExtResource("1_5xsyh")
+ai_controller = NodePath("AIController")
+faction_component = NodePath("FactionComponent")
+movement_universal_script = ExtResource("2_mairh")
+health_stats_script = ExtResource("3_mxfyb")
+interaction_and_attack_stats_script = ExtResource("4_xfn32")
+drop_from_inventory = false
+loot_drop_script = ExtResource("5_opdpk")
+character_sprite = NodePath("AnimatedSprite2D")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="FactionComponent" type="Node" parent="." unique_id=276466438]
+script = ExtResource("6_synj6")
+faction_name = &"Prisoners"
+default_disposition = 1
+revenge_target = 1
+call_for_help_radius = 1000.0
+metadata/_custom_type_script = "uid://is5av5rx4obe"
+
+[node name="ItemThrowerComponent" type="Node" parent="." unique_id=319181608]
+script = ExtResource("7_r242b")
+metadata/_custom_type_script = "uid://70mdhpj1lg2d"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
+texture_filter = 5
+position = Vector2(-0.5, -0.5)
+scale = Vector2(0.45, 0.45)
+sprite_frames = SubResource("SpriteFrames_pijm0")
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("16_kere8")]
+outline_material = null
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="EffectsCollector" type="Node" parent="." unique_id=932642496]
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=2095254467]
+collision_mask = 3
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
+
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
+script = ExtResource("17_wy6ta")
+behavior_profile = ExtResource("18_vqm1x")
+perception = NodePath("PerceptionComponent")
+state_machine = NodePath("AIStateMachine")
+navigation = NodePath("AINavigationController")
+combat = NodePath("AICombatController")
+metadata/_custom_type_script = "uid://0r6n7qknad1h"
+
+[node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
+script = ExtResource("19_csxlk")
+detection_distance = 900.0
+los_ray = NodePath("../../LineOfSight")
+metadata/_custom_type_script = "uid://dlqnxvfcnebwe"
+
+[node name="AIStateMachine" type="Node" parent="AIController" unique_id=179778988 node_paths=PackedStringArray("initial_state")]
+script = ExtResource("20_rq1xn")
+initial_state = NodePath("StateIdle")
+metadata/_custom_type_script = "uid://0wottg54ble"
+
+[node name="StateIdle" type="Node" parent="AIController/AIStateMachine" unique_id=257902515]
+script = ExtResource("21_e6db7")
+metadata/_custom_type_script = "uid://cw3arxlunoxni"
+
+[node name="StateChase" type="Node" parent="AIController/AIStateMachine" unique_id=70319089]
+script = ExtResource("22_r5hmp")
+metadata/_custom_type_script = "uid://cuxi2c1wsn8ec"
+
+[node name="StateSearch" type="Node" parent="AIController/AIStateMachine" unique_id=1197604719]
+script = ExtResource("23_oaiv4")
+metadata/_custom_type_script = "uid://bip6dhdts57cg"
+
+[node name="StateDialogue" type="Node" parent="AIController/AIStateMachine" unique_id=397854200]
+script = ExtResource("24_xfn32")
+metadata/_custom_type_script = "uid://dfeei3x7826u3"
+
+[node name="AINavigationController" type="Node" parent="AIController" unique_id=1639129802]
+script = ExtResource("24_87cr1")
+metadata/_custom_type_script = "uid://c8iewgurqtnad"
+
+[node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
+script = ExtResource("25_2pkew")
+metadata/_custom_type_script = "uid://jorlgpryjbvo"
+
+[node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]
+script = ExtResource("26_myjwo")
+starting_equipment = Array[ExtResource("27_wym17")]([SubResource("Resource_fkygi"), SubResource("Resource_2a7xa")])
+metadata/_custom_type_script = "uid://bsdwh1fc83f21"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
+shape = SubResource("CircleShape2D_r73tf")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="HealthProgressBar" type="ProgressBar" parent="." unique_id=482593767 node_paths=PackedStringArray("character_entity")]
+texture_filter = 5
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("30_8cq5w")
+show_percentage = false
+script = ExtResource("31_n18bc")
+character_entity = NodePath("..")
+
+[node name="Label" type="Label" parent="HealthProgressBar" unique_id=1863562766]
+texture_filter = 5
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AttackComponent" type="Node" parent="." unique_id=1108255229]
+script = ExtResource("32_lokir")
+metadata/_custom_type_script = "uid://bf6qleyepnwwy"
+
+[node name="NPCDialogueComponent" type="Node" parent="." unique_id=899984936]
+script = ExtResource("33_mairh")
+dialogue_graph = ExtResource("34_mxfyb")
+metadata/_custom_type_script = "uid://cmjrm377enyxi"

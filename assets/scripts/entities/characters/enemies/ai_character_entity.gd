@@ -1,5 +1,5 @@
 extends CharacterEntity
-class_name EnemyEntity
+class_name AICharacterEntity
 
 @export_category("AI")
 @export var ai_controller: AIController

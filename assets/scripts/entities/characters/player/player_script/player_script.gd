@@ -232,7 +232,7 @@ func _handle_pushing() -> void:
 			collider.apply_central_impulse(-collision.get_normal() * push_force)
 			
 		# 2. Popychanie Wrogów (np. pająków) - NATURALNE PRZEPYCHANIE
-		elif collider is EnemyEntity:
+		elif collider is AICharacterEntity:
 			# Zamiast wstrzykiwać prędkość, wymuszamy gładkie przesunięcie o ułamek piksela.
 			# Mnożnik 0.2 przy push_force (10.0) przesuwa wroga o 2 piksele na klatkę.
 			# Dzięki użyciu move_and_collide pająk nie przejdzie przez ścianę, jeśli go do niej dociśniesz!

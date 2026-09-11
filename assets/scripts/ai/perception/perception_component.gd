@@ -13,14 +13,11 @@ func initialize(ai_controller: AIController) -> void:
 func process_perception(_delta: float) -> void:
 	var entity = controller.entity
 	var blackboard = controller.blackboard
-	
 	var my_faction = entity.faction_component
 	if not my_faction:
 		my_faction = entity.get_node_or_null("FactionComponent")
-		
-	if not my_faction:
-		return 
-		
+	if not my_faction: return 
+
 	var best_target: CharacterEntity = null
 	var best_distance: float = detection_distance
 	
@@ -28,7 +25,10 @@ func process_perception(_delta: float) -> void:
 		if potential_target == entity: 
 			continue
 			
-		if my_faction.get_disposition_toward(potential_target) == FactionComponent.Disposition.HOSTILE:
+		var disposition = my_faction.get_disposition_toward(potential_target)
+		
+		# AI zaatakuje TYLKO sprowokowanych i otwartych wrogów
+		if disposition == FactionComponent.Disposition.HOSTILE:
 			var dist = entity.global_position.distance_to(potential_target.global_position)
 			if dist < best_distance and can_see_target(potential_target):
 				best_distance = dist

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://q4xj7lh64e4s"]
 
-[ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/enemy_entity.gd" id="1_2nv85"]
+[ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/ai_character_entity.gd" id="1_2nv85"]
 [ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/stats/special_instations/spider/spider_movement_component.tres" id="2_2nv85"]
 [ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider/spider_monitored_life_stats_component.tres" id="3_2nv85"]
 [ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider/spider_interaction_and_attack_stats_component.tres" id="4_dixon"]
@@ -77,10 +77,6 @@ effects_collector = NodePath("EffectsCollector")
 [node name="FactionComponent" type="Node" parent="." unique_id=276466438]
 script = ExtResource("10_3yo02")
 faction_name = &"Spiders"
-faction_relations = {
-&"Player": 0,
-&"Soldiers": 1
-}
 call_for_help_radius = 500.0
 metadata/_custom_type_script = "uid://is5av5rx4obe"
 

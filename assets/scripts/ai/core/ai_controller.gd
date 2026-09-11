@@ -1,7 +1,7 @@
 extends Node
 class_name AIController
 
-var entity: EnemyEntity
+var entity: AICharacterEntity
 var blackboard: AIBlackboard
 
 @export_category("Główne Profile")
@@ -18,7 +18,7 @@ var blackboard: AIBlackboard
 ## Kontroluje logikę walki, dobór odpowiedniej broni z AIInventoryController oraz moment oddania strzału.
 @export var combat: AICombatController
 
-func initialize(owner_entity: EnemyEntity) -> void:
+func initialize(owner_entity: AICharacterEntity) -> void:
 	entity = owner_entity
 	
 	blackboard = AIBlackboard.new()

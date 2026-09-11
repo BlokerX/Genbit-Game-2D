@@ -6,7 +6,7 @@ class_name AIBlackboard
 #region References
 
 ## Postać, do której należy ten Blackboard.
-var entity: EnemyEntity
+var entity: AICharacterEntity
 
 
 #endregion
@@ -42,7 +42,7 @@ var want_to_move: bool = false
 
 #region Initialization
 
-func initialize(owner_entity: EnemyEntity) -> void:
+func initialize(owner_entity: AICharacterEntity) -> void:
 	entity = owner_entity
 
 
