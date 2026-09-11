@@ -411,6 +411,115 @@ resource_local_to_scene = true
 script = ExtResource("9_mncir")
 hand_attack_data = SubResource("Resource_3lkc4")
 
+[sub_resource type="Resource" id="Resource_0btat"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_hwidd"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_s3g4w"]
+script = ExtResource("8_nxa7u")
+damage = 15
+critical_damage = 5
+critical_rate = 0.2
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_stmpd"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
+[sub_resource type="Resource" id="Resource_1udd4"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_yi2gx"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_jvpjj"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
+[sub_resource type="Resource" id="Resource_sgd6q"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_ew5xc"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_2613n"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
+[sub_resource type="Resource" id="Resource_6lnyx"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_4j21y"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_mgv0p"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
+[sub_resource type="Resource" id="Resource_o471o"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_hkqq8"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_3smsk"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
+[sub_resource type="Resource" id="Resource_gloos"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 270.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_sd07r"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 200
+max_health = 200
+
+[sub_resource type="Resource" id="Resource_k7fns"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_s3g4w")
+
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
 starting_room = NodePath("OpenWorld")
@@ -768,5 +877,41 @@ interaction_and_attack_stats_script = SubResource("Resource_p4gho")
 drop_from_loot_table = null
 combat_radius = null
 destroy_entity_after_die = null
+
+[node name="MutantPrisoner2" parent="OpenWorld" unique_id=515071887 instance=ExtResource("18_1hvyy")]
+position = Vector2(6504, 4256)
+movement_universal_script = SubResource("Resource_0btat")
+health_stats_script = SubResource("Resource_hwidd")
+interaction_and_attack_stats_script = SubResource("Resource_stmpd")
+
+[node name="MutantPrisoner3" parent="OpenWorld" unique_id=937447585 instance=ExtResource("18_1hvyy")]
+position = Vector2(6656, 4376)
+movement_universal_script = SubResource("Resource_1udd4")
+health_stats_script = SubResource("Resource_yi2gx")
+interaction_and_attack_stats_script = SubResource("Resource_jvpjj")
+
+[node name="MutantPrisoner4" parent="OpenWorld" unique_id=678937127 instance=ExtResource("18_1hvyy")]
+position = Vector2(6392, 4456)
+movement_universal_script = SubResource("Resource_sgd6q")
+health_stats_script = SubResource("Resource_ew5xc")
+interaction_and_attack_stats_script = SubResource("Resource_2613n")
+
+[node name="MutantPrisoner5" parent="OpenWorld" unique_id=2013194853 instance=ExtResource("18_1hvyy")]
+position = Vector2(6648, 4144)
+movement_universal_script = SubResource("Resource_6lnyx")
+health_stats_script = SubResource("Resource_4j21y")
+interaction_and_attack_stats_script = SubResource("Resource_mgv0p")
+
+[node name="MutantPrisoner6" parent="OpenWorld" unique_id=1245210856 instance=ExtResource("18_1hvyy")]
+position = Vector2(6800, 4336)
+movement_universal_script = SubResource("Resource_o471o")
+health_stats_script = SubResource("Resource_hkqq8")
+interaction_and_attack_stats_script = SubResource("Resource_3smsk")
+
+[node name="MutantPrisoner7" parent="OpenWorld" unique_id=1542668253 instance=ExtResource("18_1hvyy")]
+position = Vector2(6736, 4552)
+movement_universal_script = SubResource("Resource_gloos")
+health_stats_script = SubResource("Resource_sd07r")
+interaction_and_attack_stats_script = SubResource("Resource_k7fns")
 
 [editable path="OpenWorld"]

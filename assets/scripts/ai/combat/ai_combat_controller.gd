@@ -5,11 +5,10 @@ var controller: AIController
 var _last_weapon_index: int = -1 
 
 @export_category("Zdolności Specjalne")
-## Przeciągnij tutaj utworzone pliki .tres z umiejętnościami (np. jump_smash.tres)
 @export var abilities: Array[AIAbility] = []
 
-# Słownik przechowujący aktualny czas odnowienia każdej zdolności
 var _ability_cooldowns: Dictionary = {}
+var is_casting_ability: bool = false # <--- NOWA ZMIENNA
 
 func initialize(ai_controller: AIController) -> void:
 	controller = ai_controller
@@ -22,6 +21,13 @@ func process_combat(delta: float) -> void:
 	var blackboard = controller.blackboard
 	var stats = entity.interaction_and_attack_stats_script
 	
+	# Jeśli AI rzuca umiejętność, całkowicie ODCIKAJ ruch i zwykłe ataki
+	if is_casting_ability:
+		blackboard.want_to_move = false
+		if entity.movement_universal_script:
+			entity.velocity = entity.movement_universal_script.movement_procedure(delta, entity.velocity, Vector2.ZERO)
+		return
+		
 	if not stats or blackboard.target == null: return
 	
 	stats.interaction_cooldown_process(delta)
@@ -32,15 +38,15 @@ func process_combat(delta: float) -> void:
 	var target_radius = blackboard.target.combat_radius if "combat_radius" in blackboard.target else 20.0
 	var edge_dist = max(0.0, dist - (my_radius + target_radius))
 	
-	# --- 1. SPRAWDZANIE ZDOLNOŚCI SPECJALNYCH ---
+	# 1. SPRAWDZANIE ZDOLNOŚCI
 	for ability in abilities:
 		if ability == null: continue
 		if _ability_cooldowns[ability] <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
 			ability.execute(entity, blackboard.target)
 			_ability_cooldowns[ability] = ability.cooldown
-			return # Przerywamy klatkę – AI wykorzystało swój "ruch" na zdolność
+			return 
 			
-	# --- 2. ZWYKŁY ATAK BRONIĄ LUB WRĘCZ ---
+	# 2. ZWYKŁY ATAK
 	var ai_inventory = controller.get_node_or_null("AIInventoryController")
 	var switch_dist = 60.0
 	if controller.behavior_profile and "melee_switch_distance" in controller.behavior_profile:
