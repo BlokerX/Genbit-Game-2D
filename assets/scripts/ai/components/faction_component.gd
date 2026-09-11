@@ -19,22 +19,41 @@ enum RevengeTarget {
 @export var faction_name: StringName = &"Monsters"
 @export var default_disposition: Disposition = Disposition.HOSTILE
 
-## Jeśli włączone, jednostka z automatu traktuje członków swojej własnej frakcji jako FRIENDLY (Sojuszników), bez konieczności wpisywania tego w słownik.
+## Jeśli włączone, traktuje członków własnej frakcji jako FRIENDLY.
 @export var friendly_to_same_faction: bool = true
-
 @export var faction_relations: Dictionary = {}
 
 @export_category("System Zemsty")
 @export var revenge_mode: RevengeMode = RevengeMode.REVENGE_EXCEPT_FRIENDS
-## Używane TYLKO przy 'REVENGE_ONLY_ON_SPECIFIC'.
 @export var specific_revenge_factions: Array[StringName] = []
 
 @export_group("Skala Agresji i Rój")
 @export var revenge_target: RevengeTarget = RevengeTarget.INDIVIDUAL
-## Promień (w pikselach), w którym pobliscy sojusznicy (ta sama frakcja lub Friendly) usłyszą "wołanie o pomoc" i dołączą do ataku.
 @export var call_for_help_radius: float = 800.0
 
+@export_group("Wybaczanie")
+## Czas (w sekundach), po którym frakcja zapomina o ataku. 0.0 oznacza wieczną urazę.
+@export var forgive_after_seconds: float = 0.0
+
 var personal_relations: Dictionary = {}
+var active_grudges: Dictionary = {} # Pamięć uraz
+
+func _physics_process(delta: float) -> void:
+	if forgive_after_seconds <= 0.0 or active_grudges.is_empty():
+		return
+		
+	var keys_to_remove = []
+	for key in active_grudges.keys():
+		active_grudges[key] -= delta
+		if active_grudges[key] <= 0.0:
+			keys_to_remove.append(key)
+			
+	for key in keys_to_remove:
+		active_grudges.erase(key)
+		if key is CharacterEntity:
+			personal_relations.erase(key)
+		else:
+			faction_relations.erase(key)
 
 func get_disposition_toward(other_character: CharacterEntity) -> Disposition:
 	if other_character == null or other_character == get_parent():
@@ -49,13 +68,10 @@ func get_disposition_toward(other_character: CharacterEntity) -> Disposition:
 		
 	if other_faction != null:
 		var target_name = other_faction.faction_name
-		
-		# 1. Szukamy wymuszonych relacji w słowniku
 		if faction_relations.has(target_name): return faction_relations[target_name]
 		elif faction_relations.has(String(target_name)): return faction_relations[String(target_name)]
 		elif faction_relations.has(StringName(target_name)): return faction_relations[StringName(target_name)]
 		
-		# 2. Sprawdzamy czy to nasza krew (ta sama frakcja)
 		if friendly_to_same_faction and target_name == self.faction_name:
 			return Disposition.FRIENDLY
 			
@@ -79,7 +95,6 @@ func should_take_revenge(attacker: CharacterEntity) -> bool:
 			return true
 		RevengeMode.REVENGE_EXCEPT_FRIENDS:
 			var current_disp = get_disposition_toward(attacker)
-			# Wybaczamy obrażenia sojusznikom (FRIENDLY)
 			if current_disp == Disposition.FRIENDLY: return false
 			return true
 		RevengeMode.REVENGE_ONLY_ON_SPECIFIC:
@@ -87,7 +102,6 @@ func should_take_revenge(attacker: CharacterEntity) -> bool:
 			return false
 	return false
 
-## GŁÓWNA LOGIKA ROJU I ESKALACJI
 func process_revenge(attacker: CharacterEntity, is_shared: bool = false) -> void:
 	if not should_take_revenge(attacker):
 		return
@@ -98,15 +112,23 @@ func process_revenge(attacker: CharacterEntity, is_shared: bool = false) -> void
 		
 	var target_faction_name = attacker_faction.faction_name if attacker_faction else &"Unknown"
 	
-	# 1. Kogo nienawidzimy po ataku?
 	if revenge_target == RevengeTarget.ENTIRE_FACTION and target_faction_name != &"Unknown":
 		faction_relations[target_faction_name] = Disposition.HOSTILE
 		faction_relations[String(target_faction_name)] = Disposition.HOSTILE
 		faction_relations[StringName(target_faction_name)] = Disposition.HOSTILE
+		
+		# Rejestrujemy urazę na całej frakcji
+		if forgive_after_seconds > 0.0:
+			active_grudges[target_faction_name] = forgive_after_seconds
+			active_grudges[String(target_faction_name)] = forgive_after_seconds
+			active_grudges[StringName(target_faction_name)] = forgive_after_seconds
 	else:
 		set_personal_disposition(attacker, Disposition.HOSTILE)
 		
-	# 2. Wołanie o pomoc pobliskich sojuszników (Tylko jeśli to my oberwaliśmy pierwsi)
+		# Rejestrujemy osobistą urazę
+		if forgive_after_seconds > 0.0:
+			active_grudges[attacker] = forgive_after_seconds
+		
 	if not is_shared and call_for_help_radius > 0.0:
 		var my_owner = get_parent() as CharacterEntity
 		if not my_owner: return
@@ -128,5 +150,4 @@ func process_revenge(attacker: CharacterEntity, is_shared: bool = false) -> void
 						is_ally = true
 						
 				if is_ally:
-					# Przekazujemy cel sojusznikowi. is_shared = true zapobiega nieskończonym łańcuchom krzyków.
 					ally_faction.process_revenge(attacker, true)
