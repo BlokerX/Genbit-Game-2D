@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="GammaBurstAbility" format=3 uid="uid://ttpv8wiornk7"]
+
+[ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/gamma_burst_ability.gd" id="1_2p250"]
+
+[resource]
+script = ExtResource("1_2p250")
+metadata/_custom_type_script = "uid://merq2t58givb"

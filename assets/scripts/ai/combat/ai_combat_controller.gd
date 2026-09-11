@@ -8,7 +8,8 @@ var _last_weapon_index: int = -1
 @export var abilities: Array[AIAbility] = []
 
 var _ability_cooldowns: Dictionary = {}
-var is_casting_ability: bool = false # <--- NOWA ZMIENNA
+var is_casting_ability: bool = false
+var time_in_combat: float = 0.0 # <--- NOWY LICZNIK
 
 func initialize(ai_controller: AIController) -> void:
 	controller = ai_controller
@@ -21,46 +22,77 @@ func process_combat(delta: float) -> void:
 	var blackboard = controller.blackboard
 	var stats = entity.interaction_and_attack_stats_script
 	
-	# Jeśli AI rzuca umiejętność, całkowicie ODCIKAJ ruch i zwykłe ataki
+	# Zegary umiejętności tykają, nawet jeśli wróg odpoczywa
+	_process_ability_cooldowns(delta)
+	if stats:
+		stats.interaction_cooldown_process(delta)
+		
+	# Jeśli zgubiliśmy cel, resetujemy czas walki
+	if not stats or blackboard.target == null: 
+		time_in_combat = 0.0
+		return
+		
+	# AI aktywnie widzi cel - odliczamy czas walki!
+	time_in_combat += delta
+
+	var dist = entity.global_position.distance_to(blackboard.target.global_position)
+	var my_radius = entity.combat_radius if "combat_radius" in entity else 20.0
+	var target_radius = blackboard.target.combat_radius if "combat_radius" in blackboard.target else 20.0
+	var edge_dist = max(0.0, dist - (my_radius + target_radius))
+
+	# 1. SPRAWDZANIE ZDOLNOŚCI
+	var ability_casted_this_frame = false
+	for ability in abilities:
+		if ability == null: continue
+		
+		# Sprawdzamy opóźnienie pierwszego rzucenia
+		if time_in_combat < ability.first_cast_delay:
+			continue
+		
+		# Jeśli AI aktualnie rzuca inną zdolność, sprawdzamy tylko te z "wyjątkiem"
+		if is_casting_ability and not ability.ignore_global_cast_lock:
+			continue
+
+		if _ability_cooldowns[ability] <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
+			# Rzut kością na nieprzewidywalność
+			if randf() <= ability.cast_chance:
+				ability.execute(entity, blackboard.target)
+				_ability_cooldowns[ability] = ability.cooldown
+				ability_casted_this_frame = true
+				
+				# Jeśli to był normalny atak, przerywamy pętlę, by nie rzucić dwóch naraz
+				if not ability.ignore_global_cast_lock:
+					break
+			else:
+				# AI "zawahało się" przed atakiem. Spróbuje ponownie za krótką, losową chwilę.
+				_ability_cooldowns[ability] = randf_range(0.3, 1.2)
+				
+	# Jeśli jesteśmy w trakcie rzucania zdolności (channelling), odcinamy ruch i zwykłe strzały
 	if is_casting_ability:
 		blackboard.want_to_move = false
 		if entity.movement_universal_script:
 			entity.velocity = entity.movement_universal_script.movement_procedure(delta, entity.velocity, Vector2.ZERO)
 		return
 		
-	if not stats or blackboard.target == null: return
-	
-	stats.interaction_cooldown_process(delta)
-	_process_ability_cooldowns(delta)
-	
-	var dist = entity.global_position.distance_to(blackboard.target.global_position)
-	var my_radius = entity.combat_radius if "combat_radius" in entity else 20.0
-	var target_radius = blackboard.target.combat_radius if "combat_radius" in blackboard.target else 20.0
-	var edge_dist = max(0.0, dist - (my_radius + target_radius))
-	
-	# 1. SPRAWDZANIE ZDOLNOŚCI
-	for ability in abilities:
-		if ability == null: continue
-		if _ability_cooldowns[ability] <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
-			ability.execute(entity, blackboard.target)
-			_ability_cooldowns[ability] = ability.cooldown
-			return 
-			
+	if ability_casted_this_frame:
+		return
+
 	# 2. ZWYKŁY ATAK
 	var ai_inventory = controller.get_node_or_null("AIInventoryController")
 	var switch_dist = 60.0
 	if controller.behavior_profile and "melee_switch_distance" in controller.behavior_profile:
 		switch_dist = controller.behavior_profile.melee_switch_distance
-		
+
 	if ai_inventory and not ai_inventory.items.is_empty():
 		_select_best_weapon(ai_inventory, edge_dist, switch_dist)
-		var weapon = ai_inventory.get_current_item()
-		if weapon != null:
-			var attack_comp = entity.get_node_or_null("AttackComponent")
-			if edge_dist <= stats.get_total_range() and stats.can_attack():
-				var has_los = controller.perception.can_see_target(blackboard.target)
-				if attack_comp and has_los:
-					attack_comp.execute_attack(entity, blackboard.target, weapon, ai_inventory, stats, has_los)
+
+	var weapon = ai_inventory.get_current_item() if ai_inventory else null
+	if weapon != null:
+		var attack_comp = entity.get_node_or_null("AttackComponent")
+		if edge_dist <= stats.get_total_range() and stats.can_attack():
+			var has_los = controller.perception.can_see_target(blackboard.target)
+			if attack_comp and has_los:
+				attack_comp.execute_attack(entity, blackboard.target, weapon, ai_inventory, stats, has_los)
 	else:
 		if edge_dist <= stats.get_total_range() and stats.can_attack():
 			stats.execute_attack_on_target(entity, blackboard.target)
@@ -77,25 +109,16 @@ func _select_best_weapon(inventory: AIInventoryController, distance: float, swit
 	for i in range(inventory.items.size()):
 		var item = inventory.items[i]
 		if item.data.components == null: continue
-		
-		# Omijamy przedmioty, które są tylko dropem (np. mikstury wrzucone jako loot)
 		if not item.state.get("is_usable_by_ai", true): continue
 		
 		for comp in item.data.components:
 			if comp is MeleeWeaponComponent and profile.can_use_melee_weapons:
-				if distance < switch_dist:
-					best_index = i
-					break
+				if distance < switch_dist: best_index = i; break
 			elif comp is RangedWeaponComponent and profile.can_use_ranged_weapons:
-				if distance >= switch_dist:
-					best_index = i
-					break
+				if distance >= switch_dist: best_index = i; break
 			elif comp is ThrowableComponent and profile.can_throw_items:
-				if distance >= switch_dist:
-					best_index = i
-					break
+				if distance >= switch_dist: best_index = i; break
 
-	# Jeśli udało się znaleźć odpowiednią broń (zgodną z profilem i dystansem)
 	if best_index != -1 and best_index != _last_weapon_index:
 		_last_weapon_index = best_index
 		inventory.current_item_index = best_index

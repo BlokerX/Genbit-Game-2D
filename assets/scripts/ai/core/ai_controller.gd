@@ -40,6 +40,10 @@ func initialize(owner_entity: AICharacterEntity) -> void:
 	if state_machine: state_machine.initialize(self)
 	if navigation: navigation.initialize(self)
 	if combat: combat.initialize(self)
+	
+	var phase_controller = get_node_or_null("AIPhaseController")
+	if phase_controller:
+		phase_controller.initialize(self)
 
 func _physics_process(delta: float) -> void:
 	if perception:

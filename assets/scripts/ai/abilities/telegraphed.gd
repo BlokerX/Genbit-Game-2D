@@ -68,6 +68,7 @@ func _apply_effects_to(target_node: Node2D) -> void:
 	if target_node.has_method("receive_effect"):
 		for eff in effects:
 			var cloned_eff = eff.duplicate(true)
-			cloned_eff.source_entity = source_entity
+			# ZABEZPIECZENIE: Sprawdzamy czy sprawca ataku nadal żyje!
+			cloned_eff.source_entity = source_entity if is_instance_valid(source_entity) else null
 			cloned_eff.source_position = global_position
 			target_node.receive_effect(cloned_eff)

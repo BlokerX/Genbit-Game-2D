@@ -27,6 +27,8 @@
 [ext_resource type="Script" uid="uid://cck3c4bk7qr6b" path="res://assets/scripts/ai/inventory/ai_inventory_entry.gd" id="26_6d24p"]
 [ext_resource type="Texture2D" uid="uid://b5mhaqeadg6l6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_back_left.png" id="26_cxe2y"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="26_dth1k"]
+[ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="26_pj7l0"]
+[ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/gamma_burst_ability.gd" id="27_cxe2y"]
 [ext_resource type="Texture2D" uid="uid://clte5xhfgckqh" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_left.png" id="27_mlpbi"]
 [ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="28_fkygi"]
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="28_wvv3y"]
@@ -64,6 +66,10 @@ animations = [{
 "name": &"default",
 "speed": 5.0
 }]
+
+[sub_resource type="Resource" id="Resource_mlpbi"]
+script = ExtResource("27_cxe2y")
+metadata/_custom_type_script = "uid://merq2t58givb"
 
 [sub_resource type="Resource" id="Resource_fkygi"]
 script = ExtResource("26_6d24p")
@@ -161,6 +167,7 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("20_egcg1")
+abilities = Array[ExtResource("26_pj7l0")]([SubResource("Resource_mlpbi")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]

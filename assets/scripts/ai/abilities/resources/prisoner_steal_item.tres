@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="StealItemAbility" format=3 uid="uid://c3eab0vyjyi36"]
+
+[ext_resource type="Script" uid="uid://dnu80ykb4pewa" path="res://assets/scripts/ai/abilities/steal_item_ability.gd" id="1_gdi26"]
+
+[resource]
+script = ExtResource("1_gdi26")
+ignore_global_cast_lock = true
+metadata/_custom_type_script = "uid://dnu80ykb4pewa"

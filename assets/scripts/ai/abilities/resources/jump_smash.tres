@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="JumpSmashAbility" format=3 uid="uid://b2ekbgwuyl38v"]
 
-[ext_resource type="Script" uid="uid://de1surupc81ha" path="res://assets/scripts/ai/abilities/jump_smash_ability.gd" id="1_x734u"]
+[ext_resource type="Script" uid="uid://de1surupc81ha" path="res://assets/scripts/ai/abilities/jump_smash_ability.gd" id="1_l3bby"]
 
 [resource]
-script = ExtResource("1_x734u")
+script = ExtResource("1_l3bby")
 ability_name = "Mutant Smash"
 min_range = 50.0
 max_range = 250.0

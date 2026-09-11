@@ -28,7 +28,8 @@
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="25_2pkew"]
 [ext_resource type="Script" uid="uid://bsdwh1fc83f21" path="res://assets/scripts/ai/inventory/ai_inventory_controller.gd" id="26_myjwo"]
 [ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="27_synj6"]
-[ext_resource type="Resource" uid="uid://b2ekbgwuyl38v" path="res://assets/scripts/ai/abilities/resources/mutant_smash.tres" id="28_r242b"]
+[ext_resource type="Resource" uid="uid://b2ekbgwuyl38v" path="res://assets/scripts/ai/abilities/resources/jump_smash.tres" id="28_r242b"]
+[ext_resource type="Resource" uid="uid://c3eab0vyjyi36" path="res://assets/scripts/ai/abilities/resources/prisoner_steal_item.tres" id="29_xfn32"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="30_8cq5w"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="31_n18bc"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="32_lokir"]
@@ -157,7 +158,7 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("25_2pkew")
-abilities = Array[ExtResource("27_synj6")]([ExtResource("28_r242b")])
+abilities = Array[ExtResource("27_synj6")]([ExtResource("28_r242b"), ExtResource("29_xfn32")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]

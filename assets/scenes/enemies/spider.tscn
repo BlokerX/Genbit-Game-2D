@@ -16,6 +16,8 @@
 [ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="15_lkvbf"]
 [ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="16_2nv85"]
 [ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="17_dixon"]
+[ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="17_ml77n"]
+[ext_resource type="Resource" uid="uid://c0vw7l24sp7od" path="res://assets/scripts/ai/abilities/resources/acid_spit.tres" id="18_3yo02"]
 [ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="18_h48t6"]
 [ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="18_ml77n"]
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="19_3yo02"]
@@ -129,6 +131,7 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("19_3yo02")
+abilities = Array[ExtResource("17_ml77n")]([ExtResource("18_3yo02")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
