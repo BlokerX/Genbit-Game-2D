@@ -88,6 +88,7 @@ faction_component = NodePath("FactionComponent")
 movement_universal_script = ExtResource("2_6d24p")
 health_stats_script = ExtResource("3_fkygi")
 interaction_and_attack_stats_script = ExtResource("4_2a7xa")
+drop_from_inventory = false
 loot_drop_script = ExtResource("5_6d24p")
 character_sprite = NodePath("AnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
@@ -96,8 +97,8 @@ effects_collector = NodePath("EffectsCollector")
 script = ExtResource("10_65b62")
 faction_name = &"Soldiers"
 faction_relations = {
-&"Monsters": 1,
-&"Player": 0
+&"Player": 0,
+&"Spiders": 1
 }
 revenge_target = 1
 call_for_help_radius = 1000.0

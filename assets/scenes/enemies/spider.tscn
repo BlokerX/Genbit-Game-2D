@@ -76,6 +76,7 @@ effects_collector = NodePath("EffectsCollector")
 
 [node name="FactionComponent" type="Node" parent="." unique_id=276466438]
 script = ExtResource("10_3yo02")
+faction_name = &"Spiders"
 faction_relations = {
 &"Player": 0,
 &"Soldiers": 1

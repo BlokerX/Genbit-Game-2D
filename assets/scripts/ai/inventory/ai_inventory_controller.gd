@@ -21,6 +21,10 @@ func _ready() -> void:
 	for entry in starting_equipment:
 		if entry != null and entry.item_data != null:
 			var inst = ItemInstance.new(entry.item_data.duplicate(true), entry.amount)
+			
+			# Wstrzykujemy flagę dropu do stanu przedmiotu!
+			inst.state["drop_on_death"] = entry.drop_on_death
+			
 			# Ustawiamy tylko wytrzymałość, ignorujemy sztuczne ładowanie powietrzem!
 			if inst.data.components != null:
 				for comp in inst.data.components:
@@ -117,12 +121,20 @@ func add_instance(instance: ItemInstance) -> ItemInstance:
 
 func drop_all_items(owner_entity: Node2D) -> void:
 	var thrower = owner_entity.get_node_or_null("ItemThrowerComponent")
+	
 	for i in range(items.size() - 1, -1, -1):
 		var item_inst = items[i]
 		if item_inst != null and item_inst.data != null:
-			if thrower:
-				var random_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-				thrower.handle_item_drop(owner_entity, item_inst, true, false, random_dir)
-			else:
-				print("Brak ItemThrowerComponent u wroga: ", owner_entity.name)
+			
+			# Odczytujemy zapisaną flagę (domyślnie true, by uniknąć błędów)
+			var should_drop = item_inst.state.get("drop_on_death", true)
+			
+			if should_drop:
+				if thrower:
+					var random_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+					thrower.handle_item_drop(owner_entity, item_inst, true, false, random_dir)
+				else:
+					print("Brak ItemThrowerComponent u wroga: ", owner_entity.name)
+					
+		# Usuwamy z ekwipunku niezależnie od tego, czy upadł na ziemię, czy przepadł
 		items.remove_at(i)
