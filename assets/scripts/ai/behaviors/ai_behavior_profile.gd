@@ -43,3 +43,11 @@ class_name AIBehaviorProfile
 @export_category("Walka i Wybór Broni")
 ## Dystans, poniżej którego AI schowa broń palną i wyciągnie broń białą (np. nóż).
 @export var melee_switch_distance: float = 60.0
+
+@export_category("Zdolności i Ograniczenia Ekwipunku")
+## Czy ten przeciwnik potrafi używać broni wręcz? (Pająk: Tak, Żołnierz: Tak)
+@export var can_use_melee_weapons: bool = true
+## Czy ten przeciwnik umie pociągnąć za spust? (Pająk: Nie, Żołnierz: Tak)
+@export var can_use_ranged_weapons: bool = true
+## Czy ten przeciwnik umie rzucać przedmiotami (granaty, bomby)?
+@export var can_throw_items: bool = true

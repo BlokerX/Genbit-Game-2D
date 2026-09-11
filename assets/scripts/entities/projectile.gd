@@ -1,75 +1,82 @@
 extends Area2D
 
 @export var speed: float = 600.0
-@export var lifetime: float = 4.0 # Pocisk znika po 4 sekundach jeśli w nic nie trafi
+@export var lifetime: float = 4.0
+@export var friendly_fire: bool = false # <--- NOWA FLAGA
 
 var direction := Vector2.ZERO
 var effects_to_apply: Array[Effect] = []
 var _time_alive: float = 0.0
-
-# --- NAPRAWA 1: Referencja twórcy ---
 var shooter: Node2D = null
 
 func _ready():
-	# Skrypt nasłuchuje "zwykłej" kolizji (np. gdy wróg wejdzie w pocisk)
 	body_entered.connect(_on_body_entered)
-	rotation = direction.angle() # Ważne przygotowania do ataku
+	rotation = direction.angle()
 
 func _physics_process(delta):
 	_time_alive += delta
 	if _time_alive >= lifetime:
 		queue_free()
 		return
-		
-	# Obliczamy wektor ruchu dla tej konkretnej klatki
-	var move_vector = direction * speed * delta
-	
-	# --- NAPRAWA 2: Anti-Tunneling (RayCast) ---
-	# Sprawdzamy fizycznie, czy na naszej drodze RUCHU jest jakaś ściana lub wróg, zanim tam w ogóle polecimy.
-	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(global_position, global_position + move_vector)
-	query.collision_mask = collision_mask # Używamy masek fizyki przypisanych do pocisku
-	
-	if shooter != null and shooter is CollisionObject2D:
-		# Wykluczamy ciało samego strzelca z uderzenia promienia!
-		query.exclude = [shooter.get_rid()]
-		
-	var result = space_state.intersect_ray(query)
-	
-	if result:
-		# Trafiliśmy w coś "pomiędzy" klatkami! (Ściana nie została przeskoczona)
-		global_position = result.position # Teleportujemy pocisk na miejsce zderzenia
-		_on_body_entered(result.collider) # Wymuszamy wywołanie ataku
-	else:
-		# Droga wolna, przesuwamy pocisk normalnie
-		global_position += move_vector
 
+	var remaining_dist = speed * delta
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, global_position + direction * remaining_dist)
+	query.collision_mask = collision_mask
+	
+	if is_instance_valid(shooter) and shooter is CollisionObject2D:
+		query.exclude = [shooter.get_rid()]
+
+	var hit_valid_target = false
+	var max_penetrations = 5 # Limit pętli (zabezpieczenie przed krashem)
+	
+	# Pętla penetrująca: jeśli trafimy sojusznika, ignorujemy go i skanujemy dalej
+	while max_penetrations > 0:
+		var result = space_state.intersect_ray(query)
+		if result:
+			var col = result.collider
+			if not friendly_fire and _is_ally(col):
+				# Trafiono sojusznika: dodajemy go do wyjątków, przesuwamy początek promienia i szukamy dalej
+				if col is CollisionObject2D:
+					query.exclude.append(col.get_rid())
+				query.from = result.position
+				max_penetrations -= 1
+			else:
+				# Trafiono prawowity cel (Wróg / Ściana)
+				global_position = result.position
+				_on_body_entered(col)
+				hit_valid_target = true
+				break
+		else:
+			break # Pusta przestrzeń
+
+	if not hit_valid_target:
+		global_position += direction * remaining_dist
 
 func _on_body_entered(body: Node2D):
-	# Ignorujemy kolizję z twórcą pocisku (Gracz lub Wróg nie zrani samego siebie)
-	if body == shooter:
-		return
-		
-	# --- NAPRAWA 3: Blokada podwójnego uderzenia ---
-	# Jeśli dotarliśmy tutaj, odłączamy sygnał i usypiamy fizykę pocisku.
-	# Dzięki temu zderzenie wywoła się tylko raz!
+	if body == shooter: return
+	if not friendly_fire and _is_ally(body): return # Przelatuje przez ciało sojusznika
+	
 	if body_entered.is_connected(_on_body_entered):
 		body_entered.disconnect(_on_body_entered)
-	else : return
+	else:
+		return
+		
 	set_deferred("monitoring", false)
-	
-	# Aplikowanie efektów na ofiarę (zadziała na wrogów, skrzynki, beczki itp.)
+
 	if body.has_method("receive_effect"):
 		for effect in effects_to_apply:
-			
-			# UNIWERSALNE WSTRZYKIWANIE (Epicentrum to pocisk)
 			effect.source_position = self.global_position
-			if is_instance_valid(shooter):
-				effect.source_entity = shooter
-			else:
-				effect.source_entity = null
-			
+			effect.source_entity = shooter if is_instance_valid(shooter) else null
 			body.receive_effect(effect)
-			
-	# Zniszcz pocisk po trafieniu w cokolwiek (wroga, drzwi lub ścianę)
+
 	queue_free()
+
+## Sprawdza FactionComponent by zweryfikować czy cele są po tej samej stronie
+func _is_ally(body: Node2D) -> bool:
+	if not is_instance_valid(shooter) or not body.has_method("get_node_or_null"): 
+		return false
+	var my_faction = shooter.get_node_or_null("FactionComponent")
+	if my_faction and body is CharacterEntity:
+		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
+	return false

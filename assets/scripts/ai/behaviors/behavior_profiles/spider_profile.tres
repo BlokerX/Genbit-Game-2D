@@ -4,4 +4,7 @@
 
 [resource]
 script = ExtResource("1_wbfk2")
+can_use_melee_weapons = false
+can_use_ranged_weapons = false
+can_throw_items = false
 metadata/_custom_type_script = "uid://bmrx514bvhhvj"

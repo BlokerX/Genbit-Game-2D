@@ -71,24 +71,38 @@ func _process_ability_cooldowns(delta: float) -> void:
 			_ability_cooldowns[ability] -= delta
 
 func _select_best_weapon(inventory: AIInventoryController, distance: float, switch_dist: float) -> void:
-	var best_index = inventory.current_item_index
+	var best_index = -1
+	var profile = controller.behavior_profile
+	
 	for i in range(inventory.items.size()):
 		var item = inventory.items[i]
 		if item.data.components == null: continue
+		
+		# Omijamy przedmioty, które są tylko dropem (np. mikstury wrzucone jako loot)
+		if not item.state.get("is_usable_by_ai", true): continue
+		
 		for comp in item.data.components:
-			if comp is MeleeWeaponComponent and distance < switch_dist:
-				best_index = i
-				break
-			elif comp is RangedWeaponComponent and distance >= switch_dist:
-				best_index = i
-				break
+			if comp is MeleeWeaponComponent and profile.can_use_melee_weapons:
+				if distance < switch_dist:
+					best_index = i
+					break
+			elif comp is RangedWeaponComponent and profile.can_use_ranged_weapons:
+				if distance >= switch_dist:
+					best_index = i
+					break
+			elif comp is ThrowableComponent and profile.can_throw_items:
+				if distance >= switch_dist:
+					best_index = i
+					break
 
-	if best_index != _last_weapon_index:
+	# Jeśli udało się znaleźć odpowiednią broń (zgodną z profilem i dystansem)
+	if best_index != -1 and best_index != _last_weapon_index:
 		_last_weapon_index = best_index
 		inventory.current_item_index = best_index
 		var new_weapon = inventory.get_current_item()
 		if new_weapon and new_weapon.data.components:
 			for comp in new_weapon.data.components:
-				if comp is MeleeWeaponComponent or comp is RangedWeaponComponent:
-					controller.entity.interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
+				if comp is MeleeWeaponComponent or comp is RangedWeaponComponent or comp is ThrowableComponent:
+					if "attack_data" in comp:
+						controller.entity.interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
 					controller.entity.interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)

@@ -22,8 +22,9 @@ func _ready() -> void:
 		if entry != null and entry.item_data != null:
 			var inst = ItemInstance.new(entry.item_data.duplicate(true), entry.amount)
 			
-			# Wstrzykujemy flagę dropu do stanu przedmiotu!
+			# Wstrzykujemy flagi do stanu przedmiotu!
 			inst.state["drop_on_death"] = entry.drop_on_death
+			inst.state["is_usable_by_ai"] = entry.is_usable_by_ai # <--- NOWA LINIJKA
 			
 			# Ustawiamy tylko wytrzymałość, ignorujemy sztuczne ładowanie powietrzem!
 			if inst.data.components != null:

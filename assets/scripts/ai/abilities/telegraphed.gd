@@ -8,6 +8,8 @@ var effects: Array[Effect] = []
 var source_entity: Node2D
 var specific_target: Node2D = null # <--- Opcjonalny, pojedynczy cel
 
+@export var friendly_fire: bool = false
+
 func setup(pos: Vector2, rad: float, dur: float, effs: Array[Effect], source: Node2D, target: Node2D = null) -> void:
 	global_position = pos
 	radius = rad
@@ -43,17 +45,24 @@ func _explode() -> void:
 	set_process(false)
 	
 	if specific_target != null:
-		# ATAK SINGLE-TARGET: Zero fizyki. Sprawdzamy tylko dystans od środka ataku do celu.
 		if is_instance_valid(specific_target):
 			if global_position.distance_to(specific_target.global_position) <= radius:
 				_apply_effects_to(specific_target)
 	else:
-		# PRAWDZIWE AOE: (np. rzucony granat)
 		for body in get_overlapping_bodies():
 			if body == source_entity: continue 
+			# Blokada AOE dla sojuszników:
+			if not friendly_fire and _is_ally(body): continue
 			_apply_effects_to(body)
 			
 	queue_free()
+
+func _is_ally(body: Node2D) -> bool:
+	if not is_instance_valid(source_entity) or not body.has_method("get_node_or_null"): return false
+	var my_faction = source_entity.get_node_or_null("FactionComponent")
+	if my_faction and body is CharacterEntity:
+		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
+	return false
 
 func _apply_effects_to(target_node: Node2D) -> void:
 	if target_node.has_method("receive_effect"):
