@@ -17,6 +17,7 @@ var blackboard: AIBlackboard
 @export var navigation: AINavigationController
 ## Kontroluje logikę walki, dobór odpowiedniej broni z AIInventoryController oraz moment oddania strzału.
 @export var combat: AICombatController
+@export var threat_assessment: ThreatAssessmentComponent
 
 func initialize(owner_entity: AICharacterEntity) -> void:
 	entity = owner_entity
@@ -44,10 +45,17 @@ func initialize(owner_entity: AICharacterEntity) -> void:
 	var phase_controller = get_node_or_null("AIPhaseController")
 	if phase_controller:
 		phase_controller.initialize(self)
+	
+	if not threat_assessment:
+		threat_assessment = get_node_or_null("ThreatAssessmentComponent")
+	if threat_assessment:
+		threat_assessment.initialize(self)
 
 func _physics_process(delta: float) -> void:
 	if perception:
 		perception.process_perception(delta) # Zmysły szukają celów
+	if threat_assessment:
+		threat_assessment.process_threats(delta)
 	if state_machine:
 		state_machine.process_physics(delta)
 	if navigation:

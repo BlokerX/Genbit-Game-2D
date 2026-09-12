@@ -74,9 +74,16 @@ func _on_body_entered(body: Node2D):
 
 ## Sprawdza FactionComponent by zweryfikować czy cele są po tej samej stronie
 func _is_ally(body: Node2D) -> bool:
-	if not is_instance_valid(shooter) or not body.has_method("get_node_or_null"): 
+	if not is_instance_valid(shooter) or not is_instance_valid(body): 
 		return false
+		
+	# Pobierz frakcję strzelca
 	var my_faction = shooter.get_node_or_null("FactionComponent")
-	if my_faction and body is CharacterEntity:
+	if not my_faction:
+		return false
+		
+	# Sprawdź czy ofiara MA jakikolwiek FactionComponent (Duck Typing zamiast Class checking)
+	if body.has_node("FactionComponent"):
 		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
+		
 	return false

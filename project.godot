@@ -65,6 +65,7 @@ EnemySpawn=""
 ObjectSpawn=""
 ItemSpawn=""
 Map=""
+Hazard=""
 
 [input]
 

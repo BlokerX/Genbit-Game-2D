@@ -39,6 +39,13 @@ var want_to_move: bool = false
 
 #endregion
 
+#region Threat Analysis
+## Wektor odpychający AI od niebezpieczeństw (miny, lufa gracza)
+var avoidance_vector: Vector2 = Vector2.ZERO
+## Skala paniki/zagrożenia (0.0 - 1.0)
+var threat_level: float = 0.0
+#endregion
+
 
 #region Initialization
 

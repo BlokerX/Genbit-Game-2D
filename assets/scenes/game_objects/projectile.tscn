@@ -6,7 +6,7 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_vj4cm"]
 radius = 6.0
 
-[node name="Projectile" type="Area2D" unique_id=349043790]
+[node name="Projectile" type="Area2D" unique_id=349043790 groups=["Hazard", "RespawnPoint"]]
 collision_layer = 32
 collision_mask = 7
 script = ExtResource("1_scc3m")

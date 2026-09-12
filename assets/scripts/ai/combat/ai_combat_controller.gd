@@ -118,14 +118,19 @@ func _select_best_weapon(inventory: AIInventoryController, distance: float, swit
 				if distance >= switch_dist: best_index = i; break
 			elif comp is ThrowableComponent and profile.can_throw_items:
 				if distance >= switch_dist: best_index = i; break
+			elif comp is PlaceableComponent and profile.can_throw_items:
+				# AI decyduje się położyć minę, jeśli gracz się do niego zbliża (np. ucieka przed miną)
+				if distance < switch_dist + 150.0: best_index = i; break
 
-	if best_index != -1 and best_index != _last_weapon_index:
-		_last_weapon_index = best_index
-		inventory.current_item_index = best_index
-		var new_weapon = inventory.get_current_item()
-		if new_weapon and new_weapon.data.components:
-			for comp in new_weapon.data.components:
-				if comp is MeleeWeaponComponent or comp is RangedWeaponComponent or comp is ThrowableComponent:
-					if "attack_data" in comp:
-						controller.entity.interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
-					controller.entity.interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
+		if best_index != -1 and best_index != _last_weapon_index:
+			_last_weapon_index = best_index
+			inventory.current_item_index = best_index
+			# Odświeżenie atrybutów:
+			var new_weapon = inventory.get_current_item()
+			if new_weapon and new_weapon.data.components:
+				for new_comp in new_weapon.data.components:
+					if new_comp is MeleeWeaponComponent or new_comp is RangedWeaponComponent or new_comp is ThrowableComponent or new_comp is PlaceableComponent:
+						if "attack_data" in new_comp:
+							controller.entity.interaction_and_attack_stats_script.actual_attack_data = new_comp.attack_data
+						if "use_cooldown" in new_comp:
+							controller.entity.interaction_and_attack_stats_script.change_item_cooldown(new_comp.use_cooldown)

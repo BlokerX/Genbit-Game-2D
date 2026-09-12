@@ -20,6 +20,9 @@ class_name AIBehaviorProfile
 
 @export_category("Poruszanie")
 
+## Jeśli włączone, AI będzie analizować zagrożenia (broń gracza, miny) i modyfikować swoją ścieżkę.
+@export var intelligent_movement: bool = false
+
 ## Jeśli włączone, wróg będzie płynnie i fizycznie obracał swój węzeł w stronę celu (jak wskazówka zegara). 
 ## Włącz dla gier Top-Down (np. Hotline Miami). 
 ## Wyłącz dla rzutów izometrycznych lub side-scrollerów, gdzie obrót załatwia zmiana klatek animacji.

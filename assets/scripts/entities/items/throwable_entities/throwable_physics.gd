@@ -22,6 +22,7 @@ var effects_to_apply: Array[Effect] = []
 var _time_alive: float = 0.0
 
 func _ready() -> void:
+	add_to_group("Hazard")
 	gravity_scale = 0.0
 	linear_damp = friction / 100.0
 	contact_monitor = true
@@ -64,19 +65,16 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		return
 	set_meta("is_triggered", true)
 
-	# TODO zapalnik animacja tu
+	# --- ZMIANA GRAFIKI ---
+	if "main_sprite" in self and "activated_texture" in self and get("main_sprite") != null and get("activated_texture") != null:
+		get("main_sprite").texture = get("activated_texture")
 
 	# --- 1. ODLICZANIE ZAPALNIKA (Oczekiwanie na wybuch) ---
-	# Odliczamy czas opóźnienia ZANIM obiekt roześle efekty do otoczenia.
-	# Nie chowamy grafiki, mina po prostu fizycznie czeka na detonację.
 	if activation_delay > 0.0 and direct_hit == null:
 		await get_tree().create_timer(activation_delay).timeout
 		
-		# Upewniamy się, że obiekt nie zniknął podczas odliczania
 		if not is_inside_tree():
 			return
-
-	# TODO wybuch animacja tu
 
 	# --- 2. BUM! (Faktyczny wybuch i rozesłanie fali uderzeniowej) ---
 	var targets: Array[Node2D] = []
@@ -87,49 +85,64 @@ func trigger_effect(direct_hit: Node2D) -> void:
 			if not targets.has(area):
 				targets.append(area)
 	else:
-		# Zabezpieczenie: RigidBody2D nie potrafi samo sprawdzać obszaru bez węzła Area2D!
-		push_warning("BŁĄD: ThrowablePhysics (Bomba) wybuchła, ale nie ma przypisanego 'aoe_area' w Inspektorze!")
-		
+		push_warning("BŁĄD: ThrowablePhysics wybuchła, ale nie ma przypisanego 'aoe_area' w Inspektorze!")
 		
 	if direct_hit != null and not targets.has(direct_hit):
 		targets.append(direct_hit)
 		
 	for body in targets:
-		if body == shooter and not friendly_fire:
+		# Zabezpieczamy się sprawdzając czy shooter nadal istnieje
+		if is_instance_valid(shooter) and body == shooter and not friendly_fire:
+			continue
+			
+		# Zabezpieczenie sojuszników przed friendly fire!
+		if not friendly_fire and _is_ally(body):
 			continue
 			
 		if body.has_method("receive_effect"):
 			for effect in effects_to_apply:
-				# UNIWERSALNE WSTRZYKIWANIE (Obejmuje odrzut, przyciąganie itp.)
 				if "source_position" in effect:
 					effect.source_position = self.global_position
+					
+				# --- KLUCZOWA POPRAWKA PROWOKACJI I BŁĘDU CRASHU ---
+				if "source_entity" in effect:
+					effect.source_entity = shooter if is_instance_valid(shooter) else null
 					
 				body.receive_effect(effect)
 
 	# --- 3. USUNIĘCIE OBIEKTU PO WYBUCHU ---
 	queue_free()
 
-## Odbieranie efektów (zarządzanie tym, co aktywuje ten obiekt)
 func receive_effect(effect: Effect) -> bool:
-	
-	# 1. Reakcja na czysty sygnał aktywacji (TriggerEffect)
 	if effect is TriggerEffect:
 		if activate_on_trigger and not is_queued_for_deletion():
-			trigger_effect(null) # Uruchamiamy główną funkcję (cokolwiek ten obiekt robi)
-		return true # Obiekt poprawnie przyjął sygnał
+			trigger_effect(null) 
+		return true 
 		
-	# 2. Reakcja na obrażenia (DamageEffect)
 	if effect is DamageEffect:
 		if activate_on_damage and not is_queued_for_deletion():
 			trigger_effect(null)
-		return true # Obiekt przyjął obrażenia (np. pancerna skrzynka, która nie pęka)
+		return true 
 		
-	# 3. Reakcja na odrzut (KnockbackEffect)
 	if effect is KnockbackEffect:
 		if not can_be_knocked_back:
-			return true # Obiekt pochłania efekt (nie wyskakuje błąd), ale ignoruje ruch.
+			return true 
 		return effect.apply_effect(self)
 		
-	# 3. Reszta efektów (np. fizyczny KnockbackEffect, zamrożenie, spowolnienie) 
-	# działa normalnie, modyfikując stan obiektu (lot/przesunięcie).
 	return effect.apply_effect(self)
+
+## Sprawdza FactionComponent by zweryfikować czy cele są po tej samej stronie
+func _is_ally(body: Node2D) -> bool:
+	if not is_instance_valid(shooter) or not is_instance_valid(body): 
+		return false
+		
+	# Pobierz frakcję strzelca
+	var my_faction = shooter.get_node_or_null("FactionComponent")
+	if not my_faction:
+		return false
+		
+	# Sprawdź czy ofiara MA jakikolwiek FactionComponent (Duck Typing zamiast Class checking)
+	if body.has_node("FactionComponent"):
+		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
+		
+	return false

@@ -34,6 +34,7 @@
 [ext_resource type="Texture2D" uid="uid://clkbmsl3rlnl2" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front_left.png" id="28_wvv3y"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="29_mlpbi"]
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="31_6d24p"]
+[ext_resource type="Script" uid="uid://dtbpo44l10y6c" path="res://assets/scripts/ai/perception/threat_assessment_component.gd" id="32_cxe2y"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{
@@ -129,13 +130,14 @@ collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
 
-[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat", "threat_assessment")]
 script = ExtResource("12_p2xkd")
 behavior_profile = ExtResource("9_2a7xa")
 perception = NodePath("PerceptionComponent")
 state_machine = NodePath("AIStateMachine")
 navigation = NodePath("AINavigationController")
 combat = NodePath("AICombatController")
+threat_assessment = NodePath("ThreatAssessmentComponent")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"
 
 [node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
@@ -174,6 +176,10 @@ metadata/_custom_type_script = "uid://jorlgpryjbvo"
 script = ExtResource("17_pj7l0")
 starting_equipment = Array[ExtResource("26_6d24p")]([SubResource("Resource_fkygi"), SubResource("Resource_2a7xa")])
 metadata/_custom_type_script = "uid://bsdwh1fc83f21"
+
+[node name="ThreatAssessmentComponent" type="Node" parent="AIController" unique_id=140390131]
+script = ExtResource("32_cxe2y")
+metadata/_custom_type_script = "uid://dtbpo44l10y6c"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
 shape = SubResource("CircleShape2D_r73tf")

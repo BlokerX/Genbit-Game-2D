@@ -7,6 +7,7 @@ script = ExtResource("1_8f0yl")
 detection_distance = 850.0
 min_stopping_distance = 500.0
 retreat_distance = 250.0
+intelligent_movement = true
 can_rotate_to_target = false
 wander_radius = 300.0
 metadata/_custom_type_script = "uid://bmrx514bvhhvj"
