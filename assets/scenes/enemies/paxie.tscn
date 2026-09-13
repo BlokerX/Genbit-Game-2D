@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://dl8c1jbusb3q5" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_back_left.png" id="25_lmdfy"]
 [ext_resource type="Texture2D" uid="uid://bx5u1qspcdxkd" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_left.png" id="26_j8p70"]
 [ext_resource type="Texture2D" uid="uid://cu505qi4srool" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_front_left.png" id="27_2d2yl"]
+[ext_resource type="Script" uid="uid://c1qtc44mffk1u" path="res://assets/scripts/ai/abilities/bionic_tail_ability.gd" id="27_bwhst"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{
@@ -68,6 +69,10 @@ damage = 35
 aoe_radius = 200.0
 max_range = 1500.0
 metadata/_custom_type_script = "uid://de1surupc81ha"
+
+[sub_resource type="Resource" id="Resource_rm1ox"]
+script = ExtResource("27_bwhst")
+metadata/_custom_type_script = "uid://c1qtc44mffk1u"
 
 [sub_resource type="Resource" id="Resource_7chwc"]
 script = ExtResource("19_8sgug")
@@ -157,7 +162,7 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("16_2d2yl")
-abilities = Array[ExtResource("17_8fg6v")]([SubResource("Resource_lmeha"), SubResource("Resource_7chwc")])
+abilities = Array[ExtResource("17_8fg6v")]([SubResource("Resource_lmeha"), SubResource("Resource_rm1ox"), SubResource("Resource_7chwc")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]

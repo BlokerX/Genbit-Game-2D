@@ -32,6 +32,7 @@
 [ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="26_pj7l0"]
 [ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/gamma_burst_ability.gd" id="27_cxe2y"]
 [ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="28_fkygi"]
+[ext_resource type="Script" uid="uid://bjh1cnwlg41cr" path="res://assets/scripts/ai/abilities/laser_vision_ability.gd" id="28_mlpbi"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="29_mlpbi"]
 [ext_resource type="Script" uid="uid://70mdhpj1lg2d" path="res://assets/scripts/components/item_thrower_component.gd" id="31_6d24p"]
 [ext_resource type="Script" uid="uid://dtbpo44l10y6c" path="res://assets/scripts/ai/perception/threat_assessment_component.gd" id="32_cxe2y"]
@@ -67,6 +68,10 @@ animations = [{
 "name": &"default",
 "speed": 5.0
 }]
+
+[sub_resource type="Resource" id="Resource_wvv3y"]
+script = ExtResource("28_mlpbi")
+metadata/_custom_type_script = "uid://bjh1cnwlg41cr"
 
 [sub_resource type="Resource" id="Resource_mlpbi"]
 script = ExtResource("27_cxe2y")
@@ -169,7 +174,7 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("20_egcg1")
-abilities = Array[ExtResource("26_pj7l0")]([SubResource("Resource_mlpbi")])
+abilities = Array[ExtResource("26_pj7l0")]([SubResource("Resource_wvv3y"), SubResource("Resource_mlpbi")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
 
 [node name="AIInventoryController" type="Node" parent="AIController" unique_id=318763249]

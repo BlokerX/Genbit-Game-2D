@@ -4,5 +4,4 @@
 
 [resource]
 script = ExtResource("1_gdi26")
-ignore_global_cast_lock = true
 metadata/_custom_type_script = "uid://dnu80ykb4pewa"
