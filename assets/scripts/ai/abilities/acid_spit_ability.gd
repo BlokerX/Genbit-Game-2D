@@ -8,12 +8,12 @@ class_name AcidSpitAbility
 
 @export_category("Czas i Zasięg Ataku")
 @export var barrage_duration: float = 6.0    ## [ZMNIEJSZONE] 6 sekund to optymalny czas uciekania
-@export var spawn_interval: float = 0.5      ## [ZWIĘKSZONE] Daje graczowi czas na reakcję
-@export var puddles_per_tick: int = 4        ## 1 plama leci w gracza, 3 tworzą wirujący wzór
-@export var barrage_radius: float = 400.0    ## Promień giga-strefy
+@export var spawn_interval: float = 0.7      ## [ZWIĘKSZONE] Daje graczowi czas na reakcję
+@export var puddles_per_tick: int = 5        ## 1 plama leci w gracza, 4 tworzą wirujący wzór
+@export var barrage_radius: float = 1000.0    ## Promień giga-strefy
 @export var puddle_radius: float = 65.0      ## Promień pojedynczej plamy
 @export var puddle_cast_time: float = 1.2    ## Czas zapalnika (musi być > spawn_interval)
-@export var prediction_time: float = 0.6     ## Predykcja ruchu gracza
+@export var prediction_time: float = 0.7     ## Predykcja ruchu gracza
 
 func _init() -> void:
 	ability_name = "Wirujący Deszcz Kwasu"
@@ -22,7 +22,14 @@ func _init() -> void:
 	max_range = 600.0
 
 func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
-	var combat_ctrl = attacker.get_node_or_null("AIController/AICombatController")
+	# Pobieramy kontroler AI oraz jego profil zachowania
+	var ai_controller = attacker.get_node_or_null("AIController")
+	var combat_ctrl = ai_controller.get_node_or_null("AICombatController") if ai_controller else null
+	
+	var can_rotate: bool = false
+	if ai_controller and ai_controller.get("behavior_profile") != null:
+		can_rotate = ai_controller.behavior_profile.can_rotate_to_target
+
 	if combat_ctrl:
 		combat_ctrl.is_casting_ability = true
 
@@ -36,8 +43,6 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	attacker.get_tree().current_scene.add_child(danger_zone)
 
 	var elapsed: float = 0.0
-	
-	# Zmienna do tworzenia wirującego wzoru (spirali)
 	var pattern_angle_offset: float = 0.0 
 
 	while elapsed < barrage_duration:
@@ -55,19 +60,27 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		if epicenter.distance_to(predicted_pos) > max_dist:
 			predicted_pos = epicenter + epicenter.direction_to(predicted_pos) * max_dist
 
-		var target_angle = attacker.global_position.angle_to_point(predicted_pos)
-		attacker.rotation = lerp_angle(attacker.rotation, target_angle, 0.5)
+		# ---------------------------------------------------------
+		# [ZMODYFIKOWANA SEKCJA] OBRÓT ZALEŻNY OD PROFILU AI
+		# ---------------------------------------------------------
+		var aim_direction = attacker.global_position.direction_to(predicted_pos)
+		
+		if can_rotate:
+			var target_angle = aim_direction.angle()
+			attacker.rotation = lerp_angle(attacker.rotation, target_angle, 0.5)
+		else:
+			if attacker.has_method("_update_sprite_direction"):
+				attacker._update_sprite_direction(aim_direction)
+		# ---------------------------------------------------------
 
 		# 3. TWORZENIE PLAM - GEOMETRYCZNY WZÓR
 		for i in range(puddles_per_tick):
 			var drop_pos = predicted_pos
 
 			if i > 0:
-				# Matematyczny podział koła (np. 3 plamy poboczne = kąty co 120 stopni)
 				var fraction = float(i) / float(puddles_per_tick - 1) 
 				var current_angle = (fraction * TAU) + pattern_angle_offset
 				
-				# Plamy poboczne skaczą między zewnętrznym a wewnętrznym pierścieniem
 				var ring_distance = max_dist * 0.8 if (int(elapsed * 10) % 2 == 0) else max_dist * 0.4
 				drop_pos = epicenter + (Vector2.RIGHT.rotated(current_angle) * ring_distance)
 
@@ -82,9 +95,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			aoe.friendly_fire = false 
 			attacker.get_tree().current_scene.add_child(aoe)
 
-		# Przesunięcie kąta do kolejnego strzału (To tworzy efekt wirującej spirali!)
-		pattern_angle_offset += PI / 4.0 # Obrót o 45 stopni co strzał
-		
+		pattern_angle_offset += PI / 4.0
 		elapsed += spawn_interval
 		await attacker.get_tree().create_timer(spawn_interval).timeout
 
