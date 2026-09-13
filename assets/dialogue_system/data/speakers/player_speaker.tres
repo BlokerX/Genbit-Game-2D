@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://chsxf33koft8c"]
 
-[ext_resource type="Texture2D" uid="uid://edk1fvbendr6" path="res://assets/textures/samples_examples/entities/FlanCharacter/flan_front.png" id="1_ei8gr"]
+[ext_resource type="Texture2D" uid="uid://w1bs4y6kk0aw" path="res://assets/textures/samples_examples/entities/Nick/nick_front.png" id="1_ei8gr"]
 [ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="1_ys1wy"]
 
 [resource]
