@@ -15,6 +15,8 @@ class_name ItemPickup
 var can_pick_up: bool = false
 
 func _ready() -> void:
+	z_index = GameLayers.LOOT
+	
 	# FALLBACK: Jeśli postawiliśmy obiekt ręcznie w edytorze bez gotowej instancji
 	if (item == null or item.data == null) and test_item_data != null:
 		# TWORZYMY GŁĘBOKĄ KOPIĘ SZABLONU:

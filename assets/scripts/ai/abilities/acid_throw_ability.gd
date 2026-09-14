@@ -25,7 +25,7 @@ class_name AcidThrowAbility
 ## Czy uderzenie i kałuża mają wpływać również na innych wrogów (sojuszników atakującego)?
 @export var friendly_fire: bool = false
 ## Z-Index (warstwa rysowania) dla kałuży. Domyślnie 0.
-@export var puddle_z_index: int = 0
+@export var puddle_z_index: int = GameLayers.FLOOR_HAZARD
 
 @export_group("Kształt Kałuży (Organic Puddle)")
 ## Częstotliwość szumu (niższa wartość = szersze, łagodniejsze fale na krawędziach).

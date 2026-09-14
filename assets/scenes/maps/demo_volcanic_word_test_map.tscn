@@ -1920,280 +1920,168 @@ position = Vector2(8552, 3968)
 movement_universal_script = SubResource("Resource_ba6n0")
 health_stats_script = SubResource("Resource_pa0rh")
 interaction_and_attack_stats_script = SubResource("Resource_1jqiv")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider2" parent="OpenWorld" unique_id=176762029 instance=ExtResource("5_qerwo")]
 position = Vector2(5920, 7800)
 movement_universal_script = SubResource("Resource_jffeb")
 health_stats_script = SubResource("Resource_yhkks")
 interaction_and_attack_stats_script = SubResource("Resource_yu4uw")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider3" parent="OpenWorld" unique_id=1488654511 instance=ExtResource("5_qerwo")]
 position = Vector2(6096, 7792)
 movement_universal_script = SubResource("Resource_p307o")
 health_stats_script = SubResource("Resource_bif1x")
 interaction_and_attack_stats_script = SubResource("Resource_w8c5d")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider4" parent="OpenWorld" unique_id=481548881 instance=ExtResource("5_qerwo")]
 position = Vector2(6296, 7784)
 movement_universal_script = SubResource("Resource_d83gi")
 health_stats_script = SubResource("Resource_fn2ug")
 interaction_and_attack_stats_script = SubResource("Resource_8w0vg")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider5" parent="OpenWorld" unique_id=966402317 instance=ExtResource("5_qerwo")]
 position = Vector2(6536, 7792)
 movement_universal_script = SubResource("Resource_b0ay6")
 health_stats_script = SubResource("Resource_f1u2a")
 interaction_and_attack_stats_script = SubResource("Resource_uqj0l")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider6" parent="OpenWorld" unique_id=1066813297 instance=ExtResource("5_qerwo")]
 position = Vector2(6696, 7816)
 movement_universal_script = SubResource("Resource_d4tkc")
 health_stats_script = SubResource("Resource_y42ck")
 interaction_and_attack_stats_script = SubResource("Resource_oiuks")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider7" parent="OpenWorld" unique_id=1031932284 instance=ExtResource("5_qerwo")]
 position = Vector2(6904, 7832)
 movement_universal_script = SubResource("Resource_82iyn")
 health_stats_script = SubResource("Resource_r5c6d")
 interaction_and_attack_stats_script = SubResource("Resource_twf1c")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider8" parent="OpenWorld" unique_id=1353092715 instance=ExtResource("5_qerwo")]
 position = Vector2(7056, 7840)
 movement_universal_script = SubResource("Resource_q5w2a")
 health_stats_script = SubResource("Resource_72vh1")
 interaction_and_attack_stats_script = SubResource("Resource_febih")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider9" parent="OpenWorld" unique_id=1426461407 instance=ExtResource("5_qerwo")]
 position = Vector2(7024, 7688)
 movement_universal_script = SubResource("Resource_xr7ac")
 health_stats_script = SubResource("Resource_ydvox")
 interaction_and_attack_stats_script = SubResource("Resource_xy3rb")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider10" parent="OpenWorld" unique_id=883441908 instance=ExtResource("5_qerwo")]
 position = Vector2(6832, 7672)
 movement_universal_script = SubResource("Resource_kifo2")
 health_stats_script = SubResource("Resource_nxy3k")
 interaction_and_attack_stats_script = SubResource("Resource_i3af8")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider11" parent="OpenWorld" unique_id=344657329 instance=ExtResource("5_qerwo")]
 position = Vector2(6640, 7656)
 movement_universal_script = SubResource("Resource_1yoer")
 health_stats_script = SubResource("Resource_ts17f")
 interaction_and_attack_stats_script = SubResource("Resource_7g47h")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider12" parent="OpenWorld" unique_id=1384130138 instance=ExtResource("5_qerwo")]
 position = Vector2(6424, 7664)
 movement_universal_script = SubResource("Resource_o4qqj")
 health_stats_script = SubResource("Resource_bx4xq")
 interaction_and_attack_stats_script = SubResource("Resource_5fmao")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider15" parent="OpenWorld" unique_id=204282185 instance=ExtResource("5_qerwo")]
 position = Vector2(8352, 7784)
 movement_universal_script = SubResource("Resource_uv41s")
 health_stats_script = SubResource("Resource_maxtu")
 interaction_and_attack_stats_script = SubResource("Resource_qkxsx")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider16" parent="OpenWorld" unique_id=804583194 instance=ExtResource("5_qerwo")]
 position = Vector2(8528, 7776)
 movement_universal_script = SubResource("Resource_hvolw")
 health_stats_script = SubResource("Resource_qd6mh")
 interaction_and_attack_stats_script = SubResource("Resource_7v57x")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider17" parent="OpenWorld" unique_id=663920891 instance=ExtResource("5_qerwo")]
 position = Vector2(8728, 7768)
 movement_universal_script = SubResource("Resource_7dh7a")
 health_stats_script = SubResource("Resource_s5sfu")
 interaction_and_attack_stats_script = SubResource("Resource_dw3yf")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider18" parent="OpenWorld" unique_id=779868181 instance=ExtResource("5_qerwo")]
 position = Vector2(8968, 7776)
 movement_universal_script = SubResource("Resource_d3hcx")
 health_stats_script = SubResource("Resource_pwcqi")
 interaction_and_attack_stats_script = SubResource("Resource_fwdde")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider19" parent="OpenWorld" unique_id=1033633493 instance=ExtResource("5_qerwo")]
 position = Vector2(9128, 7800)
 movement_universal_script = SubResource("Resource_6ebvx")
 health_stats_script = SubResource("Resource_jafg8")
 interaction_and_attack_stats_script = SubResource("Resource_m3x1e")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider20" parent="OpenWorld" unique_id=1302101826 instance=ExtResource("5_qerwo")]
 position = Vector2(9336, 7816)
 movement_universal_script = SubResource("Resource_f1wp3")
 health_stats_script = SubResource("Resource_ixrer")
 interaction_and_attack_stats_script = SubResource("Resource_307hc")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider21" parent="OpenWorld" unique_id=947588434 instance=ExtResource("5_qerwo")]
 position = Vector2(9488, 7824)
 movement_universal_script = SubResource("Resource_hm2a8")
 health_stats_script = SubResource("Resource_y5d7d")
 interaction_and_attack_stats_script = SubResource("Resource_m7p6r")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider22" parent="OpenWorld" unique_id=1427173562 instance=ExtResource("5_qerwo")]
 position = Vector2(9456, 7672)
 movement_universal_script = SubResource("Resource_2rdm7")
 health_stats_script = SubResource("Resource_c50og")
 interaction_and_attack_stats_script = SubResource("Resource_kfr4c")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider23" parent="OpenWorld" unique_id=912059138 instance=ExtResource("5_qerwo")]
 position = Vector2(9264, 7656)
 movement_universal_script = SubResource("Resource_03bs8")
 health_stats_script = SubResource("Resource_epckn")
 interaction_and_attack_stats_script = SubResource("Resource_y8qi3")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider24" parent="OpenWorld" unique_id=1604187443 instance=ExtResource("5_qerwo")]
 position = Vector2(9072, 7640)
 movement_universal_script = SubResource("Resource_8irc4")
 health_stats_script = SubResource("Resource_w6mfs")
 interaction_and_attack_stats_script = SubResource("Resource_vdxn5")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider25" parent="OpenWorld" unique_id=237143835 instance=ExtResource("5_qerwo")]
 position = Vector2(8856, 7648)
 movement_universal_script = SubResource("Resource_2vha0")
 health_stats_script = SubResource("Resource_5pka1")
 interaction_and_attack_stats_script = SubResource("Resource_ctm0q")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider26" parent="OpenWorld" unique_id=826856449 instance=ExtResource("5_qerwo")]
 position = Vector2(8640, 7648)
 movement_universal_script = SubResource("Resource_fan0m")
 health_stats_script = SubResource("Resource_c2cy6")
 interaction_and_attack_stats_script = SubResource("Resource_exqne")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider27" parent="OpenWorld" unique_id=1809576991 instance=ExtResource("5_qerwo")]
 position = Vector2(8448, 7640)
 movement_universal_script = SubResource("Resource_3ciq7")
 health_stats_script = SubResource("Resource_da8up")
 interaction_and_attack_stats_script = SubResource("Resource_rw664")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider13" parent="OpenWorld" unique_id=63549122 instance=ExtResource("5_qerwo")]
 position = Vector2(6208, 7664)
 movement_universal_script = SubResource("Resource_vaqij")
 health_stats_script = SubResource("Resource_dgcev")
 interaction_and_attack_stats_script = SubResource("Resource_g4v68")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Spider14" parent="OpenWorld" unique_id=2019927113 instance=ExtResource("5_qerwo")]
 position = Vector2(6016, 7656)
 movement_universal_script = SubResource("Resource_whk2y")
 health_stats_script = SubResource("Resource_v7qqy")
 interaction_and_attack_stats_script = SubResource("Resource_dnx0m")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="MutantPrisoner" parent="OpenWorld" unique_id=364238692 instance=ExtResource("11_gf55y")]
 position = Vector2(7064, 6056)
-respawnVector = null
 movement_universal_script = SubResource("Resource_0woxb")
 health_stats_script = SubResource("Resource_5trpt")
 interaction_and_attack_stats_script = SubResource("Resource_djrj2")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="MutantPrisoner2" parent="OpenWorld" unique_id=1789000165 instance=ExtResource("11_gf55y")]
 position = Vector2(7160, 6256)
@@ -2233,13 +2121,9 @@ interaction_and_attack_stats_script = SubResource("Resource_h2xd3")
 
 [node name="MutantPrisoner8" parent="OpenWorld" unique_id=2050347424 instance=ExtResource("11_gf55y")]
 position = Vector2(7920, 6064)
-respawnVector = null
 movement_universal_script = SubResource("Resource_rd3qe")
 health_stats_script = SubResource("Resource_e8nul")
 interaction_and_attack_stats_script = SubResource("Resource_pq5u2")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="MutantPrisoner9" parent="OpenWorld" unique_id=415506041 instance=ExtResource("11_gf55y")]
 position = Vector2(8016, 6264)
@@ -2291,13 +2175,9 @@ interaction_and_attack_stats_script = SubResource("Resource_l07ne")
 
 [node name="MutantPrisoner15" parent="OpenWorld" unique_id=1662162590 instance=ExtResource("11_gf55y")]
 position = Vector2(7040, 5320)
-respawnVector = null
 movement_universal_script = SubResource("Resource_v7fxx")
 health_stats_script = SubResource("Resource_6d6ib")
 interaction_and_attack_stats_script = SubResource("Resource_vw42k")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="MutantPrisoner16" parent="OpenWorld" unique_id=1272788727 instance=ExtResource("11_gf55y")]
 position = Vector2(7136, 5520)
@@ -2337,13 +2217,9 @@ interaction_and_attack_stats_script = SubResource("Resource_6h7cs")
 
 [node name="MutantPrisoner22" parent="OpenWorld" unique_id=2138226695 instance=ExtResource("11_gf55y")]
 position = Vector2(7896, 5328)
-respawnVector = null
 movement_universal_script = SubResource("Resource_3h4fk")
 health_stats_script = SubResource("Resource_q1xkh")
 interaction_and_attack_stats_script = SubResource("Resource_v4n10")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="MutantPrisoner23" parent="OpenWorld" unique_id=361572890 instance=ExtResource("11_gf55y")]
 position = Vector2(7992, 5528)
@@ -2383,453 +2259,273 @@ interaction_and_attack_stats_script = SubResource("Resource_vg7r5")
 
 [node name="Soldier" parent="OpenWorld" unique_id=648830326 instance=ExtResource("13_c0vn5")]
 position = Vector2(7072, 7136)
-respawnVector = null
 movement_universal_script = SubResource("Resource_n6psq")
 health_stats_script = SubResource("Resource_425au")
 interaction_and_attack_stats_script = SubResource("Resource_03dax")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier2" parent="OpenWorld" unique_id=232092366 instance=ExtResource("13_c0vn5")]
 position = Vector2(7320, 7136)
-respawnVector = null
 movement_universal_script = SubResource("Resource_lmlt2")
 health_stats_script = SubResource("Resource_ppfh2")
 interaction_and_attack_stats_script = SubResource("Resource_1b5j4")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier3" parent="OpenWorld" unique_id=1730198231 instance=ExtResource("13_c0vn5")]
 position = Vector2(7600, 7160)
-respawnVector = null
 movement_universal_script = SubResource("Resource_ngqen")
 health_stats_script = SubResource("Resource_divq4")
 interaction_and_attack_stats_script = SubResource("Resource_akt7s")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier4" parent="OpenWorld" unique_id=2119739883 instance=ExtResource("13_c0vn5")]
 position = Vector2(7880, 7168)
-respawnVector = null
 movement_universal_script = SubResource("Resource_j7l8v")
 health_stats_script = SubResource("Resource_86kan")
 interaction_and_attack_stats_script = SubResource("Resource_wxwfe")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier5" parent="OpenWorld" unique_id=1236133024 instance=ExtResource("13_c0vn5")]
 position = Vector2(8240, 7176)
-respawnVector = null
 movement_universal_script = SubResource("Resource_141wl")
 health_stats_script = SubResource("Resource_0voqy")
 interaction_and_attack_stats_script = SubResource("Resource_4qjnd")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier6" parent="OpenWorld" unique_id=521250936 instance=ExtResource("13_c0vn5")]
 position = Vector2(7872, 6992)
-respawnVector = null
 movement_universal_script = SubResource("Resource_t6fxd")
 health_stats_script = SubResource("Resource_ogabf")
 interaction_and_attack_stats_script = SubResource("Resource_2xv8c")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier7" parent="OpenWorld" unique_id=10344613 instance=ExtResource("13_c0vn5")]
 position = Vector2(8120, 6992)
-respawnVector = null
 movement_universal_script = SubResource("Resource_nfbmc")
 health_stats_script = SubResource("Resource_0wf11")
 interaction_and_attack_stats_script = SubResource("Resource_0fxtx")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier8" parent="OpenWorld" unique_id=1274400604 instance=ExtResource("13_c0vn5")]
 position = Vector2(8400, 7016)
-respawnVector = null
 movement_universal_script = SubResource("Resource_fjcwq")
 health_stats_script = SubResource("Resource_ncve3")
 interaction_and_attack_stats_script = SubResource("Resource_y3tdl")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier9" parent="OpenWorld" unique_id=777656152 instance=ExtResource("13_c0vn5")]
 position = Vector2(8680, 7024)
-respawnVector = null
 movement_universal_script = SubResource("Resource_gerpa")
 health_stats_script = SubResource("Resource_d2xlc")
 interaction_and_attack_stats_script = SubResource("Resource_80kx8")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier10" parent="OpenWorld" unique_id=709129702 instance=ExtResource("13_c0vn5")]
 position = Vector2(9040, 7032)
-respawnVector = null
 movement_universal_script = SubResource("Resource_3yagj")
 health_stats_script = SubResource("Resource_2hxhs")
 interaction_and_attack_stats_script = SubResource("Resource_m0pfr")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier11" parent="OpenWorld" unique_id=1780434478 instance=ExtResource("13_c0vn5")]
 position = Vector2(6480, 6920)
-respawnVector = null
 movement_universal_script = SubResource("Resource_hm3q0")
 health_stats_script = SubResource("Resource_2pb4c")
 interaction_and_attack_stats_script = SubResource("Resource_l637j")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier12" parent="OpenWorld" unique_id=946147778 instance=ExtResource("13_c0vn5")]
 position = Vector2(6728, 6920)
-respawnVector = null
 movement_universal_script = SubResource("Resource_pe2hi")
 health_stats_script = SubResource("Resource_0gqtn")
 interaction_and_attack_stats_script = SubResource("Resource_rled2")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier13" parent="OpenWorld" unique_id=362825626 instance=ExtResource("13_c0vn5")]
 position = Vector2(7008, 6944)
-respawnVector = null
 movement_universal_script = SubResource("Resource_34q5b")
 health_stats_script = SubResource("Resource_xr5tp")
 interaction_and_attack_stats_script = SubResource("Resource_0ydni")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier14" parent="OpenWorld" unique_id=1095327581 instance=ExtResource("13_c0vn5")]
 position = Vector2(7288, 6952)
-respawnVector = null
 movement_universal_script = SubResource("Resource_e8pde")
 health_stats_script = SubResource("Resource_ddsif")
 interaction_and_attack_stats_script = SubResource("Resource_g6mxr")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier15" parent="OpenWorld" unique_id=1707277832 instance=ExtResource("13_c0vn5")]
 position = Vector2(7648, 6960)
-respawnVector = null
 movement_universal_script = SubResource("Resource_kvxgg")
 health_stats_script = SubResource("Resource_4baqt")
 interaction_and_attack_stats_script = SubResource("Resource_n5txc")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier16" parent="OpenWorld" unique_id=2127916390 instance=ExtResource("13_c0vn5")]
 position = Vector2(7224, 2040)
-respawnVector = null
 movement_universal_script = SubResource("Resource_4ghgw")
 health_stats_script = SubResource("Resource_b3o11")
 interaction_and_attack_stats_script = SubResource("Resource_s33n1")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier17" parent="OpenWorld" unique_id=1934557624 instance=ExtResource("13_c0vn5")]
 position = Vector2(7472, 2040)
-respawnVector = null
 movement_universal_script = SubResource("Resource_02p0o")
 health_stats_script = SubResource("Resource_ufuyo")
 interaction_and_attack_stats_script = SubResource("Resource_yod0o")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier18" parent="OpenWorld" unique_id=1415421421 instance=ExtResource("13_c0vn5")]
 position = Vector2(7752, 2064)
-respawnVector = null
 movement_universal_script = SubResource("Resource_06yvj")
 health_stats_script = SubResource("Resource_4telj")
 interaction_and_attack_stats_script = SubResource("Resource_iq2lc")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier19" parent="OpenWorld" unique_id=1915701770 instance=ExtResource("13_c0vn5")]
 position = Vector2(8032, 2072)
-respawnVector = null
 movement_universal_script = SubResource("Resource_ti5nr")
 health_stats_script = SubResource("Resource_xnm1j")
 interaction_and_attack_stats_script = SubResource("Resource_ckc2o")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier20" parent="OpenWorld" unique_id=1282500643 instance=ExtResource("13_c0vn5")]
 position = Vector2(8392, 2080)
-respawnVector = null
 movement_universal_script = SubResource("Resource_5cyg7")
 health_stats_script = SubResource("Resource_bd1k4")
 interaction_and_attack_stats_script = SubResource("Resource_487fj")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier21" parent="OpenWorld" unique_id=138045358 instance=ExtResource("13_c0vn5")]
 position = Vector2(8024, 1896)
-respawnVector = null
 movement_universal_script = SubResource("Resource_ewpkq")
 health_stats_script = SubResource("Resource_e608x")
 interaction_and_attack_stats_script = SubResource("Resource_0f8wc")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier22" parent="OpenWorld" unique_id=1733107088 instance=ExtResource("13_c0vn5")]
 position = Vector2(8272, 1896)
-respawnVector = null
 movement_universal_script = SubResource("Resource_oqmwl")
 health_stats_script = SubResource("Resource_2ddhh")
 interaction_and_attack_stats_script = SubResource("Resource_cende")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier23" parent="OpenWorld" unique_id=1120649239 instance=ExtResource("13_c0vn5")]
 position = Vector2(8552, 1920)
-respawnVector = null
 movement_universal_script = SubResource("Resource_hn48d")
 health_stats_script = SubResource("Resource_8a20v")
 interaction_and_attack_stats_script = SubResource("Resource_lcq4f")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier24" parent="OpenWorld" unique_id=797967836 instance=ExtResource("13_c0vn5")]
 position = Vector2(8832, 1928)
-respawnVector = null
 movement_universal_script = SubResource("Resource_y874c")
 health_stats_script = SubResource("Resource_rx73b")
 interaction_and_attack_stats_script = SubResource("Resource_e4m2e")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier25" parent="OpenWorld" unique_id=394602153 instance=ExtResource("13_c0vn5")]
 position = Vector2(9192, 1936)
-respawnVector = null
 movement_universal_script = SubResource("Resource_j8vtn")
 health_stats_script = SubResource("Resource_yc01p")
 interaction_and_attack_stats_script = SubResource("Resource_iqaxf")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier26" parent="OpenWorld" unique_id=588265620 instance=ExtResource("13_c0vn5")]
 position = Vector2(6632, 1824)
-respawnVector = null
 movement_universal_script = SubResource("Resource_3buip")
 health_stats_script = SubResource("Resource_wte5v")
 interaction_and_attack_stats_script = SubResource("Resource_ugspp")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier27" parent="OpenWorld" unique_id=1357475517 instance=ExtResource("13_c0vn5")]
 position = Vector2(6880, 1824)
-respawnVector = null
 movement_universal_script = SubResource("Resource_hljkm")
 health_stats_script = SubResource("Resource_jjhp0")
 interaction_and_attack_stats_script = SubResource("Resource_mbm0j")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier28" parent="OpenWorld" unique_id=1369497435 instance=ExtResource("13_c0vn5")]
 position = Vector2(7160, 1848)
-respawnVector = null
 movement_universal_script = SubResource("Resource_yn3o7")
 health_stats_script = SubResource("Resource_lycl5")
 interaction_and_attack_stats_script = SubResource("Resource_ymynx")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier29" parent="OpenWorld" unique_id=25246424 instance=ExtResource("13_c0vn5")]
 position = Vector2(7440, 1856)
-respawnVector = null
 movement_universal_script = SubResource("Resource_uepy3")
 health_stats_script = SubResource("Resource_ed268")
 interaction_and_attack_stats_script = SubResource("Resource_bdgby")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier30" parent="OpenWorld" unique_id=1402202496 instance=ExtResource("13_c0vn5")]
 position = Vector2(7800, 1864)
-respawnVector = null
 movement_universal_script = SubResource("Resource_ruadr")
 health_stats_script = SubResource("Resource_3vxus")
 interaction_and_attack_stats_script = SubResource("Resource_p44qt")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier31" parent="OpenWorld" unique_id=1226795535 instance=ExtResource("13_c0vn5")]
 position = Vector2(8272, 1984)
-respawnVector = null
 movement_universal_script = SubResource("Resource_ovv5p")
 health_stats_script = SubResource("Resource_wjupd")
 interaction_and_attack_stats_script = SubResource("Resource_bgagu")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier32" parent="OpenWorld" unique_id=543418598 instance=ExtResource("13_c0vn5")]
 position = Vector2(8520, 1984)
-respawnVector = null
 movement_universal_script = SubResource("Resource_vaigr")
 health_stats_script = SubResource("Resource_lokid")
 interaction_and_attack_stats_script = SubResource("Resource_r5u7d")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier33" parent="OpenWorld" unique_id=335849050 instance=ExtResource("13_c0vn5")]
 position = Vector2(8800, 2008)
-respawnVector = null
 movement_universal_script = SubResource("Resource_8601i")
 health_stats_script = SubResource("Resource_o4j53")
 interaction_and_attack_stats_script = SubResource("Resource_0ca40")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier34" parent="OpenWorld" unique_id=1971856915 instance=ExtResource("13_c0vn5")]
 position = Vector2(9080, 2016)
-respawnVector = null
 movement_universal_script = SubResource("Resource_m71q2")
 health_stats_script = SubResource("Resource_oq22o")
 interaction_and_attack_stats_script = SubResource("Resource_0t11y")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier35" parent="OpenWorld" unique_id=1466172902 instance=ExtResource("13_c0vn5")]
 position = Vector2(9440, 2024)
-respawnVector = null
 movement_universal_script = SubResource("Resource_oo65y")
 health_stats_script = SubResource("Resource_mi20x")
 interaction_and_attack_stats_script = SubResource("Resource_20l3m")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier36" parent="OpenWorld" unique_id=898980818 instance=ExtResource("13_c0vn5")]
 position = Vector2(9072, 1840)
-respawnVector = null
 movement_universal_script = SubResource("Resource_fw8s5")
 health_stats_script = SubResource("Resource_psrum")
 interaction_and_attack_stats_script = SubResource("Resource_l2h08")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier37" parent="OpenWorld" unique_id=1942258527 instance=ExtResource("13_c0vn5")]
 position = Vector2(9320, 1840)
-respawnVector = null
 movement_universal_script = SubResource("Resource_mrdcf")
 health_stats_script = SubResource("Resource_7lgef")
 interaction_and_attack_stats_script = SubResource("Resource_ojpyc")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier38" parent="OpenWorld" unique_id=856416713 instance=ExtResource("13_c0vn5")]
 position = Vector2(9600, 1864)
-respawnVector = null
 movement_universal_script = SubResource("Resource_2mjif")
 health_stats_script = SubResource("Resource_tu3my")
 interaction_and_attack_stats_script = SubResource("Resource_sos2g")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier39" parent="OpenWorld" unique_id=1719017118 instance=ExtResource("13_c0vn5")]
 position = Vector2(9880, 1872)
-respawnVector = null
 movement_universal_script = SubResource("Resource_g0q7v")
 health_stats_script = SubResource("Resource_p5nnt")
 interaction_and_attack_stats_script = SubResource("Resource_7svjh")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier40" parent="OpenWorld" unique_id=1717598656 instance=ExtResource("13_c0vn5")]
 position = Vector2(10240, 1880)
-respawnVector = null
 movement_universal_script = SubResource("Resource_b4gc4")
 health_stats_script = SubResource("Resource_5golf")
 interaction_and_attack_stats_script = SubResource("Resource_daktm")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier41" parent="OpenWorld" unique_id=493273537 instance=ExtResource("13_c0vn5")]
 position = Vector2(7680, 1768)
-respawnVector = null
 movement_universal_script = SubResource("Resource_lkp72")
 health_stats_script = SubResource("Resource_4fico")
 interaction_and_attack_stats_script = SubResource("Resource_v8huo")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier42" parent="OpenWorld" unique_id=1766097999 instance=ExtResource("13_c0vn5")]
 position = Vector2(7928, 1768)
-respawnVector = null
 movement_universal_script = SubResource("Resource_6uip1")
 health_stats_script = SubResource("Resource_e8ynn")
 interaction_and_attack_stats_script = SubResource("Resource_csgaa")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier43" parent="OpenWorld" unique_id=1952595833 instance=ExtResource("13_c0vn5")]
 position = Vector2(8208, 1792)
-respawnVector = null
 movement_universal_script = SubResource("Resource_40us5")
 health_stats_script = SubResource("Resource_7j04e")
 interaction_and_attack_stats_script = SubResource("Resource_wfsc3")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier44" parent="OpenWorld" unique_id=1198444495 instance=ExtResource("13_c0vn5")]
 position = Vector2(8488, 1800)
-respawnVector = null
 movement_universal_script = SubResource("Resource_1mx7p")
 health_stats_script = SubResource("Resource_3e4b5")
 interaction_and_attack_stats_script = SubResource("Resource_vvy23")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Soldier45" parent="OpenWorld" unique_id=1295070287 instance=ExtResource("13_c0vn5")]
 position = Vector2(8848, 1808)
-respawnVector = null
 movement_universal_script = SubResource("Resource_yuqy5")
 health_stats_script = SubResource("Resource_4b2ch")
 interaction_and_attack_stats_script = SubResource("Resource_3y2nx")
-drop_from_loot_table = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="Posmita" parent="OpenWorld" unique_id=1054679929 instance=ExtResource("14_7ak86")]
 position = Vector2(7688, 3120)

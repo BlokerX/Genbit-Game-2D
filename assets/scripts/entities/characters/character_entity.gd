@@ -40,6 +40,9 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 #region Główne funkcje silnikowe
 
 func _ready():
+	# Automatyczne ustawienie warstwy i sortowania[cite: 3]
+	z_index = GameLayers.ENTITIES
+	
 	add_to_group("Character") # Wymagane, by AI mogło skanować świat w poszukiwaniu celów
 	
 	# AUTO-RESOLVE: Jeśli zapomniałeś podpiąć frakcję w Inspektorze, gra i tak ją znajdzie

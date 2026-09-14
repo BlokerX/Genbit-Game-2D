@@ -156,13 +156,16 @@ var active_enemies_count : int = 0
 @export var allow_door_right: bool = true
 
 @export_group("Elementy Pokoju")
-@onready var tile_map : TileMapLayer = $TileMap
+@onready var floor_tile_map : TileMapLayer = $FloorTileMap
 @onready var navigation_region_2d : NavigationRegion2D = $NavigationRegion2D
 @export var spawn_points : Array[Marker2D] = []
 
 var size_px : Vector2
 
 func _ready() -> void:
+	# Automatyczne ustawienie warstwy
+	floor_tile_map.z_index = GameLayers.FLOOR
+	
 	# Wymuszamy domyślne, poprawne zachowania dla otwartego świata
 	if room_type == RoomType.OPEN_WORLD:
 		camera_follows_player = true
@@ -226,18 +229,18 @@ func _find_spawn_points_recursive(node: Node) -> void:
 
 ## Generowanie pokoju (Proceduralne LUB Ręczne)
 func generate_room() -> void:
-	if not tile_map: return
+	if not floor_tile_map: return
 	
 	# 1. Rysowanie kafelków
 	if not manual_tilemap_override:
-		tile_map.clear() # Czyścimy kafelki TYLKO wtedy, gdy generujemy pokój automatycznie!
+		floor_tile_map.clear() # Czyścimy kafelki TYLKO wtedy, gdy generujemy pokój automatycznie!
 		for x in range(room_size_tiles.x):
 			for y in range(room_size_tiles.y):
 				var current_pos = Vector2i(x, y)
 				if x == 0 or x == room_size_tiles.x - 1 or y == 0 or y == room_size_tiles.y - 1:
-					tile_map.set_cell(current_pos, tile_source_id, wall_atlas_pos, wall_alt_id)
+					floor_tile_map.set_cell(current_pos, tile_source_id, wall_atlas_pos, wall_alt_id)
 				else:
-					tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
+					floor_tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
 	
 	calculate_room_bounds()
 	update_navigation_region()
@@ -257,10 +260,10 @@ func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: T
 	if existing_door != null:
 		return existing_door
 
-	if not tile_map or not tile_map.tile_set:
+	if not floor_tile_map or not floor_tile_map.tile_set:
 		return null
 
-	var tile_size = tile_map.tile_set.tile_size
+	var tile_size = floor_tile_map.tile_set.tile_size
 	
 	# Liczymy całkowity rozmiar pokoju w PIKSELACH
 	var room_width_px = float(room_size_tiles.x * tile_size.x)
@@ -307,8 +310,8 @@ func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: T
 
 ## Akutalizacja regionu nawigacji
 func update_navigation_region() -> void:
-	if not navigation_region_2d or not tile_map or not tile_map.tile_set: return
-	var tile_size = tile_map.tile_set.tile_size
+	if not navigation_region_2d or not floor_tile_map or not floor_tile_map.tile_set: return
+	var tile_size = floor_tile_map.tile_set.tile_size
 	var nav_poly = NavigationPolygon.new()
 	
 	# ZAWSZE używamy wymiarów z Inspektora, gwarantując stałą siatkę!
@@ -325,15 +328,15 @@ func update_navigation_region() -> void:
 
 ## Wyliczanie granic pokoju dla kamery
 func calculate_room_bounds() -> void:
-	if tile_map and tile_map.tile_set:
-		var tile_size = tile_map.tile_set.tile_size
+	if floor_tile_map and floor_tile_map.tile_set:
+		var tile_size = floor_tile_map.tile_set.tile_size
 		# Kamera sztywno opiera się na wytyczonej przez Ciebie wielkości pokoju
 		size_px = Vector2(room_size_tiles.x * tile_size.x, room_size_tiles.y * tile_size.y)
 
 func _draw() -> void:
 	if Engine.is_editor_hint() or OS.is_debug_build():
-		if tile_map and tile_map.tile_set:
-			var tile_size = tile_map.tile_set.tile_size
+		if floor_tile_map and floor_tile_map.tile_set:
+			var tile_size = floor_tile_map.tile_set.tile_size
 			
 			# Rysuje sztywną, zieloną ramkę na podstawie X i Y z Inspektora.
 			# Maluj kafelki wewnątrz niej, a kamera nigdy nie wyjdzie poza obszar!
