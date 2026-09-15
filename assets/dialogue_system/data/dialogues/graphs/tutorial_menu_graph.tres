@@ -172,7 +172,8 @@ target_id = &"node_01"
 script = ExtResource("4_5n5r8")
 id = &"node_13"
 speaker = ExtResource("5_x2xrh")
-dialogue_text = "W lochach przechodź przez kolejne drzwi, szukaj skrzyń ze skarbami i przygotuj się na starcia z Bossami. Pamiętaj: śmierć to tylko kolejna lekcja."
+dialogue_text = "W lochach przechodź przez kolejne drzwi, szukaj skrzyń ze skarbami i przygotuj się na starcia z Bossami.
+Pamiętaj: śmierć to tylko kolejna lekcja."
 outputs = Array[ExtResource("1_q1iu6")]([SubResource("Resource_tyt8v")])
 
 [resource]
