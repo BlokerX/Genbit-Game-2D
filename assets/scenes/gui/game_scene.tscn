@@ -20,11 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://dulfknsrwu6la" path="res://assets/dialogue_system/scenes/dialogue_ui.tscn" id="16_wmbyi"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="AudioStream" uid="uid://dbu2b1polluso" path="res://assets/audio/entities/player/dark_orchestra_one.mp3" id="17_1y80r"]
-[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="17_vhw88"]
 [ext_resource type="PackedScene" uid="uid://batykymhuwsen" path="res://assets/dialogue_system/scenes/dialogue_log_ui.tscn" id="18_5c861"]
-[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="18_uvlnc"]
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="19_elt3u"]
-[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="20_2y4le"]
 
 [sub_resource type="Gradient" id="Gradient_vlsbn"]
 offsets = PackedFloat32Array(1)
@@ -33,26 +29,6 @@ colors = PackedColorArray(1, 1, 1, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_dkl2x"]
 gradient = SubResource("Gradient_vlsbn")
 
-[sub_resource type="Resource" id="Resource_x4ifb"]
-resource_local_to_scene = true
-script = ExtResource("17_vhw88")
-moveSpeed = 450.0
-metadata/_custom_type_script = "uid://qggqcqys4ruj"
-
-[sub_resource type="Resource" id="Resource_g1c65"]
-resource_local_to_scene = true
-script = ExtResource("18_uvlnc")
-
-[sub_resource type="Resource" id="Resource_osvyu"]
-script = ExtResource("19_elt3u")
-max_range = 200.0
-metadata/_custom_type_script = "uid://xdxv87pcx8uw"
-
-[sub_resource type="Resource" id="Resource_pd8se"]
-resource_local_to_scene = true
-script = ExtResource("20_2y4le")
-hand_attack_data = SubResource("Resource_osvyu")
-
 [node name="TestGameScene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_ge8p3")
 initial_map_path = "uid://cbecj7vxyv5rc"
@@ -60,43 +36,16 @@ initial_map_path = "uid://cbecj7vxyv5rc"
 [node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
 process_mode = 3
 script = ExtResource("1_bpfx5")
-chest_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/ChestPanel")
-player_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/PlayerPanel")
-backpack_panel = NodePath("CenterContainer/PanelContainer/VBoxContainer/BackpackPanel")
-hotbar_panel = NodePath("InventoryUIGroup/HotbarPanel")
-cursor_item_rect = NodePath("CursorItem")
-cursor_amount_label = NodePath("CursorItem/Label")
-crafting_ui = NodePath("CraftingUI")
-minimap_ui = NodePath("Minimap")
+chest_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/ChestPanel")
+player_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/PlayerPanel")
+backpack_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/BackpackPanel")
+hotbar_panel = NodePath("HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel")
+cursor_item_rect = NodePath("CursorLayer/CursorItem")
+cursor_amount_label = NodePath("CursorLayer/CursorItem/Label")
+crafting_ui = NodePath("Menus_Layer/CraftingUI")
+minimap_ui = NodePath("HUD_Layer/BottomRight_Zone/Minimap")
 
-[node name="Game_UI_Layout" type="Control" parent="UI_Canvas" unique_id=725686003]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="PlaytimeLabel" type="Label" parent="UI_Canvas/Game_UI_Layout" unique_id=726032964]
-texture_filter = 5
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -944.0
-offset_right = 944.0
-offset_bottom = 23.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.6862745)
-theme_override_font_sizes/font_size = 40
-horizontal_alignment = 1
-script = ExtResource("2_ge8p3")
-
-[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/PlaytimeLabel" unique_id=460875978 instance=ExtResource("4_iftva")]
-
-[node name="MarginContainer" type="MarginContainer" parent="UI_Canvas/Game_UI_Layout" unique_id=435628434]
-layout_mode = 1
+[node name="HUD_Layer" type="MarginContainer" parent="UI_Canvas" unique_id=678210752]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -104,66 +53,49 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 88
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_top = 16
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer" unique_id=1983183050]
+[node name="TopLeft_Zone" type="VBoxContainer" parent="UI_Canvas/HUD_Layer" unique_id=868662766]
 layout_mode = 2
-
-[node name="StatsPanel" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer" unique_id=795723000 node_paths=PackedStringArray("player", "damage_label", "crit_rate_label", "range_label", "speed_label")]
-layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 mouse_filter = 2
-script = ExtResource("3_b4kdy")
-player = NodePath("../../../../../Player")
-damage_label = NodePath("DamageLabel")
-crit_rate_label = NodePath("CritLabel")
-range_label = NodePath("RangeLabel")
-speed_label = NodePath("SpeedLabel")
 
-[node name="DamageLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=2014525515]
+[node name="PlayerUIGroup" type="HBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone" unique_id=1631681786]
 layout_mode = 2
 
-[node name="CritLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1361970591]
-layout_mode = 2
-
-[node name="RangeLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=1722019231]
-layout_mode = 2
-
-[node name="SpeedLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/StatsPanel" unique_id=617311985]
-layout_mode = 2
-
-[node name="AcriveEffectsPanel" type="VBoxContainer" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer" unique_id=515517333 node_paths=PackedStringArray("player")]
-layout_mode = 2
-size_flags_horizontal = 8
-mouse_filter = 2
-script = ExtResource("4_whqo5")
-player = NodePath("../../../../../Player")
-
-[node name="EffectsLabel" type="Label" parent="UI_Canvas/Game_UI_Layout/MarginContainer/VBoxContainer/AcriveEffectsPanel" unique_id=1339267922]
+[node name="CharacterSlotTextureRect" type="TextureRect" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup" unique_id=854278161]
 texture_filter = 5
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-theme_override_constants/outline_size = 10
-text = "Active effects:"
-uppercase = true
+texture = SubResource("GradientTexture1D_dkl2x")
+expand_mode = 1
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/Game_UI_Layout/MarginContainer" unique_id=265991567 instance=ExtResource("4_iftva")]
-
-[node name="PlayerUIGroup" type="Node" parent="UI_Canvas" unique_id=748282068]
-
-[node name="HealthPointsBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=1547176443 node_paths=PackedStringArray("character_entity")]
+[node name="CharacterTexture" type="TextureRect" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
 texture_filter = 5
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 264.0
-offset_bottom = 52.36364
-scale = Vector2(1, 0.88)
+custom_minimum_size = Vector2(7, 7)
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("11_5c861")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/CharacterSlotTextureRect" unique_id=807394628 instance=ExtResource("4_iftva")]
+
+[node name="HP_and_Cooldown_Bars" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup" unique_id=1682295886]
+layout_mode = 2
+
+[node name="HealthPointsBar" type="ProgressBar" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars" unique_id=1547176443 node_paths=PackedStringArray("character_entity")]
+texture_filter = 5
+custom_minimum_size = Vector2(250, 30)
+layout_mode = 2
 theme_override_styles/fill = ExtResource("5_32wio")
 show_percentage = false
 script = ExtResource("6_b0as1")
-character_entity = NodePath("../../../Player")
+character_entity = NodePath("../../../../../../Player")
 
-[node name="HealthPointsLabel" type="Label" parent="UI_Canvas/PlayerUIGroup/HealthPointsBar" unique_id=1386517132]
+[node name="HealthPointsLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars/HealthPointsBar" unique_id=1386517132]
 texture_filter = 5
 layout_mode = 0
 offset_right = 248.0
@@ -174,21 +106,19 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/HealthPointsBar" unique_id=1652438321 instance=ExtResource("4_iftva")]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars/HealthPointsBar" unique_id=1652438321 instance=ExtResource("4_iftva")]
 
-[node name="CooldownProgressBar" type="ProgressBar" parent="UI_Canvas/PlayerUIGroup" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
+[node name="CooldownProgressBar" type="ProgressBar" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars" unique_id=2057617006 node_paths=PackedStringArray("player", "cooldown_label")]
 texture_filter = 5
-offset_left = 16.0
-offset_top = 56.0
-offset_right = 264.0
-offset_bottom = 80.0
+custom_minimum_size = Vector2(250, 30)
+layout_mode = 2
 theme_override_styles/fill = ExtResource("7_1k26m")
 show_percentage = false
 script = ExtResource("8_1t2iv")
-player = NodePath("../../../Player")
+player = NodePath("../../../../../../Player")
 cooldown_label = NodePath("CooldownLabel")
 
-[node name="CooldownLabel" type="Label" parent="UI_Canvas/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
+[node name="CooldownLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars/CooldownProgressBar" unique_id=886329592]
 texture_filter = 5
 layout_mode = 0
 offset_top = 1.0
@@ -197,122 +127,155 @@ offset_bottom = 24.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CooldownProgressBar" unique_id=912995909 instance=ExtResource("4_iftva")]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/PlayerUIGroup/HP_and_Cooldown_Bars/CooldownProgressBar" unique_id=912995909 instance=ExtResource("4_iftva")]
 
-[node name="CharacterSlotTextureRect" type="TextureRect" parent="UI_Canvas/PlayerUIGroup" unique_id=854278161]
+[node name="StatsPanel" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone" unique_id=795723000 node_paths=PackedStringArray("player", "damage_label", "crit_rate_label", "range_label", "speed_label")]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_b4kdy")
+player = NodePath("../../../../Player")
+damage_label = NodePath("DamageLabel")
+crit_rate_label = NodePath("CritLabel")
+range_label = NodePath("RangeLabel")
+speed_label = NodePath("SpeedLabel")
+
+[node name="DamageLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/StatsPanel" unique_id=2014525515]
+layout_mode = 2
+
+[node name="CritLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/StatsPanel" unique_id=1361970591]
+layout_mode = 2
+
+[node name="RangeLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/StatsPanel" unique_id=1722019231]
+layout_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/StatsPanel" unique_id=617311985]
+layout_mode = 2
+
+[node name="AcriveEffectsPanel" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone" unique_id=515517333 node_paths=PackedStringArray("player")]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_whqo5")
+player = NodePath("../../../../Player")
+
+[node name="EffectsLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/AcriveEffectsPanel" unique_id=1339267922]
 texture_filter = 5
-custom_minimum_size = Vector2(7, 7)
-offset_left = 272.0
-offset_top = 16.0
-offset_right = 336.0
-offset_bottom = 80.0
-texture = SubResource("GradientTexture1D_dkl2x")
-expand_mode = 1
+layout_mode = 2
+theme_override_constants/outline_size = 10
+text = "Active effects:"
+uppercase = true
 
-[node name="CharacterTexture" type="TextureRect" parent="UI_Canvas/PlayerUIGroup/CharacterSlotTextureRect" unique_id=1088602805]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopLeft_Zone" unique_id=265991567 instance=ExtResource("4_iftva")]
+
+[node name="TopCenter_Zone" type="CenterContainer" parent="UI_Canvas/HUD_Layer" unique_id=1482819658]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+mouse_filter = 2
+
+[node name="PlaytimeLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopCenter_Zone" unique_id=726032964]
 texture_filter = 5
-custom_minimum_size = Vector2(7, 7)
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 64.0
-texture = ExtResource("11_5c861")
-expand_mode = 1
-stretch_mode = 5
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6862745)
+theme_override_font_sizes/font_size = 40
+text = "00:00"
+horizontal_alignment = 1
+script = ExtResource("2_ge8p3")
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/PlayerUIGroup/CharacterSlotTextureRect" unique_id=807394628 instance=ExtResource("4_iftva")]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopCenter_Zone/PlaytimeLabel" unique_id=460875978 instance=ExtResource("4_iftva")]
 
-[node name="InventoryUIGroup" type="Node" parent="UI_Canvas" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
-script = ExtResource("10_tjy5o")
-player = NodePath("../../Player")
-info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
+[node name="TopRight_Zone" type="VBoxContainer" parent="UI_Canvas/HUD_Layer" unique_id=939754153]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+mouse_filter = 2
 
-[node name="ItemInfoPanelContainer" type="PanelContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=815114077]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -40.0
-offset_bottom = 40.0
-grow_horizontal = 0
+[node name="ItemInfoPanelContainer" type="PanelContainer" parent="UI_Canvas/HUD_Layer/TopRight_Zone" unique_id=815114077]
+layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="InfoLabel" type="Label" parent="UI_Canvas/InventoryUIGroup/ItemInfoPanelContainer" unique_id=656463042]
+[node name="InfoLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopRight_Zone/ItemInfoPanelContainer" unique_id=656463042]
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 24
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/ItemInfoPanelContainer" unique_id=1354687177 instance=ExtResource("4_iftva")]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopRight_Zone/ItemInfoPanelContainer" unique_id=1354687177 instance=ExtResource("4_iftva")]
 
-[node name="HotbarPanel" type="HBoxContainer" parent="UI_Canvas/InventoryUIGroup" unique_id=682378422]
-offset_left = 8.0
-offset_top = 1016.0
-offset_right = 616.0
-offset_bottom = 1080.0
-
-[node name="Slot" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1315751759 instance=ExtResource("11_mbo3l")]
+[node name="BottomRight_Zone" type="VBoxContainer" parent="UI_Canvas/HUD_Layer" unique_id=119641404]
 layout_mode = 2
-show_tooltip = false
+size_flags_horizontal = 8
+size_flags_vertical = 8
+mouse_filter = 2
 
-[node name="Slot2" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=401580884 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot3" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=2124368672 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot4" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=756972471 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot5" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1953207854 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot6" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1471169057 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot7" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1237336103 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot8" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1230213238 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="Slot9" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=1394381743 instance=ExtResource("11_mbo3l")]
-layout_mode = 2
-show_tooltip = false
-
-[node name="HUDVisibilityConfig" parent="UI_Canvas/InventoryUIGroup/HotbarPanel" unique_id=867877150 instance=ExtResource("4_iftva")]
-
-[node name="Minimap" type="Control" parent="UI_Canvas" unique_id=726594060]
+[node name="Minimap" type="Control" parent="UI_Canvas/HUD_Layer/BottomRight_Zone" unique_id=726594060]
 clip_contents = true
-layout_mode = 3
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -480.0
-offset_top = -270.0
-grow_horizontal = 0
-grow_vertical = 0
+custom_minimum_size = Vector2(480, 270)
+layout_mode = 2
 mouse_filter = 2
 script = ExtResource("12_64dql")
 cell_size = 35.0
 metadata/_edit_group_ = true
 
-[node name="HUDVisibilityConfig" parent="UI_Canvas/Minimap" unique_id=1765969916 instance=ExtResource("4_iftva")]
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/BottomRight_Zone/Minimap" unique_id=1765969916 instance=ExtResource("4_iftva")]
 hide_in_map = false
 
-[node name="CraftingUI" parent="UI_Canvas" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
-process_mode = 3
-visible = false
-player = NodePath("../../Player")
+[node name="BottomCenter_Zone" type="CenterContainer" parent="UI_Canvas/HUD_Layer" unique_id=1314419458]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+mouse_filter = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="UI_Canvas" unique_id=1788338789]
+[node name="InventoryUIGroup" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone" unique_id=195024208 node_paths=PackedStringArray("player", "info_label")]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+script = ExtResource("10_tjy5o")
+player = NodePath("../../../../Player")
+info_label = NodePath("../../TopRight_Zone/ItemInfoPanelContainer/InfoLabel")
+
+[node name="HotbarPanel" type="HBoxContainer" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup" unique_id=682378422]
+layout_mode = 2
+
+[node name="Slot" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1315751759 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot2" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=401580884 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot3" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=2124368672 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot4" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=756972471 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot5" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1953207854 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot6" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1471169057 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot7" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1237336103 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot8" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1230213238 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="Slot9" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=1394381743 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+show_tooltip = false
+
+[node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel" unique_id=867877150 instance=ExtResource("4_iftva")]
+
+[node name="Menus_Layer" type="Control" parent="UI_Canvas" unique_id=830739915]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -320,37 +283,62 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="UI_Canvas/CenterContainer" unique_id=1136116868]
+[node name="CraftingUI" parent="UI_Canvas/Menus_Layer" unique_id=101420674 node_paths=PackedStringArray("player") instance=ExtResource("13_4mn4o")]
+process_mode = 3
+visible = false
+layout_mode = 0
+player = NodePath("../../../Player")
+
+[node name="InventoryWindows" type="CenterContainer" parent="UI_Canvas/Menus_Layer" unique_id=1788338789]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows" unique_id=1136116868]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/CenterContainer/PanelContainer" unique_id=1263793803]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer" unique_id=1263793803]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 200
 
-[node name="ChestPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=1069289126 instance=ExtResource("14_1gqv0")]
+[node name="ChestPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=1069289126 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 
-[node name="BackpackPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=186742539 instance=ExtResource("14_1gqv0")]
+[node name="BackpackPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=186742539 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="PlayerPanel" parent="UI_Canvas/CenterContainer/PanelContainer/VBoxContainer" unique_id=1892079471 instance=ExtResource("14_1gqv0")]
+[node name="PlayerPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=1892079471 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 
-[node name="CursorItem" type="TextureRect" parent="UI_Canvas" unique_id=62955625]
+[node name="CursorLayer" type="Control" parent="UI_Canvas" unique_id=471872860]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CursorItem" type="TextureRect" parent="UI_Canvas/CursorLayer" unique_id=62955625]
 custom_minimum_size = Vector2(16, 16)
+layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="UI_Canvas/CursorItem" unique_id=1182108947]
+[node name="Label" type="Label" parent="UI_Canvas/CursorLayer/CursorItem" unique_id=1182108947]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -382,6 +370,3 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_x4ifb")
-health_stats_script = SubResource("Resource_g1c65")
-interaction_and_attack_stats_script = SubResource("Resource_pd8se")

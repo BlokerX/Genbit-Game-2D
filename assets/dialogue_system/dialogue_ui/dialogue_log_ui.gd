@@ -9,6 +9,8 @@ class_name DialogueLogUI
 @onready var scroll_container: ScrollContainer = $MarginContainer/PanelContainer/MarginContainer/VBoxContainer/ScrollContainer
 
 func _ready() -> void:
+	layer = GameLayers.UI_DIALOGUE_LOG
+	
 	hide()
 	close_button.pressed.connect(close_log)
 	# Jeśli dialog zniknie w tle, automatycznie zwiń też log

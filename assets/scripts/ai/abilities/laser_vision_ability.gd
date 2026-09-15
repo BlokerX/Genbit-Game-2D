@@ -17,21 +17,25 @@ class_name LaserVisionAbility
 ## Maska fizyki dla ŚCIAN/PRZESZKÓD, na których laser ma się zatrzymać.
 @export_flags_2d_physics var obstacles_mask: int = 1 
 
-@export_group("Wizualizacje Lasera")
+@export_group("Wizualizacje i Warstwy")
 @export var laser_width: float = 15.0
-@export var laser_color: Color = Color.RED
+@export var laser_color: Color = Color(1.0, 0.0, 0.0, 1.0)
 ## Czas, przez jaki fizycznie widać grubą wiązkę strzału (ciągły atak).
 @export var laser_duration: float = 2.3
+## Z-Index (warstwa rysowania) dla promienia lasera. Domyślnie 10 (nad postaciami).
+@export var laser_z_index: int = GameLayers.HAZARD
 
 @export_group("Obrażenia i Efekty")
 ## Obrażenia zadawane przy każdym "tiku" pobytu w laserze.
 @export_range(1, 200, 1) var laser_damage_per_tick: int = 5
 ## Co ile sekund laser zadaje obrażenia, jeśli ofiara w nim stoi.
 @export_range(0.1, 1.0, 0.1) var damage_tick_rate: float = 0.1
-@export var friendly_fire: bool = false
+@export var friendly_fire: bool = true
 @export var apply_burn_effect: bool = false
 @export_range(1, 50, 1) var burn_damage_per_tick: int = 5
 @export_range(1.0, 20.0, 0.5) var burn_duration: float = 3.0
+## Siła wstrząsu kamery w trakcie strzelania (co każdy tik)
+@export_range(0.0, 1.0, 0.05) var camera_trauma_amount: float = 0.15
 
 func _init() -> void:
 	ability_name = "Ciągły Przeszywający Laser"
@@ -58,7 +62,22 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var laser_node = LaserBeamVisual.new()
 	laser_node.laser_width = laser_width
 	laser_node.laser_color = laser_color
-	attacker.get_tree().current_scene.add_child(laser_node)
+	
+	# Przypisanie warstwy i odcięcie relatywności
+	laser_node.z_index = laser_z_index
+	laser_node.z_as_relative = false
+	
+	# BEZPIECZNE SPAWNOWANIE LASERA
+	if attacker.has_signal("entity_spawn_requested"):
+		attacker.emit_signal("entity_spawn_requested", laser_node, attacker.global_position)
+	else:
+		var parent_node = attacker.get_parent()
+		if parent_node:
+			parent_node.add_child(laser_node)
+			laser_node.global_position = attacker.global_position
+		else:
+			attacker.get_tree().current_scene.add_child(laser_node)
+			laser_node.global_position = attacker.global_position
 
 	var elapsed: float = 0.0
 	var aim_dir = attacker.global_position.direction_to(target.global_position)
@@ -90,7 +109,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		ray_query.collision_mask = obstacles_mask
 		ray_query.exclude = [attacker.get_rid()]
 		
-		var result = space_state.intersect_ray(ray_query)
+		var result = space_state.intersect_ray(ray_query) # <--- POPRAWIONE Z "query" NA "ray_query"
 		var end_pos = result.position if result else max_end_pos
 
 		laser_node.start_pos = start_pos
@@ -184,9 +203,10 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 						col.receive_effect(cloned_eff)
 
 			# Lekkie, cykliczne drżenie kamery potęgujące wagę trwającego ataku
-			var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
-			if cam and cam.has_method("add_trauma"):
-				cam.add_trauma(0.15)
+			if camera_trauma_amount > 0.0:
+				var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
+				if cam and cam.has_method("add_trauma"):
+					cam.add_trauma(camera_trauma_amount)
 
 		fire_elapsed += attacker.get_physics_process_delta_time()
 		await attacker.get_tree().physics_frame

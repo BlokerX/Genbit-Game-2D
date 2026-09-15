@@ -5,5 +5,5 @@
 [resource]
 resource_local_to_scene = true
 script = ExtResource("1_au8ex")
-moveSpeed = 350.0
+moveSpeed = 260.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"

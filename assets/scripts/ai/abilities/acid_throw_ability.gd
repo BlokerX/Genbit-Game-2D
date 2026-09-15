@@ -24,7 +24,7 @@ class_name AcidThrowAbility
 @export_range(1.0, 20.0, 0.5) var puddle_lifetime: float = 7.0
 ## Czy uderzenie i kałuża mają wpływać również na innych wrogów (sojuszników atakującego)?
 @export var friendly_fire: bool = false
-## Z-Index (warstwa rysowania) dla kałuży. Domyślnie 0.
+## Z-Index (warstwa rysowania) dla kałuży. Domyślnie GameLayers.FLOOR_HAZARD.
 @export var puddle_z_index: int = GameLayers.FLOOR_HAZARD
 
 @export_group("Kształt Kałuży (Organic Puddle)")
@@ -72,7 +72,7 @@ class_name AcidThrowAbility
 @export var apply_slow: bool = false
 ## Czas trwania spowolnienia nałożonego przez kałużę.
 @export_range(0.5, 10.0, 0.5) var slow_duration: float = 3.0
-## Siła spowolnienia (0.2 oznacza zwolnienie postaci do 20% jej maksymal prędkości).
+## Siła spowolnienia (0.2 oznacza zwolnienie postaci do 20% jej maksymalnej prędkości).
 @export_range(0.1, 0.9, 0.1) var slow_multiplier: float = 0.3 
 
 func _init() -> void:
@@ -153,7 +153,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		noise_frequency, noise_amplitude, noise_speed, polygon_resolution, smoothing_iterations,
 		puddle_pulse_speed, puddle_pulse_strength, visual_core_scale,
 		puddle_spill_time, puddle_fade_time, puddle_outline_thickness,
-		puddle_z_index
+		puddle_z_index # <--- TUTAJ PRZEKAZUJEMY Z-INDEX
 	)
 	
 	if attacker.has_signal("entity_spawn_requested"):
@@ -226,7 +226,7 @@ class AcidProjectileLogic extends Node2D:
 		_noise_freq: float, _noise_amp: float, _noise_spd: float, _poly_res: int, _smooth_iter: int,
 		_pulse_spd: float, _pulse_str: float, _core_scale: float,
 		_spill_time: float, _fade_time: float, _outline_thick: float,
-		_z_index: int
+		_z_index: int # <--- ODBIÓR Z-INDEXU
 	) -> void:
 		attacker_ref = _attacker
 		start_pos = _start
@@ -263,7 +263,7 @@ class AcidProjectileLogic extends Node2D:
 		p_fade_time = _fade_time
 		p_outline_thick = _outline_thick
 		
-		z_index = _z_index 
+		z_index = _z_index # <--- APLIKACJA Z-INDEXU
 		
 		puddle_noise = FastNoiseLite.new()
 		puddle_noise.seed = randi()
@@ -299,6 +299,7 @@ class AcidProjectileLogic extends Node2D:
 		var puddle_elapsed = elapsed - flight_duration
 		var size_mult = 1.0
 		
+		# Rozlewanie kontrolowane przez parametr
 		if p_spill_time > 0.0 and puddle_elapsed < p_spill_time:
 			size_mult = lerp(0.1, 1.0, clamp(puddle_elapsed / p_spill_time, 0.0, 1.0))
 			

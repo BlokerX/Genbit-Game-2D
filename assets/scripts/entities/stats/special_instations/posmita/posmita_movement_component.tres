@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="MovementComponent" format=3 uid="uid://c7dtonto3jg2t"]
+
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="1_ebnsx"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("1_ebnsx")
+moveSpeed = 280.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"

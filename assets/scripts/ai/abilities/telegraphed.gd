@@ -9,6 +9,7 @@ var source_entity: Node2D
 var specific_target: Node2D = null # <--- Opcjonalny, pojedynczy cel
 
 @export var friendly_fire: bool = false
+@export var danger_color: Color = Color(1.0, 0.0, 0.0, 0.5) # <--- DODANA ZMIENNA KOLORU
 
 func setup(pos: Vector2, rad: float, dur: float, effs: Array[Effect], source: Node2D, target: Node2D = null) -> void:
 	global_position = pos
@@ -37,16 +38,25 @@ func _process(delta: float) -> void:
 		_explode()
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, radius, Color(1, 0, 0, 0.2))
+	# Tło rysujemy z nałożoną przezroczystością (40% bazowej wartości alpha)
+	var bg_color = danger_color
+	bg_color.a = danger_color.a * 0.4
+	draw_circle(Vector2.ZERO, radius, bg_color)
+	
+	# Rośnięcie wewnętrznego okręgu w pełnym kolorze
 	var progress = clamp(elapsed / duration, 0.0, 1.0)
-	draw_circle(Vector2.ZERO, radius * progress, Color(1, 0, 0, 0.5))
+	draw_circle(Vector2.ZERO, radius * progress, danger_color)
 
 func _explode() -> void:
 	set_process(false)
 	
 	if specific_target != null:
 		if is_instance_valid(specific_target):
-			if global_position.distance_to(specific_target.global_position) <= radius:
+			# Zabezpieczamy pobranie grubości
+			var target_rad = specific_target.combat_radius if "combat_radius" in specific_target else 20.0
+			var edge_dist = max(0.0, global_position.distance_to(specific_target.global_position) - target_rad)
+			
+			if edge_dist <= radius:
 				_apply_effects_to(specific_target)
 	else:
 		for body in get_overlapping_bodies():

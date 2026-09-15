@@ -4,9 +4,8 @@ class_name BionicTailAbility
 @export_category("Zdolność: Wirujący Ogon")
 
 @export_group("Czasy Trwania (Spowolnione dla czytelności)")
-
 ## Czas, w którym mutant odwraca się plecami do ofiary, sygnalizując przygotowanie do ataku.
-@export_range(0.1, 2.0, 0.1) var telegraph_time: float = 1
+@export_range(0.1, 2.0, 0.1) var telegraph_time: float = 1.0
 
 ## Czas trwania samego doskoku (lotu) w kierunku gracza. Im mniej, tym szybszy i bardziej gwałtowny skok.
 @export_range(0.1, 2.0, 0.1) var dash_forward_time: float = 0.5
@@ -17,19 +16,16 @@ class_name BionicTailAbility
 ## Czas powrotu mutanta na pozycję startową (brane pod uwagę tylko, jeśli włączono 'return_to_original_position').
 @export_range(0.1, 2.0, 0.1) var dash_return_time: float = 0.4
 
-@export_group("Doskok i Wizualizacja")
 
+@export_group("Doskok i Hitbox Ataku")
 ## Odległość (w pikselach), na jaką mutant doskakuje w stronę gracza przed rozpoczęciem kręcenia ogonem.
 @export_range(10.0, 300.0, 10.0) var dash_distance: float = 60.0
 
 ## Czy po ataku mutant ma wycofać się i natychmiast wrócić na pozycję, z której zaczął szarżę?
-@export var return_to_original_position: bool = true
+@export var return_to_original_position: bool = false
 
 ## Zasięg (promień) wizualizacji cięcia. Wyznacza też fizyczny obszar (AoE), w którym zadawane są obrażenia.
 @export_range(20.0, 300.0, 10.0) var slash_radius: float = 120.0
-
-## Kolor wizualnego śladu zostawianego przez ogon podczas obrotu w powietrzu.
-@export var slash_color: Color = Color(0.2, 0.9, 0.3, 0.8)
 
 ## Ile pełnych obrotów ma wykonać postać (1.0 = 360 stopni). Wartość 1.5 (540 stopni) gwarantuje powrót twarzą do gracza.
 @export_range(0.5, 3.5, 0.5) var spin_rotations: float = 1.5 
@@ -37,8 +33,17 @@ class_name BionicTailAbility
 ## Czy ogon ma ranić i odrzucać również innych przeciwników/sojuszników stojących w zasięgu cięcia?
 @export var friendly_fire: bool = false
 
-@export_group("Obrażenia i Porażenie (CC)")
 
+@export_group("Wizualizacje i Warstwy")
+## Z-Index (warstwa rysowania) dla efektu cięcia. Domyślnie 10 (nad podłogą, równo z postaciami).
+@export var slash_z_index: int = GameLayers.ENTITIES
+## Kolor wizualnego śladu zostawianego przez ogon podczas obrotu w powietrzu.
+@export var slash_color: Color = Color(0.2, 0.902, 0.302, 0.573)
+## Kolor wewnętrznego, jasnego rdzenia cięcia.
+@export var slash_core_color: Color = Color(1.0, 1.0, 1.0, 0.675)
+
+
+@export_group("Obrażenia i Porażenie (CC)")
 ## Bazowe obrażenia (HP) zadawane przez uderzenie ogonem.
 @export_range(0, 150, 1) var tail_damage: int = 35
 
@@ -48,8 +53,8 @@ class_name BionicTailAbility
 ## Czas trwania nałożonego ogłuszenia (w sekundach).
 @export_range(0.1, 5.0, 0.1) var stun_time: float = 1.5
 
-@export_group("Efekt: Odrzut (Knockback)")
 
+@export_group("Efekt: Odrzut (Knockback)")
 ## Czy uderzenie ma fizycznie odrzucać ofiarę do tyłu (Knockback)?
 @export var apply_knockback: bool = true
 
@@ -59,8 +64,8 @@ class_name BionicTailAbility
 ## Czas (w sekundach), przez jaki ofiara traci kontrolę podczas bezwładnego lotu do tyłu.
 @export_range(0.1, 1.0, 0.1) var knockback_duration: float = 0.7
 
-@export_group("Efekt: Jad / Kwas")
 
+@export_group("Efekt: Jad / Kwas")
 ## Czy ostre kolce/kwas na ogonie mają nakładać na ofiarę efekt trucizny (obrażenia w czasie)?
 @export var apply_poison: bool = false
 
@@ -69,6 +74,7 @@ class_name BionicTailAbility
 
 ## Całkowity czas trwania efektu zatrucia kwasem (w sekundach).
 @export_range(1.0, 15.0, 1.0) var poison_duration: float = 5.0
+
 
 func _init() -> void:
 	ability_name = "Bioniczny Ogon i Porażenie"
@@ -105,10 +111,24 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_instance_valid(attacker) or not is_instance_valid(target): return
 
 	# =========================================================
-	# FAZA 2: DOSKOK DO GRACZA
+	# FAZA 2: BEZPIECZNY DOSKOK DO GRACZA
 	# =========================================================
 	aim_direction = attacker.global_position.direction_to(target.global_position)
-	var forward_pos = attacker.global_position + aim_direction * dash_distance
+	var original_pos = attacker.global_position
+	
+	# Obliczanie krawędzi
+	var attacker_rad = attacker.combat_radius if "combat_radius" in attacker else 40.0
+	var target_rad = target.combat_radius if "combat_radius" in target else 40.0
+	var edge_distance = max(0.0, original_pos.distance_to(target.global_position) - (attacker_rad + target_rad))
+	
+	var actual_dash_distance = min(dash_distance, edge_distance)
+	var move_vec = aim_direction * actual_dash_distance
+	
+	var col = attacker.move_and_collide(move_vec, true)
+	var forward_pos = original_pos + move_vec
+	
+	if col:
+		forward_pos = original_pos + col.get_travel()
 	
 	var dash_tween = attacker.create_tween()
 	dash_tween.tween_property(attacker, "global_position", forward_pos, dash_forward_time).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
@@ -124,10 +144,24 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var slash_visual = TailSlashVisual.new()
 	slash_visual.radius = slash_radius
 	slash_visual.color = slash_color
+	slash_visual.core_color = slash_core_color
 	slash_visual.duration = slash_duration
 	slash_visual.total_angle = total_spin_angle
-	slash_visual.target_node = attacker 
-	attacker.get_tree().current_scene.add_child(slash_visual)
+	slash_visual.target_node = attacker
+	slash_visual.z_index = slash_z_index
+	slash_visual.z_as_relative = false
+	
+	# BEZPIECZNE SPAWNOWANIE (W oparciu o Menedżera Mapy)
+	if attacker.has_signal("entity_spawn_requested"):
+		attacker.emit_signal("entity_spawn_requested", slash_visual, attacker.global_position)
+	else:
+		var parent_node = attacker.get_parent()
+		if parent_node:
+			parent_node.add_child(slash_visual)
+			slash_visual.global_position = attacker.global_position
+		else:
+			attacker.get_tree().current_scene.add_child(slash_visual)
+			slash_visual.global_position = attacker.global_position
 
 	var spin_tween = attacker.create_tween()
 	
@@ -168,19 +202,19 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var hit_anyone = false
 
 	for hit in hits:
-		var col = hit.collider
-		if not is_instance_valid(col): continue
-		if not friendly_fire and _is_ally(attacker, col as Node2D): continue
+		var hit_collider = hit.collider
+		if not is_instance_valid(hit_collider): continue
+		if not friendly_fire and _is_ally(attacker, hit_collider as Node2D): continue
 		
-		if col.has_method("receive_effect"):
+		if hit_collider.has_method("receive_effect"):
 			hit_anyone = true
-			_flash_target_red(col as Node2D)
+			_flash_target_red(hit_collider as Node2D)
 			
 			for eff in effects_to_apply:
 				var cloned_eff = eff.duplicate(true)
 				cloned_eff.source_entity = attacker
 				cloned_eff.source_position = attacker.global_position
-				col.receive_effect(cloned_eff)
+				hit_collider.receive_effect(cloned_eff)
 
 	if hit_anyone:
 		var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
@@ -227,12 +261,14 @@ func _flash_target_red(target_node: Node2D) -> void:
 		var tw = target_node.create_tween()
 		tw.tween_property(spr, "self_modulate", orig, 0.3)
 
+
 # ==============================================================================
 # KLASA WEWNĘTRZNA: Dynamiczne rysowanie cięcia w powietrzu (Slash)
 # ==============================================================================
 class TailSlashVisual extends Node2D:
 	var radius: float = 80.0
 	var color: Color = Color.GREEN
+	var core_color: Color = Color.WHITE
 	var duration: float = 0.3
 	var total_angle: float = TAU
 	var elapsed: float = 0.0
@@ -246,6 +282,7 @@ class TailSlashVisual extends Node2D:
 			queue_free()
 			return
 			
+		# Obiekt zawsze podąża dokładnie za postacią, nawet po wyspawnowaniu w Mapie
 		global_position = target_node.global_position
 		
 		elapsed += delta
@@ -263,7 +300,7 @@ class TailSlashVisual extends Node2D:
 		var alpha = lerp(1.0, 0.0, progress)
 		
 		var draw_color = Color(color.r, color.g, color.b, alpha)
-		var core_color = Color(1.0, 1.0, 1.0, alpha)
+		var final_core = Color(core_color.r, core_color.g, core_color.b, alpha)
 		
 		draw_arc(Vector2.ZERO, current_radius, -PI, PI * 0.6, 32, draw_color, thickness)
-		draw_arc(Vector2.ZERO, current_radius, -PI, PI * 0.6, 32, core_color, thickness * 0.3)
+		draw_arc(Vector2.ZERO, current_radius, -PI, PI * 0.6, 32, final_core, thickness * 0.3)

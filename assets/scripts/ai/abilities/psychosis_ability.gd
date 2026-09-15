@@ -6,7 +6,7 @@ class_name PsychosisAbility
 @export_group("Celowanie i Zasięg (Fale AOE)")
 @export_range(0.1, 5.0, 0.1) var cast_time: float = 1.2
 ## Zasięg, w którym fala dotyka ofiar (zostanie narysowana na ziemi)
-@export_range(50.0, 1500.0, 10.0) var blast_radius: float = 800.0
+@export_range(50.0, 1500.0, 10.0) var blast_radius: float = 450.0
 @export var friendly_fire: bool = false
 
 @export_group("Wizualizacje Rzucania")
@@ -14,6 +14,8 @@ class_name PsychosisAbility
 @export_range(1.0, 3.0, 0.1) var visual_scale_pulse: float = 1.3
 ## Czas zanikania fali po eksplozji (dla efektu wizualnego)
 @export_range(0.1, 1.0, 0.1) var explosion_fade_time: float = 0.8
+## Z-Index (warstwa rysowania) dla fali na ziemi. Domyślnie -10 (pod postaciami).
+@export var wave_z_index: int = -10
 
 @export_group("Efekt: Zamrożenie (Szok Mentalny)")
 @export var apply_freeze: bool = true
@@ -34,6 +36,8 @@ class_name PsychosisAbility
 @export_range(1.0, 15.0, 0.5) var fog_duration: float = 5.0
 @export var apply_screen_shake: bool = true
 @export_range(0.1, 2.0, 0.1) var camera_trauma_amount: float = 0.85
+## Warstwa CanvasLayer dla mgły zasłaniającej ekran. Domyślnie 90.
+@export var fog_canvas_layer: int = GameLayers.HAZARD
 
 @export_group("Efekt: Dezorientacja NPC (Amnezja)")
 @export var apply_npc_amnesia: bool = true
@@ -62,8 +66,20 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 	wave_visual.color = aura_color
 	wave_visual.cast_time = cast_time
 	wave_visual.fade_time = explosion_fade_time
-	# Dodajemy jako dziecko atakującego, aby strefa ruszała się razem z nim!
-	attacker.add_child(wave_visual)
+	wave_visual.target_node = attacker # Informujemy falę, za kim ma podążać
+	wave_visual.z_index = wave_z_index
+	
+	# BEZPIECZNE SPAWNOWANIE (Trafia do struktury Mapy, a nie do obiektu AI)
+	if attacker.has_signal("entity_spawn_requested"):
+		attacker.emit_signal("entity_spawn_requested", wave_visual, attacker.global_position)
+	else:
+		var parent_node = attacker.get_parent()
+		if parent_node:
+			parent_node.add_child(wave_visual)
+			wave_visual.global_position = attacker.global_position
+		else:
+			attacker.get_tree().current_scene.add_child(wave_visual)
+			wave_visual.global_position = attacker.global_position
 
 	# Animacja samego potwora (puchnięcie/pulsowanie)
 	var tween = attacker.create_tween()
@@ -79,7 +95,8 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 		return
 
 	# 3. UDERZENIE FALI!
-	wave_visual.explode()
+	if is_instance_valid(wave_visual):
+		wave_visual.explode()
 
 	var space_state = attacker.get_world_2d().direct_space_state
 	var shape = CircleShape2D.new()
@@ -153,6 +170,7 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 			var fog = MentalFogVisual.new()
 			fog.duration = fog_duration
 			fog.fog_color = fog_color
+			fog.target_layer = fog_canvas_layer
 			attacker.get_tree().current_scene.add_child(fog)
 
 	# Przywracamy AI swobodę
@@ -178,8 +196,13 @@ class PsychosisWaveVisual extends Node2D:
 	var elapsed: float = 0.0
 	var exploded: bool = false
 	var post_explode_timer: float = 0.0
+	var target_node: Node2D = null
 
 	func _process(delta: float) -> void:
+		# Dynamiczne podążanie fali za atakującym (nawet jeśli zostaliśmy wyspawnowani do Mapy)
+		if is_instance_valid(target_node):
+			global_position = target_node.global_position
+			
 		if not exploded:
 			elapsed += delta
 			queue_redraw()
@@ -194,20 +217,17 @@ class PsychosisWaveVisual extends Node2D:
 
 	func _draw() -> void:
 		if not exploded:
-			# Faza ładowania: Pulsujący okrąg powoli rośnie z atakującego
 			var progress = clamp(elapsed / cast_time, 0.0, 1.0)
 			var current_radius = radius * progress
 			
-			# Intensywne pulsowanie przezroczystości (sinusoida)
 			var pulse = (sin(elapsed * 15.0) + 1.0) / 2.0 
 			var alpha = lerp(0.1, 0.4, pulse)
 			
 			draw_circle(Vector2.ZERO, current_radius, Color(color.r, color.g, color.b, alpha))
 			draw_arc(Vector2.ZERO, current_radius, 0, TAU, 64, color, 2.0)
 		else:
-			# Faza Uderzenia: Fala momentalnie wypełnia obszar i błyskawicznie blednie
 			var progress = clamp(post_explode_timer / fade_time, 0.0, 1.0)
-			var current_radius = radius + (progress * 80.0) # Lekko rozszerza się za kontur
+			var current_radius = radius + (progress * 80.0)
 			var alpha = lerp(0.8, 0.0, progress)
 			
 			draw_circle(Vector2.ZERO, current_radius, Color(color.r, color.g, color.b, alpha))
@@ -216,18 +236,18 @@ class PsychosisWaveVisual extends Node2D:
 class MentalFogVisual extends CanvasLayer:
 	var duration: float = 5.0
 	var fog_color: Color = Color.BLACK
+	var target_layer: int = 90
 	
 	func _ready() -> void:
-		layer = 90 # Nad resztą gry, pod UI
+		layer = target_layer
 		var rect = ColorRect.new()
 		rect.color = fog_color
 		rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(rect)
 		
-		# Animacja zanikania mgły, połączona z lekkimi pulsacjami zniekształcającymi
 		var tween = create_tween()
-		tween.tween_property(rect, "color:a", 1.0, 0.1) # Nagłe uderzenie
+		tween.tween_property(rect, "color:a", 1.0, 0.1)
 		tween.tween_property(rect, "color:a", 0.8, 0.3)
 		tween.tween_property(rect, "color:a", 0.95, 0.3)
 		tween.tween_property(rect, "color:a", 0.0, duration - 0.7).set_trans(Tween.TRANS_SINE)
