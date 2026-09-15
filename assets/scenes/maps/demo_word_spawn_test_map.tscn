@@ -17,6 +17,7 @@
 [ext_resource type="Resource" uid="uid://bgqk6xdsp2vg" path="res://assets/dialogue_system/data/dialogues/entry_points/tutorial_dialogue_entry_point.tres" id="16_n1edl"]
 [ext_resource type="PackedScene" uid="uid://blqj3v8dcpldy" path="res://assets/scenes/enemies/mutant_prisoner.tscn" id="17_tpm7i"]
 [ext_resource type="PackedScene" uid="uid://2n33oc6cq723" path="res://assets/scenes/enemies/paxie.tscn" id="18_1hvyy"]
+[ext_resource type="PackedScene" uid="uid://b56d8pmb4go24" path="res://assets/scenes/enemies/soldier.tscn" id="19_ih0k2"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/rooms/level_entrance.tscn" id="42_xy8dj"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_1hvyy"]
@@ -52,6 +53,48 @@ hand_attack_data = SubResource("Resource_p05go")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1hvyy"]
 size = Vector2(60, 60)
+
+[sub_resource type="Resource" id="Resource_hlxsh"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 300.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_67f4b"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 150
+max_health = 150
+
+[sub_resource type="Resource" id="Resource_jnda7"]
+script = ExtResource("8_nxa7u")
+damage = 15
+critical_damage = 5
+critical_rate = 0.05
+max_range = 0.0
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_hlvp1"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_jnda7")
+
+[sub_resource type="Resource" id="Resource_hxu0g"]
+resource_local_to_scene = true
+script = ExtResource("6_w83pc")
+moveSpeed = 300.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_luww0"]
+resource_local_to_scene = true
+script = ExtResource("7_irn8f")
+health = 150
+max_health = 150
+
+[sub_resource type="Resource" id="Resource_8805h"]
+resource_local_to_scene = true
+script = ExtResource("9_mncir")
+hand_attack_data = SubResource("Resource_jnda7")
 
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
@@ -183,10 +226,6 @@ rotation = 1.5707964
 movement_universal_script = SubResource("Resource_ih0k2")
 health_stats_script = SubResource("Resource_v7gjx")
 interaction_and_attack_stats_script = SubResource("Resource_18iqk")
-drop_from_loot_table = null
-drop_from_inventory = null
-combat_radius = null
-destroy_entity_after_die = null
 
 [node name="DevChestL" parent="OpenWorld" unique_id=1382818356 instance=ExtResource("10_5aga0")]
 position = Vector2(7264, 3168)
@@ -217,5 +256,17 @@ position = Vector2(7680, 5760)
 
 [node name="Paxie" parent="OpenWorld" unique_id=2044264715 instance=ExtResource("18_1hvyy")]
 position = Vector2(6072, 5696)
+
+[node name="Soldier" parent="OpenWorld" unique_id=644843535 instance=ExtResource("19_ih0k2")]
+position = Vector2(8832, 4264)
+movement_universal_script = SubResource("Resource_hlxsh")
+health_stats_script = SubResource("Resource_67f4b")
+interaction_and_attack_stats_script = SubResource("Resource_hlvp1")
+
+[node name="Soldier2" parent="OpenWorld" unique_id=451724387 instance=ExtResource("19_ih0k2")]
+position = Vector2(8944, 4272)
+movement_universal_script = SubResource("Resource_hxu0g")
+health_stats_script = SubResource("Resource_luww0")
+interaction_and_attack_stats_script = SubResource("Resource_8805h")
 
 [editable path="OpenWorld"]

@@ -16,43 +16,70 @@ func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
 func on_effect_start(target : Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")
 	
-	# Odcinamy logikę i input
+	# TWARDE PRZERWANIE ATAKÓW
+	if target.has_method("cancel_current_attack"):
+		target.cancel_current_attack()
+	
+	# 1. Zatrzymujemy standardowy ruch (Działa na starsze moby i gracza)
 	target.set_physics_process(false)
 	target.set_process(false)
 	target.set_process_input(false)
 	target.set_process_unhandled_input(false)
 	
-	# Zatrzymujemy animacje
+	# 2. ODCINAMY MÓZG AI (Przestaje wymyślać nowe ataki i nawigować)
+	var ai_controller = target.get_node_or_null("AIController")
+	if ai_controller:
+		ai_controller.process_mode = Node.PROCESS_MODE_DISABLED
+	
+	# 3. Zatrzymujemy animacje
 	if target.has_node("AnimationPlayer"):
 		target.get_node("AnimationPlayer").pause()
 		
-	# Zmieniamy kolor TYLKO, jeśli flaga jest prawdziwa
+	# 4. PAUZUJEMY TWEENY (Zatrzymuje ataki w połowie lotu/doskoku!)
+	if "is_frozen" in target:
+		target.is_frozen = true
+	if "active_tweens" in target:
+		for t in target.active_tweens:
+			if t and t.is_valid():
+				t.pause()
+		
+	# 5. Kolorowanie lodu
 	if apply_blue_tint:
 		var sprite = _get_sprite_from_target(target)
 		if sprite != null:
-			# Zapisujemy oryginalny kolor wewnątrz ofiary
 			target.set_meta("original_self_modulate", sprite.self_modulate)
-			sprite.self_modulate = freeze_modulate # Lodowy niebieski
+			sprite.self_modulate = freeze_modulate
 
 func on_effect_end(target : Node2D) -> void:
 	print("Odmrażam obiekt: ", target.name)
 	
-	# Przywracamy wejścia i logikę
+	# 1. Przywracamy standardowy ruch
 	target.set_physics_process(true)
 	target.set_process(true)
 	target.set_process_input(true)
 	target.set_process_unhandled_input(true)
 	
-	# Wznawiamy animacje
+	# 2. BUDZIMY MÓZG AI 
+	var ai_controller = target.get_node_or_null("AIController")
+	if ai_controller:
+		ai_controller.process_mode = Node.PROCESS_MODE_INHERIT
+	
+	# 3. Wznawiamy animacje
 	if target.has_node("AnimationPlayer"):
 		target.get_node("AnimationPlayer").play()
 		
-	# Przywracamy oryginalny kolor ofiary
-	# Wystarczy sprawdzić, czy zapisaliśmy oryginalny kolor - jeśli tak, to znaczy, że flaga była aktywna
+	# 4. WZNAWIAMY TWEENY (Atak z przed zamrożenia leci dalej)
+	if "is_frozen" in target:
+		target.is_frozen = false
+	if "active_tweens" in target:
+		for t in target.active_tweens:
+			if t and t.is_valid():
+				t.play()
+		
+	# 5. Przywracamy oryginalny kolor ofiary
 	var sprite = _get_sprite_from_target(target)
 	if sprite != null and target.has_meta("original_self_modulate"):
 		sprite.self_modulate = target.get_meta("original_self_modulate")
-		# Czyścimy metadane po zakończeniu efektu
 		target.remove_meta("original_self_modulate")
 
 # Funkcja pomocnicza do znajdowania obrazka ofiary

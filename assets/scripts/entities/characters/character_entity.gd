@@ -37,6 +37,10 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var effects_collector : Node
 @export var destroy_entity_after_die : bool = true
 
+# --- Zmienne do kontrolowania zamrożenia ---
+var active_tweens: Array[Tween] = []
+var is_frozen: bool = false
+
 #region Główne funkcje silnikowe
 
 func _ready():
@@ -238,5 +242,19 @@ func _update_sprite_direction(move_dir: Vector2) -> void:
 			character_sprite.frame = 6
 		Vector2(-1, 1):  # Dół-Lewo
 			character_sprite.frame = 7
+
+# Zamiast nadpisywać, tworzymy WŁASNĄ funkcję śledzącą Tweeny!
+func create_tracked_tween() -> Tween:
+	var tween = create_tween() # Wywołujemy natywną funkcję Godota w tle
+	active_tweens.append(tween)
+	
+	# Gdy Tween (atak) się skończy, usuwamy go z listy
+	tween.finished.connect(func(): active_tweens.erase(tween))
+	
+	# Jeśli potwór JEST zamrożony w momencie odpalenia skoku/ataku, atak od razu się pauzuje!
+	if is_frozen:
+		tween.pause()
+		
+	return tween
 
 #endregion

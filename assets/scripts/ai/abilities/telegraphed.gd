@@ -31,9 +31,13 @@ func _ready() -> void:
 		add_child(col)
 
 func _process(delta: float) -> void:
+	# Usuwamy strefę zagrożenia, jeśli sprawca oberwał mrozem lub stunem!
+	if is_instance_valid(source_entity) and source_entity.get("is_casting_interrupted"):
+		queue_free()
+		return
+		
 	elapsed += delta
 	queue_redraw()
-	
 	if elapsed >= duration:
 		_explode()
 

@@ -82,7 +82,7 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 			wave_visual.global_position = attacker.global_position
 
 	# Animacja samego potwora (puchnięcie/pulsowanie)
-	var tween = attacker.create_tween()
+	var tween = attacker.create_tracked_tween()
 	var orig_scale = attacker.scale
 	tween.tween_property(attacker, "scale", orig_scale * visual_scale_pulse, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(attacker, "scale", orig_scale, cast_time / 2.0).set_trans(Tween.TRANS_SINE)

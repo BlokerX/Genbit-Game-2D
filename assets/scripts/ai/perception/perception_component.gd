@@ -29,9 +29,12 @@ func process_perception(_delta: float) -> void:
 		
 		# AI zaatakuje TYLKO sprowokowanych i otwartych wrogów
 		if disposition == FactionComponent.Disposition.HOSTILE:
-			var dist = entity.global_position.distance_to(potential_target.global_position)
-			if dist < best_distance and can_see_target(potential_target):
-				best_distance = dist
+			var my_rad = entity.combat_radius if "combat_radius" in entity else 20.0
+			var target_rad = potential_target.combat_radius if "combat_radius" in potential_target else 20.0
+			var edge_dist = max(0.0, entity.global_position.distance_to(potential_target.global_position) - (my_rad + target_rad))
+				
+			if edge_dist < best_distance and can_see_target(potential_target):
+				best_distance = edge_dist
 				best_target = potential_target
 				
 	blackboard.target = best_target

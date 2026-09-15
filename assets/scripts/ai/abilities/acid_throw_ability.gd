@@ -103,7 +103,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# =========================================================
 	var aim_direction = attacker.global_position.direction_to(target.global_position)
 	if can_rotate:
-		var rot_tween = attacker.create_tween()
+		var rot_tween = attacker.create_tracked_tween()
 		rot_tween.tween_property(attacker, "rotation", aim_direction.angle(), telegraph_time * 0.8)
 	else:
 		if attacker.has_method("_update_sprite_direction"):
@@ -111,7 +111,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 	# Zmiana koloru na toksyczną zieleń (BEZ SKALOWANIA)
 	if sprite:
-		var visual_tween = attacker.create_tween()
+		var visual_tween = attacker.create_tracked_tween()
 		var target_color = orig_modulate.lerp(acid_color, 0.7)
 		visual_tween.tween_property(sprite, "self_modulate", target_color, telegraph_time).set_trans(Tween.TRANS_SINE)
 		

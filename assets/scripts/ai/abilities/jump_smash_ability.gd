@@ -100,11 +100,11 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	var original_scale = attacker.scale
 	
-	var pos_tween = attacker.create_tween()
+	var pos_tween = attacker.create_tracked_tween()
 	pos_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	pos_tween.tween_property(attacker, "global_position", safe_target_pos, jump_duration)
 	
-	var scale_tween = attacker.create_tween()
+	var scale_tween = attacker.create_tracked_tween()
 	var scale_up_time = jump_duration * 0.5
 	var scale_down_time = jump_duration * 0.5
 	scale_tween.tween_property(attacker, "scale", original_scale * 1.35, scale_up_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

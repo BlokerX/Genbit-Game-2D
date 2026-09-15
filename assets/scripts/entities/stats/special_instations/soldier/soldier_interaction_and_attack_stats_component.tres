@@ -8,6 +8,7 @@ script = ExtResource("1_drr6m")
 damage = 15
 critical_damage = 5
 critical_rate = 0.05
+max_range = 0.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]

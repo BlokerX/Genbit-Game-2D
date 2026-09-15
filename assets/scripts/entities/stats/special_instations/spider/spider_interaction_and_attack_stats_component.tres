@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="Resource_jnda7"]
 script = ExtResource("1_0nuhv")
 damage = 8
+max_range = 100.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
 [resource]

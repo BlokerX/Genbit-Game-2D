@@ -60,7 +60,12 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if my_faction:
 		for ally in attacker.get_tree().get_nodes_in_group("Character"):
 			if ally == attacker: continue
-			if attacker.global_position.distance_to(ally.global_position) <= blast_radius:
+			
+			# DODAJEMY KRAWĘDZIE ZAMIAST STAREGO WARUNKU
+			var ally_rad = ally.combat_radius if "combat_radius" in ally else 20.0
+			var edge_dist = max(0.0, attacker.global_position.distance_to(ally.global_position) - ally_rad)
+			
+			if edge_dist <= blast_radius:
 				if my_faction.get_disposition_toward(ally) == FactionComponent.Disposition.FRIENDLY:
 					if ally.has_method("receive_effect"):
 						# BUFFOWANIE SOJUSZNIKÓW

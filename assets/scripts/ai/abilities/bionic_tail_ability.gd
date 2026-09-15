@@ -101,7 +101,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# FAZA 1: TELEGRAFOWANIE 
 	# =========================================================
 	if can_rotate:
-		var rot_tween = attacker.create_tween()
+		var rot_tween = attacker.create_tracked_tween()
 		rot_tween.tween_property(attacker, "rotation", tail_direction.angle(), telegraph_time).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	else:
 		if attacker.has_method("_update_sprite_direction"):
@@ -130,7 +130,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if col:
 		forward_pos = original_pos + col.get_travel()
 	
-	var dash_tween = attacker.create_tween()
+	var dash_tween = attacker.create_tracked_tween()
 	dash_tween.tween_property(attacker, "global_position", forward_pos, dash_forward_time).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	
 	await attacker.get_tree().create_timer(dash_forward_time).timeout
@@ -163,7 +163,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			attacker.get_tree().current_scene.add_child(slash_visual)
 			slash_visual.global_position = attacker.global_position
 
-	var spin_tween = attacker.create_tween()
+	var spin_tween = attacker.create_tracked_tween()
 	
 	if can_rotate:
 		spin_tween.tween_property(attacker, "rotation", attacker.rotation + total_spin_angle, slash_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -229,7 +229,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# FAZA 4: POWRÓT NA MIEJSCE (Jeśli włączone)
 	# =========================================================
 	if return_to_original_position:
-		var ret_tween = attacker.create_tween()
+		var ret_tween = attacker.create_tracked_tween()
 		ret_tween.tween_property(attacker, "global_position", start_position, dash_return_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		await ret_tween.finished
 

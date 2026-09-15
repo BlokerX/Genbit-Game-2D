@@ -76,7 +76,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		if debug_mode: print("[StealItem] Ściana na drodze! Skracam doskok z %s do %s pikseli." % [actual_dash_distance, col.get_travel().length()])
 
 	# Błyskawiczny cios w kierunku gracza
-	var tween = attacker.create_tween()
+	var tween = attacker.create_tracked_tween()
 	tween.tween_property(attacker, "global_position", forward_pos, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(attacker, "global_position", original_pos, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 
