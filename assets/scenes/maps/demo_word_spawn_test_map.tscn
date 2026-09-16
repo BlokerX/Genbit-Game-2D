@@ -13,7 +13,9 @@
 [ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="12_350hj"]
 [ext_resource type="PackedScene" uid="uid://b47in61ub5684" path="res://assets/dialogue_system/components/dialogue_component.tscn" id="13_0tgc8"]
 [ext_resource type="Script" uid="uid://b6hb48822kkmk" path="res://assets/dialogue_system/resources/dialogue_entry_point.gd" id="14_u0cfs"]
-[ext_resource type="Resource" uid="uid://bgqk6xdsp2vg" path="res://assets/dialogue_system/data/dialogues/entry_points/tutorial_dialogue_entry_point.tres" id="16_n1edl"]
+[ext_resource type="Resource" uid="uid://df1agsrrotf1j" path="res://assets/data/dialogues_data/dialogues/entry_points/test_dialogue_entry_point.tres" id="15_n1edl"]
+[ext_resource type="Resource" uid="uid://bgqk6xdsp2vg" path="res://assets/data/dialogues_data/dialogues/entry_points/tutorial_dialogue_entry_point.tres" id="16_n1edl"]
+[ext_resource type="Script" uid="uid://djucrytie0x6j" path="res://assets/scripts/quests/components/story_event_reciver.gd" id="17_tpm7i"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/rooms/level_entrance.tscn" id="42_xy8dj"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_tpm7i"]
@@ -203,7 +205,7 @@ target_collision = NodePath("../CollisionShape2D")
 shape = SubResource("RectangleShape2D_1hvyy")
 
 [node name="DialogueComponent" parent="OpenWorld/TutorialHelper" unique_id=1639514121 instance=ExtResource("13_0tgc8")]
-entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("16_n1edl")])
+entry_points = Array[ExtResource("14_u0cfs")]([ExtResource("15_n1edl"), ExtResource("16_n1edl")])
 
 [node name="Label" type="Label" parent="OpenWorld/TutorialHelper" unique_id=578807625]
 texture_filter = 5
@@ -225,5 +227,23 @@ text = "Tutorial
 [Click \"E\" to start dialog]"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Door" parent="OpenWorld" unique_id=975504500 node_paths=PackedStringArray("destination_door") instance=ExtResource("2_4p2la")]
+position = Vector2(7088, 4200)
+destination_door = NodePath("../Door2")
+is_mechanically_locked = true
+
+[node name="StoryEventReceiver" type="Node" parent="OpenWorld/Door" unique_id=1007410200]
+script = ExtResource("17_tpm7i")
+expected_event_name = "otworz_wrota"
+delay_seconds = 1.5
+metadata/_custom_type_script = "uid://djucrytie0x6j"
+
+[node name="Door2" parent="OpenWorld" unique_id=1407557011 node_paths=PackedStringArray("destination_door") instance=ExtResource("2_4p2la")]
+position = Vector2(8256, 4208)
+destination_door = NodePath("../Door")
+is_mechanically_locked = true
+
+[connection signal="event_received" from="OpenWorld/Door/StoryEventReceiver" to="OpenWorld/Door" method="force_open"]
 
 [editable path="OpenWorld"]

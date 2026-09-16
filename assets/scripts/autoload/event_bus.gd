@@ -14,6 +14,7 @@ signal hud_visibility_requested()
 
 signal open_fullscreen_menu(menu_name: String)
 
+signal story_event_triggered(event_name: String)
 
 # --- STAŁE (Eliminacja literówek) ---
 const MENU_INVENTORY = "inventory"

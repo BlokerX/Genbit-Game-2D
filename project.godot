@@ -28,6 +28,7 @@ GlobalLevelManager="*uid://b2gvk2mec22nr"
 ItemDatabase="*uid://cmooht25yo8gh"
 DialogueManager="*uid://bsrgw27nre7hq"
 DialogueState="*uid://ccfce3demxxkj"
+QuestManager="*uid://dcqxo0snatj04"
 
 [display]
 
