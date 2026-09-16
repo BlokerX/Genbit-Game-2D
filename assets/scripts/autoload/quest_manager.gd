@@ -37,17 +37,16 @@ func _on_game_event(event_type: String, event_data: Dictionary) -> void:
 			var current_val: int = q_data["progress"].get(i, 0)
 			var required_val: int = objective.get_required_amount()
 			
-			if current_val >= required_val:
-				continue # Cel już wykonany
+			# Przekazujemy obecny postęp i dostajemy nowy!
+			var new_val = objective.check_event(event_type, event_data, current_val)
+			
+			if new_val != current_val:
+				q_data["progress"][i] = new_val
+				quest_objective_progressed.emit(quest, i, new_val)
+				print("QuestManager: Postęp w celu '", objective.objective_description, "' (", new_val, "/", required_val, ")")
 				
-			var progress_gained = objective.check_event(event_type, event_data)
-			if progress_gained > 0:
-				current_val += progress_gained
-				q_data["progress"][i] = current_val
-				quest_objective_progressed.emit(quest, i, current_val)
-				print("QuestManager: Postęp w celu (", current_val, "/", required_val, ")")
-				
-			if current_val < required_val:
+			# Jeśli postęp wciąż jest mniejszy niż wymagany, blokujemy awans etapu
+			if new_val < required_val:
 				stage_completed = false
 		
 		# Auto-awans, jeśli wszystkie cele w etapie są gotowe!
@@ -67,25 +66,19 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	if completed_quests.has(quest_id) or not quest_db.has(quest_id): return
 		
 	var quest: QuestData = quest_db[quest_id]
-	
-	# Zabezpieczenie przed wyjściem poza tablicę -> Automatycznie kończy zadanie!
 	if stage_index >= quest.stages.size():
 		complete_quest(quest_id)
 		return
 		
-	# TARCZA CHRONOLOGII: Blokujemy cofanie się i odpalanie tego samego etapu
 	var current_stage = -1
 	if active_quests.has(quest_id):
 		current_stage = active_quests[quest_id]["stage"]
 		
-	if stage_index <= current_stage:
-		print("QuestManager: Ignoruję - etap ", stage_index, " w zadaniu [", quest.title, "] jest już aktywny lub minął.")
-		return
+	if stage_index <= current_stage: return
 		
 	var stage_data: QuestStage = quest.stages[stage_index]
 	var is_new_quest = not active_quests.has(quest_id)
 	
-	# Aktualizujemy pamięć
 	active_quests[quest_id] = {
 		"stage": stage_index,
 		"progress": {}
@@ -97,11 +90,16 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	else:
 		quest_updated.emit(quest, stage_index)
 		print("Quest: Zaktualizowano zadanie [", quest.title, "]")
-
-	# AUTOMATYKA: Zdarzenia i Nagrody
+	
 	if stage_data.trigger_event_on_start != "":
 		EventBus.story_event_triggered.emit(stage_data.trigger_event_on_start)
 	_grant_rewards(stage_data.start_rewards)
+	
+	# --- MAGIA: Jeśli dopiero co otrzymaliśmy zadanie, natychmiast odpytujemy ekwipunek Gracza! ---
+	# Dzięki temu, jeśli gracz MIAŁ JUŻ pistolet w plecaku, cel automatycznie się zaliczy.
+	var player = get_tree().get_first_node_in_group("Player")
+	if player and player.has_method("get_inventory"):
+		_on_game_event("inventory_changed", {"inventory": player.get_inventory()})
 
 func complete_quest(quest_id: StringName) -> void:
 	if active_quests.has(quest_id):

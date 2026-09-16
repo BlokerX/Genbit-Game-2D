@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://bjsclabh7p1id"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_fcktf"]
+[ext_resource type="Script" uid="uid://d006iaxvme57d" path="res://assets/scripts/quests/quest_data.gd" id="2_8570q"]
+[ext_resource type="Script" uid="uid://dr4gp1ec7ylx2" path="res://assets/scripts/quests/quest_stage.gd" id="3_0wi5b"]
+[ext_resource type="Script" uid="uid://hp4oiwwvtan5" path="res://assets/scripts/quests/objectives/quest_objective.gd" id="4_8570q"]
+[ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="5_4iopv"]
+[ext_resource type="Script" uid="uid://xyw88e45atht" path="res://assets/scripts/quests/objectives/objective_gather.gd" id="6_rcsqo"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="8_1a3s5"]
+[ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="9_yjl5l"]
+
+[sub_resource type="Resource" id="Resource_x6uw4"]
+script = ExtResource("9_yjl5l")
+item_to_give = ExtResource("8_1a3s5")
+amount = 5
+metadata/_custom_type_script = "uid://rlbaeabbej6v"
+
+[sub_resource type="Resource" id="Resource_u42r2"]
+script = ExtResource("6_rcsqo")
+required_item = ExtResource("5_4iopv")
+metadata/_custom_type_script = "uid://xyw88e45atht"
+
+[sub_resource type="Resource" id="Resource_0wi5b"]
+script = ExtResource("3_0wi5b")
+objective_text = "Znajdź pistolet."
+objectives = Array[ExtResource("4_8570q")]([SubResource("Resource_u42r2")])
+metadata/_custom_type_script = "uid://dr4gp1ec7ylx2"
+
+[resource]
+script = ExtResource("2_8570q")
+id = &"get_pistol"
+title = "W poszukiwaniu broni"
+description = "Słyszałem, że na bagnach leży stary pistolet."
+stages = Array[ExtResource("3_0wi5b")]([SubResource("Resource_0wi5b")])
+completion_rewards = Array[ExtResource("1_fcktf")]([SubResource("Resource_x6uw4")])
+metadata/_custom_type_script = "uid://d006iaxvme57d"

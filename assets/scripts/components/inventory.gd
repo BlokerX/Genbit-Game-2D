@@ -512,6 +512,10 @@ func _rebuild_cache() -> void:
 				if not _tag_count_cache.has(tag):
 					_tag_count_cache[tag] = 0
 				_tag_count_cache[tag] += amt
+	
+	# --- JEDNA LINIJKA, KTÓRA ZASILA WSZYSTKIE QUESTY ZBIERACKIE ---
+	# Podajemy cały ekwipunek, niech Questy same sobie w nim pogrzebią i sprawdzą co masz!
+	EventBus.game_event_occurred.emit("inventory_changed", {"inventory": self})
 
 # --- NARZĘDZIA DLA TAGÓW ---
 func get_tag_amount(tag: StringName) -> int:
