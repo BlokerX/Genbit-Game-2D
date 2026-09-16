@@ -23,6 +23,44 @@ var is_storage_slot: bool = false
 var slot_index: int = -1
 var parent_reference: Node = null 
 
+@export_group("Tooltip Style")
+## Styl wyglądu dymka. Stwórz tu nowy StyleBoxFlat, aby go edytować!
+@export var custom_tooltip_style: StyleBoxFlat
+
+func _ready() -> void:
+	var tooltip_style: StyleBoxFlat
+	
+	if custom_tooltip_style != null:
+		# 1. Opcja: Używamy stylu z Inspektora (jeśli został przypisany)
+		tooltip_style = custom_tooltip_style
+	else:
+		# 2. Opcja: Brak stylu w Inspektorze - tworzymy bezpieczny, domyślny styl
+		tooltip_style = StyleBoxFlat.new()
+		
+		# Tło (całkowicie nieprzezroczyste)
+		tooltip_style.bg_color = Color(0.15, 0.15, 0.15, 1.0)
+		
+		# Marginesy wewnątrz dymka
+		tooltip_style.content_margin_left = 10.0
+		tooltip_style.content_margin_right = 10.0
+		tooltip_style.content_margin_top = 10.0
+		tooltip_style.content_margin_bottom = 10.0
+		
+		# Domyślna ramka (2 piksele, jasnoszara)
+		#tooltip_style.border_width_bottom = 2
+		#tooltip_style.border_width_top = 2
+		#tooltip_style.border_width_left = 2
+		#tooltip_style.border_width_right = 2
+		#tooltip_style.border_color = Color(0.7, 0.7, 0.7, 1.0)
+		
+		# Wyłączenie wygładzania dla pixel-artowego wyglądu ramki
+		tooltip_style.anti_aliasing = false
+
+	# Przypisujemy wybrany styl (z Inspektora lub domyślny) do slota
+	var custom_theme = Theme.new()
+	custom_theme.set_stylebox("panel", "TooltipPanel", tooltip_style)
+	self.theme = custom_theme
+
 func setup_as_storage_slot(index: int, storage_ref: Node) -> void:
 	is_storage_slot = true
 	slot_index = index

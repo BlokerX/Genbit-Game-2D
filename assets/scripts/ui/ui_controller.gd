@@ -142,9 +142,10 @@ func _process(delta: float) -> void:
 			_drop_hold_time = 0.0
 			_drop_tick_time = 0.0
 	
-	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem (Twój stary kod) ---
+	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem ---
 	if item_in_hand != null:
-		cursor_item_rect.global_position = get_viewport().get_mouse_position() + Vector2(5, 5)
+	 	# Odejmujemy połowę wielkości prostokąta, aby wyśrodkować ikonę na kursorze
+		cursor_item_rect.global_position = get_viewport().get_mouse_position() - (cursor_item_rect.size / 2.0)
 
 func toggle_player_inventory() -> void:
 	if is_player_inventory_open:
@@ -705,10 +706,11 @@ func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
 
 func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
+		# Całkowicie ukrywa kursor myszy
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+		
 		cursor_item_rect.texture = item_in_hand.data.item_icon
 		cursor_item_rect.show()
-		
-		# ZMIANA ECS
 		var hand_amount = item_in_hand.state.get("amount", 1)
 		if hand_amount > 1:
 			cursor_amount_label.text = str(hand_amount)
@@ -716,6 +718,9 @@ func _update_cursor_visuals() -> void:
 		else:
 			cursor_amount_label.hide()
 	else:
+		# Przywraca widoczność kursora
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		
 		cursor_item_rect.texture = null
 		cursor_item_rect.hide()
 		cursor_amount_label.hide()
