@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_yo8ih")
-speaker_name = "Flandere Scarlet (player's avatar)"
+speaker_name = "Flandere Scarlet (player's second avatar)"
 name_color = Color(1, 1, 0.3372549, 1)
 portrait = ExtResource("1_jtqnj")
 metadata/_custom_type_script = "uid://blc87iblglwxv"

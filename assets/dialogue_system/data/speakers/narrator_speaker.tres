@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("1_ykt8i")
 speaker_name = "Narrator"
+name_color = Color(0.3019608, 0.9882353, 0.64705884, 1)
 portrait = ExtResource("1_m8u3g")
 metadata/_custom_type_script = "uid://blc87iblglwxv"

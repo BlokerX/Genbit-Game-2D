@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://c5aj4e0i3f4y0"]
+
+[ext_resource type="Texture2D" uid="uid://b2h1ydnmlp7ym" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_front.png" id="1_nsceb"]
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="2_i03ut"]
+
+[resource]
+script = ExtResource("2_i03ut")
+speaker_name = "Posmita"
+name_color = Color(0.31764707, 0, 0.827451, 1)
+portrait = ExtResource("1_nsceb")
+metadata/_custom_type_script = "uid://blc87iblglwxv"

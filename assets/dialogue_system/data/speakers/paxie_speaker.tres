@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://efa25cucgr10"]
+
+[ext_resource type="Texture2D" uid="uid://b2h1ydnmlp7ym" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_front.png" id="1_fce2d"]
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="2_lscen"]
+
+[resource]
+script = ExtResource("2_lscen")
+speaker_name = "Paxie"
+name_color = Color(0.31764707, 0, 0.827451, 1)
+portrait = ExtResource("1_fce2d")
+metadata/_custom_type_script = "uid://blc87iblglwxv"
