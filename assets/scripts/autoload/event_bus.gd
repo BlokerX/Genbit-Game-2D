@@ -28,6 +28,7 @@ const MENU_STORAGE = "storage"
 const MENU_CRAFTING = "crafting"
 const MENU_MAP = "map"
 const MENU_DIALOGUE = "dialogue"
+const MENU_QUEST_LOG = "quest_log"
 const MENU_PAUSE = "pause"
 
 var active_menus: Dictionary = {
@@ -36,6 +37,7 @@ var active_menus: Dictionary = {
 	MENU_CRAFTING: false,
 	MENU_MAP: false,
 	MENU_DIALOGUE: false,
+	MENU_QUEST_LOG: false,
 	MENU_PAUSE: false
 }
 

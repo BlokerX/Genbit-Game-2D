@@ -21,6 +21,11 @@
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="AudioStream" uid="uid://dbu2b1polluso" path="res://assets/audio/entities/player/dark_orchestra_one.mp3" id="17_1y80r"]
 [ext_resource type="PackedScene" uid="uid://batykymhuwsen" path="res://assets/dialogue_system/scenes/dialogue_log_ui.tscn" id="18_5c861"]
+[ext_resource type="PackedScene" uid="uid://dqmro5ilbtfn7" path="res://assets/scripts/quests/ui/quest_log_ui.tscn" id="19_vlsbn"]
+[ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="22_5c861"]
+[ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="23_vlsbn"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="24_dkl2x"]
+[ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="25_x4ifb"]
 
 [sub_resource type="Gradient" id="Gradient_vlsbn"]
 offsets = PackedFloat32Array(1)
@@ -28,6 +33,26 @@ colors = PackedColorArray(1, 1, 1, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_dkl2x"]
 gradient = SubResource("Gradient_vlsbn")
+
+[sub_resource type="Resource" id="Resource_vlsbn"]
+resource_local_to_scene = true
+script = ExtResource("22_5c861")
+moveSpeed = 400.0
+metadata/_custom_type_script = "uid://qggqcqys4ruj"
+
+[sub_resource type="Resource" id="Resource_dkl2x"]
+resource_local_to_scene = true
+script = ExtResource("23_vlsbn")
+
+[sub_resource type="Resource" id="Resource_osvyu"]
+script = ExtResource("24_dkl2x")
+max_range = 200.0
+metadata/_custom_type_script = "uid://xdxv87pcx8uw"
+
+[sub_resource type="Resource" id="Resource_x4ifb"]
+resource_local_to_scene = true
+script = ExtResource("25_x4ifb")
+hand_attack_data = SubResource("Resource_osvyu")
 
 [node name="TestGameScene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_ge8p3")
@@ -379,6 +404,9 @@ visible = false
 [node name="DialogueLogUI" parent="." unique_id=1881172957 instance=ExtResource("18_5c861")]
 visible = false
 
+[node name="QuestLogUI" parent="." unique_id=844569904 instance=ExtResource("19_vlsbn")]
+visible = false
+
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
 visible = false
 
@@ -393,3 +421,6 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
+movement_universal_script = SubResource("Resource_vlsbn")
+health_stats_script = SubResource("Resource_dkl2x")
+interaction_and_attack_stats_script = SubResource("Resource_x4ifb")

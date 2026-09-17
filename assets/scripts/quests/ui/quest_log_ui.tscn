@@ -1,0 +1,188 @@
+[gd_scene format=3 uid="uid://dqmro5ilbtfn7"]
+
+[ext_resource type="Script" uid="uid://qq4qsuo4vj8u" path="res://assets/scripts/quests/ui/quest_log_ui.gd" id="1_qlscript"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_QuestPanel"]
+bg_color = Color(0.08, 0.08, 0.1, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.6, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Separator"]
+bg_color = Color(0.7, 0.6, 0.3, 0.3)
+corner_radius_top_left = 1
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_radius_bottom_left = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_AbandonBtn"]
+bg_color = Color(0.3, 0.1, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="QuestLogUI" type="CanvasLayer" unique_id=844569904 node_paths=PackedStringArray("quest_list_container", "right_panel", "title_label", "description_label", "objectives_label", "timer_label", "abandon_button", "close_button")]
+process_mode = 3
+layer = 50
+script = ExtResource("1_qlscript")
+quest_list_container = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/LeftPanel/ScrollContainer/QuestListContainer")
+right_panel = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel")
+title_label = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/TitleLabel")
+description_label = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/DescLabel")
+objectives_label = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/ObjectivesLabel")
+timer_label = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/BottomRow/TimerLabel")
+abandon_button = NodePath("MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/BottomRow/AbandonButton")
+close_button = NodePath("MarginContainer/MainPanel/VBoxContainer/HeaderMargin/HeaderBox/CloseButton")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1636397769]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=79102552]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 60
+
+[node name="MainPanel" type="PanelContainer" parent="MarginContainer" unique_id=1240848571]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_QuestPanel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/MainPanel" unique_id=346740518]
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="MarginContainer/MainPanel/VBoxContainer" unique_id=1250035925]
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="HeaderBox" type="HBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/HeaderMargin" unique_id=1634106756]
+layout_mode = 2
+
+[node name="MainTitle" type="Label" parent="MarginContainer/MainPanel/VBoxContainer/HeaderMargin/HeaderBox" unique_id=732240054]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
+theme_override_font_sizes/font_size = 32
+text = "DZIENNIK ZADAŃ"
+
+[node name="CloseButton" type="Button" parent="MarginContainer/MainPanel/VBoxContainer/HeaderMargin/HeaderBox" unique_id=520243430]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.7, 0.6, 1)
+theme_override_font_sizes/font_size = 24
+text = "X"
+flat = true
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/MainPanel/VBoxContainer" unique_id=1327580581]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_Separator")
+
+[node name="ContentMargin" type="MarginContainer" parent="MarginContainer/MainPanel/VBoxContainer" unique_id=232710683]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin" unique_id=2002731599]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer" unique_id=1683679745]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/LeftPanel" unique_id=999067081]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="QuestListContainer" type="VBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/LeftPanel/ScrollContainer" unique_id=608186285]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer" unique_id=1976707236]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_Separator")
+
+[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer" unique_id=2000676218]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=1814823460]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "Tytuł Wybranego Zadania"
+
+[node name="DescLabel" type="RichTextLabel" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=622089875]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/normal_font_size = 18
+text = "Szczegółowy opis zadania, fabuła, wskazówki."
+fit_content = true
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=575165689]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_Separator")
+
+[node name="ObjectivesLabel" type="RichTextLabel" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=2079605374]
+layout_mode = 2
+theme_override_constants/line_separation = 8
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/bold_font_size = 20
+theme_override_font_sizes/italics_font_size = 16
+bbcode_enabled = true
+text = "Cele pojawią się tutaj."
+fit_content = true
+
+[node name="Spacer" type="Control" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=1385431769]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel" unique_id=2090426954]
+layout_mode = 2
+
+[node name="TimerLabel" type="Label" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/BottomRow" unique_id=724954276]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+text = "Pozostały czas: 00:00"
+
+[node name="AbandonButton" type="Button" parent="MarginContainer/MainPanel/VBoxContainer/ContentMargin/HBoxContainer/RightPanel/BottomRow" unique_id=213839253]
+custom_minimum_size = Vector2(200, 45)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_AbandonBtn")
+text = "Porzuć Zadanie"
