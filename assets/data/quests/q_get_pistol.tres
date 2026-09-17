@@ -19,6 +19,7 @@ metadata/_custom_type_script = "uid://rlbaeabbej6v"
 [sub_resource type="Resource" id="Resource_u42r2"]
 script = ExtResource("6_rcsqo")
 required_item = ExtResource("5_4iopv")
+objective_description = "Wejdź w posiadanie pistoletu."
 metadata/_custom_type_script = "uid://xyw88e45atht"
 
 [sub_resource type="Resource" id="Resource_1a3s5"]
