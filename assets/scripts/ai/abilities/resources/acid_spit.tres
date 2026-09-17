@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AcidSpitAbility" format=3 uid="uid://c0vw7l24sp7od"]
+
+[ext_resource type="Script" uid="uid://gmij6pfs44ua" path="res://assets/scripts/ai/abilities/acid_spit_ability.gd" id="1_ai3fh"]
+
+[resource]
+script = ExtResource("1_ai3fh")
+metadata/_custom_type_script = "uid://gmij6pfs44ua"

@@ -6,7 +6,7 @@ signal on_fade_in_finished
 @onready var color_rect: ColorRect = ColorRect.new()
 
 func _ready() -> void:
-	layer = 100 # Najwyższa warstwa, by zakryć grę i UI
+	layer = GameLayers.UI_TRANSITION # Najwyższa warstwa, by zakryć grę i UI
 	
 	color_rect.color = Color(0, 0, 0, 0) # Na start całkowicie przezroczysty
 	color_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

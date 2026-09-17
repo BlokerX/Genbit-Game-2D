@@ -14,6 +14,13 @@ signal hud_visibility_requested()
 
 signal open_fullscreen_menu(menu_name: String)
 
+signal story_event_triggered(event_name: String)
+
+# --- GLOBALNA MAGISTRALA ROZGRYWKI (Pod Questy i Osiągnięcia) ---
+## Uniwersalny sygnał na wszystko, co robi gracz w świecie.
+## event_type np: "item_collected", "enemy_killed", "action_performed"
+## event_data np: {"item_id": &"wood", "amount": 5}
+signal game_event_occurred(event_type: String, event_data: Dictionary)
 
 # --- STAŁE (Eliminacja literówek) ---
 const MENU_INVENTORY = "inventory"
@@ -21,6 +28,7 @@ const MENU_STORAGE = "storage"
 const MENU_CRAFTING = "crafting"
 const MENU_MAP = "map"
 const MENU_DIALOGUE = "dialogue"
+const MENU_QUEST_LOG = "quest_log"
 const MENU_PAUSE = "pause"
 
 var active_menus: Dictionary = {
@@ -29,6 +37,7 @@ var active_menus: Dictionary = {
 	MENU_CRAFTING: false,
 	MENU_MAP: false,
 	MENU_DIALOGUE: false,
+	MENU_QUEST_LOG: false,
 	MENU_PAUSE: false
 }
 

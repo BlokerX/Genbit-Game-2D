@@ -11,6 +11,8 @@ var current_node: DialogueNode
 var _time_in_line: float = 0.0
 
 func _ready() -> void:
+	layer = GameLayers.UI_DIALOGUE
+	
 	hide()
 	DialogueManager.dialogue_started.connect(_on_dialogue_started)
 	DialogueManager.dialogue_ended.connect(_on_dialogue_ended)

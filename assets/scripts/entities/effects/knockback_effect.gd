@@ -4,8 +4,6 @@ class_name KnockbackEffect
 @export var knockback_force: float = 800.0
 @export var duration: float = 0.25
 
-var source_position: Vector2 = Vector2.ZERO
-
 func _init(_force: float = 800.0, _duration: float = 0.25):
 	effect_name = "Knockback"
 	effect_color = Color.PALE_VIOLET_RED

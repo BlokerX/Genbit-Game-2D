@@ -108,9 +108,11 @@ func execute_attack_on_target(actor: Node2D, target: Node2D) -> void :
 			
 	# UNIWERSALNE WSTRZYKIWANIE (Duck Typing)
 	for effect in all_effects:
-		# Jeśli jakikolwiek efekt potrzebuje pozycji źródła, dajemy mu ją:
-		if "source_position" in effect:
-			effect.source_position = actor.global_position
+		effect.source_position = actor.global_position
+		
+		# --- BEZPIECZNE PRZYPISANIE SPRAWCY ---
+		if is_instance_valid(actor):
+			effect.source_entity = actor
 			
 		if target.has_method("receive_effect"):
 			target.receive_effect(effect)

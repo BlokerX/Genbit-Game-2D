@@ -1,0 +1,166 @@
+[gd_scene format=3 uid="uid://q4xj7lh64e4s"]
+
+[ext_resource type="Script" uid="uid://br0fiypf2jpr3" path="res://assets/scripts/entities/characters/enemies/ai_character_entity.gd" id="1_2nv85"]
+[ext_resource type="Resource" uid="uid://bt5qjbpslnluv" path="res://assets/scripts/entities/stats/special_instations/spider/spider_movement_component.tres" id="2_2nv85"]
+[ext_resource type="Resource" uid="uid://t5ji7tccoyrb" path="res://assets/scripts/entities/stats/special_instations/spider/spider_monitored_life_stats_component.tres" id="3_2nv85"]
+[ext_resource type="Resource" uid="uid://dbliy2ar7a3k7" path="res://assets/scripts/entities/stats/special_instations/spider/spider_interaction_and_attack_stats_component.tres" id="4_dixon"]
+[ext_resource type="Resource" uid="uid://3gu8etcxejxm" path="res://assets/scripts/entities/stats/special_instations/spider/spider_loot_drop_component.tres" id="6_dixon"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="6_ninxk"]
+[ext_resource type="Texture2D" uid="uid://no0ryo5onb5e" path="res://assets/textures/samples_examples/entities/spider.png" id="7_3xyyd"]
+[ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="8_yn8as"]
+[ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="9_rlnf5"]
+[ext_resource type="Script" uid="uid://is5av5rx4obe" path="res://assets/scripts/ai/components/faction_component.gd" id="10_3yo02"]
+[ext_resource type="Script" uid="uid://0r6n7qknad1h" path="res://assets/scripts/ai/core/ai_controller.gd" id="11_ninxk"]
+[ext_resource type="Script" uid="uid://dlqnxvfcnebwe" path="res://assets/scripts/ai/perception/perception_component.gd" id="12_2nv85"]
+[ext_resource type="Resource" uid="uid://5c80iqu27spr" path="res://assets/scripts/ai/behaviors/behavior_profiles/spider_profile.tres" id="12_dixon"]
+[ext_resource type="Script" uid="uid://0wottg54ble" path="res://assets/scripts/ai/core/ai_state_machine.gd" id="15_lkvbf"]
+[ext_resource type="Script" uid="uid://cw3arxlunoxni" path="res://assets/scripts/ai/core/state_idle.gd" id="16_2nv85"]
+[ext_resource type="Script" uid="uid://cuxi2c1wsn8ec" path="res://assets/scripts/ai/core/state_chase.gd" id="17_dixon"]
+[ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="18_h48t6"]
+[ext_resource type="Script" uid="uid://bip6dhdts57cg" path="res://assets/scripts/ai/core/state_search.gd" id="18_ml77n"]
+[ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="19_3yo02"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w0vak"]
+atlas = ExtResource("7_3xyyd")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7fpw2"]
+atlas = ExtResource("7_3xyyd")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tme40"]
+atlas = ExtResource("7_3xyyd")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d7uxj"]
+atlas = ExtResource("7_3xyyd")
+region = Rect2(48, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w0vak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7fpw2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tme40")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d7uxj")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
+radius = 40.0
+
+[node name="Spider" type="CharacterBody2D" unique_id=1198211542 node_paths=PackedStringArray("ai_controller", "faction_component", "character_sprite", "effects_collector") groups=["Enemy", "NPC"]]
+collision_layer = 4
+collision_mask = 39
+motion_mode = 1
+script = ExtResource("1_2nv85")
+ai_controller = NodePath("AIController")
+faction_component = NodePath("FactionComponent")
+respawnVector = Vector2(968, 928)
+movement_universal_script = ExtResource("2_2nv85")
+health_stats_script = ExtResource("3_2nv85")
+interaction_and_attack_stats_script = ExtResource("4_dixon")
+loot_drop_script = ExtResource("6_dixon")
+character_sprite = NodePath("AnimatedSprite2D")
+effects_collector = NodePath("EffectsCollector")
+
+[node name="FactionComponent" type="Node" parent="." unique_id=276466438]
+script = ExtResource("10_3yo02")
+faction_name = &"Spiders"
+call_for_help_radius = 500.0
+metadata/_custom_type_script = "uid://is5av5rx4obe"
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("6_ninxk")]
+outline_material = null
+target_sprite = NodePath("../AnimatedSprite2D")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="EffectsCollector" type="Node" parent="." unique_id=932642496]
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=2095254467]
+collision_mask = 3
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
+
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
+script = ExtResource("11_ninxk")
+behavior_profile = ExtResource("12_dixon")
+perception = NodePath("PerceptionComponent")
+state_machine = NodePath("AIStateMachine")
+navigation = NodePath("AINavigationController")
+combat = NodePath("AICombatController")
+metadata/_custom_type_script = "uid://0r6n7qknad1h"
+
+[node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
+script = ExtResource("12_2nv85")
+los_ray = NodePath("../../LineOfSight")
+metadata/_custom_type_script = "uid://dlqnxvfcnebwe"
+
+[node name="AIStateMachine" type="Node" parent="AIController" unique_id=179778988 node_paths=PackedStringArray("initial_state")]
+script = ExtResource("15_lkvbf")
+initial_state = NodePath("StateIdle")
+metadata/_custom_type_script = "uid://0wottg54ble"
+
+[node name="StateIdle" type="Node" parent="AIController/AIStateMachine" unique_id=257902515]
+script = ExtResource("16_2nv85")
+metadata/_custom_type_script = "uid://cw3arxlunoxni"
+
+[node name="StateChase" type="Node" parent="AIController/AIStateMachine" unique_id=70319089]
+script = ExtResource("17_dixon")
+metadata/_custom_type_script = "uid://cuxi2c1wsn8ec"
+
+[node name="StateSearch" type="Node" parent="AIController/AIStateMachine" unique_id=1197604719]
+script = ExtResource("18_ml77n")
+metadata/_custom_type_script = "uid://bip6dhdts57cg"
+
+[node name="AINavigationController" type="Node" parent="AIController" unique_id=1639129802]
+script = ExtResource("18_h48t6")
+metadata/_custom_type_script = "uid://c8iewgurqtnad"
+
+[node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
+script = ExtResource("19_3yo02")
+metadata/_custom_type_script = "uid://jorlgpryjbvo"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1952739763]
+texture_filter = 5
+position = Vector2(-0.5, -0.5)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_pijm0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
+shape = SubResource("CircleShape2D_r73tf")
+debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
+
+[node name="HealthProgressBar" type="ProgressBar" parent="." unique_id=482593767 node_paths=PackedStringArray("character_entity")]
+texture_filter = 5
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -32.0
+pivot_offset = Vector2(32, 48)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = ExtResource("8_yn8as")
+show_percentage = false
+script = ExtResource("9_rlnf5")
+character_entity = NodePath("..")
+
+[node name="Label" type="Label" parent="HealthProgressBar" unique_id=1863562766]
+texture_filter = 5
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.43529412, 1, 0.22352941, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -6,6 +6,8 @@ extends CanvasLayer
 @onready var quit_button = $CenterContainer/VBoxContainer/QuitButton
 
 func _ready() -> void:
+	layer = GameLayers.UI_PAUSE
+	
 	# Na starcie chowamy menu pauzy
 	hide()
 	

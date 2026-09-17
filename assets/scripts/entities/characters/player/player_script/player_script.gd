@@ -33,16 +33,6 @@ const INPUT_ROTATE = "RotateBuilding"
 
 #endregion
 
-#region Signals
-
-## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
-signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
-
-# ## Sygnał wykonywany po skończonej inicjalizacji gracza
-#signal setup_complete
-
-#endregion
-
 @onready var player_light: PointLight2D = $PointLight2D
 
 #region Podłączone komponenty indywidualne dla gracza
@@ -242,7 +232,7 @@ func _handle_pushing() -> void:
 			collider.apply_central_impulse(-collision.get_normal() * push_force)
 			
 		# 2. Popychanie Wrogów (np. pająków) - NATURALNE PRZEPYCHANIE
-		elif collider is EnemyEntity:
+		elif collider is AICharacterEntity:
 			# Zamiast wstrzykiwać prędkość, wymuszamy gładkie przesunięcie o ułamek piksela.
 			# Mnożnik 0.2 przy push_force (10.0) przesuwa wroga o 2 piksele na klatkę.
 			# Dzięki użyciu move_and_collide pająk nie przejdzie przez ścianę, jeśli go do niej dociśniesz!

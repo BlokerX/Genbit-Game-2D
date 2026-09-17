@@ -17,6 +17,9 @@ var current_health: int
 var is_broken: bool = false
 
 func _ready() -> void:
+	# Automatyczne ustawienie warstwy
+	z_index = GameLayers.ENTITIES
+	
 	current_health = max_health
 	# Nasłuchujemy sygnału zebrania (klawisz F)
 	if interactable_component:

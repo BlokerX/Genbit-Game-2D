@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://qpnxh86pt7sa"]
+
+[ext_resource type="Texture2D" uid="uid://uemueduo6rgv" path="res://assets/textures/samples_examples/entities/Soldier/soldier_front.png" id="1_76jla"]
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="2_s81b4"]
+
+[resource]
+script = ExtResource("2_s81b4")
+speaker_name = "Soldier"
+name_color = Color(0.49803922, 0.80784315, 1, 1)
+portrait = ExtResource("1_76jla")
+metadata/_custom_type_script = "uid://blc87iblglwxv"

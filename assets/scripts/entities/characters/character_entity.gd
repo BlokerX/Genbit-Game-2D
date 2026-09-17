@@ -3,6 +3,18 @@ extends CharacterBody2D
 
 class_name CharacterEntity
 
+#region Signals
+
+## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
+signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
+
+# ## Sygnał wykonywany po skończonej inicjalizacji entity
+#signal setup_complete
+
+#endregion
+
+@export var faction_component: FactionComponent
+
 # Zmienne respawnu:
 @export var respawnVector := Vector2(512, 360)
 
@@ -10,20 +22,37 @@ class_name CharacterEntity
 @export var movement_universal_script : MovementComponent
 @export var health_stats_script : MonitoredLifeStatsComponent 
 @export var interaction_and_attack_stats_script : InteractionAndAttackStatsComponent
+
+
+# KONFIGURACJA ŹRÓDEŁ DROPu:
+@export_category("System Łupu (Loot)")
+@export var drop_from_loot_table: bool = true
+@export var drop_from_inventory: bool = true
 @export var loot_drop_script : LootDropComponent
 
+@export_category("Dane Fizyczne")
 ## Indywidualna grubość postaci do walki ---
 @export var combat_radius: float = 40.0
-
 @export var character_sprite : AnimatedSprite2D
-
 @export var effects_collector : Node
-
 @export var destroy_entity_after_die : bool = true
+
+# --- Zmienne do kontrolowania zamrożenia ---
+var active_tweens: Array[Tween] = []
+var is_frozen: bool = false
 
 #region Główne funkcje silnikowe
 
 func _ready():
+	# Automatyczne ustawienie warstwy i sortowania[cite: 3]
+	z_index = GameLayers.ENTITIES
+	
+	add_to_group("Character") # Wymagane, by AI mogło skanować świat w poszukiwaniu celów
+	
+	# AUTO-RESOLVE: Jeśli zapomniałeś podpiąć frakcję w Inspektorze, gra i tak ją znajdzie
+	if faction_component == null:
+		faction_component = get_node_or_null("FactionComponent")
+	
 	# Podłączenie sygnału z komponentu statystyk do funkcji death_sequence
 	if health_stats_script:
 		health_stats_script.died.connect(_on_character_died)
@@ -40,20 +69,27 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
-	# Jeśli przypisaliśmy skrypt w Inspektorze
-	if loot_drop_script:
+	print(self.name + " zginął! Przetwarzanie łupu...")
+	
+	# 1. Źródło: Tabela Łupu (LootDropComponent)
+	if drop_from_loot_table and loot_drop_script:
 		loot_drop_script.perform_drop(self)
+		
+	# 2. Źródło: Aktualny Ekwipunek (Upuść wszystko, co trzymał/miał w plecaku)
+	if drop_from_inventory and has_method("get_inventory"):
+		# ZMIANA: call("nazwa_metody") omija sprawdzanie statyczne!
+		var inv = call("get_inventory") 
+		if inv:
+			if inv is Inventory:
+				pass
+			elif inv.has_method("drop_all_items"):
+				inv.drop_all_items(self)
 	
-	print(self.name + " has been killed successfully!")
-	
-	# Opóźniamy leczenie i respawn do końca aktualnej klatki logicznej silnika
-	# call_deferred("respawn_sequence")
-	
-	# todo poprowadzić tu jakoś koniec rozgrywki
-	if destroy_entity_after_die :
+	if destroy_entity_after_die:
 		self.queue_free()
-		print(self.name + " został zwolniony z istnienia.")
-	else : call_deferred("respawn_sequence")
+		print(self.name + " usunięty ze sceny.")
+	else:
+		call_deferred("respawn_sequence")
 	
 
 # Sekwencja respawnu, Uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
@@ -206,5 +242,19 @@ func _update_sprite_direction(move_dir: Vector2) -> void:
 			character_sprite.frame = 6
 		Vector2(-1, 1):  # Dół-Lewo
 			character_sprite.frame = 7
+
+# Zamiast nadpisywać, tworzymy WŁASNĄ funkcję śledzącą Tweeny!
+func create_tracked_tween() -> Tween:
+	var tween = create_tween() # Wywołujemy natywną funkcję Godota w tle
+	active_tweens.append(tween)
+	
+	# Gdy Tween (atak) się skończy, usuwamy go z listy
+	tween.finished.connect(func(): active_tweens.erase(tween))
+	
+	# Jeśli potwór JEST zamrożony w momencie odpalenia skoku/ataku, atak od razu się pauzuje!
+	if is_frozen:
+		tween.pause()
+		
+	return tween
 
 #endregion

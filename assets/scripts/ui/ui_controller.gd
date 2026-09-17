@@ -142,9 +142,10 @@ func _process(delta: float) -> void:
 			_drop_hold_time = 0.0
 			_drop_tick_time = 0.0
 	
-	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem (Twój stary kod) ---
+	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem ---
 	if item_in_hand != null:
-		cursor_item_rect.global_position = get_viewport().get_mouse_position() + Vector2(5, 5)
+	 	# Odejmujemy połowę wielkości prostokąta, aby wyśrodkować ikonę na kursorze
+		cursor_item_rect.global_position = get_viewport().get_mouse_position() - (cursor_item_rect.size / 2.0)
 
 func toggle_player_inventory() -> void:
 	if is_player_inventory_open:
@@ -705,10 +706,11 @@ func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
 
 func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
+		# Całkowicie ukrywa kursor myszy
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+		
 		cursor_item_rect.texture = item_in_hand.data.item_icon
 		cursor_item_rect.show()
-		
-		# ZMIANA ECS
 		var hand_amount = item_in_hand.state.get("amount", 1)
 		if hand_amount > 1:
 			cursor_amount_label.text = str(hand_amount)
@@ -716,6 +718,9 @@ func _update_cursor_visuals() -> void:
 		else:
 			cursor_amount_label.hide()
 	else:
+		# Przywraca widoczność kursora
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		
 		cursor_item_rect.texture = null
 		cursor_item_rect.hide()
 		cursor_amount_label.hide()
@@ -783,6 +788,7 @@ func _on_hud_visibility_requested() -> void:
 				if config.hide_in_map and EventBus.active_menus[EventBus.MENU_MAP]: should_hide = true
 				if config.hide_in_dialogue and EventBus.active_menus[EventBus.MENU_DIALOGUE]: should_hide = true
 				if config.hide_in_pause and EventBus.active_menus[EventBus.MENU_PAUSE]: should_hide = true
+				if config.hide_in_quest_log and EventBus.active_menus[EventBus.MENU_QUEST_LOG]: should_hide = true
 			else:
 				should_hide = EventBus.is_any_menu_open()
 			
@@ -798,7 +804,7 @@ func _on_hud_visibility_requested() -> void:
 				else:
 					element.mouse_filter = element.get_meta("original_mouse_filter")
 
-# Obsługa żądania z dialogu
+# Obsługa żądania z dialogu i Dziennika
 func _on_open_fullscreen_menu(menu_name: String) -> void:
 	# 1. Zabezpieczamy focus. Jeśli myszka uciekła, resetujemy go.
 	var focus_owner = get_viewport().gui_get_focus_owner()
@@ -820,7 +826,8 @@ func _on_open_fullscreen_menu(menu_name: String) -> void:
 		"Map":
 			toggle_map_ui()
 		"QuestLog":
-			# toggle_quest_log() # Gdy stworzysz Dziennik Zadań
+			# Osobny CanvasLayer sam się otwiera po wciśnięciu J.
+			# My po prostu ukryliśmy Ekwipunek/Mapę funkcją _close_all_ui() wyżej!
 			pass
 		_:
 			push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)

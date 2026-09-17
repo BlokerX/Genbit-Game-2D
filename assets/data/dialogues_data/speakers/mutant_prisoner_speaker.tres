@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SpeakerData" format=3 uid="uid://ctervoc8qgl64"]
+
+[ext_resource type="Script" uid="uid://blc87iblglwxv" path="res://assets/dialogue_system/resources/speaker_data.gd" id="1_qnlbt"]
+[ext_resource type="Texture2D" uid="uid://bv3lphltbxxsg" path="res://assets/textures/samples_examples/entities/MutantPrisoner/mutant_prisoner_front.png" id="1_rt2ut"]
+
+[resource]
+script = ExtResource("1_qnlbt")
+speaker_name = "Prisoner (Mutant)"
+name_color = Color(0.5372549, 0, 0, 1)
+portrait = ExtResource("1_rt2ut")
+metadata/_custom_type_script = "uid://blc87iblglwxv"

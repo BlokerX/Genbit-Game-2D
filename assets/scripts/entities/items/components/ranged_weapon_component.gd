@@ -48,9 +48,9 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		return 
 		
 	var stats = actor.get("interaction_and_attack_stats_script")
-	var inv = actor.get("inventory") if actor.has_method("get_inventory") else null
+	var inv = actor.call("get_inventory") if actor.has_method("get_inventory") else null
 	
-	if stats == null or inv == null:
+	if stats == null:
 		return
 
 	# 1. SYSTEM AMUNICJI
@@ -58,7 +58,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	if uses_ammunition:
 		var current_ammo = item_instance.state.get("ammo_count", 0)
 		if current_ammo <= 0:
-			if auto_reload and inv.has_method("reload_current_weapon"):
+			# ZABEZPIECZENIE: Upewniamy się, że inwentarz istnieje (inv != null)
+			if auto_reload and inv != null and inv.has_method("reload_current_weapon"):
 				if inv.reload_current_weapon():
 					stats.trigger_reload_cooldown(reload_time)
 			return
@@ -143,8 +144,9 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		inv.inventory_updated.emit()
 		
 	if uses_ammunition and auto_reload and item_instance.state.get("ammo_count", 0) <= 0:
-		if inv.reload_current_weapon():
-			stats.trigger_reload_cooldown(reload_time)
-		return
+		if inv != null and inv.has_method("reload_current_weapon"):
+			if inv.reload_current_weapon():
+				stats.trigger_reload_cooldown(reload_time)
+				return
 		
 	stats.reset_cooldown()
