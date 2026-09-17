@@ -22,22 +22,29 @@ var _is_animating: bool = false
 
 # --- NOWOŚĆ: Przechowujemy referencję do aktualnej animacji ---
 var _active_tween: Tween 
+var _current_quest_id: StringName = &"" # <--- NOWOŚĆ: ID wyświetlanego zadania
 
 func _ready() -> void:
 	layer = 60 # Warstwa wysoko, żeby była nad dziennikiem!
 	process_mode = Node.PROCESS_MODE_ALWAYS 
 	container.modulate.a = 0.0
 	
+	# Ustawienia pod klikalność myszką
+	container.mouse_filter = Control.MOUSE_FILTER_STOP
+	container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	container.gui_input.connect(_on_container_gui_input)
+	
 	# Twarde wymuszenie niewidoczności na starcie
 	hide()
 	
-	QuestManager.quest_started.connect(func(q): _queue_notification("NOWE ZADANIE", q.title, Color(1, 0.8, 0.2)))
-	QuestManager.quest_updated.connect(func(q, _s): _queue_notification("ZAKTUALIZOWANO ZADANIE", q.title, Color(0.6, 0.8, 1)))
-	QuestManager.quest_completed.connect(func(q): _queue_notification("ZADANIE UKOŃCZONE", q.title, Color(0.4, 0.9, 0.4)))
-	QuestManager.quest_failed.connect(func(q): _queue_notification("ZADANIE OBLANE", q.title, Color(0.9, 0.3, 0.3)))
+	# ZMIANA: Przekazujemy również q.id do kolejki
+	QuestManager.quest_started.connect(func(q): _queue_notification("NOWE ZADANIE", q.title, Color(1, 0.8, 0.2), q.id))
+	QuestManager.quest_updated.connect(func(q, _s): _queue_notification("ZAKTUALIZOWANO ZADANIE", q.title, Color(0.6, 0.8, 1), q.id))
+	QuestManager.quest_completed.connect(func(q): _queue_notification("ZADANIE UKOŃCZONE", q.title, Color(0.4, 0.9, 0.4), q.id))
+	QuestManager.quest_failed.connect(func(q): _queue_notification("ZADANIE OBLANE", q.title, Color(0.9, 0.3, 0.3), q.id))
 
-func _queue_notification(title: String, quest_name: String, color: Color) -> void:
-	_queue.append({"title": title, "name": quest_name, "color": color})
+func _queue_notification(title: String, quest_name: String, color: Color, quest_id: StringName) -> void:
+	_queue.append({"title": title, "name": quest_name, "color": color, "quest_id": quest_id})
 	
 	if not _is_animating:
 		_process_queue()
@@ -50,6 +57,7 @@ func _queue_notification(title: String, quest_name: String, color: Color) -> voi
 func _process_queue() -> void:
 	if _queue.is_empty():
 		_is_animating = false
+		_current_quest_id = &""
 		hide() # Twarde ukrycie całego CanvasLayera gdy skończymy wyświetlać pop-upy
 		return
 		
@@ -60,6 +68,7 @@ func _process_queue() -> void:
 	title_label.text = data["title"]
 	title_label.add_theme_color_override("font_color", data["color"])
 	quest_name_label.text = data["name"]
+	_current_quest_id = data["quest_id"]
 	
 	if _active_tween and _active_tween.is_valid():
 		_active_tween.kill()
@@ -87,3 +96,22 @@ func _process_queue() -> void:
 	_active_tween.parallel().tween_property(container, "position:y", off_screen_y, slide_duration).set_ease(Tween.EASE_IN)
 	
 	_active_tween.finished.connect(_process_queue)
+
+# --- NOWOŚĆ: REAKCJA NA KLIKNIĘCIE ---
+func _on_container_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if _current_quest_id != &"":
+			# Szukamy Dziennika Zadań w drzewie sceny
+			var q_log = get_tree().root.find_child("QuestLogUI", true, false)
+			if q_log and q_log.has_method("force_open_quest"):
+				# Otwieramy dziennik na siłę z wybranym questem (automatycznie zmieni zakładkę!)
+				q_log.force_open_quest(_current_quest_id)
+				
+				# Jeśli dziennik jest ukryty, to go otwieramy
+				if not q_log.visible:
+					q_log.open_log()
+				
+				# Błyskawiczne ukrycie tego powiadomienia (skoro i tak otworzyliśmy Dziennik)
+				if _active_tween and _active_tween.is_valid():
+					_active_tween.kill()
+				_process_queue()

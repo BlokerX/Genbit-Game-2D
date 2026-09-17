@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sntr0"]
 [ext_resource type="Script" uid="uid://d006iaxvme57d" path="res://assets/scripts/quests/quest_data.gd" id="2_j8dfy"]
+[ext_resource type="Resource" uid="uid://bjsclabh7p1id" path="res://assets/data/quests/q_get_pistol.tres" id="2_qw4m1"]
 [ext_resource type="Script" uid="uid://dr4gp1ec7ylx2" path="res://assets/scripts/quests/quest_stage.gd" id="3_8il2r"]
 [ext_resource type="Resource" uid="uid://ctls1l7pgyirg" path="res://assets/data/items/torch.tres" id="4_8il2r"]
 [ext_resource type="Script" uid="uid://hp4oiwwvtan5" path="res://assets/scripts/quests/objectives/quest_objective.gd" id="4_j2amj"]
@@ -23,6 +24,7 @@ metadata/_custom_type_script = "uid://dr4gp1ec7ylx2"
 script = ExtResource("2_j8dfy")
 id = &"q01"
 title = "TEST Quest 01"
-description = "Testowy quest."
+description = "Przejście przez drzwi się odblokowywuje"
 stages = Array[ExtResource("3_8il2r")]([SubResource("Resource_sntr0")])
+next_quest_in_chain = ExtResource("2_qw4m1")
 metadata/_custom_type_script = "uid://d006iaxvme57d"

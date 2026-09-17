@@ -40,7 +40,7 @@ window/size/mode.editor=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg", "res://addons/dialogue_viewer/plugin.cfg", "res://addons/item_system_plugin/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg", "res://addons/dialogue_viewer/plugin.cfg", "res://addons/item_system_plugin/plugin.cfg", "res://addons/quest_editor/plugin.cfg")
 
 [file_customization]
 

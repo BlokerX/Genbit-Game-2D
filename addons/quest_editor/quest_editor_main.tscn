@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://shqqry46yscm"]
+
+[ext_resource type="Script" uid="uid://dilt5w715hp0g" path="res://addons/quest_editor/quest_editor_main.gd" id="1_qescript"]
+
+[node name="QuestEditorMain" type="GraphEdit" unique_id=301575962]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+right_disconnects = true
+script = ExtResource("1_qescript")

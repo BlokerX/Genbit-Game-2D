@@ -67,7 +67,8 @@ func _process(_delta: float) -> void:
 		else:
 			timer_label.hide()
 
-func switch_tab(tab: QuestTab) -> void:
+# --- ZMIANA: Dodano parametr keep_selection, by można było na siłę wybrać questa ---
+func switch_tab(tab: QuestTab, keep_selection: bool = false) -> void:
 	current_tab = tab
 	# Zmiana kolorów zakładek
 	var c_active = Color(0.8, 0.7, 0.4)
@@ -76,12 +77,16 @@ func switch_tab(tab: QuestTab) -> void:
 	if tab_completed_btn: tab_completed_btn.add_theme_color_override("font_color", c_active if tab == QuestTab.COMPLETED else c_inactive)
 	if tab_failed_btn: tab_failed_btn.add_theme_color_override("font_color", c_active if tab == QuestTab.FAILED else c_inactive)
 	
-	_selected_quest_id = &""
+	if not keep_selection:
+		_selected_quest_id = &""
+		
 	_refresh_quest_list()
 	right_panel.hide()
 	
-	# Automatycznie wybierz pierwszy na liście
-	if _buttons_dict.size() > 0:
+	# Automatycznie wybierz wymuszonego questa, ALBO pierwszego na liście
+	if _selected_quest_id != &"" and _buttons_dict.has(_selected_quest_id):
+		_buttons_dict[_selected_quest_id].emit_signal("pressed")
+	elif _buttons_dict.size() > 0:
 		_buttons_dict.values()[0].emit_signal("pressed")
 
 func open_log() -> void:
@@ -89,7 +94,10 @@ func open_log() -> void:
 	show()
 	get_tree().paused = true
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, true)
-	switch_tab(current_tab) # Odświeża listę i podświetla zakładkę
+	
+	# Przełączamy z flagą 'true', co sprawia że po zamknięciu dziennika 
+	# i ponownym otwarciu, zapamięta jaki quest oglądaliśmy ostatnio!
+	switch_tab(current_tab, true)
 
 func close_log() -> void:
 	if not visible: return
@@ -97,6 +105,19 @@ func close_log() -> void:
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, false)
 	if not EventBus.is_any_menu_open():
 		get_tree().paused = false
+
+# --- NOWOŚĆ: FUNKCJA DO WYMUSZANIA OTWARCIA Z ZEWNĄTRZ (DLA POWIADOMIEŃ) ---
+func force_open_quest(quest_id: StringName) -> void:
+	_selected_quest_id = quest_id
+	var target_tab = QuestTab.ACTIVE
+	
+	if QuestManager.completed_quests.has(quest_id):
+		target_tab = QuestTab.COMPLETED
+	elif QuestManager.failed_quests.has(quest_id):
+		target_tab = QuestTab.FAILED
+		
+	# Wymuszamy zakładkę pasującą do statusu zadania i zachowujemy wybór!
+	switch_tab(target_tab, true)
 
 # --- ZDARZENIA ---
 func _on_quest_list_changed(_quest: QuestData, _stage: int = 0) -> void:
@@ -163,18 +184,31 @@ func _build_category_section(title: String, quests: Array, color: Color) -> void
 		btn.text = "  " + quest.title
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0, 0, 0, 0)
-		style.content_margin_top = 8
-		style.content_margin_bottom = 8
-		var style_h = style.duplicate()
-		style_h.bg_color = Color(0.2, 0.2, 0.25, 0.5)
-		style_h.border_width_left = 4
-		style_h.border_color = color
+		# --- NOWOŚĆ: ROZDZIELENIE STYLÓW NA NORMAL, HOVER I SELECTED ---
 		
-		btn.add_theme_stylebox_override("normal", style)
-		btn.add_theme_stylebox_override("hover", style_h)
-		btn.add_theme_stylebox_override("focus", style_h)
+		# 1. Styl Zwykły (Przezroczysty, z niewidoczną ramką by tekst nie skakał)
+		var style_normal = StyleBoxFlat.new()
+		style_normal.bg_color = Color(0, 0, 0, 0)
+		style_normal.content_margin_top = 8
+		style_normal.content_margin_bottom = 8
+		style_normal.border_width_left = 4
+		style_normal.border_color = Color(0, 0, 0, 0) 
+		
+		# 2. Styl Najechania Myszką (Szara ramka, delikatne tło)
+		var style_hover = style_normal.duplicate()
+		style_hover.bg_color = Color(0.15, 0.15, 0.2, 0.5)
+		style_hover.border_color = Color(0.5, 0.5, 0.5, 0.5) 
+		
+		# 3. Styl Wybranego Zadania (Mocne tło, złota/kolorowa ramka)
+		var style_selected = style_normal.duplicate()
+		style_selected.bg_color = Color(0.2, 0.2, 0.25, 0.5)
+		style_selected.border_color = color
+		
+		# Zapisujemy style w pamięci przycisku, żeby użyć ich później
+		btn.set_meta("style_normal", style_normal)
+		btn.set_meta("style_hover", style_hover)
+		btn.set_meta("style_selected", style_selected)
+		
 		btn.pressed.connect(func(): _select_quest(quest.id))
 		quest_list_container.add_child(btn)
 		_buttons_dict[quest.id] = btn
@@ -199,9 +233,7 @@ func _select_quest(quest_id: StringName) -> void:
 		if track_button: track_button.hide()
 		if timer_label: timer_label.hide()
 		
-		# KRYTYCZNA ZMIANA: Twardy reset tekstu, by uniknąć nachodzenia starych celów
 		if objectives_label: objectives_label.text = "" 
-		
 		var summary_text = ""
 		if current_tab == QuestTab.COMPLETED:
 			summary_text = "[color=#ffd700][b]Wniosek:[/b][/color]\n[color=#cccccc][i]" + quest.completed_summary + "[/i][/color]"
@@ -211,6 +243,27 @@ func _select_quest(quest_id: StringName) -> void:
 		if objectives_label: objectives_label.text = summary_text
 		
 	if right_panel: right_panel.show()
+	
+	# --- NOWOŚĆ: Przebudowa podświetlenia przycisków ---
+	_update_button_selection()
+
+## Funkcja przypisująca podświetlony styl na stałe do wybranego zadania
+func _update_button_selection() -> void:
+	for q_id in _buttons_dict.keys():
+		var btn: Button = _buttons_dict[q_id]
+		if is_instance_valid(btn):
+			if q_id == _selected_quest_id:
+				# Ustawiamy styl "selected" dla WSZYSTKICH stanów wybranego zadania
+				btn.add_theme_stylebox_override("normal", btn.get_meta("style_selected"))
+				btn.add_theme_stylebox_override("hover", btn.get_meta("style_selected"))
+				btn.add_theme_stylebox_override("focus", btn.get_meta("style_selected"))
+				btn.add_theme_stylebox_override("pressed", btn.get_meta("style_selected"))
+			else:
+				# Resetujemy resztę do zwykłego przezroczystego stylu i słabszego hover
+				btn.add_theme_stylebox_override("normal", btn.get_meta("style_normal"))
+				btn.add_theme_stylebox_override("hover", btn.get_meta("style_hover"))
+				btn.add_theme_stylebox_override("focus", btn.get_meta("style_hover"))
+				btn.add_theme_stylebox_override("pressed", btn.get_meta("style_selected"))
 
 func _update_track_button() -> void:
 	if track_button == null: return
