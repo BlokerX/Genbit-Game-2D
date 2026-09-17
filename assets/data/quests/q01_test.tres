@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://d006iaxvme57d" path="res://assets/scripts/quests/quest_data.gd" id="2_j8dfy"]
 [ext_resource type="Script" uid="uid://dr4gp1ec7ylx2" path="res://assets/scripts/quests/quest_stage.gd" id="3_8il2r"]
 [ext_resource type="Resource" uid="uid://ctls1l7pgyirg" path="res://assets/data/items/torch.tres" id="4_8il2r"]
+[ext_resource type="Script" uid="uid://hp4oiwwvtan5" path="res://assets/scripts/quests/objectives/quest_objective.gd" id="4_j2amj"]
 [ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="5_j2amj"]
 
 [sub_resource type="Resource" id="Resource_qw4m1"]
