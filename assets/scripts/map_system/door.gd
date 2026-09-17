@@ -26,8 +26,12 @@ const PLAYER_GROUP = "Player"
 
 var current_state : State = State.CLOSED
 
-## Blokada drzwi (if is true it doesn't work)
-var is_locked : bool = false
+@export_group("Blokady (Locks)")
+## Główna kłódka. Włącz w Inspektorze, aby drzwi były zamknięte np. na klucz, dźwignię lub questa.
+@export var is_mechanically_locked : bool = false
+
+## Wewnętrzna blokada. Steruje nią TYLKO system pokoju (Room) podczas walki.
+var is_combat_locked : bool = false
 
 func _ready() -> void:
 	door_sprite.visible = is_door_visible
@@ -40,7 +44,7 @@ func _ready() -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	# Jeśli drzwi są zablokowane (trwa walka), ignorujemy wejście gracza
-	if is_locked:
+	if is_mechanically_locked or is_combat_locked:
 		return
 	
 	if body.is_in_group(PLAYER_GROUP):
@@ -86,12 +90,29 @@ func _start_opening() -> void:
 
 #region Lock metods
 
-func lock_door() -> void:
-	is_locked = true
+## --- BLOKADY WALKI (Sterowane przez system pokoju) ---
+func combat_lock_door() -> void:
+	is_combat_locked = true
 	current_state = State.CLOSED # Upewniamy się, że drzwi są w stanie zamkniętym
 
-func unlock_door() -> void:
-	is_locked = false
+func unlock_combat_door() -> void:
+	is_combat_locked = false
+
+## --- BLOKADY MECHANICZNE/FABULARNE (Klucze, dźwignie, questy) ---
+func mechanically_lock_door() -> void:
+	is_mechanically_locked = true
+	current_state = State.CLOSED
+
+func mechanically_unlock_door() -> void:
+	is_mechanically_locked = false
+
+## --- WYMUSZENIE OTWARCIA (Np. po odebraniu sygnału ze StoryEventReceiver) ---
+func force_open() -> void:
+	mechanically_unlock_door() # 1. Zdejmujemy kłódkę fabularną
+	unlock_combat_door()       # 2. Zdejmujemy kraty z walki (na wszelki wypadek)
+	
+	if current_state == State.CLOSED:
+		_start_opening()
 
 #endregion
 

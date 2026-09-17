@@ -10,11 +10,14 @@
 [ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="8_5lxb5"]
 [ext_resource type="Script" uid="uid://oxel7jrossyy" path="res://assets/dialogue_system/effects/open_menu_effect.gd" id="9_1l1ov"]
 [ext_resource type="Script" uid="uid://c8vdk5bssyshm" path="res://assets/dialogue_system/resources/dialogue_node.gd" id="10_xjmfk"]
-[ext_resource type="Resource" uid="uid://dllqy6sftdcy1" path="res://assets/dialogue_system/data/speakers/narrator_speaker.tres" id="11_52oi1"]
-[ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/dialogue_system/data/speakers/flandere_scarlet_avatar_speaker.tres" id="12_1xtxj"]
+[ext_resource type="Resource" uid="uid://dllqy6sftdcy1" path="res://assets/data/dialogues_data/speakers/narrator_speaker.tres" id="11_52oi1"]
+[ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/data/dialogues_data/speakers/flandere_scarlet_avatar_speaker.tres" id="12_1xtxj"]
 [ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeter.png" id="13_v1bkx"]
 [ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="14_dfh8v"]
 [ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="15_4g1br"]
+[ext_resource type="Resource" uid="uid://0axh3xbaln4c" path="res://assets/data/quests/q01_test.tres" id="15_ce8oc"]
+[ext_resource type="Script" uid="uid://rpt8mhq3dtqy" path="res://assets/scripts/quests/effects/update_quest_effect.gd" id="16_r67ou"]
+[ext_resource type="Resource" uid="uid://bjsclabh7p1id" path="res://assets/data/quests/q_get_pistol.tres" id="17_r67ou"]
 
 [sub_resource type="Resource" id="Resource_jxpxa"]
 script = ExtResource("1_xvdfj")
@@ -149,7 +152,28 @@ text = "Czekaj, sprawdzę ekwipunek!"
 target_id = &"node_0080"
 consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
 
+[sub_resource type="Resource" id="Resource_r67ou"]
+script = ExtResource("16_r67ou")
+quest = ExtResource("15_ce8oc")
+metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
 [sub_resource type="Resource" id="Resource_6ortg"]
+script = ExtResource("1_xvdfj")
+text = "Otwórz drzwi (Quest)"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_r67ou")])
+
+[sub_resource type="Resource" id="Resource_8n6t4"]
+script = ExtResource("16_r67ou")
+quest = ExtResource("17_r67ou")
+mode = 1
+metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
+[sub_resource type="Resource" id="Resource_ce8oc"]
+script = ExtResource("1_xvdfj")
+text = "Znajdź pistolet"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_8n6t4")])
+
+[sub_resource type="Resource" id="Resource_u0dp3"]
 script = ExtResource("1_xvdfj")
 target_id = &"node_02"
 
@@ -158,7 +182,7 @@ script = ExtResource("10_xjmfk")
 id = &"node_01"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "Witaj, oto okno dialogu!"
-outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg")])
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg"), SubResource("Resource_ce8oc"), SubResource("Resource_u0dp3")])
 allow_cancel = true
 
 [sub_resource type="Resource" id="Resource_kfeh3"]

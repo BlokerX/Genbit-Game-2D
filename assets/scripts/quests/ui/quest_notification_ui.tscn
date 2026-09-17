@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://bqpf7j0v72v8g"]
+
+[ext_resource type="Script" uid="uid://x6qxpi8wc2s2" path="res://assets/scripts/quests/ui/quest_notification_ui.gd" id="1_qn"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Banner"]
+bg_color = Color(0.08, 0.08, 0.1, 0.9)
+border_width_left = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.4, 0.2, 1)
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 10
+
+[node name="QuestNotificationUI" type="CanvasLayer" unique_id=1431154931]
+layer = 60
+script = ExtResource("1_qn")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=714431472]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_right = 200.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_Banner")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1309543714]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1503226270]
+layout_mode = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1545181963]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "ZAKTUALIZOWANO ZADANIE"
+horizontal_alignment = 1
+
+[node name="QuestNameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1496822535]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Nazwa Questa"
+horizontal_alignment = 1

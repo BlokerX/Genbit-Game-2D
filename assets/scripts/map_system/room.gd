@@ -400,14 +400,14 @@ func check_and_lock_room() -> void:
 	# 1. Strefa Bezpieczna (Sklep, Dev Room) - Ignoruje zamykanie
 	if ignore_combat_lock:
 		for door in doors:
-			door.unlock_door()
+			door.unlock_combat_door()
 		return
 		
 	# 2. Klatka / Arena - Zamyka się natychmiast, ignoruje liczenie wrogów!
 	if lock_permanently_after_entry:
 		print("Pułapka! Zamykam drzwi na stałe w pokoju: " + name)
 		for door in doors:
-			door.lock_door()
+			door.combat_lock_door()
 		return
 	
 	# Reżyser Pokoju (Spawn i Skrzynie)
@@ -422,9 +422,9 @@ func check_and_lock_room() -> void:
 	_find_enemies_recursive(self)
 	
 	if active_enemies_count > 0:
-		for door in doors: door.lock_door()
+		for door in doors: door.combat_lock_door()
 	else:
-		for door in doors: door.unlock_door()
+		for door in doors: door.unlock_combat_door()
 
 #region Reżyser
 
@@ -581,6 +581,6 @@ func _on_enemy_died() -> void:
 		else:
 			print("Pokój oczyszczony! Odblokowuję drzwi.")
 			for door in doors:
-				door.unlock_door()
+				door.unlock_combat_door()
 
 #endregion

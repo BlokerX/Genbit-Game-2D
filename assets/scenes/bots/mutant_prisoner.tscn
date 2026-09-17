@@ -34,7 +34,7 @@
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="31_n18bc"]
 [ext_resource type="Script" uid="uid://bf6qleyepnwwy" path="res://assets/scripts/components/attack_component.gd" id="32_lokir"]
 [ext_resource type="Script" uid="uid://cmjrm377enyxi" path="res://assets/scripts/ai/components/npc_dialogue_component.gd" id="33_mairh"]
-[ext_resource type="Resource" uid="uid://dya2n8vc5khbx" path="res://assets/dialogue_system/data/dialogues/graphs/test_dialogue_graph.tres" id="34_mxfyb"]
+[ext_resource type="Resource" uid="uid://dya2n8vc5khbx" path="res://assets/data/dialogues_data/dialogues/graphs/test_dialogue_graph.tres" id="34_mxfyb"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{

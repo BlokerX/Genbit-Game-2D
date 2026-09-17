@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://btg6eh4dmf80t"]
+
+[ext_resource type="Script" uid="uid://bug61sjuk3ce" path="res://assets/scripts/components/world_sensor_component.gd" id="1_hkumi"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3ym74"]
+radius = 250.0
+
+[node name="WorldAreaTrigger" type="Area2D" unique_id=973445694]
+collision_mask = 47
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=936803091]
+shape = SubResource("CircleShape2D_3ym74")
+
+[node name="WorldSensorComponent" type="Node" parent="." unique_id=657621410]
+script = ExtResource("1_hkumi")
+destroy_parent_after_max = true
+metadata/_custom_type_script = "uid://bug61sjuk3ce"
+
+[connection signal="body_entered" from="." to="WorldSensorComponent" method="trigger"]
