@@ -15,13 +15,16 @@
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/gui/inventory_slot.tscn" id="11_mbo3l"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="12_64dql"]
 [ext_resource type="PackedScene" uid="uid://bnkqheaf4pghv" path="res://assets/scenes/gui/crafting_ui.tscn" id="13_4mn4o"]
+[ext_resource type="Script" uid="uid://bn4o7a2uu5puk" path="res://assets/scripts/ui/hud_visibility_config.gd" id="13_g1c65"]
 [ext_resource type="PackedScene" uid="uid://b0ilctyponhhu" path="res://assets/scenes/gui/grid_panel.tscn" id="14_1gqv0"]
 [ext_resource type="PackedScene" uid="uid://codwj82kk8yp2" path="res://assets/scenes/main_menu/pause_menu.tscn" id="15_grwg2"]
 [ext_resource type="PackedScene" uid="uid://dulfknsrwu6la" path="res://assets/dialogue_system/scenes/dialogue_ui.tscn" id="16_wmbyi"]
 [ext_resource type="PackedScene" uid="uid://dt5lmjgy4fgjv" path="res://assets/scenes/player/player.tscn" id="16_ykv0g"]
 [ext_resource type="AudioStream" uid="uid://dbu2b1polluso" path="res://assets/audio/entities/player/dark_orchestra_one.mp3" id="17_1y80r"]
+[ext_resource type="PackedScene" uid="uid://b30yasoua0pb" path="res://assets/scripts/quests/ui/quest_tracker_ui.tscn" id="17_x4ifb"]
 [ext_resource type="PackedScene" uid="uid://batykymhuwsen" path="res://assets/dialogue_system/scenes/dialogue_log_ui.tscn" id="18_5c861"]
 [ext_resource type="PackedScene" uid="uid://dqmro5ilbtfn7" path="res://assets/scripts/quests/ui/quest_log_ui.tscn" id="19_vlsbn"]
+[ext_resource type="PackedScene" uid="uid://bqpf7j0v72v8g" path="res://assets/scripts/quests/ui/quest_notification_ui.tscn" id="21_g1c65"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="22_5c861"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="23_vlsbn"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="24_dkl2x"]
@@ -34,13 +37,13 @@ colors = PackedColorArray(1, 1, 1, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_dkl2x"]
 gradient = SubResource("Gradient_vlsbn")
 
-[sub_resource type="Resource" id="Resource_vlsbn"]
+[sub_resource type="Resource" id="Resource_g1c65"]
 resource_local_to_scene = true
 script = ExtResource("22_5c861")
 moveSpeed = 400.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_dkl2x"]
+[sub_resource type="Resource" id="Resource_pd8se"]
 resource_local_to_scene = true
 script = ExtResource("23_vlsbn")
 
@@ -49,7 +52,7 @@ script = ExtResource("24_dkl2x")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_x4ifb"]
+[sub_resource type="Resource" id="Resource_dxkn4"]
 resource_local_to_scene = true
 script = ExtResource("25_x4ifb")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -242,6 +245,19 @@ theme_override_font_sizes/font_size = 24
 
 [node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopRight_Zone/ItemInfoPanelContainer" unique_id=1354687177 instance=ExtResource("4_iftva")]
 
+[node name="Right_Center_Zone" type="VBoxContainer" parent="UI_Canvas/HUD_Layer" unique_id=886433517]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="QuestTrackerUI" parent="UI_Canvas/HUD_Layer/Right_Center_Zone" unique_id=1627377877 instance=ExtResource("17_x4ifb")]
+layout_mode = 2
+
+[node name="HUDVisibilityConfig" type="Node" parent="UI_Canvas/HUD_Layer/Right_Center_Zone/QuestTrackerUI" unique_id=1551638721]
+script = ExtResource("13_g1c65")
+metadata/_custom_type_script = "uid://bn4o7a2uu5puk"
+
 [node name="BottomRight_Zone" type="VBoxContainer" parent="UI_Canvas/HUD_Layer" unique_id=119641404]
 layout_mode = 2
 size_flags_horizontal = 8
@@ -407,6 +423,9 @@ visible = false
 [node name="QuestLogUI" parent="." unique_id=844569904 instance=ExtResource("19_vlsbn")]
 visible = false
 
+[node name="QuestNotificationUI" parent="." unique_id=1431154931 instance=ExtResource("21_g1c65")]
+visible = false
+
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
 visible = false
 
@@ -421,6 +440,6 @@ parameters/looping = true
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_vlsbn")
-health_stats_script = SubResource("Resource_dkl2x")
-interaction_and_attack_stats_script = SubResource("Resource_x4ifb")
+movement_universal_script = SubResource("Resource_g1c65")
+health_stats_script = SubResource("Resource_pd8se")
+interaction_and_attack_stats_script = SubResource("Resource_dxkn4")

@@ -7,6 +7,7 @@ class_name HUDVisibilityConfig
 @export var hide_in_crafting: bool = true
 @export var hide_in_map: bool = true
 @export var hide_in_dialogue: bool = true
+@export var hide_in_quest_log: bool = true
 @export var hide_in_pause: bool = true
 
 func _ready() -> void:

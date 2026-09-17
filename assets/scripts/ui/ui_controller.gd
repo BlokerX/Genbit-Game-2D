@@ -788,8 +788,7 @@ func _on_hud_visibility_requested() -> void:
 				if config.hide_in_map and EventBus.active_menus[EventBus.MENU_MAP]: should_hide = true
 				if config.hide_in_dialogue and EventBus.active_menus[EventBus.MENU_DIALOGUE]: should_hide = true
 				if config.hide_in_pause and EventBus.active_menus[EventBus.MENU_PAUSE]: should_hide = true
-				# --- OBRONA HUD PRZED DZIENNIKIEM ---
-				if EventBus.active_menus.has(EventBus.MENU_QUEST_LOG) and EventBus.active_menus[EventBus.MENU_QUEST_LOG]: should_hide = true
+				if config.hide_in_quest_log and EventBus.active_menus[EventBus.MENU_QUEST_LOG]: should_hide = true
 			else:
 				should_hide = EventBus.is_any_menu_open()
 			

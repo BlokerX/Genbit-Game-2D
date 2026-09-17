@@ -24,6 +24,7 @@ signal quest_completed(quest: QuestData)
 ## Emitowany, gdy zadanie zostaje zakończone porażką (lub porzucone).
 signal quest_failed(quest: QuestData)
 
+signal quest_tracked_changed(quest_id: StringName)
 
 # ==========================================
 # PAMIĘĆ / BAZA DANYCH
@@ -46,6 +47,8 @@ var failed_quests: Array[StringName] = []
 ## Słownik śledzący odnawianie się zadań powtarzalnych (Daily Quests). Format: { quest_id: time_left }
 var cooldown_quests: Dictionary = {} 
 
+## Obecnie śledzone zadanie (przypięte do ekranu)
+var tracked_quest_id: StringName = &""
 
 # ==========================================
 # GŁÓWNA LOGIKA
@@ -197,6 +200,10 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 		_on_game_event("inventory_changed", {"inventory": player.get_inventory()})
 	else:
 		print("QuestManager: Ostrzeżenie - nie znaleziono ekwipunku gracza do automatycznej weryfikacji.")
+	
+	# Jeśli gracz nie śledzi żadnego questa, automatycznie śledź ten nowy!
+	if is_new_quest and tracked_quest_id == &"":
+		track_quest(quest_id)
 
 
 ## Kończy zadanie sukcesem, przyznaje nagrody i uruchamia łańcuchy (jeśli istnieją).
@@ -223,6 +230,11 @@ func complete_quest(quest_id: StringName) -> void:
 			
 		_grant_rewards(quest.completion_rewards)
 		
+		# Jeśli śledziliśmy to zadanie, zdejmujemy je ze śledzika
+		if tracked_quest_id == quest_id:
+			untrack_quest()
+		# Jeśli jest łańcuch, niżej zaktualizuje się automatycznie i tracker sam je złapie (dzięki logice z update_quest)
+		
 		if quest.next_quest_in_chain != null:
 			print("Quest: Automatyczne rozpoczęcie kolejnego ogniwa z łańcucha dla: ", quest.next_quest_in_chain.id)
 			update_quest(quest.next_quest_in_chain.id, 0)
@@ -235,6 +247,9 @@ func fail_quest(quest_id: StringName) -> void:
 	if active_quests.has(quest_id):
 		active_quests.erase(quest_id)
 		failed_quests.append(quest_id)
+		
+		if tracked_quest_id == quest_id:
+			untrack_quest()
 		
 		var quest: QuestData = quest_db[quest_id]
 		
@@ -297,3 +312,14 @@ func _load_all_quests(path: String) -> void:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	print("QuestManager: Gotowość systemu. Załadowano ", quest_db.size(), " zadań fabularnych do bazy.")
+
+# --- NOWOŚĆ: FUNKCJE ŚLEDZENIA ZADAŃ ---
+func track_quest(quest_id: StringName) -> void:
+	if active_quests.has(quest_id):
+		tracked_quest_id = quest_id
+		quest_tracked_changed.emit(quest_id)
+		print("QuestManager: Śledzę zadanie [", quest_db[quest_id].title, "]")
+
+func untrack_quest() -> void:
+	tracked_quest_id = &""
+	quest_tracked_changed.emit(&"")

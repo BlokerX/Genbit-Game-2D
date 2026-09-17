@@ -26,6 +26,7 @@ enum QuestCategory { MAIN_STORY, SIDE_QUEST, CONTRACT, HIDDEN }
 @export var stages: Array[QuestStage] = []
 
 @export_group("Finał Zadania (Sukces)")
+@export_multiline var completed_summary: String = "Udało mi się zakończyć to zadanie z sukcesem."
 ## Hasło wysyłane w świat po całkowitym ukończeniu zadania.
 @export var completion_event: String = ""
 ## Nagrody końcowe za questa (XP, złoto, unikalne itemy).
@@ -34,5 +35,6 @@ enum QuestCategory { MAIN_STORY, SIDE_QUEST, CONTRACT, HIDDEN }
 @export var next_quest_in_chain: QuestData = null
 
 @export_group("Finał Zadania (Porażka)")
+@export_multiline var failed_summary: String = "Niestety, zawiodłem."
 ## Hasło rzucane w świat gry, gdy zadanie zostanie oblane (lub minie czas).
 @export var failure_event: String = ""
