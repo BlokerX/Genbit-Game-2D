@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bmfpjt22blich"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_s4pkk"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="2_ncx4p"]
+[ext_resource type="Texture2D" uid="uid://skjlgpwp6nd2" path="res://assets/textures/samples_examples/door/yellow_door.png" id="2_wifku"]
+
+[resource]
+script = ExtResource("2_ncx4p")
+item_id = &"map"
+item_name = "Map"
+item_description = "See more."
+item_icon = ExtResource("2_wifku")
+metadata/_custom_type_script = "uid://civbd34phwaj1"
