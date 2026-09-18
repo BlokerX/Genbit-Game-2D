@@ -99,4 +99,27 @@ func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown
 		if thrower is CollisionObject2D:
 			drop.add_collision_exception_with(thrower)
 			
+			# --- NOWOŚĆ: Uruchamiamy obserwatora, który przywróci kolizję ---
+			_restore_collision_when_clear(drop, thrower)
+			
 		drop.call_deferred("apply_central_impulse", drop_direction * drop_force)
+
+
+# =========================================================================
+# NOWOŚĆ: SYSTEM DYNAMICZNEGO PRZYWRACANIA KOLIZJI (BRAK PRZENIKANIA)
+# =========================================================================
+func _restore_collision_when_clear(drop: RigidBody2D, thrower: CollisionObject2D) -> void:
+	# Będziemy sprawdzać w pętli asynchronicznej czy gracz i przedmiot są nadal żywi
+	while is_instance_valid(drop) and is_instance_valid(thrower):
+		# Sprawdzamy dystans między przedmiotem a graczem
+		var distance = drop.global_position.distance_to(thrower.global_position)
+		
+		# Jeśli dystans przekroczy nasz bezpieczny promień (plus mały bufor błędu, np. 5 pikseli)
+		# to znaczy, że fizycznie nie ma już szans na zablokowanie się w ciele gracza.
+		if distance > (spawn_offset_radius + 5.0):
+			# Przywracamy normalną kolizję między nimi!
+			drop.remove_collision_exception_with(thrower)
+			break # Kończymy działanie tej pętli, bo zrobiła swoje
+			
+		# Aby nie obciążać procesora, sprawdzamy to co 0.1 sekundy zamiast co klatkę
+		await get_tree().create_timer(0.1).timeout
