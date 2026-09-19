@@ -11,10 +11,8 @@ var listening_device: String = "" # "KB" lub "PAD"
 func setup(action: String) -> void:
 	action_name = action
 	if action_label:
-		# Formatuje nazwy typu "ToggleInventory" na "Toggle Inventory"
 		action_label.text = action.capitalize() 
 	
-	# Dodajemy opisy po najechaniu myszką
 	var menu = _get_main_menu()
 	if menu:
 		mouse_entered.connect(func(): menu.set_hover_description("Zmień klawisz przypisany do akcji: [color=orange]" + action.capitalize() + "[/color]"))
@@ -48,25 +46,51 @@ func _update_buttons() -> void:
 	bind_btn_kb.text = _clean_text(kb_event.as_text()) if kb_event else "Brak"
 	bind_btn_pad.text = _clean_text(pad_event.as_text()) if pad_event else "Brak"
 
-# ZAAWANSOWANE CZYSZCZENIE TEKSTU
+# ZAAWANSOWANE CZYSZCZENIE TEKSTU (CZYSTE KLAWISZE)
 func _clean_text(text: String) -> String:
-	var t = text.replace(" (Physical)", "").replace(" (Fizyczny)", "")
+	var t = text
+	# Natychmiastowe ucięcie słowa Physical i myślników
+	t = t.replace(" - Physical", "")
+	t = t.replace(" (Physical)", "")
+	t = t.replace(" - Fizyczny", "")
+	t = t.replace(" (Fizyczny)", "")
+	
+	# Usunięcie gigantycznych nawiasów od Sony/Xbox/Nintendo
 	var regex = RegEx.new()
 	regex.compile("\\s*\\(.*?\\)")
-	t = regex.sub(t, "", true) # Usuwa wszystko w nawiasach (nazwy konsol!)
-	t = t.replace("Joypad", "Pad")
-	t = t.replace("Pad Button ", "Pad ")
-	t = t.replace("Motion on Axis", "Axis")
-	return t
+	t = regex.sub(t, "", true) 
+	
+	# Skracanie nazw dla Padów
+	t = t.replace("Joypad Motion on Axis 0", "L-Stick Lewo/Prawo")
+	t = t.replace("Joypad Motion on Axis 1", "L-Stick Góra/Dół")
+	t = t.replace("Joypad Motion on Axis 2", "R-Stick Lewo/Prawo")
+	t = t.replace("Joypad Motion on Axis 3", "R-Stick Góra/Dół")
+	t = t.replace("Joypad Motion on Axis 4", "L2 (Trigger)")
+	t = t.replace("Joypad Motion on Axis 5", "R2 (Trigger)")
+	
+	t = t.replace("Joypad Button 0", "A / Krzyżyk")
+	t = t.replace("Joypad Button 1", "B / Kółko")
+	t = t.replace("Joypad Button 2", "X / Kwadrat")
+	t = t.replace("Joypad Button 3", "Y / Trójkąt")
+	t = t.replace("Joypad Button 4", "Back / Select")
+	t = t.replace("Joypad Button 6", "Start / Options")
+	t = t.replace("Joypad Button 11", "D-pad Góra")
+	t = t.replace("Joypad Button 12", "D-pad Dół")
+	t = t.replace("Joypad Button 13", "D-pad Lewo")
+	t = t.replace("Joypad Button 14", "D-pad Prawo")
+	
+	t = t.replace("Joypad Button", "Pad Btn")
+	t = t.replace("Joypad Motion on Axis", "Pad Oś")
+	return t.strip_edges()
 
 func _on_kb_pressed() -> void:
 	is_listening = true; listening_device = "KB"
-	bind_btn_kb.text = "..."
+	bind_btn_kb.text = "Naciśnij..."
 	bind_btn_kb.release_focus()
 
 func _on_pad_pressed() -> void:
 	is_listening = true; listening_device = "PAD"
-	bind_btn_pad.text = "..."
+	bind_btn_pad.text = "Naciśnij..."
 	bind_btn_pad.release_focus()
 
 func _input(event: InputEvent) -> void:
@@ -89,7 +113,6 @@ func _replace_event(new_event: InputEvent) -> void:
 	InputMap.action_erase_events(action_name)
 	for e in events:
 		var is_kb_old = e is InputEventKey or e is InputEventMouseButton
-		# Dodajemy stare zdarzenie, tylko jeśli dotyczy drugiego urządzenia
 		if is_kb_old != is_kb_new:
 			InputMap.action_add_event(action_name, e)
 			

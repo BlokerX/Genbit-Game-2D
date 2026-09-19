@@ -85,16 +85,94 @@ horizontal_alignment = 2
 layout_mode = 2
 text = " ↺ "
 
-[node name="HPRow" type="HBoxContainer" parent="."]
+[node name="HUDMasterRow" type="HBoxContainer" parent="."]
 layout_mode = 2
-[node name="Label" type="Label" parent="HPRow"]
+[node name="Label" type="Label" parent="HUDMasterRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Pokazuj Pasek Zdrowia"
-[node name="ToggleBtn" type="Button" parent="HPRow"]
+text = "Wyświetlaj Cały Interfejs (HUD)"
+[node name="ToggleBtn" type="Button" parent="HUDMasterRow"]
 custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
-[node name="ResetBtn" type="Button" parent="HPRow"]
+[node name="ResetBtn" type="Button" parent="HUDMasterRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="MainStatsRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="MainStatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Główne Statystyki (Avatar, HP, Cooldown)"
+[node name="ToggleBtn" type="Button" parent="MainStatsRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="MainStatsRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ExtraStatsRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ExtraStatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dodatkowe Statystyki Postaci"
+[node name="ToggleBtn" type="Button" parent="ExtraStatsRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="ExtraStatsRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ActiveEffectsRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ActiveEffectsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Aktywne Efekty Postaci"
+[node name="ToggleBtn" type="Button" parent="ActiveEffectsRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="ActiveEffectsRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="HotbarRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="HotbarRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pokazuj Pasek Przedmiotów (Hotbar)"
+[node name="ToggleBtn" type="Button" parent="HotbarRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="HotbarRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ItemInfoRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ItemInfoRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Okno Informacji o Przedmiocie"
+[node name="ToggleBtn" type="Button" parent="ItemInfoRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="ItemInfoRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="PlaytimeRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="PlaytimeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Czas Rozgrywki"
+[node name="ToggleBtn" type="Button" parent="PlaytimeRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="PlaytimeRow"]
 layout_mode = 2
 text = " ↺ "
 
@@ -108,19 +186,6 @@ text = "Pokazuj Minimapę"
 custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 [node name="ResetBtn" type="Button" parent="MinimapRow"]
-layout_mode = 2
-text = " ↺ "
-
-[node name="HotbarRow" type="HBoxContainer" parent="."]
-layout_mode = 2
-[node name="Label" type="Label" parent="HotbarRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Pokazuj Pasek Przedmiotów"
-[node name="ToggleBtn" type="Button" parent="HotbarRow"]
-custom_minimum_size = Vector2(150, 40)
-layout_mode = 2
-[node name="ResetBtn" type="Button" parent="HotbarRow"]
 layout_mode = 2
 text = " ↺ "
 

@@ -5,7 +5,7 @@ extends Node
 ## Ścieżka do pliku z ustawieniami. "user://" to folder %APPDATA% gracza.
 @export var save_path: String = "user://settings.cfg"
 
-@export_group("Domyślne - Dźwięk")
+@export_group("Domyślne Wartości - Dźwięk")
 @export_range(0.0, 1.0) var default_vol_master: float = 1.0
 @export_range(0.0, 1.0) var default_vol_music: float = 1.0
 @export_range(0.0, 1.0) var default_vol_sfx: float = 1.0
@@ -13,21 +13,26 @@ extends Node
 @export var default_surround_sound: bool = true
 @export var default_mute_in_background: bool = false
 
-@export_group("Domyślne - Grafika")
+@export_group("Domyślne Wartości - Grafika")
 @export var default_display_mode: int = DisplayServer.WINDOW_MODE_WINDOWED
 @export var default_vsync_enabled: bool = true
 @export_range(0.0, 2.0) var default_brightness: float = 1.0
 @export_range(0.0, 2.0) var default_contrast: float = 1.0
 @export_range(0.0, 2.0) var default_saturation: float = 1.0
 
-@export_group("Domyślne - Interfejs")
+@export_group("Domyślne Wartości - Interfejs")
 @export_range(0.5, 2.0) var default_ui_scale_global: float = 1.0
 @export_range(0.5, 2.0) var default_ui_scale_game: float = 1.0
 @export_range(0.5, 2.0) var default_ui_scale_menu: float = 1.0
-@export var default_show_hud: bool = true
-@export var default_show_hp_bar: bool = true
-@export var default_show_minimap: bool = true
+
+# Opcje szczegółowe HUD
+@export var default_show_main_stats: bool = true
+@export var default_show_extra_stats: bool = true
+@export var default_show_active_effects: bool = true
 @export var default_show_hotbar: bool = true
+@export var default_show_item_info: bool = true
+@export var default_show_playtime: bool = true
+@export var default_show_minimap: bool = true
 @export var default_show_quest_log: bool = true
 
 # --- BIEŻĄCE WARTOŚCI ---
@@ -38,18 +43,21 @@ var display_mode: int; var vsync_enabled: bool
 var brightness: float; var contrast: float; var saturation: float
 
 var ui_scale_global: float; var ui_scale_game: float; var ui_scale_menu: float
-var show_hud: bool; var show_hp_bar: bool; var show_minimap: bool; var show_hotbar: bool; var show_quest_log: bool
+
+var show_main_stats: bool; var show_extra_stats: bool; var show_active_effects: bool
+var show_hotbar: bool; var show_item_info: bool; var show_playtime: bool
+var show_minimap: bool; var show_quest_log: bool
 
 var config = ConfigFile.new()
 
-# Węzły do globalnego renderowania grafiki
+# --- Węzły do globalnego renderowania grafiki ---
 var _bcs_canvas: CanvasLayer
 var _bcs_rect: ColorRect
 
 func _ready() -> void:
 	# --- SHADER JASNOŚCI, KONTRASTU I NASYCENIA ---
 	_bcs_canvas = CanvasLayer.new()
-	_bcs_canvas.layer = 128 # Warstwa powyżej interfejsu
+	_bcs_canvas.layer = 128 # Warstwa powyżej interfejsu, pod menu pauzy
 	_bcs_rect = ColorRect.new()
 	_bcs_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_bcs_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -79,11 +87,16 @@ func _ready() -> void:
 	reset_all_to_default(false)
 	load_settings()
 
-# Pętla sprawdzająca, czy jesteśmy w grze
+# WYDAJNA PĘTLA O(1) - BEZ WYSZUKIWANIA GRACZA
 func _process(_delta: float) -> void:
 	if is_instance_valid(_bcs_canvas):
-		# Ustawienia graficzne (Shader Jasności itp.) aktywne tylko w trakcie rozgrywki!
-		var in_game = get_tree().get_first_node_in_group("Player") != null
+		var in_game = false
+		var main_node = get_tree().get_first_node_in_group("Main")
+		if main_node and "current_scene" in main_node:
+			# Sprawdzamy błyskawicznie, czy wczytana scena to GameScene
+			in_game = (main_node.current_scene is GameScene)
+			
+		# Shader graficzny działa tylko i wyłącznie w GameScene
 		_bcs_canvas.visible = in_game
 
 # Nasłuchiwanie wyjścia z gry do Windowsa (Alt-Tab)
@@ -115,10 +128,14 @@ func load_settings() -> void:
 	ui_scale_global = config.get_value("GUI", "ScaleGlobal", default_ui_scale_global)
 	ui_scale_game = config.get_value("GUI", "ScaleGame", default_ui_scale_game)
 	ui_scale_menu = config.get_value("GUI", "ScaleMenu", default_ui_scale_menu)
-	show_hud = config.get_value("GUI", "ShowHUD", default_show_hud)
-	show_hp_bar = config.get_value("GUI", "ShowHP", default_show_hp_bar)
-	show_minimap = config.get_value("GUI", "ShowMinimap", default_show_minimap)
+	
+	show_main_stats = config.get_value("GUI", "ShowMainStats", default_show_main_stats)
+	show_extra_stats = config.get_value("GUI", "ShowExtraStats", default_show_extra_stats)
+	show_active_effects = config.get_value("GUI", "ShowActiveEffects", default_show_active_effects)
 	show_hotbar = config.get_value("GUI", "ShowHotbar", default_show_hotbar)
+	show_item_info = config.get_value("GUI", "ShowItemInfo", default_show_item_info)
+	show_playtime = config.get_value("GUI", "ShowPlaytime", default_show_playtime)
+	show_minimap = config.get_value("GUI", "ShowMinimap", default_show_minimap)
 	show_quest_log = config.get_value("GUI", "ShowQuestLog", default_show_quest_log)
 	
 	apply_all_settings()
@@ -133,21 +150,22 @@ func save_settings() -> void:
 	config.set_value("Graphics", "Saturation", saturation)
 	
 	config.set_value("GUI", "ScaleGlobal", ui_scale_global); config.set_value("GUI", "ScaleGame", ui_scale_game)
-	config.set_value("GUI", "ScaleMenu", ui_scale_menu); config.set_value("GUI", "ShowHUD", show_hud)
-	config.set_value("GUI", "ShowHP", show_hp_bar); config.set_value("GUI", "ShowMinimap", show_minimap)
-	config.set_value("GUI", "ShowHotbar", show_hotbar); config.set_value("GUI", "ShowQuestLog", show_quest_log)
+	config.set_value("GUI", "ScaleMenu", ui_scale_menu)
+	
+	config.set_value("GUI", "ShowMainStats", show_main_stats); config.set_value("GUI", "ShowExtraStats", show_extra_stats)
+	config.set_value("GUI", "ShowActiveEffects", show_active_effects); config.set_value("GUI", "ShowHotbar", show_hotbar)
+	config.set_value("GUI", "ShowItemInfo", show_item_info); config.set_value("GUI", "ShowPlaytime", show_playtime)
+	config.set_value("GUI", "ShowMinimap", show_minimap); config.set_value("GUI", "ShowQuestLog", show_quest_log)
 	
 	config.save(save_path)
 	apply_all_settings()
 
 func apply_all_settings() -> void:
-	# Audio
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(vol_master))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(vol_music))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(vol_sfx))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambient"), linear_to_db(vol_ambient))
 	
-	# Grafika
 	DisplayServer.window_set_mode(display_mode)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED)
 	
@@ -158,46 +176,63 @@ func apply_all_settings() -> void:
 		mat.set_shader_parameter("contrast", contrast)
 		mat.set_shader_parameter("saturation", saturation)
 	
-	# Skala Główna
 	get_tree().root.content_scale_factor = ui_scale_global
 	
 	# Wymuszamy przegląd drzewa i zastosowanie modyfikacji HUD
-	_apply_gui_visibility_to_tree(get_tree().root)
+	_apply_gui_visibility_to_tree()
 	
 	if EventBus.has_signal("hud_visibility_requested"):
 		EventBus.hud_visibility_requested.emit()
 
-# Dynamiczne aplikowanie ustawień interfejsu z Inspektorów Gracza w głąb silnika
-func _apply_gui_visibility_to_tree(node: Node) -> void:
-	# --- UKRYWANIE ELEMENTÓW HUD ---
-	if node.name == "EntityHealthbar" or node.name == "PlayerStatsUI" or node is HealthBar:
-		if "visible" in node: node.visible = (show_hud and show_hp_bar)
-	elif node is Minimap or node.name == "MinimapUI":
-		if "visible" in node: node.visible = (show_hud and show_minimap)
-	elif node.name == "HotbarPanel":
-		if "visible" in node: node.visible = (show_hud and show_hotbar)
-	elif node.name == "QuestTrackerUI":
-		if "visible" in node: node.visible = (show_hud and show_quest_log)
+# --- OPTYMALNE APLIKOWANIE WIDOCZNOŚCI I SKALI (Sprytne ukrywanie) ---
+func _apply_gui_visibility_to_tree() -> void:
+	var ui_canvas = get_tree().root.find_child("UI_Canvas", true, false)
+	if not ui_canvas: return
+	
+	# Skalowanie w Grze
+	if "scale" in ui_canvas:
+		ui_canvas.scale = Vector2(ui_scale_game, ui_scale_game)
 		
-	# --- SKALOWANIE (GAME vs MENU) ---
-	# Jeśli natrafimy na główny HUD Gry
-	if node is CanvasLayer and node.name == "UI_Canvas":
-		node.scale = Vector2(ui_scale_game, ui_scale_game)
-	# Jeśli natrafimy na duże Menu Ekranowe
-	elif node is CanvasLayer and (node.name == "PauseMenu" or node.name == "QuestLogUI" or node.name == "InventoryUI" or node.name == "CraftingUI"):
-		node.scale = Vector2(ui_scale_menu, ui_scale_menu)
+	# Odczytywanie i aplikowanie widoczności konkretnych stref w UI_Canvas
+	var node_main_stats = ui_canvas.find_child("PlayerUIGroup", true, false)
+	if node_main_stats: node_main_stats.visible = show_main_stats
 		
-	for child in node.get_children():
-		_apply_gui_visibility_to_tree(child)
+	var node_extra_stats = ui_canvas.find_child("StatsPanel", true, false)
+	if node_extra_stats: node_extra_stats.visible = show_extra_stats
+		
+	var node_effects = ui_canvas.find_child("AcriveEffectsPanel", true, false)
+	if node_effects: node_effects.visible = show_active_effects
+		
+	var node_hotbar = ui_canvas.find_child("HotbarPanel", true, false)
+	if node_hotbar: node_hotbar.visible = show_hotbar
+		
+	var node_item_info = ui_canvas.find_child("ItemInfoPanelContainer", true, false)
+	if node_item_info: node_item_info.visible = show_item_info
+		
+	var node_playtime = ui_canvas.find_child("PlaytimeLabel", true, false)
+	if node_playtime: node_playtime.visible = show_playtime
+		
+	# TARCZA NA MINIMAPĘ: Ukrywamy całego kontenera (rodzica), by skrypt minimapy 
+	# nie nadpisywał naszej widoczności swoimi lokalnymi funkcjami show()/hide()
+	var node_minimap_zone = ui_canvas.find_child("BottomRight_Zone", true, false)
+	if node_minimap_zone: node_minimap_zone.visible = show_minimap
+		
+	var node_quest = ui_canvas.find_child("QuestTrackerUI", true, false)
+	if node_quest: node_quest.visible = show_quest_log
+
+	# Skalowanie Menu Inwentarza, Skrzyń, Craftingu
+	var menus = ["PauseMenu", "InventoryWindows", "CraftingUI", "QuestLogUI"]
+	for m in menus:
+		var menu_node = get_tree().root.find_child(m, true, false)
+		if menu_node and "scale" in menu_node:
+			menu_node.scale = Vector2(ui_scale_menu, ui_scale_menu)
 
 # =========================================================================
 # LOGIKA RESETOWANIA
 # =========================================================================
 
 func reset_all_to_default(auto_save: bool = true) -> void:
-	reset_category_audio(false)
-	reset_category_graphics(false)
-	reset_category_gui(false)
+	reset_category_audio(false); reset_category_graphics(false); reset_category_gui(false)
 	if auto_save: save_settings()
 
 func reset_category_audio(auto_save: bool = true) -> void:
@@ -212,6 +247,7 @@ func reset_category_graphics(auto_save: bool = true) -> void:
 
 func reset_category_gui(auto_save: bool = true) -> void:
 	ui_scale_global = default_ui_scale_global; ui_scale_game = default_ui_scale_game; ui_scale_menu = default_ui_scale_menu
-	show_hud = default_show_hud; show_hp_bar = default_show_hp_bar
-	show_minimap = default_show_minimap; show_hotbar = default_show_hotbar; show_quest_log = default_show_quest_log
+	show_main_stats = default_show_main_stats; show_extra_stats = default_show_extra_stats
+	show_active_effects = default_show_active_effects; show_hotbar = default_show_hotbar; show_item_info = default_show_item_info
+	show_playtime = default_show_playtime; show_minimap = default_show_minimap; show_quest_log = default_show_quest_log
 	if auto_save: save_settings()
