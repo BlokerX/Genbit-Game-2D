@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://d1ngsduro4psg"]
+
+[ext_resource type="Script" uid="uid://b22nhw0pkbug1" path="res://assets/scripts/scene_scripts/settings/controls/settings_action_row.gd" id="1_script"]
+
+[node name="SettingsActionRow" type="HBoxContainer" unique_id=2031062505 node_paths=PackedStringArray("action_label", "bind_btn_kb", "bind_btn_pad")]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+action_label = NodePath("Label")
+bind_btn_kb = NodePath("BtnKB")
+bind_btn_pad = NodePath("BtnPad")
+
+[node name="Label" type="Label" parent="." unique_id=1854797656]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Nazwa Akcji"
+vertical_alignment = 1
+
+[node name="BtnKB" type="Button" parent="." unique_id=873803390]
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+text = "Klawisz"
+
+[node name="BtnPad" type="Button" parent="." unique_id=477250577]
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+text = "Pad"
+
+[node name="BtnReset" type="Button" parent="." unique_id=455855049]
+custom_minimum_size = Vector2(50, 40)
+layout_mode = 2
+text = "↺"

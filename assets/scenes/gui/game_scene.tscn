@@ -433,6 +433,7 @@ visible = false
 process_mode = 3
 stream = ExtResource("17_1y80r")
 autoplay = true
+bus = &"Music"
 parameters/looping = true
 
 [node name="LevelContainer" type="Node2D" parent="." unique_id=325666330]

@@ -1,0 +1,160 @@
+[gd_scene format=3 uid="uid://bihgfcvvcx2rc"]
+
+[ext_resource type="Script" uid="uid://dsfkcceq8hnpx" path="res://assets/scripts/scene_scripts/settings/settings_menu.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_audio.tscn" id="2_audio"]
+[ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_graphics.tscn" id="3_gfx"]
+[ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_gui.tscn" id="4_gui"]
+[ext_resource type="PackedScene" uid="uid://cufpnx6mx4er7" path="res://assets/scenes/main_menu/settings_menu/settings_control.tscn" id="5_ctrl"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Panel"]
+bg_color = Color(0.12, 0.12, 0.14, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.4, 0.15, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 15
+
+[node name="SettingsMenu" type="Control" unique_id=1041225421 node_paths=PackedStringArray("btn_audio", "btn_graphics", "btn_gui", "btn_controls", "btn_back", "btn_global_reset", "panel_audio", "panel_graphics", "panel_gui", "panel_controls", "description_label", "confirm_dialog")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+btn_audio = NodePath("VBox/MainLayout/Sidebar/BtnAudio")
+btn_graphics = NodePath("VBox/MainLayout/Sidebar/BtnGraphics")
+btn_gui = NodePath("VBox/MainLayout/Sidebar/BtnGUI")
+btn_controls = NodePath("VBox/MainLayout/Sidebar/BtnControls")
+btn_back = NodePath("VBox/MainLayout/Sidebar/BottomBtns/BtnBack")
+btn_global_reset = NodePath("VBox/MainLayout/Sidebar/BottomBtns/BtnResetAll")
+panel_audio = NodePath("VBox/MainLayout/ContentContainer/Margin/SettingsAudio")
+panel_graphics = NodePath("VBox/MainLayout/ContentContainer/Margin/SettingsGraphics")
+panel_gui = NodePath("VBox/MainLayout/ContentContainer/Margin/SettingsGUI")
+panel_controls = NodePath("VBox/MainLayout/ContentContainer/Margin/SettingsControl")
+description_label = NodePath("VBox/FooterPanel/DescLabel")
+confirm_dialog = NodePath("ConfirmDialog")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1705815031]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.06, 0.08, 0.98)
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1286706204]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="MainLayout" type="HBoxContainer" parent="VBox" unique_id=540388080]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="Sidebar" type="VBoxContainer" parent="VBox/MainLayout" unique_id=969530501]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="VBox/MainLayout/Sidebar" unique_id=1833519813]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.4, 0.15, 1)
+theme_override_font_sizes/font_size = 42
+text = "USTAWIENIA"
+horizontal_alignment = 1
+
+[node name="BtnAudio" type="Button" parent="VBox/MainLayout/Sidebar" unique_id=1889114349]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Dźwięk"
+
+[node name="BtnGraphics" type="Button" parent="VBox/MainLayout/Sidebar" unique_id=1179616382]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Grafika"
+
+[node name="BtnGUI" type="Button" parent="VBox/MainLayout/Sidebar" unique_id=1693150184]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Interfejs"
+
+[node name="BtnControls" type="Button" parent="VBox/MainLayout/Sidebar" unique_id=600724639]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Sterowanie"
+
+[node name="Spacer" type="Control" parent="VBox/MainLayout/Sidebar" unique_id=659942750]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomBtns" type="VBoxContainer" parent="VBox/MainLayout/Sidebar" unique_id=1467809535]
+layout_mode = 2
+
+[node name="BtnResetAll" type="Button" parent="VBox/MainLayout/Sidebar/BottomBtns" unique_id=1782031373]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "PRZYWRÓĆ DOMYŚLNE"
+
+[node name="BtnBack" type="Button" parent="VBox/MainLayout/Sidebar/BottomBtns" unique_id=1992789279]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+text = "Wróć do Menu"
+
+[node name="ContentContainer" type="PanelContainer" parent="VBox/MainLayout" unique_id=454373808]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_Panel")
+
+[node name="Margin" type="MarginContainer" parent="VBox/MainLayout/ContentContainer" unique_id=1238817738]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="SettingsAudio" parent="VBox/MainLayout/ContentContainer/Margin" unique_id=876091067 instance=ExtResource("2_audio")]
+layout_mode = 2
+
+[node name="SettingsGraphics" parent="VBox/MainLayout/ContentContainer/Margin" unique_id=1909107169 instance=ExtResource("3_gfx")]
+visible = false
+layout_mode = 2
+
+[node name="SettingsGUI" parent="VBox/MainLayout/ContentContainer/Margin" unique_id=1464754780 instance=ExtResource("4_gui")]
+visible = false
+layout_mode = 2
+
+[node name="SettingsControl" parent="VBox/MainLayout/ContentContainer/Margin" unique_id=787410885 instance=ExtResource("5_ctrl")]
+visible = false
+layout_mode = 2
+
+[node name="FooterPanel" type="PanelContainer" parent="VBox" unique_id=703416528]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="DescLabel" type="RichTextLabel" parent="VBox/FooterPanel" unique_id=909032689]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "[center]Najedź na opcję, aby zobaczyć szczegóły.[/center]"
+fit_content = true
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="." unique_id=417570783]
+title = "Potwierdzenie"
+size = Vector2i(400, 150)
+ok_button_text = "Tak"
+cancel_button_text = "Anuluj"

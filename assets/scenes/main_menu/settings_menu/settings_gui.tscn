@@ -1,0 +1,134 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://assets/scripts/scene_scripts/settings/gui/settings_gui.gd" id="1_gui"]
+
+[node name="SettingsGUI" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 25
+script = ExtResource("1_gui")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Ustawienia Interfejsu (GUI)"
+
+[node name="ResetBtn" type="Button" parent="Header"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Resetuj Kategorię"
+
+[node name="ScaleGlobalRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ScaleGlobalRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skala Ogólna"
+[node name="Slider" type="HSlider" parent="ScaleGlobalRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 0.5
+max_value = 2.0
+step = 0.1
+[node name="ValLabel" type="Label" parent="ScaleGlobalRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+[node name="ResetBtn" type="Button" parent="ScaleGlobalRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ScaleGameRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ScaleGameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skala w Grze"
+[node name="Slider" type="HSlider" parent="ScaleGameRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 0.5
+max_value = 2.0
+step = 0.1
+[node name="ValLabel" type="Label" parent="ScaleGameRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+[node name="ResetBtn" type="Button" parent="ScaleGameRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ScaleMenuRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ScaleMenuRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skala w Menu (Inwentarz itp.)"
+[node name="Slider" type="HSlider" parent="ScaleMenuRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 0.5
+max_value = 2.0
+step = 0.1
+[node name="ValLabel" type="Label" parent="ScaleMenuRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+[node name="ResetBtn" type="Button" parent="ScaleMenuRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="HPRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="HPRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pokazuj Pasek Zdrowia"
+[node name="CheckBox" type="CheckBox" parent="HPRow"]
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="HPRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="MinimapRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="MinimapRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pokazuj Minimapę"
+[node name="CheckBox" type="CheckBox" parent="MinimapRow"]
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="MinimapRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="HotbarRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="HotbarRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pokazuj Pasek Przedmiotów"
+[node name="CheckBox" type="CheckBox" parent="HotbarRow"]
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="HotbarRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="QuestRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="QuestRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pokazuj Śledzenie Zadań"
+[node name="CheckBox" type="CheckBox" parent="QuestRow"]
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="QuestRow"]
+layout_mode = 2
+text = " ↺ "
