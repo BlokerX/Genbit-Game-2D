@@ -1,108 +1,128 @@
-[gd_scene load_steps=2 format=3]
-[ext_resource type="Script" path="res://assets/scripts/scene_scripts/settings/graphics/settings_graphics.gd" id="1_gfx"]
+[gd_scene format=3 uid="uid://c5s8gnd30w5d7"]
 
-[node name="SettingsGraphics" type="VBoxContainer"]
+[ext_resource type="Script" uid="uid://ysk72gfl522" path="res://assets/scripts/scene_scripts/settings/graphics/settings_graphics.gd" id="1_gfx"]
+
+[node name="SettingsGraphics" type="VBoxContainer" unique_id=1931422045]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_constants/separation = 25
 script = ExtResource("1_gfx")
 
-[node name="Header" type="HBoxContainer" parent="."]
+[node name="Header" type="HBoxContainer" parent="." unique_id=1025842432]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Header"]
+[node name="Title" type="Label" parent="Header" unique_id=1116930096]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 32
 text = "Ustawienia Grafiki"
 
-[node name="ResetBtn" type="Button" parent="Header"]
+[node name="ResetBtn" type="Button" parent="Header" unique_id=195195501]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 text = "Resetuj Kategorię"
 
-[node name="ModeRow" type="HBoxContainer" parent="."]
+[node name="ModeRow" type="HBoxContainer" parent="." unique_id=1478109023]
 layout_mode = 2
-[node name="Label" type="Label" parent="ModeRow"]
+
+[node name="Label" type="Label" parent="ModeRow" unique_id=1886673789]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tryb Ekranu"
-[node name="OptionButton" type="OptionButton" parent="ModeRow"]
-custom_minimum_size = Vector2(300, 0)
+
+[node name="ToggleBtn" type="Button" parent="ModeRow" unique_id=2053578348]
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
-[node name="ResetBtn" type="Button" parent="ModeRow"]
+
+[node name="ResetBtn" type="Button" parent="ModeRow" unique_id=1236859213]
 layout_mode = 2
 text = " ↺ "
 
-[node name="VsyncRow" type="HBoxContainer" parent="."]
+[node name="VsyncRow" type="HBoxContainer" parent="." unique_id=1323718412]
 layout_mode = 2
-[node name="Label" type="Label" parent="VsyncRow"]
+
+[node name="Label" type="Label" parent="VsyncRow" unique_id=1979304754]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Synchronizacja (V-Sync)"
-[node name="CheckBox" type="CheckBox" parent="VsyncRow"]
+
+[node name="ToggleBtn" type="Button" parent="VsyncRow" unique_id=334312769]
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
-[node name="ResetBtn" type="Button" parent="VsyncRow"]
+
+[node name="ResetBtn" type="Button" parent="VsyncRow" unique_id=411104380]
 layout_mode = 2
 text = " ↺ "
 
-[node name="BrightnessRow" type="HBoxContainer" parent="."]
+[node name="BrightnessRow" type="HBoxContainer" parent="." unique_id=810298368]
 layout_mode = 2
-[node name="Label" type="Label" parent="BrightnessRow"]
+
+[node name="Label" type="Label" parent="BrightnessRow" unique_id=676694835]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Jasność"
-[node name="Slider" type="HSlider" parent="BrightnessRow"]
+
+[node name="Slider" type="HSlider" parent="BrightnessRow" unique_id=1549492670]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 2.0
-step = 0.05
-[node name="ValLabel" type="Label" parent="BrightnessRow"]
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="BrightnessRow" unique_id=1042675125]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 horizontal_alignment = 2
-[node name="ResetBtn" type="Button" parent="BrightnessRow"]
+
+[node name="ResetBtn" type="Button" parent="BrightnessRow" unique_id=2116247010]
 layout_mode = 2
 text = " ↺ "
 
-[node name="ContrastRow" type="HBoxContainer" parent="."]
+[node name="ContrastRow" type="HBoxContainer" parent="." unique_id=664941167]
 layout_mode = 2
-[node name="Label" type="Label" parent="ContrastRow"]
+
+[node name="Label" type="Label" parent="ContrastRow" unique_id=1906097950]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Kontrast"
-[node name="Slider" type="HSlider" parent="ContrastRow"]
+
+[node name="Slider" type="HSlider" parent="ContrastRow" unique_id=11517293]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 2.0
-step = 0.05
-[node name="ValLabel" type="Label" parent="ContrastRow"]
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="ContrastRow" unique_id=65835123]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 horizontal_alignment = 2
-[node name="ResetBtn" type="Button" parent="ContrastRow"]
+
+[node name="ResetBtn" type="Button" parent="ContrastRow" unique_id=541118443]
 layout_mode = 2
 text = " ↺ "
 
-[node name="SaturationRow" type="HBoxContainer" parent="."]
+[node name="SaturationRow" type="HBoxContainer" parent="." unique_id=1757453920]
 layout_mode = 2
-[node name="Label" type="Label" parent="SaturationRow"]
+
+[node name="Label" type="Label" parent="SaturationRow" unique_id=690731581]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Nasycenie Kolorów"
-[node name="Slider" type="HSlider" parent="SaturationRow"]
+
+[node name="Slider" type="HSlider" parent="SaturationRow" unique_id=123639582]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 2.0
-step = 0.05
-[node name="ValLabel" type="Label" parent="SaturationRow"]
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="SaturationRow" unique_id=411369316]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 horizontal_alignment = 2
-[node name="ResetBtn" type="Button" parent="SaturationRow"]
+
+[node name="ResetBtn" type="Button" parent="SaturationRow" unique_id=1667224787]
 layout_mode = 2
 text = " ↺ "

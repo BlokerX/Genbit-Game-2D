@@ -33,7 +33,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
-step = 0.05
+step = 0.01
 [node name="ValLabel" type="Label" parent="MasterRow"]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -54,7 +54,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
-step = 0.05
+step = 0.01
 [node name="ValLabel" type="Label" parent="MusicRow"]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -75,7 +75,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
-step = 0.05
+step = 0.01
 [node name="ValLabel" type="Label" parent="SFXRow"]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -96,7 +96,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
-step = 0.05
+step = 0.01
 [node name="ValLabel" type="Label" parent="AmbientRow"]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -112,7 +112,8 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Dźwięk przestrzenny (Słuchawki)"
-[node name="CheckBox" type="CheckBox" parent="SurroundRow"]
+[node name="ToggleBtn" type="Button" parent="SurroundRow"]
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 [node name="ResetBtn" type="Button" parent="SurroundRow"]
 layout_mode = 2
@@ -124,7 +125,8 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Wycisz, gdy gra jest zminimalizowana"
-[node name="CheckBox" type="CheckBox" parent="MuteBgRow"]
+[node name="ToggleBtn" type="Button" parent="MuteBgRow"]
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 [node name="ResetBtn" type="Button" parent="MuteBgRow"]
 layout_mode = 2

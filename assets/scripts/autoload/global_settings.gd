@@ -5,7 +5,7 @@ extends Node
 ## Ścieżka do pliku z ustawieniami. "user://" to folder %APPDATA% gracza.
 @export var save_path: String = "user://settings.cfg"
 
-@export_group("Domyślne Wartości - Dźwięk")
+@export_group("Domyślne - Dźwięk")
 @export_range(0.0, 1.0) var default_vol_master: float = 1.0
 @export_range(0.0, 1.0) var default_vol_music: float = 1.0
 @export_range(0.0, 1.0) var default_vol_sfx: float = 1.0
@@ -13,14 +13,14 @@ extends Node
 @export var default_surround_sound: bool = true
 @export var default_mute_in_background: bool = false
 
-@export_group("Domyślne Wartości - Grafika")
+@export_group("Domyślne - Grafika")
 @export var default_display_mode: int = DisplayServer.WINDOW_MODE_WINDOWED
 @export var default_vsync_enabled: bool = true
 @export_range(0.0, 2.0) var default_brightness: float = 1.0
 @export_range(0.0, 2.0) var default_contrast: float = 1.0
 @export_range(0.0, 2.0) var default_saturation: float = 1.0
 
-@export_group("Domyślne Wartości - Interfejs")
+@export_group("Domyślne - Interfejs")
 @export_range(0.5, 2.0) var default_ui_scale_global: float = 1.0
 @export_range(0.5, 2.0) var default_ui_scale_game: float = 1.0
 @export_range(0.5, 2.0) var default_ui_scale_menu: float = 1.0
@@ -79,6 +79,13 @@ func _ready() -> void:
 	reset_all_to_default(false)
 	load_settings()
 
+# Pętla sprawdzająca, czy jesteśmy w grze
+func _process(_delta: float) -> void:
+	if is_instance_valid(_bcs_canvas):
+		# Ustawienia graficzne (Shader Jasności itp.) aktywne tylko w trakcie rozgrywki!
+		var in_game = get_tree().get_first_node_in_group("Player") != null
+		_bcs_canvas.visible = in_game
+
 # Nasłuchiwanie wyjścia z gry do Windowsa (Alt-Tab)
 func _notification(what: int) -> void:
 	if mute_in_background:
@@ -134,31 +141,59 @@ func save_settings() -> void:
 	apply_all_settings()
 
 func apply_all_settings() -> void:
-	# Aplikowanie Audio
+	# Audio
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(vol_master))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(vol_music))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(vol_sfx))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambient"), linear_to_db(vol_ambient))
 	
-	# Aplikowanie Grafiki i Cieni
+	# Grafika
 	DisplayServer.window_set_mode(display_mode)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED)
 	
 	# Aktualizacja Shadera na żywo
-	var mat = _bcs_rect.material as ShaderMaterial
-	mat.set_shader_parameter("brightness", brightness)
-	mat.set_shader_parameter("contrast", contrast)
-	mat.set_shader_parameter("saturation", saturation)
+	if is_instance_valid(_bcs_rect):
+		var mat = _bcs_rect.material as ShaderMaterial
+		mat.set_shader_parameter("brightness", brightness)
+		mat.set_shader_parameter("contrast", contrast)
+		mat.set_shader_parameter("saturation", saturation)
 	
-	# Aplikowanie Skali (Skaluje Główny Viewport)
+	# Skala Główna
 	get_tree().root.content_scale_factor = ui_scale_global
+	
+	# Wymuszamy przegląd drzewa i zastosowanie modyfikacji HUD
+	_apply_gui_visibility_to_tree(get_tree().root)
 	
 	if EventBus.has_signal("hud_visibility_requested"):
 		EventBus.hud_visibility_requested.emit()
 
+# Dynamiczne aplikowanie ustawień interfejsu z Inspektorów Gracza w głąb silnika
+func _apply_gui_visibility_to_tree(node: Node) -> void:
+	# --- UKRYWANIE ELEMENTÓW HUD ---
+	if node.name == "EntityHealthbar" or node.name == "PlayerStatsUI" or node is HealthBar:
+		if "visible" in node: node.visible = (show_hud and show_hp_bar)
+	elif node is Minimap or node.name == "MinimapUI":
+		if "visible" in node: node.visible = (show_hud and show_minimap)
+	elif node.name == "HotbarPanel":
+		if "visible" in node: node.visible = (show_hud and show_hotbar)
+	elif node.name == "QuestTrackerUI":
+		if "visible" in node: node.visible = (show_hud and show_quest_log)
+		
+	# --- SKALOWANIE (GAME vs MENU) ---
+	# Jeśli natrafimy na główny HUD Gry
+	if node is CanvasLayer and node.name == "UI_Canvas":
+		node.scale = Vector2(ui_scale_game, ui_scale_game)
+	# Jeśli natrafimy na duże Menu Ekranowe
+	elif node is CanvasLayer and (node.name == "PauseMenu" or node.name == "QuestLogUI" or node.name == "InventoryUI" or node.name == "CraftingUI"):
+		node.scale = Vector2(ui_scale_menu, ui_scale_menu)
+		
+	for child in node.get_children():
+		_apply_gui_visibility_to_tree(child)
+
 # =========================================================================
 # LOGIKA RESETOWANIA
 # =========================================================================
+
 func reset_all_to_default(auto_save: bool = true) -> void:
 	reset_category_audio(false)
 	reset_category_graphics(false)
