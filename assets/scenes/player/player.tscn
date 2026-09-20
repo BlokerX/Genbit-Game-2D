@@ -102,6 +102,8 @@ scale = Vector2(0.15, 0.15)
 sprite_frames = SubResource("SpriteFrames_xflxm")
 
 [node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("7_oet4l")]
+auto_detect_type = false
+target_type = 5
 target_sprite = NodePath("../CharacterAnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 

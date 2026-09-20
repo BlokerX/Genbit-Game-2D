@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://c8vdk5bssyshm" path="res://assets/dialogue_system/resources/dialogue_node.gd" id="10_xjmfk"]
 [ext_resource type="Resource" uid="uid://dllqy6sftdcy1" path="res://assets/data/dialogues_data/speakers/narrator_speaker.tres" id="11_52oi1"]
 [ext_resource type="Resource" uid="uid://btqnlmwljfsgp" path="res://assets/data/dialogues_data/speakers/flandere_scarlet_avatar_speaker.tres" id="12_1xtxj"]
-[ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeter.png" id="13_v1bkx"]
+[ext_resource type="Texture2D" uid="uid://df5lq7mbr2o6i" path="res://assets/textures/samples_examples/targeters/orange_targeter.png" id="13_v1bkx"]
 [ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="14_dfh8v"]
 [ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="15_4g1br"]
 [ext_resource type="Resource" uid="uid://0axh3xbaln4c" path="res://assets/data/quests/q01_test.tres" id="15_ce8oc"]
