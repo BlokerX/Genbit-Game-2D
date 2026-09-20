@@ -260,6 +260,12 @@ position = Vector2(6752, 4280)
 [node name="WorldSensorComponent" parent="OpenWorld/WorldAreaTrigger" index="1" unique_id=657621410]
 consequences = Array[ExtResource("19_hlxsh")]([SubResource("Resource_hlxsh")])
 
+[node name="LevelEntrance" parent="." unique_id=361152300 instance=ExtResource("42_xy8dj")]
+position = Vector2(8104, 4208)
+my_entrance_id = "spawn_world_to_big_world"
+target_level_path = "uid://cy7bhoino46bk"
+target_entrance_id = "big_world_to_spawn_world"
+
 [connection signal="event_received" from="OpenWorld/Door/StoryEventReceiver" to="OpenWorld/Door" method="force_open"]
 
 [editable path="OpenWorld"]

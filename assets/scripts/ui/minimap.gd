@@ -144,6 +144,13 @@ func _setup_camera_map() -> void:
 	camera_viewport.audio_listener_enable_2d = false
 	camera_viewport.audio_listener_enable_3d = false
 	camera_viewport.world_2d = get_viewport().world_2d
+	
+	# --- NOWOŚĆ: TARCZA WIDOCZNOŚCI ---
+	# Zabrania kamerze minimapy widzieć "Visibility Layer 2",
+	# dzięki czemu czujniki wrogów nie będą się przez nią budzić!
+	# (Wartość 4294967293 to matematyczny zapis: renderuj wszystkie warstwy OPRÓCZ drugiej)
+	camera_viewport.canvas_cull_mask = 4294967293
+	
 	camera_container.add_child(camera_viewport)
 	
 	# 3. Dodatkowa Druga Kamera (Śledząca niezależnie od kamery głównej gry)
