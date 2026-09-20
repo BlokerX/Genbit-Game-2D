@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://dl57nedjefkj6"]
+
+[ext_resource type="Script" uid="uid://ysk72gfl522" path="res://assets/scripts/scene_scripts/settings/graphics/settings_graphics.gd" id="1_gfx"]
+
+[node name="SettingsGraphics" type="VBoxContainer" unique_id=887720459 node_paths=PackedStringArray("mode_option", "reset_button")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 25
+script = ExtResource("1_gfx")
+mode_option = NodePath("ModeRow/OptionButton")
+reset_button = NodePath("Header/ResetBtn")
+
+[node name="Header" type="HBoxContainer" parent="." unique_id=1737468112]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Header" unique_id=2092815099]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Ustawienia Grafiki"
+
+[node name="ResetBtn" type="Button" parent="Header" unique_id=2128204972]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Resetuj Kategorię"
+
+[node name="ModeRow" type="HBoxContainer" parent="." unique_id=1980666297]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ModeRow" unique_id=1707576582]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tryb Ekranu"
+
+[node name="OptionButton" type="OptionButton" parent="ModeRow" unique_id=1867451058]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="ResetBtn" type="Button" parent="ModeRow" unique_id=1495617343]
+layout_mode = 2
+text = " ↺ "
+
+[node name="VsyncRow" type="HBoxContainer" parent="." unique_id=1952888716]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VsyncRow" unique_id=2053697467]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Synchronizacja Pionowa (V-Sync)"
+
+[node name="ToggleBtn" type="Button" parent="VsyncRow" unique_id=656944426]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+
+[node name="ResetBtn" type="Button" parent="VsyncRow" unique_id=240736366]
+layout_mode = 2
+text = " ↺ "
+
+[node name="BrightnessRow" type="HBoxContainer" parent="." unique_id=1443794447]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BrightnessRow" unique_id=489336710]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Jasność"
+
+[node name="Slider" type="HSlider" parent="BrightnessRow" unique_id=1830453309]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="BrightnessRow" unique_id=1665233326]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+
+[node name="ResetBtn" type="Button" parent="BrightnessRow" unique_id=2101795723]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ContrastRow" type="HBoxContainer" parent="." unique_id=262894670]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContrastRow" unique_id=1144934914]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kontrast"
+
+[node name="Slider" type="HSlider" parent="ContrastRow" unique_id=2057667171]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="ContrastRow" unique_id=726347547]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+
+[node name="ResetBtn" type="Button" parent="ContrastRow" unique_id=496281210]
+layout_mode = 2
+text = " ↺ "
+
+[node name="SaturationRow" type="HBoxContainer" parent="." unique_id=762700448]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SaturationRow" unique_id=1356440066]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Nasycenie Kolorów"
+
+[node name="Slider" type="HSlider" parent="SaturationRow" unique_id=1725756357]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.01
+
+[node name="ValLabel" type="Label" parent="SaturationRow" unique_id=853306743]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+
+[node name="ResetBtn" type="Button" parent="SaturationRow" unique_id=1040129474]
+layout_mode = 2
+text = " ↺ "

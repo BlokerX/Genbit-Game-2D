@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://df5lq7mbr2o6i"
-path="res://.godot/imported/targeter.png-e4669a62f45f63873fccd7682c2f8825.ctex"
+path="res://.godot/imported/orange_targeter.png-ad700c3fa02e894ef8800cf13b510457.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/samples_examples/targeter.png"
-dest_files=["res://.godot/imported/targeter.png-e4669a62f45f63873fccd7682c2f8825.ctex"]
+source_file="res://assets/textures/samples_examples/targeters/orange_targeter.png"
+dest_files=["res://.godot/imported/orange_targeter.png-ad700c3fa02e894ef8800cf13b510457.ctex"]
 
 [params]
 

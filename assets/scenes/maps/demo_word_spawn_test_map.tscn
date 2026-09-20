@@ -199,7 +199,7 @@ position = Vector2(7264, 3168)
 [node name="DevChestR" parent="OpenWorld" unique_id=1480076922 instance=ExtResource("10_5aga0")]
 position = Vector2(8096, 3168)
 
-[node name="TutorialHelper" type="StaticBody2D" parent="OpenWorld" unique_id=515297861]
+[node name="TutorialHelper" type="StaticBody2D" parent="OpenWorld" unique_id=515297861 groups=["NPC"]]
 position = Vector2(7456, 4064)
 
 [node name="Sprite2D" type="Sprite2D" parent="OpenWorld/TutorialHelper" unique_id=994616147]

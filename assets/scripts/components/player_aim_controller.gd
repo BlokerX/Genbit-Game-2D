@@ -98,7 +98,8 @@ func handle_mouse_aiming(current_attack_range : float, disable_targeting: bool =
 	
 	# Jeśli NIE budujemy, możemy skanować i zaznaczać cele
 	if not disable_targeting:
-		found_target = _get_raycast_target()
+		# --- ZMIANA: Przekazujemy "true", by poinformować o myszce ---
+		found_target = _get_raycast_target(true)
 		# 3. Zabezpieczenie fizyczne dystansu
 		found_target = _enforce_distance_check(found_target, current_attack_range)
 		
@@ -170,7 +171,8 @@ func handle_gamepad_aiming(current_attack_range: float, disable_targeting: bool 
 	
 	# Jeśli NIE budujemy, szukamy i "kleimy" się do wrogów
 	if not disable_targeting:
-		found_target = _get_raycast_target()
+		# --- ZMIANA: Przekazujemy "false", by poinformować o padzie ---
+		found_target = _get_raycast_target(false)
 		if found_target != null:
 			var tp = found_target.get_parent()
 			if tp and tp.is_in_group("Enemy"):
@@ -271,17 +273,119 @@ func clear_gamepad_target():
 # FUNKCJE POMOCNICZE (Współdzielone)
 # ==========================================
 
-## Pobiera InteractableComponent z promienia lasera
-func _get_raycast_target() -> InteractableComponent:
-	var collider = aim_scanner.get_collider()
-	if collider != null:
-		if collider is InteractableComponent:
-			return collider
+# --- NOWY KOD: Dodano is_mouse do parametrów, by śledzić pozycję kursora ---
+## Pobiera InteractableComponent z promienia lasera z uwzględnieniem priorytetów
+func _get_raycast_target(is_mouse: bool = true) -> InteractableComponent:
+	var hits: Array[InteractableComponent] = []
+	var hard_blocker_hit = false
+	
+	# Zapisujemy dokładną pozycję kursora (wirtualnego lub fizycznego) by użyć jej w priorytetach
+	var cursor_global_pos: Vector2 = get_global_mouse_position() if is_mouse else virtual_cursor_pos
+	
+	# 1. Czyścimy potencjalne resztki wyjątków przed pętlą skanowania
+	aim_scanner.clear_exceptions()
+	
+	# 2. Pętla "przebijająca" (max 10 obiektów by uniknąć nieskończonej pętli fizyki)
+	for i in range(10):
+		aim_scanner.force_raycast_update()
+		var collider = aim_scanner.get_collider()
+		
+		if collider == null:
+			break # Pusto, laser nic już nie widzi przed sobą
+			
+		var interactable = _extract_interactable(collider)
+		
+		if interactable != null:
+			hits.append(interactable)
+			
+			# Sprawdzamy czy trafiony obiekt to budynek/położony item (Twardy Bloker)
+			var parent = interactable.get_parent()
+			if parent is PlacedObject or parent.is_in_group("Door") or parent.is_in_group("Object") or parent.name.to_lower().contains("door") or parent.name.to_lower().contains("object"):
+				hard_blocker_hit = true
 		else:
-			for child in collider.get_children():
-				if child is InteractableComponent:
-					return child
+			# Trafiono obiekt CAŁKOWICIE BEZ interakcji (np. zderzak normalnej ściany). 
+			# Promień nie może patrzeć przez mury - przerywamy całkowicie skanowanie!
+			break
+			
+		if hard_blocker_hit:
+			break # Zatrzymujemy przebijanie lasera, bo budynek/postawiony item zasłania wszystko za sobą
+			
+		# Zignoruj ten konkretny collider w kolejnym rzucie promienia (laser poleci na wylot)
+		aim_scanner.add_exception(collider)
+		
+	# 3. Zawsze po zebraniu danych przywracamy czysty skaner do normalnego stanu
+	aim_scanner.clear_exceptions()
+	
+	# 4. Wybieramy zwycięzcę z listy wszystkich trafień, przekazując kursor
+	return _select_highest_priority_target(hits, cursor_global_pos)
+
+## Pomocnicza funkcja wydzielona z oryginału (rozpoznaje komponent w obiekcie)
+func _extract_interactable(collider: Object) -> InteractableComponent:
+	if collider is InteractableComponent:
+		return collider
+	for child in collider.get_children():
+		if child is InteractableComponent:
+			return child
 	return null
+
+# --- NOWY KOD: Dodano parametr cursor_global_pos i zabezpieczenie dystansu dla gracza ---
+## Sortowanie wszystkich trafień na podstawie określonych priorytetów i kolejności uderzenia
+func _select_highest_priority_target(hits: Array[InteractableComponent], cursor_global_pos: Vector2) -> InteractableComponent:
+	var best_target: InteractableComponent = null
+	var best_priority: int = -1
+	
+	for target in hits:
+		var priority = _get_target_priority(target)
+		
+		# === ZABEZPIECZENIE: Zaznaczanie gracza TYLKO gdy kursor na nim spoczywa ===
+		if priority == 1:
+			var target_radius = 20.0 # Domyślny promień
+			if "combat_radius" in target:
+				target_radius = target.combat_radius
+			elif target.get_parent() != null and "combat_radius" in target.get_parent():
+				target_radius = target.get_parent().combat_radius
+			
+			# Pobieramy środek gracza (jego węzła nadrzędnego)
+			var parent = target.get_parent()
+			var center_pos = parent.global_position if parent != null else target.global_position
+			
+			# Jeśli kursor (koniec promienia) jest dalej niż promień gracza + margines błędu (15px) 
+			# to ignorujemy to trafienie – laser tylko przez niego "przelatuje"
+			if center_pos.distance_to(cursor_global_pos) > (target_radius + 15.0):
+				continue 
+		# =========================================================================
+
+		# Używamy '>' a nie '>=' - dzięki temu jeśli 2 obiekty na linii mają ten sam 
+		# wysoki priorytet, ZAWSZE wygrywa ten bliżej gracza (uderzony jako pierwszy).
+		if priority > best_priority:
+			best_priority = priority
+			best_target = target
+			
+	return best_target
+
+## Definicja siły "przyciągania wzroku" dla systemu celowania
+func _get_target_priority(target: InteractableComponent) -> int:
+	var parent = target.get_parent()
+	if parent == null: return 0
+	
+	var p_name = parent.name.to_lower()
+	
+	# PRIORYTET 3: Wrogowie, NPC (Tutorial), Budynki (PlacedObject)
+	# Mają najwyższe pierwszeństwo - laser zignoruje przedmiot (Priorytet 2), by chwycić ich.
+	if parent.is_in_group("Enemy") or p_name.contains("enemy"): return 3
+	if parent.is_in_group("NPC") or p_name.contains("npc"): return 3
+	if parent is PlacedObject or parent.is_in_group("Door") or parent.is_in_group("Object") or p_name.contains("door") or p_name.contains("object"): return 3
+	
+	# PRIORYTET 2: Leżące przedmioty / Loot (np. Compass)
+	# Przenikają się ze sobą nawzajem i puszczają laser do Priorytetu 3.
+	if parent.is_in_group("ItemPickup") or p_name.contains("item") or p_name.contains("pickup"): return 2
+	
+	# PRIORYTET 1: Inni Gracze / Posiadacz
+	# Można ich namierzyć, ale oddadzą focus absolutnie wszystkiemu (Nawet zwykłym przedmiotom)
+	if parent.is_in_group("Player") or p_name.contains("player"): return 1
+	
+	return 0 # Nieznany obiekt (Priorytet zerowy)
+# -----------------------------------------------------------------------------
 
 ## Sprawdza i limituje obiekt pod kątem dystansu z zasięgiem broni
 func _enforce_distance_check(target: InteractableComponent, current_attack_range: float) -> InteractableComponent:
