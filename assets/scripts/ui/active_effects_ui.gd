@@ -25,8 +25,13 @@ func _process(_delta: float) -> void:
 			_format_time_label(label, effect_node.duration, effect_node.is_infinite)
 
 func _on_effect_added(node: Node) -> void:
+	# TARCZA: Zabezpieczenie przed usunięciem UI (np. przy wyjściu do menu)
+	if not is_inside_tree(): 
+		return
+		
 	# Czekamy ułamek sekundy na inicjalizację zmiennych w nowym węźle
 	await get_tree().process_frame 
+	
 	if not is_instance_valid(node) or not node.get("effect_resource"):
 		return
 		

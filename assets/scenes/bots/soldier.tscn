@@ -217,7 +217,3 @@ vertical_alignment = 1
 [node name="AttackComponent" type="Node" parent="." unique_id=1108255229]
 script = ExtResource("29_mlpbi")
 metadata/_custom_type_script = "uid://bf6qleyepnwwy"
-
-[node name="VisibleOnScreenEnabler2D" type="VisibleOnScreenEnabler2D" parent="." unique_id=11936422]
-rect = Rect2(-1500, -1500, 3000, 3000)
-enable_mode = 1

@@ -95,8 +95,13 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 	var windup_time = max(0.0, cast_time - jump_duration)
 	if windup_time > 0.0:
+		# =========================================================
+		# AWAIT NR 1: Oczekiwanie na skok (Windup)
+		# =========================================================
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 		await attacker.get_tree().create_timer(windup_time).timeout
 
+	# Tarcza po pierwszym await'cie / przed odpaleniem animacji skoku
 	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	var original_scale = attacker.scale
 	
@@ -110,14 +115,28 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	scale_tween.tween_property(attacker, "scale", original_scale * 1.35, scale_up_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	scale_tween.tween_property(attacker, "scale", original_scale, scale_down_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
+	# =========================================================
+	# AWAIT NR 2: Lot i lądowanie (Tween)
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	await pos_tween.finished
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
 	if recovery_time > 0.0:
-		if is_instance_valid(attacker):
-			var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
-			if cam and cam.has_method("add_trauma"):
-				cam.add_trauma(camera_trauma_amount)
+		# =========================================================
+		# AWAIT NR 3: Odpoczynek bossa i kamera
+		# =========================================================
+		# Zabezpieczamy to PRZED odpytaniem get_tree() do wstrząsu kamerą!
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+		
+		var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
+		if cam and cam.has_method("add_trauma"):
+			cam.add_trauma(camera_trauma_amount)
+			
 		await attacker.get_tree().create_timer(recovery_time).timeout
 
-	if is_instance_valid(attacker) and combat_ctrl:
+	# Końcowa tarcza zabezpieczająca zdjęcie flagi w combat_ctrl
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+
+	if combat_ctrl:
 		combat_ctrl.is_casting_ability = false

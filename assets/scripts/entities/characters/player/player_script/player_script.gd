@@ -590,6 +590,10 @@ func respawn_sequence() -> void:
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	
+	# --- NOWE: Informujemy świat (w tym UI), że gracz padł ---
+	EventBus.player_died.emit()
+	# ----------------------------------------------------------
+	
 	# --- NAPRAWA KRYTYCZNA: Czekamy na SYGNAŁ od menedżera, a nie na funkcję ---
 	TransitionManager.fade_to_black(1.0)
 	await TransitionManager.on_fade_out_finished

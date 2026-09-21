@@ -9,6 +9,9 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/stats/attack_data.gd" id="6_57olb"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="7_8oq4s"]
 [ext_resource type="PackedScene" uid="uid://b56d8pmb4go24" path="res://assets/scenes/bots/soldier.tscn" id="8_xpub1"]
+[ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/item_spawnpoint.tscn" id="10_qdhr5"]
+[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="11_57olb"]
+[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="12_8oq4s"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_j4a0t"]
 vertices = PackedVector2Array(0, 0, 96000, 0, 96000, 54400, 0, 54400)
@@ -1517,19 +1520,28 @@ movement_universal_script = SubResource("Resource_wx8o2")
 health_stats_script = SubResource("Resource_h80dy")
 interaction_and_attack_stats_script = SubResource("Resource_cxjk6")
 
-[node name="DevChest" parent="." unique_id=1382818356 instance=ExtResource("3_1hmaq")]
+[node name="DevChest" parent="Room" unique_id=1382818356 instance=ExtResource("3_1hmaq")]
 position = Vector2(95840, 54304)
 
-[node name="DevChest2" parent="." unique_id=1289238745 instance=ExtResource("3_1hmaq")]
+[node name="DevChest2" parent="Room" unique_id=1289238745 instance=ExtResource("3_1hmaq")]
 position = Vector2(47008, 25761)
 
-[node name="DevChest3" parent="." unique_id=833494269 instance=ExtResource("3_1hmaq")]
+[node name="DevChest3" parent="Room" unique_id=833494269 instance=ExtResource("3_1hmaq")]
 position = Vector2(191906, 108769)
 
-[node name="LevelEntrance" parent="." unique_id=406558948 instance=ExtResource("4_64acl")]
+[node name="LevelEntrance" parent="Room" unique_id=406558948 instance=ExtResource("4_64acl")]
 position = Vector2(48381, 26829)
 my_entrance_id = "big_world_to_spawn_world"
 target_level_path = "uid://cbecj7vxyv5rc"
 target_entrance_id = "spawn_world_to_big_world"
+
+[node name="ItemSpawnpoint" parent="Room" unique_id=78426801 instance=ExtResource("10_qdhr5")]
+position = Vector2(48834, 26479)
+
+[node name="EnemySpawnpoint" parent="Room" unique_id=534280628 instance=ExtResource("11_57olb")]
+position = Vector2(48451, 26488)
+
+[node name="ChestSpawnpoint" parent="Room" unique_id=1944605914 instance=ExtResource("12_8oq4s")]
+position = Vector2(48382, 27072)
 
 [editable path="Room"]

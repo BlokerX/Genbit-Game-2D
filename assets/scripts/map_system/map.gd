@@ -417,19 +417,23 @@ func change_room(new_room: Room, target_door: Node2D = null, force_teleport: boo
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
-	# --- NAPRAWA KRYTYCZNA: Tarcza obronna ---
-	# Jeśli mapa jest "uśpiona" w RAM-ie i nie ma jej na ekranie, absolutnie ignoruje żądania spawnu!
 	if not is_inside_tree():
 		return
 	
 	if current_room:
-		current_room.add_child(spawned_node)
-	else:
-		# Awaryjne dodanie bezpośrednio do sceny, jeśli nie ma aktywnego pokoju
-		get_tree().current_scene.add_child(spawned_node)
+		var target_parent = current_room.find_child("Entities")
+		if not target_parent: target_parent = current_room
 		
-	# Pozycję ustalamy ZAWSZE po dodaniu obiektu do drzewa!
-	spawned_node.global_position = spawn_pos
+		target_parent.add_child(spawned_node)
+		spawned_node.global_position = spawn_pos
+		
+		# Odsyłamy do streamera
+		var streamer = current_room.get_node_or_null("WorldStreamer")
+		if current_room.room_type == Room.RoomType.OPEN_WORLD and streamer and streamer.has_method("register_entity"):
+			streamer.register_entity(spawned_node)
+	else:
+		get_tree().current_scene.add_child(spawned_node)
+		spawned_node.global_position = spawn_pos
 
 ## Podłączenie sygnału do drzwi
 func _connect_door_signals(room: Room) -> void:

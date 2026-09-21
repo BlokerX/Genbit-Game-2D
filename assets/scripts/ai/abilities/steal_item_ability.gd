@@ -80,8 +80,20 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	tween.tween_property(attacker, "global_position", forward_pos, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(attacker, "global_position", original_pos, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 
+	# =========================================================
+	# TARCZA PRZED AWAIT
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
+
 	# Czekamy na koniec animacji uderzenia w cel
 	await attacker.get_tree().create_timer(cast_time).timeout
+
+	# =========================================================
+	# TARCZA PO AWAIT
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
 
 	# --- SPRAWDZENIE TRAFIENIA I KRADZIEŻ ---
 	if is_instance_valid(attacker) and is_instance_valid(target):

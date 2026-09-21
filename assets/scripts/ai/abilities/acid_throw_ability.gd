@@ -115,6 +115,10 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		var target_color = orig_modulate.lerp(acid_color, 0.7)
 		visual_tween.tween_property(sprite, "self_modulate", target_color, telegraph_time).set_trans(Tween.TRANS_SINE)
 		
+	# Tarcza chroniąca przed crashem przy uśpieniu pająka podczas napinania się do rzutu
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
+	
 	await attacker.get_tree().create_timer(telegraph_time).timeout
 	
 	if sprite and is_instance_valid(sprite): 

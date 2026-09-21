@@ -107,8 +107,10 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		if attacker.has_method("_update_sprite_direction"):
 			attacker._update_sprite_direction(tail_direction)
 
+	# --- TARCZA 1 ---
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	await attacker.get_tree().create_timer(telegraph_time).timeout
-	if not is_instance_valid(attacker) or not is_instance_valid(target): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree() or not is_instance_valid(target): return
 
 	# =========================================================
 	# FAZA 2: BEZPIECZNY DOSKOK DO GRACZA
@@ -133,8 +135,10 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var dash_tween = attacker.create_tracked_tween()
 	dash_tween.tween_property(attacker, "global_position", forward_pos, dash_forward_time).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	
+	# --- TARCZA 2 ---
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	await attacker.get_tree().create_timer(dash_forward_time).timeout
-	if not is_instance_valid(attacker): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
 	# =========================================================
 	# FAZA 3: CIĄGŁY, PEŁNY OBRÓT (540 Stopni) I UDERZENIE
@@ -174,8 +178,10 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 					var current_spin_dir = tail_direction.rotated(angle_offset)
 					attacker._update_sprite_direction(current_spin_dir), 0.0, total_spin_angle, slash_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
+	# --- TARCZA 3 ---
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	await attacker.get_tree().create_timer(slash_duration * 0.3).timeout
-	if not is_instance_valid(attacker): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
 	var space_state = attacker.get_world_2d().direct_space_state
 	var shape = CircleShape2D.new()
@@ -222,8 +228,11 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			cam.add_trauma(0.6)
 
 	var remaining_spin_time = slash_duration - (slash_duration * 0.3)
+
+	# --- TARCZA 4 ---
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 	await attacker.get_tree().create_timer(remaining_spin_time).timeout
-	if not is_instance_valid(attacker): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
 	# =========================================================
 	# FAZA 4: POWRÓT NA MIEJSCE (Jeśli włączone)
@@ -232,6 +241,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		var ret_tween = attacker.create_tracked_tween()
 		ret_tween.tween_property(attacker, "global_position", start_position, dash_return_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		await ret_tween.finished
+		# --- TARCZA 5 ---
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
 	if is_instance_valid(attacker) and is_instance_valid(target):
 		var face_direction = attacker.global_position.direction_to(target.global_position)

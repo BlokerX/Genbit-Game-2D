@@ -35,6 +35,14 @@ extends Node
 @export var default_show_minimap: bool = true
 @export var default_show_quest_log: bool = true
 
+@export_category("World Streaming")
+## Zasięg renderowania
+var chunk_render_distance: int = 1
+var default_chunk_render_distance: int = 3
+
+## Globalny rozmiar chunka w pikselach dla CAŁEJ GRY (zamiast wyliczać go z kafelków)
+var chunk_base_size: int = 1024
+
 # --- BIEŻĄCE WARTOŚCI ---
 var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float
 var surround_sound: bool; var mute_in_background: bool
@@ -124,6 +132,7 @@ func load_settings() -> void:
 	brightness = config.get_value("Graphics", "Brightness", default_brightness)
 	contrast = config.get_value("Graphics", "Contrast", default_contrast)
 	saturation = config.get_value("Graphics", "Saturation", default_saturation)
+	chunk_render_distance = config.get_value("Graphics", "RenderDistance", default_chunk_render_distance)
 	
 	ui_scale_global = config.get_value("GUI", "ScaleGlobal", default_ui_scale_global)
 	ui_scale_game = config.get_value("GUI", "ScaleGame", default_ui_scale_game)
@@ -148,6 +157,7 @@ func save_settings() -> void:
 	config.set_value("Graphics", "DisplayMode", display_mode); config.set_value("Graphics", "VSync", vsync_enabled)
 	config.set_value("Graphics", "Brightness", brightness); config.set_value("Graphics", "Contrast", contrast)
 	config.set_value("Graphics", "Saturation", saturation)
+	config.set_value("Graphics", "RenderDistance", chunk_render_distance)
 	
 	config.set_value("GUI", "ScaleGlobal", ui_scale_global); config.set_value("GUI", "ScaleGame", ui_scale_game)
 	config.set_value("GUI", "ScaleMenu", ui_scale_menu)
@@ -243,6 +253,7 @@ func reset_category_audio(auto_save: bool = true) -> void:
 func reset_category_graphics(auto_save: bool = true) -> void:
 	display_mode = default_display_mode; vsync_enabled = default_vsync_enabled
 	brightness = default_brightness; contrast = default_contrast; saturation = default_saturation
+	chunk_render_distance = default_chunk_render_distance
 	if auto_save: save_settings()
 
 func reset_category_gui(auto_save: bool = true) -> void:

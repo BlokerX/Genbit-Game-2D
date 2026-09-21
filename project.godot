@@ -74,6 +74,7 @@ Map=""
 Hazard=""
 PlacedObject=""
 LevelManager=""
+AlwaysActive="It won't have benn chunked."
 
 [input]
 

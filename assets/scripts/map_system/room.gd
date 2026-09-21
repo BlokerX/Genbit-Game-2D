@@ -177,10 +177,33 @@ func _ready() -> void:
 	# Inicjalizujemy światło i mrok 
 	_update_lighting()
 	
+	if room_type == RoomType.OPEN_WORLD:
+		_setup_world_streamer()
+	
 	if not Engine.is_editor_hint():
 		# GRA (RUNTIME) - Pobieramy dane potrzebne do rozgrywki
 		_auto_fetch_doors()
 		_auto_fetch_spawn_points()
+
+func _setup_world_streamer() -> void:
+	var streamer = WorldStreamer.new()
+	streamer.name = "WorldStreamer"
+	
+	# Bierzemy jednolity rozmiar chunka dla CAŁEJ gry z GlobalSettings
+	streamer.chunk_size = GlobalSettings.chunk_base_size 
+	
+	# Opcjonalnie: możemy też włączyć siatkę debugowania dla testów
+	streamer.show_chunk_grid = OS.is_debug_build()
+		
+	add_child(streamer)
+	
+	var entities_node = find_child("Entities")
+	if entities_node:
+		streamer.initialize(entities_node)
+	else:
+		streamer.initialize(self) 
+		
+	print("WorldStreamer zainicjowany w pokoju otwartym: ", name)
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
@@ -335,11 +358,9 @@ func calculate_room_bounds() -> void:
 
 func _draw() -> void:
 	if Engine.is_editor_hint() or OS.is_debug_build():
-		if floor_tile_map and floor_tile_map.tile_set:
+		# Sprawdzamy czy instancja jest nadal poprawna
+		if is_instance_valid(floor_tile_map) and floor_tile_map.tile_set:
 			var tile_size = floor_tile_map.tile_set.tile_size
-			
-			# Rysuje sztywną, zieloną ramkę na podstawie X i Y z Inspektora.
-			# Maluj kafelki wewnątrz niej, a kamera nigdy nie wyjdzie poza obszar!
 			var rect = Rect2(Vector2.ZERO, Vector2(room_size_tiles.x * tile_size.x, room_size_tiles.y * tile_size.y))
 			draw_rect(rect, Color(0, 1, 0, 0.2), false, 2.0)
 
@@ -397,34 +418,38 @@ func _update_lighting() -> void:
 
 ## Sprawdza, czy w pokoju są wrogowie, odpala Reżysera i zarządza drzwiami
 func check_and_lock_room() -> void:
-	# 1. Strefa Bezpieczna (Sklep, Dev Room) - Ignoruje zamykanie
+	# --- 1. NAJPIERW ODPALAMY REŻYSERA SPAWNU ---
+	# Robimy to zawsze (jeśli nie ma strefy pacyfizmu), niezależnie od tego, czy pokój to Arena czy Open World
+	if not has_spawned_entities and not pacifist_zone:
+		_run_director_spawner()
+		_fill_hybrid_containers(self) # Wypełnia RĘCZNE i WYLOSOWANE obiekty!
+		has_spawned_entities = true
+
+	# --- 2. ZARZĄDZANIE DRZWIAMI (Blokady) ---
+	# Strefa Bezpieczna (Sklep, Dev Room, Open World) - Ignoruje zamykanie drzwi
 	if ignore_combat_lock:
 		for door in doors:
 			door.unlock_combat_door()
 		return
 		
-	# 2. Klatka / Arena - Zamyka się natychmiast, ignoruje liczenie wrogów!
+	# Klatka / Arena - Zamyka się natychmiast, ignoruje liczenie wrogów
 	if lock_permanently_after_entry:
 		print("Pułapka! Zamykam drzwi na stałe w pokoju: " + name)
 		for door in doors:
 			door.combat_lock_door()
 		return
-	
-	# Reżyser Pokoju (Spawn i Skrzynie)
-	if not has_spawned_entities and not pacifist_zone:
-		_run_director_spawner()
-		_fill_hybrid_containers(self) # Wypełnia RĘCZNE i WYLOSOWANE obiekty!
-		has_spawned_entities = true
-	
-	# 3. Standardowa walka - Zamyka tylko, jeśli wykryje wrogów
-	# Zlicza wrogów (ręcznych + tych właśnie zespawnowanych)
+
+	# Standardowa walka - Zamyka tylko, jeśli wykryje wrogów
+	# Zlicza wrogów (ręcznych + tych właśnie zespawnowanych wyżej)
 	active_enemies_count = 0
 	_find_enemies_recursive(self)
 	
 	if active_enemies_count > 0:
-		for door in doors: door.combat_lock_door()
+		for door in doors:
+			door.combat_lock_door()
 	else:
-		for door in doors: door.unlock_combat_door()
+		for door in doors:
+			door.unlock_combat_door()
 
 #region Reżyser
 
@@ -515,9 +540,18 @@ func _instantiate_scene(scene: PackedScene, pos: Vector2, parent: Node) -> void:
 
 ## Pomocnicze wstawianie fizycznego węzła do świata
 func _instantiate_node(instance: Node, pos: Vector2, parent: Node) -> void:
+	# 1. ZAWSZE najpierw dodajemy do drzewa sceny!
 	parent.add_child(instance)
+	
+	# 2. Ustawiamy pozycję, gdy obiekt jest już w świecie fizycznym
 	if "global_position" in instance:
 		instance.global_position = pos
+
+	# 3. Jeśli to Open World, streamer przeliczy gdzie obiekt uderzył i weźmie go do pudełka
+	if room_type == RoomType.OPEN_WORLD:
+		var streamer = get_node_or_null("WorldStreamer")
+		if streamer and streamer.has_method("register_entity"):
+			streamer.register_entity(instance)
 
 ## Tworzy fizyczną instancję przedmiotu na podstawie wpisu z puli,
 ## uwzględniając ilość oraz dwa tryby losowania wytrzymałości przez komponenty.

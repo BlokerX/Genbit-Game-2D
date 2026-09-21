@@ -151,6 +151,13 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 		pattern_angle_offset += PI / 4.0
 		elapsed += spawn_interval
+		
+		# TARCZA: Bezwzględne sprawdzenie przed prośbą o get_tree()
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+			if is_instance_valid(danger_zone): 
+				danger_zone.queue_free()
+			break
+			
 		await attacker.get_tree().create_timer(spawn_interval).timeout
 
 	if is_instance_valid(attacker) and combat_ctrl:

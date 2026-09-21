@@ -25,6 +25,10 @@ func _ready() -> void:
 		EventBus.story_event_triggered.connect(_on_story_event_triggered)
 
 func _on_story_event_triggered(event_name: String) -> void:
+	# --- TARCZA: Jeśli jesteśmy uśpieni w Chunku, ignorujemy sygnały z EventBusa! ---
+	if not is_inside_tree(): 
+		return
+
 	if event_name == expected_event_name:
 		if trigger_only_once and _has_triggered:
 			return
@@ -34,9 +38,10 @@ func _on_story_event_triggered(event_name: String) -> void:
 		# Obsługa opóźnienia dla lepszego feelingu
 		if delay_seconds > 0.0:
 			await get_tree().create_timer(delay_seconds).timeout
-			# Zabezpieczenie: sprawdzamy czy obiekt nie został zniszczony w trakcie czekania
-			if not is_inside_tree(): return 
-			
+			# Zabezpieczenie: sprawdzamy czy obiekt nie został usunięty/uśpiony w trakcie czekania
+			if not is_inside_tree():
+				return 
+				
 		_execute_reaction()
 
 func _execute_reaction() -> void:

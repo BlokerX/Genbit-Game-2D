@@ -128,3 +128,28 @@ horizontal_alignment = 2
 [node name="ResetBtn" type="Button" parent="SaturationRow" unique_id=1040129474]
 layout_mode = 2
 text = " ↺ "
+
+[node name="RenderDistanceRow" type="HBoxContainer" parent="." unique_id=900000001]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="RenderDistanceRow" unique_id=900000002]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Zasięg Renderowania"
+
+[node name="Slider" type="HSlider" parent="RenderDistanceRow" unique_id=900000003]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 1.0
+max_value = 12.0
+value = 1.0
+
+[node name="ValLabel" type="Label" parent="RenderDistanceRow" unique_id=900000004]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+horizontal_alignment = 2
+
+[node name="ResetBtn" type="Button" parent="RenderDistanceRow" unique_id=900000005]
+layout_mode = 2
+text = " ↺ "
