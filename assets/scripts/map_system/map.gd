@@ -29,11 +29,11 @@ signal map_updated()
 
 ## Czy całkowicie zresetować poziom (przeładować aktualną scenę gry)?
 ## UWAGA: Przeładowanie sceny zresetuje też statystyki/ekwipunek gracza do wartości początkowych.
-@export var reload_entire_scene_on_respawn: bool = false
+@export var reload_entire_scene_on_respawn: bool = false # TODO czy to jest ważne czy martwy kod?
 
 ## Wewnętrzna zmienna systemowa: Gwarantuje, że RAM wie, skąd wzięła się ta mapa.
 ## (Nie zmieniaj tego ręcznie!)
-var source_level_path: String = ""
+var source_level_path: String = "" # TODO czy to jest martwy kod czy ma jakąś funkcję?
 
 ## Obecny pokój na scenie
 var current_room: Room
@@ -172,7 +172,6 @@ func register_room(room: Room) -> void:
 ## Funkcja do dynamicznego usuwania pokoju (np. pokój się zapadł/zniszczył)
 func unregister_room(room: Room) -> void:
 	if all_rooms.has(room):
-		all_rooms.append(room)
 		all_rooms.erase(room)
 	
 	if discovered_rooms.has(room):
