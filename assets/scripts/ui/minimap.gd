@@ -12,6 +12,12 @@ class_name Minimap
 @export var cell_spacing : float = 4.0
 @export var full_view_scaller : float = 4
 
+@export_group("Tryb Dewelopera")
+## Zaznacz to, aby wyłączyć płaski plik PNG, a włączyć starą, "ciężką" 
+## kamerę podglądającą prawdziwy fizyczny świat na żywo (np. do testowania chunków).
+## W GRZE MOŻESZ TO PRZEŁĄCZAĆ KLAWISZEM!
+@export var use_developer_physical_camera: bool = false
+
 @export_group("Statyczna Mapa (PNG)")
 ## Wewnętrzny wskaźnik na Sprite2D.
 var map_sprite: Sprite2D
@@ -127,12 +133,20 @@ func _setup_camera_map() -> void:
 	camera_viewport.audio_listener_enable_2d = false
 	camera_viewport.audio_listener_enable_3d = false
 	camera_viewport.canvas_cull_mask = 4294967293
-
-	# NOWOŚĆ: Tworzymy pustego Sprite2D. Będzie on automatycznie aktualizowany
-	# nowym zdjęciem, rozmiarem i offsetem za każdym razem, gdy gracz zmieni mapę.
+	
+	# Tworzymy Sprite2D zawsze, aby móc przełączać się w locie
 	map_sprite = Sprite2D.new()
 	map_sprite.centered = false
 	camera_viewport.add_child(map_sprite)
+	
+	if use_developer_physical_camera:
+		# STARY SYSTEM: Zjada RAM i FPS, ale pokazuje fizyczny świat na żywo (do debugowania)
+		camera_viewport.world_2d = get_viewport().world_2d
+		map_sprite.hide()
+	else:
+		# NOWY SYSTEM: Renderowanie pliku PNG zoptymalizowane pod produkcję
+		camera_viewport.world_2d = World2D.new() # Pusty świat (odcina prawdziwą grę)
+		map_sprite.show()
 	
 	camera_container.add_child(camera_viewport)
 	
@@ -180,6 +194,29 @@ func _setup_camera_map() -> void:
 	map_camera.zoom = Vector2(target_zoom, target_zoom)
 	_apply_visual_state(false)
 
+# --- SYSTEM PRZEŁĄCZANIA W LOCIE ---
+func _unhandled_key_input(event: InputEvent) -> void:
+	# Przechwytujemy wciśnięcie klawisza
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F1:
+		_toggle_developer_camera(!use_developer_physical_camera)
+
+func _toggle_developer_camera(enable: bool) -> void:
+	use_developer_physical_camera = enable
+	if not is_instance_valid(camera_viewport): return
+	
+	if use_developer_physical_camera:
+		print("Minimapa: Włączono tryb dewelopera (Fizyczna Kamera)")
+		camera_viewport.world_2d = get_viewport().world_2d
+		if is_instance_valid(map_sprite):
+			map_sprite.hide()
+	else:
+		print("Minimapa: Wyłączono tryb dewelopera (Tryb PNG)")
+		camera_viewport.world_2d = World2D.new() # Całkowite odcięcie świata fizycznego
+		if is_instance_valid(map_sprite):
+			map_sprite.show()
+		_load_automatic_minimap_data()
+	
+	queue_redraw()
 
 # =========================================================================
 # RESZTA KODU POZOSTAJE BEZ ZMIAN - Logika operuje na koordynatach kamery
@@ -486,7 +523,10 @@ func _bind_map(new_map: Map) -> void:
 
 ## Automatycznie ładuje plik PNG i dane po wejściu do nowej lokacji
 func _load_automatic_minimap_data() -> void:
-	if not is_instance_valid(level_manager) or not is_instance_valid(map_sprite): return
+	# Upewniamy się, że wszystko istnieje zanim spróbujemy nałożyć grafikę
+	if not is_instance_valid(level_manager): return
+	if not is_instance_valid(map_sprite): return
+	if use_developer_physical_camera: return # Jeśli Developer mode ON, ignorujemy JSON
 	
 	# Ukrywamy poprzednią mapę na wypadek wejścia do dungeonu bez grafiki
 	map_sprite.texture = null
@@ -599,6 +639,10 @@ func _on_map_state_changed(_room = null) -> void:
 		_clear_manual_marker()
 
 	_update_camera_limits()
+	
+	# --- NOWOŚĆ: PONOWNE ODŚWIEŻENIE METADANYCH Z RAMU ---
+	_load_automatic_minimap_data()
+	
 	queue_redraw()
 
 func _draw() -> void:

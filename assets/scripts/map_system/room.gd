@@ -17,7 +17,7 @@ enum TransitionMode { FADE, SLIDE, BOTH }
 
 @export_group("Ustawienia Przejścia")
 ## Definiuje, w jaki sposób kamera i ekran zachowają się przy wchodzeniu do TEGO pokoju.
-@export var transition_mode: TransitionMode = TransitionMode.SLIDE
+@export var transition_mode: TransitionMode = TransitionMode.FADE
 
 @export_group("Typ i Znaczenie Pokoju")
 
@@ -91,7 +91,6 @@ enum RoomType { NORMAL, START, TREASURE, SHOP, BOSS, OPEN_WORLD, DEV_ROOM, ARENA
 
 @export_group("Generatory Proceduralne (Spawn Pools)")
 ## Pula przeciwników (Losowana na markerach z grupy 'EnemySpawn')
-@export_group("Generatory Proceduralne (Spawn Pools)")
 @export var enemy_pool: EnemySpawnPool
 @export_range(0.0, 1.0) var enemy_spawn_chance: float = 1.0
 
@@ -405,14 +404,21 @@ func _update_lighting() -> void:
 				light.name = light_name
 				add_child(light)
 		
-		# Aktualizacja parametrów światła na żywo
-		if light is PointLight2D:
-			light.energy = center_light_energy
-			light.texture_scale = center_light_scale
-		
 		# Upewniamy się, że wymiary pokoju są aktualne i centrujemy światło
 		calculate_room_bounds()
 		light.position = size_px / 2.0
+		
+		# Aktualizacja parametrów światła na żywo
+		if light is PointLight2D:
+			light.energy = center_light_energy
+			if light.texture != null:
+				var tex_size = light.texture.get_size()
+				var scale_x = size_px.x / tex_size.x
+				var scale_y = size_px.y / tex_size.y
+				# Ustawiamy skalę światła tak, by pokrywała cały pokój, dodatkowo uwzględniając zmienną center_light_scale z Inspektora
+				light.texture_scale = max(scale_x, scale_y) * center_light_scale
+			else:
+				light.texture_scale = center_light_scale
 	else:
 		if light:
 			light.queue_free()

@@ -41,7 +41,7 @@ var chunk_render_distance: int = 1
 var default_chunk_render_distance: int = 3
 
 ## Globalny rozmiar chunka w pikselach dla CAŁEJ GRY (zamiast wyliczać go z kafelków)
-var chunk_base_size: int = 1024
+var chunk_base_size: int = 2048
 
 # --- BIEŻĄCE WARTOŚCI ---
 var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float

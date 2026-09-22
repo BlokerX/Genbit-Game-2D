@@ -3,7 +3,7 @@ class_name WorldStreamer
 
 @export_group("Konfiguracja Streamingu")
 ## Rozmiar jednego chunka w pikselach (domyślnie nadpisywany przez Room z GlobalSettings)
-@export var chunk_size: int = 1000 
+@export var chunk_size: int 
 
 @export_group("Debug")
 ## Rysuje granice aktywnych chunków (widoczne tylko w trybie debug)
