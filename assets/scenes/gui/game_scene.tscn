@@ -60,7 +60,7 @@ hand_attack_data = SubResource("Resource_osvyu")
 
 [node name="GameScene" type="Node2D" unique_id=451291155]
 script = ExtResource("1_ge8p3")
-initial_map_path = "uid://cy7bhoino46bk"
+initial_map_path = "uid://cbecj7vxyv5rc"
 
 [node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
 process_mode = 3
@@ -272,6 +272,7 @@ layout_mode = 2
 mouse_filter = 2
 script = ExtResource("12_64dql")
 cell_size = 35.0
+zoom_sensitivity = 0.005
 metadata/_edit_group_ = true
 
 [node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/BottomRight_Zone/Minimap" unique_id=1765969916 instance=ExtResource("4_iftva")]

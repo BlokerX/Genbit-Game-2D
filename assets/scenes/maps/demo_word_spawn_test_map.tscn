@@ -69,6 +69,7 @@ reset_map_history_on_respawn = false
 auto_door_scene = ExtResource("2_4p2la")
 
 [node name="OpenWorld" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_ot4u7")]
+is_mappable = true
 transition_mode = 0
 room_type = 5
 ignore_combat_lock = true
@@ -186,6 +187,58 @@ text = "Volcano world"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="MassiveLevelEntrance" parent="OpenWorld" unique_id=361152300 instance=ExtResource("42_xy8dj")]
+position = Vector2(7072, 5216)
+my_entrance_id = "spawn_world_to_massive_world"
+target_level_path = "uid://cy7bhoino46bk"
+target_entrance_id = "massive_world_to_spawn_world"
+
+[node name="PortalLabel4" type="Label" parent="OpenWorld" unique_id=1453023901]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 6928.0
+offset_top = 5248.0
+offset_right = 7216.0
+offset_bottom = 5303.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = SubResource("SystemFont_ot4u7")
+theme_override_font_sizes/font_size = 20
+text = "Massive World"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BigLevelEntrance" parent="OpenWorld" unique_id=731514421 instance=ExtResource("42_xy8dj")]
+position = Vector2(8288, 5216)
+my_entrance_id = "spawn_world_to_big_world"
+target_level_path = "uid://blskewjm7a2uk"
+target_entrance_id = "big_world_to_spawn_world"
+
+[node name="PortalLabel5" type="Label" parent="OpenWorld" unique_id=1468636320]
+texture_filter = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 8144.0
+offset_top = 5248.0
+offset_right = 8432.0
+offset_bottom = 5303.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = SubResource("SystemFont_ot4u7")
+theme_override_font_sizes/font_size = 20
+text = "Big World"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="InfinitySpider" parent="OpenWorld" unique_id=1198211542 instance=ExtResource("5_5x3wm")]
 position = Vector2(7680, 2592)
 rotation = 1.5707964
@@ -259,12 +312,6 @@ position = Vector2(6752, 4280)
 
 [node name="WorldSensorComponent" parent="OpenWorld/WorldAreaTrigger" index="1" unique_id=657621410]
 consequences = Array[ExtResource("19_hlxsh")]([SubResource("Resource_hlxsh")])
-
-[node name="LevelEntrance" parent="." unique_id=361152300 instance=ExtResource("42_xy8dj")]
-position = Vector2(8104, 4208)
-my_entrance_id = "spawn_world_to_big_world"
-target_level_path = "uid://cy7bhoino46bk"
-target_entrance_id = "big_world_to_spawn_world"
 
 [connection signal="event_received" from="OpenWorld/Door/StoryEventReceiver" to="OpenWorld/Door" method="force_open"]
 

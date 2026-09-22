@@ -10,6 +10,9 @@ const ITEM_PICKUP_SCENE = preload("res://assets/scenes/game_objects/item_pickup.
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
 @export var map_position : Vector2i = Vector2i.ZERO
 
+## NOWOŚĆ: Czy ten pokój ma zostać narysowany na minimapie?
+@export var is_mappable : bool = false
+
 enum TransitionMode { FADE, SLIDE, BOTH }
 
 @export_group("Ustawienia Przejścia")

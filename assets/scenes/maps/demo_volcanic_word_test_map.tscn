@@ -1755,6 +1755,7 @@ reset_map_history_on_respawn = false
 auto_door_scene = ExtResource("2_54epw")
 
 [node name="OpenWorld" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_wq86f")]
+is_mappable = true
 transition_mode = 0
 room_type = 5
 ignore_combat_lock = true
