@@ -11,7 +11,7 @@ extends Node
 @export_range(0.0, 1.0) var default_vol_sfx: float = 1.0
 @export_range(0.0, 1.0) var default_vol_ambient: float = 1.0
 @export var default_surround_sound: bool = true
-@export var default_mute_in_background: bool = false
+@export var default_mute_in_background: bool = true
 
 @export_group("Domyślne Wartości - Grafika")
 @export var default_display_mode: int = DisplayServer.WINDOW_MODE_WINDOWED
@@ -42,6 +42,12 @@ var default_chunk_render_distance: int = 3
 
 ## Globalny rozmiar chunka w pikselach dla CAŁEJ GRY (zamiast wyliczać go z kafelków)
 var chunk_base_size: int = 2048
+
+var default_show_chunk_grid: bool = false
+var show_chunk_grid: bool = false
+
+var default_use_developer_camera: bool = false
+var use_developer_camera: bool = false
 
 # --- BIEŻĄCE WARTOŚCI ---
 var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float
@@ -146,6 +152,8 @@ func load_settings() -> void:
 	show_playtime = config.get_value("GUI", "ShowPlaytime", default_show_playtime)
 	show_minimap = config.get_value("GUI", "ShowMinimap", default_show_minimap)
 	show_quest_log = config.get_value("GUI", "ShowQuestLog", default_show_quest_log)
+	show_chunk_grid = config.get_value("GUI", "ShowChunkGrid", default_show_chunk_grid)
+	use_developer_camera = config.get_value("GUI", "UseDevCamera", default_use_developer_camera)
 	
 	apply_all_settings()
 
@@ -166,6 +174,7 @@ func save_settings() -> void:
 	config.set_value("GUI", "ShowActiveEffects", show_active_effects); config.set_value("GUI", "ShowHotbar", show_hotbar)
 	config.set_value("GUI", "ShowItemInfo", show_item_info); config.set_value("GUI", "ShowPlaytime", show_playtime)
 	config.set_value("GUI", "ShowMinimap", show_minimap); config.set_value("GUI", "ShowQuestLog", show_quest_log)
+	config.set_value("GUI", "ShowChunkGrid", show_chunk_grid); config.set_value("GUI", "UseDevCamera", use_developer_camera)
 	
 	config.save(save_path)
 	apply_all_settings()
@@ -261,4 +270,5 @@ func reset_category_gui(auto_save: bool = true) -> void:
 	show_main_stats = default_show_main_stats; show_extra_stats = default_show_extra_stats
 	show_active_effects = default_show_active_effects; show_hotbar = default_show_hotbar; show_item_info = default_show_item_info
 	show_playtime = default_show_playtime; show_minimap = default_show_minimap; show_quest_log = default_show_quest_log
+	show_chunk_grid = default_show_chunk_grid; use_developer_camera = default_use_developer_camera
 	if auto_save: save_settings()

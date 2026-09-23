@@ -18,6 +18,10 @@ func _ready() -> void:
 	_setup_toggle_btn($PlaytimeRow, "show_playtime", GlobalSettings.default_show_playtime, "Licznik czasu gry na środku górnej części ekranu.")
 	_setup_toggle_btn($MinimapRow, "show_minimap", GlobalSettings.default_show_minimap, "Pokazuje Minimapę ułatwiającą eksplorację proceduralnego świata.")
 	_setup_toggle_btn($QuestRow, "show_quest_log", GlobalSettings.default_show_quest_log, "Pokazuje panel śledzenia obecnie wybranego zadania fabularnego.")
+	
+	# Opcje Deweloperskie ustawione identycznie jak pozostałe:
+	_setup_toggle_btn($ChunkGridRow, "show_chunk_grid", GlobalSettings.default_show_chunk_grid, "Wyświetla siatkę chunków nałożoną na świat. Przydatne do testowania wydajności i zasięgu.")
+	_setup_toggle_btn($MinimapDevRow, "use_developer_camera", GlobalSettings.default_use_developer_camera, "Wymusza renderowanie minimapy na żywo (pożera FPS). Wyłącz by używać map PNG.")
 
 func update_ui() -> void:
 	$ScaleGlobalRow/Slider.value = GlobalSettings.ui_scale_global
@@ -33,6 +37,9 @@ func update_ui() -> void:
 	_update_toggle_btn($MinimapRow/ToggleBtn, GlobalSettings.show_minimap)
 	_update_toggle_btn($QuestRow/ToggleBtn, GlobalSettings.show_quest_log)
 	
+	_update_toggle_btn($ChunkGridRow/ToggleBtn, GlobalSettings.show_chunk_grid)
+	_update_toggle_btn($MinimapDevRow/ToggleBtn, GlobalSettings.use_developer_camera)
+	
 	_update_master_btn_visual()
 
 func _on_category_reset_pressed() -> void:
@@ -40,6 +47,12 @@ func _on_category_reset_pressed() -> void:
 	if menu and menu.has_method("request_confirmation"):
 		menu.request_confirmation("Reset Interfejsu", "Czy zresetować wszystkie ustawienia GUI?", func():
 			GlobalSettings.reset_category_gui(true)
+			
+			# Twardy reset dla opcji deweloperskich
+			GlobalSettings.show_chunk_grid = GlobalSettings.default_show_chunk_grid
+			GlobalSettings.use_developer_camera = GlobalSettings.default_use_developer_camera
+			GlobalSettings.save_settings()
+			
 			update_ui()
 			menu.set_hover_description("[color=green]Zresetowano interfejs.[/color]")
 		)
@@ -53,7 +66,7 @@ func _setup_master_toggle() -> void:
 	
 	btn.pressed.connect(func():
 		var all_true = _are_all_huds_enabled()
-		var new_state = not all_true # Jeśli wszystko było włączone -> wyłącz. W każdym innym przypadku (mieszane/wyłączone) -> włącz wszystko.
+		var new_state = not all_true 
 		
 		GlobalSettings.show_main_stats = new_state
 		GlobalSettings.show_extra_stats = new_state
@@ -146,7 +159,7 @@ func _setup_toggle_btn(row: Control, global_var: String, default_val: bool, desc
 		GlobalSettings.set(global_var, new_val)
 		GlobalSettings.save_settings()
 		_update_toggle_btn(btn, new_val)
-		_update_master_btn_visual() # Odświeżamy Master po kliknięciu
+		_update_master_btn_visual()
 	)
 	reset_btn.pressed.connect(func():
 		GlobalSettings.set(global_var, default_val)

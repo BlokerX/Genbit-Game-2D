@@ -194,9 +194,6 @@ func _setup_world_streamer() -> void:
 	# Bierzemy jednolity rozmiar chunka dla CAŁEJ gry z GlobalSettings
 	streamer.chunk_size = GlobalSettings.chunk_base_size 
 	
-	# Opcjonalnie: możemy też włączyć siatkę debugowania dla testów
-	streamer.show_chunk_grid = OS.is_debug_build()
-		
 	add_child(streamer)
 	
 	var entities_node = find_child("Entities")

@@ -3,21 +3,21 @@ class_name WorldStreamer
 
 @export_group("Konfiguracja Streamingu")
 ## Rozmiar jednego chunka w pikselach (domyślnie nadpisywany przez MapRegion z GlobalSettings)
-@export var chunk_size: int 
+@export var chunk_size: int  
 
 @export_group("Debug")
-## Rysuje granice aktywnych chunków (widoczne tylko w trybie debug)
-@export var show_chunk_grid: bool = true
+## (Przeniesiono do GlobalSettings) Rysuje granice aktywnych chunków
+# @export var show_chunk_grid: bool = false
 
 var current_chunk: Vector2i = Vector2i(999999, 999999)
 var active_chunks: Array[Vector2i] = []
 var player: Node2D
-
 var chunk_nodes: Dictionary = {}
 var entities_container: Node
 
 # Wewnętrzna zmienna trzymająca poziom renderowania zaczytany z ustawień gry
-var _current_render_level: int = 1 
+var _current_render_level: int = 1  
+var _last_grid_state: bool = false
 
 # --- BAZA KSZTAŁTÓW RENDEROWANIA ---
 # Typy: "SQUARE" (Kwadrat), "DIAMOND" (Romb / Krzyż), "CIRCLE" (Koło)
@@ -38,24 +38,33 @@ const RENDER_PROFILES = [
 
 func initialize(container: Node) -> void:
 	entities_container = container
-	
 	# Zaczytujemy poziom renderowania od razu na starcie
 	_current_render_level = GlobalSettings.chunk_render_distance
+	_last_grid_state = GlobalSettings.show_chunk_grid
 	
 	var initial_children = entities_container.get_children()
 	for child in initial_children:
 		register_entity(child)
-			
+		
 	set_process(true)
-	if show_chunk_grid:
+	
+	if GlobalSettings.show_chunk_grid:
 		queue_redraw()
 	print("[WorldStreamer] Zbudowano fizyczną siatkę chunków. Aktywna hibernacja obiektów.")
+
+# --- PRZEŁĄCZANIE W LOCIE (INPUT MAP) ---
+func _unhandled_input(event: InputEvent) -> void:
+	# Przechwytujemy akcję zdefiniowaną w Project Settings -> Input Map
+	if event.is_action_pressed("ToggleChunkGrid"):
+		GlobalSettings.show_chunk_grid = not GlobalSettings.show_chunk_grid
+		queue_redraw()
+		print("WorldStreamer: Widok siatki chunków = ", GlobalSettings.show_chunk_grid)
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("Player")
 		return
-
+		
 	_track_moving_entities()
 
 	# --- NASŁUCHIWANIE ZMIAN Z MENU OPCJI ---
@@ -71,6 +80,11 @@ func _process(_delta: float) -> void:
 		current_chunk = new_chunk
 		_update_active_chunks()
 
+	# Odświeżenie rysowania jeśli wartość zmieniona w Menu Ustawień lub z palca
+	if GlobalSettings.show_chunk_grid != _last_grid_state:
+		_last_grid_state = GlobalSettings.show_chunk_grid
+		queue_redraw()
+
 func register_entity(node: Node) -> void:
 	# TARCZA 1: Odsiewamy błędy
 	if not node is Node2D: return
@@ -83,17 +97,14 @@ func register_entity(node: Node) -> void:
 	
 	# TARCZA 2: KRYTYCZNE ZABEZPIECZENIE STRUKTURY MAPY
 	# Streamer nigdy nie odetnie dróg, światła ani rysowania mapy
-	if node is TileMapLayer or node is NavigationRegion2D or node is CanvasModulate or node is Camera2D:
-		return
-		
+	if node is TileMapLayer or node is NavigationRegion2D or node is CanvasModulate or node is Camera2D: return
+	
 	# Zabezpieczenie przed zjadaniem własnych chunków
-	if node.name.begins_with("Chunk_") or node.name == "WorldStreamer":
-		return
+	if node.name.begins_with("Chunk_") or node.name == "WorldStreamer": return
 
-	# WCHŁANIANIE: Cała reszta (Itemy, wrogowie, budowle, pociski) trafia do pudełka
+	# WCHŁANIANIE: Cała reszta (Itemy, wrogowie, budowle, pociski) trafia do pudełek
 	var chunk_coords = _calculate_chunk(node.global_position)
 	var chunk_node = _get_or_create_chunk(chunk_coords)
-	
 	node.reparent(chunk_node, true)
 
 func _track_moving_entities() -> void:
@@ -103,9 +114,8 @@ func _track_moving_entities() -> void:
 		var chunk_node = chunk_nodes[coords]
 		
 		for entity in chunk_node.get_children():
-			if not is_instance_valid(entity) or entity.is_queued_for_deletion():
-				continue
-				
+			if not is_instance_valid(entity) or entity.is_queued_for_deletion(): continue
+			
 			var actual_coords = _calculate_chunk(entity.global_position)
 			
 			# Jeśli wampir/pocisk zmienił chunk w locie
@@ -117,40 +127,40 @@ func _calculate_chunk(pos: Vector2) -> Vector2i:
 	return Vector2i(floor(pos.x / chunk_size), floor(pos.y / chunk_size))
 
 func _get_or_create_chunk(coords: Vector2i) -> Node2D:
-	if chunk_nodes.has(coords):
-		return chunk_nodes[coords]
-		
+	if chunk_nodes.has(coords): return chunk_nodes[coords]
+	
 	var new_chunk = Node2D.new()
 	new_chunk.name = "Chunk_" + str(coords.x) + "_" + str(coords.y)
 	chunk_nodes[coords] = new_chunk
 	return new_chunk
 
-## Oblicza wektory chunków wokół gracza na podstawie wybranego kształtu!
+## Oblicza wektory chunków wokół gracza na podstawie wybranego kształtu
 func _get_offsets_for_current_level() -> Array[Vector2i]:
 	# Zabezpieczenie przed wyjściem poza tablicę (zakres 1-12 zamieniamy na indeks 0-11)
 	var safe_level = clampi(_current_render_level - 1, 0, RENDER_PROFILES.size() - 1)
 	var profile = RENDER_PROFILES[safe_level]
 	var shape = profile["shape"]
 	var r = profile["radius"]
-	
 	var offsets: Array[Vector2i] = []
+	
 	for x in range(-r, r + 1):
 		for y in range(-r, r + 1):
 			if shape == "SQUARE":
 				offsets.append(Vector2i(x, y))
 			elif shape == "DIAMOND":
-				# Dystans Manhattan: Ścina narożniki tworząc kształt "diamentu / krzyża"
+				# Dystans Manhattan: ścina narożniki tworząc kształt "diamentu / krzyża"
 				if abs(x) + abs(y) <= r:
 					offsets.append(Vector2i(x, y))
 			elif shape == "CIRCLE":
 				# Dystans Euklidesowy: płynnie wygładza krawędzie tworząc świetne koła na siatce 2D
 				if (x * x + y * y) <= (r * r) + r:
 					offsets.append(Vector2i(x, y))
+					
 	return offsets
 
 func _update_active_chunks() -> void:
 	var new_active_chunks: Array[Vector2i] = []
-
+	
 	# Używamy odległości renderowania i zaawansowanych kształtów z ustawień gracza!
 	var offsets = _get_offsets_for_current_level()
 	for offset in offsets:
@@ -171,16 +181,16 @@ func _update_active_chunks() -> void:
 				entities_container.add_child(chunk_node)
 
 	active_chunks = new_active_chunks
-	
+
 	# Odświeżamy rysowanie siatki, gdy gracz zmienił chunk lub zmieniły się opcje
-	if show_chunk_grid:
+	if GlobalSettings.show_chunk_grid:
 		queue_redraw()
 
 func _draw() -> void:
-	# Rysujemy tylko, jeśli odpaliliśmy grę z edytora i włączyliśmy ptaszka
-	if not OS.is_debug_build() or not show_chunk_grid:
+	# Rysujemy tylko jeśli flaga globalna jest włączona
+	if not GlobalSettings.show_chunk_grid:
 		return
-		
+
 	for chunk in active_chunks:
 		# Obliczamy rzeczywistą pozycję pudełka w świecie pikseli
 		var chunk_pos = Vector2(chunk.x * chunk_size, chunk.y * chunk_size)

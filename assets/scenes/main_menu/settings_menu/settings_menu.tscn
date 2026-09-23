@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dsfkcceq8hnpx" path="res://assets/scripts/scene_scripts/settings/settings_menu.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_audio.tscn" id="2_audio"]
-[ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_graphics.tscn" id="3_gfx"]
+[ext_resource type="PackedScene" uid="uid://dl57nedjefkj6" path="res://assets/scenes/main_menu/settings_menu/settings_graphics.tscn" id="3_gfx"]
 [ext_resource type="PackedScene" path="res://assets/scenes/main_menu/settings_menu/settings_gui.tscn" id="4_gui"]
 [ext_resource type="PackedScene" uid="uid://cufpnx6mx4er7" path="res://assets/scenes/main_menu/settings_menu/settings_control.tscn" id="5_ctrl"]
 

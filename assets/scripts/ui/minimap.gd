@@ -108,6 +108,11 @@ func _ready() -> void:
 	original_bg_color = background_color
 	pivot_offset = size
 
+	# --- DODANE: Pobranie stanu z globalnych ustawień na starcie gry ---
+	if "use_developer_camera" in GlobalSettings:
+		use_developer_physical_camera = GlobalSettings.use_developer_camera
+	# -------------------------------------------------------------------
+
 	_try_find_map()
 
 	get_tree().node_added.connect(_on_node_added)
@@ -194,11 +199,13 @@ func _setup_camera_map() -> void:
 	map_camera.zoom = Vector2(target_zoom, target_zoom)
 	_apply_visual_state(false)
 
-# --- SYSTEM PRZEŁĄCZANIA W LOCIE ---
-func _unhandled_key_input(event: InputEvent) -> void:
-	# Przechwytujemy wciśnięcie klawisza
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F1:
-		_toggle_developer_camera(!use_developer_physical_camera)
+# --- SYSTEM PRZEŁĄCZANIA W LOCIE (INPUT MAP) ---
+func _unhandled_input(event: InputEvent) -> void:
+	# Przechwytujemy akcję zdefiniowaną w Project Settings -> Input Map
+	if event.is_action_pressed("ToggleDevCamera"):
+		if "use_developer_camera" in GlobalSettings:
+			GlobalSettings.use_developer_camera = not GlobalSettings.use_developer_camera
+			GlobalSettings.save_settings()
 
 func _toggle_developer_camera(enable: bool) -> void:
 	use_developer_physical_camera = enable
@@ -351,6 +358,11 @@ func _clamp_camera_pos(pos: Vector2) -> Vector2:
 	return clamped
 
 func _process(_delta: float) -> void:
+	# --- DODANE: Śledzenie zmian z menu Ustawień na żywo ---
+	if "use_developer_camera" in GlobalSettings and GlobalSettings.use_developer_camera != use_developer_physical_camera:
+		_toggle_developer_camera(GlobalSettings.use_developer_camera)
+	# -------------------------------------------------------
+
 	if requires_map_item_for_visibility and not _player_has_map:
 		hide()
 		return
