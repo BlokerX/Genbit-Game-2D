@@ -1,0 +1,26 @@
+{
+	"res://assets/scenes/map_system/maps/big_map.tscn": {
+		"offset_x": -256.0,
+		"offset_y": -256.0,
+		"scale": 11.78125,
+		"texture_path": "res://assets/scenes/map_system/maps/minimaps_generated_data/big_map_minimap.png"
+	},
+	"res://assets/scenes/map_system/maps/demo_volcanic_word_test_map.tscn": {
+		"offset_x": -256.0,
+		"offset_y": -256.0,
+		"scale": 1.9375,
+		"texture_path": "res://assets/scenes/map_system/maps/minimaps_generated_data/demo_volcanic_word_test_map_minimap.png"
+	},
+	"res://assets/scenes/map_system/maps/demo_word_spawn_test_map.tscn": {
+		"offset_x": -256.0,
+		"offset_y": -256.0,
+		"scale": 1.9375,
+		"texture_path": "res://assets/scenes/map_system/maps/minimaps_generated_data/demo_word_spawn_test_map_minimap.png"
+	},
+	"res://assets/scenes/map_system/maps/massive_map.tscn": {
+		"offset_x": -256.0,
+		"offset_y": -256.0,
+		"scale": 24.0625,
+		"texture_path": "res://assets/scenes/map_system/maps/minimaps_generated_data/massive_map_minimap.png"
+	}
+}

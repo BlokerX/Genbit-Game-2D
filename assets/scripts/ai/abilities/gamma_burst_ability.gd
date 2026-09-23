@@ -72,7 +72,17 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 						ally.receive_effect(FrenzyBuffEffect.new())
 						ally.receive_effect(HealEffect.new(heal_amount))
 
+	# =========================================================
+	# TARCZA PRZED AWAIT (Zabezpiecza get_tree)
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+	
 	await attacker.get_tree().create_timer(cast_time).timeout
+	
+	# =========================================================
+	# TARCZA PO AWAIT (Zabezpiecza kod po wybudzeniu)
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
 
-	if is_instance_valid(attacker) and combat_ctrl:
+	if combat_ctrl:
 		combat_ctrl.is_casting_ability = false

@@ -22,6 +22,8 @@ signal story_event_triggered(event_name: String)
 ## event_data np: {"item_id": &"wood", "amount": 5}
 signal game_event_occurred(event_type: String, event_data: Dictionary)
 
+signal player_died
+
 # --- STAŁE (Eliminacja literówek) ---
 const MENU_INVENTORY = "inventory"
 const MENU_STORAGE = "storage"

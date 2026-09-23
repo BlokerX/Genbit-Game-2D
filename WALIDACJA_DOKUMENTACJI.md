@@ -36,7 +36,7 @@ signal ui_state_changed(is_open: bool)
 # - player_died
 # - player_level_up
 # - item_picked_up
-# - room_changed
+# - map_region_changed
 # - boss_defeated
 ```
 
@@ -129,7 +129,7 @@ signal item_picked_up(item_id: String)
 signal item_used(item_id: String)
 
 # Mapa
-signal room_changed(room: Room)
+signal map_region_changed(map_region: MapRegion)
 signal boss_defeated(boss_name: String)
 ```
 

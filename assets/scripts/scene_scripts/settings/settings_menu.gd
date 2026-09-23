@@ -68,6 +68,15 @@ func _on_confirm_dialog_confirmed() -> void:
 
 func _on_global_reset_confirmed() -> void:
 	GlobalSettings.reset_all_to_default(true)
+	
+	# --- AWARYJNY RESET DEWELOPERSKI (Wymuszony) ---
+	if "show_chunk_grid" in GlobalSettings:
+		GlobalSettings.show_chunk_grid = GlobalSettings.default_show_chunk_grid
+	if "use_developer_camera" in GlobalSettings:
+		GlobalSettings.use_developer_camera = GlobalSettings.default_use_developer_camera
+	GlobalSettings.save_settings()
+	# -----------------------------------------------
+	
 	if panel_audio and panel_audio.has_method("update_ui"): panel_audio.update_ui()
 	if panel_graphics and panel_graphics.has_method("update_ui"): panel_graphics.update_ui()
 	if panel_gui and panel_gui.has_method("update_ui"): panel_gui.update_ui()

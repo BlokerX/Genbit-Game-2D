@@ -129,6 +129,7 @@ func _ready():
 	assert(movement_universal_script != null, "Brak komponentu ruchu!")
 	assert(health_stats_script != null, "Brak komponentu statystyk życia!")
 	assert(interaction_and_attack_stats_script != null, "Brak komponentu interakcji i ataku!")
+	# TODO assert() w Godocie jest wycinany w eksportowanym release buildzie (działa tylko w debug/edytorze). Jeśli ktoś zapomni podpiąć komponent, w wersji release gra się wywali z cichym null reference zamiast czytelnego błędu. Lepiej użyć push_error() + wczesny return, tak jak robisz to gdzie indziej w kodzie (np. _start_building).
 	
 	# Gracz nie umiera na zawsze
 	destroy_entity_after_die = false 
@@ -210,9 +211,6 @@ func _physics_process(delta):
 	_handle_pushing()
 	# Obsługa wyrzucania itemów
 	_handle_dropping(delta)
-	
-	# Zawsze aktualizujemy licznik cooldownu (wyciągnięte na górę dla porządku)
-	interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 	
 	# Zawsze aktualizujemy licznik cooldownu (bezpieczne wywołanie)
 	if interaction_and_attack_stats_script != null:
@@ -337,7 +335,7 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 		if is_respawning: return true # Ignoruj, jeśli gracz już się odradza
 		
 		var level_manager = get_tree().get_first_node_in_group("Map")
-		if level_manager and level_manager.get("is_transitioning") == true:
+		if level_manager and level_manager.get("is_transitioning") == true: # TODO chyba martwy kod albo usuń albo zabezpiecz w pliku map.gd
 			print("Blokada: Menedżer Przejść jest zajęty animacją ekranu!")
 			return true # Ignoruj klawisz R, jeśli mapa się przesuwa
 			
@@ -589,6 +587,10 @@ func respawn_sequence() -> void:
 	# Zapobiega wbieganiu w drzwi na ślepo, gdy ekran powoli ciemnieje.
 	velocity = Vector2.ZERO
 	set_physics_process(false)
+	
+	# --- NOWE: Informujemy świat (w tym UI), że gracz padł ---
+	EventBus.player_died.emit()
+	# ----------------------------------------------------------
 	
 	# --- NAPRAWA KRYTYCZNA: Czekamy na SYGNAŁ od menedżera, a nie na funkcję ---
 	TransitionManager.fade_to_black(1.0)

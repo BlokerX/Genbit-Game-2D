@@ -26,6 +26,7 @@ var backpack_slot_ui: InventorySlot
 
 # Zmienna na ekwipunek gracza - znajdziemy ją automatycznie!
 var player_inventory: Inventory = null
+var _player_ref: Node2D = null
 
 var item_in_hand: ItemInstance = null
 
@@ -46,6 +47,8 @@ func _ready() -> void:
 	# Automatycznie szukamy gracza w scenie po grupie "player"
 	var player = get_tree().get_first_node_in_group("Player")
 	if player:
+		_player_ref = player # <--- ZAPISUJEMY GRACZA DO SPRAWDZANIA ODLEGŁOŚCI
+		
 		# Zakładam, że wewnątrz gracza Twój skrypt inventory.gd ma węzeł o nazwie "Inventory"
 		# (Jeśli Twój węzeł nazywa się inaczej, zmień "$Inventory" na odpowiednią ścieżkę)
 		player_inventory = player.get_node_or_null("Inventory")
@@ -59,6 +62,9 @@ func _ready() -> void:
 	EventBus.slot_clicked.connect(_on_slot_clicked)
 	
 	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
+	
+	# ---  Reakcja na śmierć gracza ---
+	EventBus.player_died.connect(_close_all_ui)
 	
 	# --- NOWOŚĆ: Automatyczne GENEROWANIE slotu plecaka ---
 	if backpack_panel:
@@ -94,7 +100,16 @@ func _process(delta: float) -> void:
 	# --- TARCZA DIALOGOWA: Zamrażamy kursor, gdy jest dialog ---
 	if DialogueManager.is_active:
 		return
-		
+	
+	# --- NOWE: ZABEZPIECZENIE PRZED ODEPCHNIĘCIEM OD SKRZYNI ---
+	if current_open_chest != null and is_instance_valid(_player_ref):
+		var physical_chest = current_open_chest.get_parent()
+		# Upewniamy się, że rodzic jest obiektem przestrzennym 2D
+		if is_instance_valid(physical_chest) and physical_chest is Node2D:
+			if _player_ref.global_position.distance_to(physical_chest.global_position) > 150.0:
+				_close_all_ui()
+	# -----------------------------------------------------------
+	
 	# --- 1. WIRTUALNY KURSOR DLA PADA ---
 	if is_any_ui_open():
 		# Odczytujemy lewą gałkę (używamy akcji ruchu Gracza)

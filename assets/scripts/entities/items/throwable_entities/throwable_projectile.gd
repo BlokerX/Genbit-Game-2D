@@ -75,9 +75,13 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		main_sprite.texture = activated_texture
 
 	if activation_delay > 0.0 and direct_hit == null:
+		# Tarcza PRZED:
+		if not is_inside_tree(): return
+		
 		await get_tree().create_timer(activation_delay).timeout
-		if not is_inside_tree():
-			return
+		
+		# Tarcza PO:
+		if not is_inside_tree(): return
 
 	var targets: Array[Node2D] = []
 	

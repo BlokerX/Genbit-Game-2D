@@ -81,7 +81,7 @@ func _on_character_died():
 		var inv = call("get_inventory") 
 		if inv:
 			if inv is Inventory:
-				pass
+				pass # TODO coś jest tu nie tak pewnie nie dokończone czy coś już nie pamiętam o co tu chodzi... może o to że gracz nie dropie ekwipunku
 			elif inv.has_method("drop_all_items"):
 				inv.drop_all_items(self)
 	

@@ -1,4 +1,5 @@
 [gd_scene load_steps=2 format=3]
+
 [ext_resource type="Script" path="res://assets/scripts/scene_scripts/settings/gui/settings_gui.gd" id="1_gui"]
 
 [node name="SettingsGUI" type="VBoxContainer"]
@@ -199,5 +200,31 @@ text = "Pokazuj Śledzenie Zadań"
 custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 [node name="ResetBtn" type="Button" parent="QuestRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="ChunkGridRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="ChunkGridRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Siatka Chunków (F2)"
+[node name="ToggleBtn" type="Button" parent="ChunkGridRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="ChunkGridRow"]
+layout_mode = 2
+text = " ↺ "
+
+[node name="MinimapDevRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="MinimapDevRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fizyczna Kamera Minimapy (Debug)"
+[node name="ToggleBtn" type="Button" parent="MinimapDevRow"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+[node name="ResetBtn" type="Button" parent="MinimapDevRow"]
 layout_mode = 2
 text = " ↺ "

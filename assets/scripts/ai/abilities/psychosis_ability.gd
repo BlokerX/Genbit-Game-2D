@@ -87,11 +87,21 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 	tween.tween_property(attacker, "scale", orig_scale * visual_scale_pulse, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(attacker, "scale", orig_scale, cast_time / 2.0).set_trans(Tween.TRANS_SINE)
 
+	# =========================================================
+	# TARCZA PRZED AWAIT (Zabezpiecza get_tree)
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		if is_instance_valid(wave_visual): wave_visual.queue_free()
+		return
+
 	# 2. ŁADOWANIE
 	await attacker.get_tree().create_timer(cast_time).timeout
 
-	# Jeśli atakujący zginął w trakcie castowania, przerywamy
-	if not is_instance_valid(attacker):
+	# =========================================================
+	# TARCZA PO AWAIT (Zabezpiecza kod po wybudzeniu)
+	# =========================================================
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		if is_instance_valid(wave_visual): wave_visual.queue_free()
 		return
 
 	# 3. UDERZENIE FALI!

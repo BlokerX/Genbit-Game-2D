@@ -23,7 +23,7 @@ class_name CameraComponent
 # --- REFERENCJE I ZMIENNE WEWNĘTRZNE ---
 @onready var player: PlayerCharacter = get_parent() as PlayerCharacter
 var level_manager: Map = null
-var current_room: Room = null
+var current_map_region: MapRegion = null
 
 var _trauma: float = 0.0
 var _focal_point: Vector2 = Vector2.ZERO
@@ -58,8 +58,8 @@ func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player): return
 	
 	# --- 1. SYSTEM ZOOMA ---
-	if is_instance_valid(current_room):
-		if current_room.room_type == Room.RoomType.BOSS or current_room.room_type == Room.RoomType.ARENA:
+	if is_instance_valid(current_map_region):
+		if current_map_region.map_region_type == MapRegion.MapRegionType.BOSS or current_map_region.map_region_type == MapRegion.MapRegionType.ARENA:
 			_target_zoom = arena_zoom
 		else:
 			_target_zoom = default_zoom
@@ -69,12 +69,12 @@ func _physics_process(delta: float) -> void:
 	var is_transitioning = player.process_mode == Node.PROCESS_MODE_DISABLED
 	var slide_offset = Vector2.ZERO
 	var is_sliding = false
-	var is_static_room = false
+	var is_static_map_region = false
 	
-	if is_instance_valid(current_room):
-		slide_offset = current_room.position
+	if is_instance_valid(current_map_region):
+		slide_offset = current_map_region.position
 		is_sliding = slide_offset.length_squared() > 1.0
-		is_static_room = not current_room.camera_follows_player
+		is_static_map_region = not current_map_region.camera_follows_player
 
 	# =========================================================
 	# 2. TWARDE CIĘCIA (Start Gry lub przejście FADE)
@@ -89,12 +89,12 @@ func _physics_process(delta: float) -> void:
 		_focal_point = player.global_position 
 		
 		var target = Vector2.ZERO
-		if is_static_room:
-			target = current_room.global_position + (current_room.size_px / 2.0)
+		if is_static_map_region:
+			target = current_map_region.global_position + (current_map_region.size_px / 2.0)
 		else:
 			target = _calculate_dynamic_target() # Użyje nowego _focal_point
 			
-		global_position = _clamp_to_room_bounds(target)
+		global_position = _clamp_to_map_region_bounds(target)
 		return # Koniec roboty na tę klatkę!
 		
 	# =========================================================
@@ -108,8 +108,8 @@ func _physics_process(delta: float) -> void:
 			
 			var future_player_pos = player.global_position - slide_offset
 			
-			if is_static_room:
-				_cam_end_pos = current_room.size_px / 2.0
+			if is_static_map_region:
+				_cam_end_pos = current_map_region.size_px / 2.0
 			else:
 				_cam_end_pos = future_player_pos
 				
@@ -133,17 +133,17 @@ func _physics_process(delta: float) -> void:
 		
 	var desired_pos = Vector2.ZERO
 	
-	if is_static_room:
-		desired_pos = current_room.global_position + (current_room.size_px / 2.0)
+	if is_static_map_region:
+		desired_pos = current_map_region.global_position + (current_map_region.size_px / 2.0)
 	else:
 		_update_focal_point()
 		desired_pos = _calculate_dynamic_target()
 	
 	# Zaciskanie krawędzi działa tylko podczas zwykłej gry
-	desired_pos = _clamp_to_room_bounds(desired_pos)
+	desired_pos = _clamp_to_map_region_bounds(desired_pos)
 	
 	# Ruch
-	if is_static_room:
+	if is_static_map_region:
 		if global_position.distance_to(desired_pos) < 1.0:
 			global_position = desired_pos
 		else:
@@ -158,24 +158,24 @@ func _physics_process(delta: float) -> void:
 #region Obliczanie Celu i Granic
 
 func _get_future_clamped_target(target_pos: Vector2) -> Vector2:
-	if not is_instance_valid(current_room): return target_pos
+	if not is_instance_valid(current_map_region): return target_pos
 	
 	var viewport_size = get_viewport_rect().size / _target_zoom
 	var half_screen = viewport_size / 2.0
-	var room_size = current_room.size_px
+	var map_region_size = current_map_region.size_px
 	
 	var min_x = half_screen.x
-	var max_x = room_size.x - half_screen.x
+	var max_x = map_region_size.x - half_screen.x
 	var min_y = half_screen.y
-	var max_y = room_size.y - half_screen.y
+	var max_y = map_region_size.y - half_screen.y
 	
-	if room_size.x < viewport_size.x:
-		target_pos.x = room_size.x / 2.0
+	if map_region_size.x < viewport_size.x:
+		target_pos.x = map_region_size.x / 2.0
 	else:
 		target_pos.x = clamp(target_pos.x, min_x, max_x)
 		
-	if room_size.y < viewport_size.y:
-		target_pos.y = room_size.y / 2.0
+	if map_region_size.y < viewport_size.y:
+		target_pos.y = map_region_size.y / 2.0
 	else:
 		target_pos.y = clamp(target_pos.y, min_y, max_y)
 		
@@ -209,27 +209,27 @@ func _calculate_dynamic_target() -> Vector2:
 		
 	return _focal_point + aim_offset
 
-func _clamp_to_room_bounds(target_pos: Vector2) -> Vector2:
-	if not is_instance_valid(current_room): return target_pos
+func _clamp_to_map_region_bounds(target_pos: Vector2) -> Vector2:
+	if not is_instance_valid(current_map_region): return target_pos
 	
 	var viewport_size = get_viewport_rect().size / zoom
 	var half_screen = viewport_size / 2.0
 	
-	var room_pos = current_room.global_position
-	var room_size = current_room.size_px
+	var map_region_pos = current_map_region.global_position
+	var map_region_size = current_map_region.size_px
 	
-	var min_x = room_pos.x + half_screen.x
-	var max_x = room_pos.x + room_size.x - half_screen.x
-	var min_y = room_pos.y + half_screen.y
-	var max_y = room_pos.y + room_size.y - half_screen.y
+	var min_x = map_region_pos.x + half_screen.x
+	var max_x = map_region_pos.x + map_region_size.x - half_screen.x
+	var min_y = map_region_pos.y + half_screen.y
+	var max_y = map_region_pos.y + map_region_size.y - half_screen.y
 	
-	if room_size.x < viewport_size.x:
-		target_pos.x = room_pos.x + room_size.x / 2.0
+	if map_region_size.x < viewport_size.x:
+		target_pos.x = map_region_pos.x + map_region_size.x / 2.0
 	else:
 		target_pos.x = clamp(target_pos.x, min_x, max_x)
 		
-	if room_size.y < viewport_size.y:
-		target_pos.y = room_pos.y + room_size.y / 2.0
+	if map_region_size.y < viewport_size.y:
+		target_pos.y = map_region_pos.y + map_region_size.y / 2.0
 	else:
 		target_pos.y = clamp(target_pos.y, min_y, max_y)
 		
@@ -254,20 +254,20 @@ func _bind_map(new_map: Map) -> void:
 	if level_manager != null: _unbind_map()
 		
 	level_manager = new_map
-	if not level_manager.room_changed.is_connected(_on_room_changed):
-		level_manager.room_changed.connect(_on_room_changed)
+	if not level_manager.map_region_changed.is_connected(_on_map_region_changed):
+		level_manager.map_region_changed.connect(_on_map_region_changed)
 		
-	if level_manager.current_room:
-		_on_room_changed(level_manager.current_room)
+	if level_manager.current_map_region:
+		_on_map_region_changed(level_manager.current_map_region)
 
 func _unbind_map() -> void:
-	if is_instance_valid(level_manager) and level_manager.room_changed.is_connected(_on_room_changed):
-		level_manager.room_changed.disconnect(_on_room_changed)
+	if is_instance_valid(level_manager) and level_manager.map_region_changed.is_connected(_on_map_region_changed):
+		level_manager.map_region_changed.disconnect(_on_map_region_changed)
 	level_manager = null
-	current_room = null
+	current_map_region = null
 
-func _on_room_changed(new_room: Room) -> void:
-	current_room = new_room
+func _on_map_region_changed(new_map_region: MapRegion) -> void:
+	current_map_region = new_map_region
 
 #endregion
 

@@ -37,6 +37,10 @@ func _ready() -> void:
 		add_collision_exception_with(shooter)
 		if arming_delay > 0.0:
 			get_tree().create_timer(arming_delay).timeout.connect(func():
+			# TARCZA: Modyfikujemy fizykę tylko, jeśli bomba nadal jest w aktywnym świecie!
+				if not is_inside_tree():
+					return
+				
 				if is_instance_valid(self) and is_instance_valid(shooter):
 					remove_collision_exception_with(shooter)
 			)
@@ -71,10 +75,13 @@ func trigger_effect(direct_hit: Node2D) -> void:
 
 	# --- 1. ODLICZANIE ZAPALNIKA (Oczekiwanie na wybuch) ---
 	if activation_delay > 0.0 and direct_hit == null:
+		# Tarcza PRZED:
+		if not is_inside_tree(): return
+		
 		await get_tree().create_timer(activation_delay).timeout
 		
-		if not is_inside_tree():
-			return
+		# Tarcza PO:
+		if not is_inside_tree(): return
 
 	# --- 2. BUM! (Faktyczny wybuch i rozesłanie fali uderzeniowej) ---
 	var targets: Array[Node2D] = []

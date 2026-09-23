@@ -44,7 +44,7 @@ func _init() -> void:
 	max_range = 800.0
 
 func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
-	if not is_instance_valid(attacker) or not is_instance_valid(target): return
+	if not is_instance_valid(attacker): return
 	var ai_controller = attacker.get_node_or_null("AIController")
 	var combat_ctrl = ai_controller.get_node_or_null("AICombatController") if ai_controller else null
 	
@@ -87,7 +87,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# FAZA 1: CELOWANIE I KUMULOWANIE ENERGII (BŁYSK)
 	# =========================================================
 	while elapsed < cast_time:
-		if not is_instance_valid(attacker) or not is_instance_valid(target):
+		# TARCZA 1: Dodane is_inside_tree() na początku pętli!
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree() or not is_instance_valid(target):
 			if is_instance_valid(laser_node): laser_node.queue_free()
 			if is_instance_valid(combat_ctrl): combat_ctrl.is_casting_ability = false
 			if sprite and is_instance_valid(sprite): sprite.self_modulate = orig_modulate
@@ -109,7 +110,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		ray_query.collision_mask = obstacles_mask
 		ray_query.exclude = [attacker.get_rid()]
 		
-		var result = space_state.intersect_ray(ray_query) # <--- POPRAWIONE Z "query" NA "ray_query"
+		var result = space_state.intersect_ray(ray_query)
 		var end_pos = result.position if result else max_end_pos
 
 		laser_node.start_pos = start_pos
@@ -121,6 +122,12 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			var pulse = (sin(elapsed * 25.0) + 1.0) / 2.0
 			sprite.self_modulate = orig_modulate.lerp(laser_color, pulse * charge_progress)
 
+		# TARCZA 2: Zabezpieczenie przed pierwszym await!
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+			if is_instance_valid(laser_node): laser_node.queue_free()
+			if sprite and is_instance_valid(sprite): sprite.self_modulate = orig_modulate
+			return
+
 		elapsed += attacker.get_physics_process_delta_time()
 		await attacker.get_tree().physics_frame
 
@@ -129,7 +136,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# =========================================================
 	# FAZA 2: CIĄGŁY STRZAŁ Z ZADAWANIEM OBRAŻEŃ I KORYGOWANIEM
 	# =========================================================
-	if not is_instance_valid(attacker):
+	
+	# TARCZA 3: Dodane is_inside_tree() przed Fazą 2
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
 		if is_instance_valid(laser_node): laser_node.queue_free()
 		return
 
@@ -139,7 +148,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var next_damage_tick: float = 0.0
 
 	while fire_elapsed < laser_duration:
-		if not is_instance_valid(attacker):
+		# TARCZA 4: Dodane is_inside_tree() na górze pętli! Bez tego kamera crashuje po wybudzeniu!
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
 			if is_instance_valid(laser_node): laser_node.queue_free()
 			return
 
@@ -208,7 +218,13 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 				if cam and cam.has_method("add_trauma"):
 					cam.add_trauma(camera_trauma_amount)
 
+		# 1. Zabezpieczenie przed usunięciem (śmiercią) lub uśpieniem (wyjęciem z drzewa)
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+			return # Anulujemy dalszy atak, wróg właśnie "zasnął" w chunku lub zginął
+
 		fire_elapsed += attacker.get_physics_process_delta_time()
+
+		# 2. Skoro przeszedł test wyżej, wiemy na 100%, że get_tree() nie zwróci null
 		await attacker.get_tree().physics_frame
 
 	if is_instance_valid(laser_node):

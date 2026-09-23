@@ -441,13 +441,13 @@ target.receive_effect(effect)
 ### Krok 1: Utwórz nową scenę pokoju
 
 1. **Nowa Scena** → **Podstawowy 2D Node (Node2D)**
-2. **Zapisz jako**: `assets/scenes/rooms/my_room.tscn`
-3. **Zmień nazwę** na `MyRoom`
+2. **Zapisz jako**: `assets/scenes/map_regions/my_map_region.tscn`
+3. **Zmień nazwę** na `MyMapRegion`
 
 ### Krok 2: Strukturuj pokój
 
 ```
-MyRoom (Node2D) - Dodaj skrypt: Room.gd
+MyMapRegion (Node2D) - Dodaj skrypt: MapRegion.gd
 ├─ TileMap                         # Podstawa pokoju (ściany, podłoga)
 ├─ Entities (Node2D - do Y-sortu)
 │  ├─ [Wrogowie będą spawniać się tutaj]
@@ -462,22 +462,22 @@ MyRoom (Node2D) - Dodaj skrypt: Room.gd
 │  ├─ EnemySpawn1 (Node2D)
 │  └─ ItemSpawn1 (Node2D)
 ├─ Lighting
-│  └─ CenterRoomLight (PointLight2D)
+│  └─ CenterMapRegionLight (PointLight2D)
 └─ DecorationLayer (Node2D)
 ```
 
-### Krok 3: Skonfiguruj Room.gd
+### Krok 3: Skonfiguruj MapRegion.gd
 
-Dla węzła `MyRoom` dodaj skrypt `assets/scripts/map_system/room.gd`:
+Dla węzła `MyMapRegion` dodaj skrypt `assets/scripts/map_system/map_region.gd`:
 
 W Inspektorze ustaw:
 
 ```
-Room Settings:
-├─ Room Size (PX):      (960, 540)      # Rozmiar pokoju w pikselach
-├─ Room Type:           "NORMAL"         # Typ: NORMAL, BOSS, TREASURE, etc.
+MapRegion Settings:
+├─ MapRegion Size (PX):      (960, 540)      # Rozmiar pokoju w pikselach
+├─ MapRegion Type:           "NORMAL"         # Typ: NORMAL, BOSS, TREASURE, etc.
 ├─ Map Position:        (0, 0)           # Pozycja na siatce mapy
-├─ Is Dark Room:        false            # Ciemny pokój?
+├─ Is Dark MapRegion:        false            # Ciemny pokój?
 └─ Darkness Color:      (Color.BLACK)    # Kolor ciemności
 
 Połączenia Drzwi:
@@ -510,7 +510,7 @@ Door Settings:
 2. Ustaw ich pozycje w pokoju
 3. Dodaj skrypt `LevelEntrance.gd` do gracza spawn point'u:
 ```gdscript
-@export var my_entrance_id: String = "room1_entrance"
+@export var my_entrance_id: String = "map_region1_entrance"
 ```
 
 ### Krok 6: Dodaj pule spawn'u
@@ -545,9 +545,9 @@ Spawn Entries:
 
 Edytuj scenę mapy (`assets/scenes/maps/level_1_test_map.tscn`):
 
-1. **Instancjonuj** `my_room.tscn` wiele razy
+1. **Instancjonuj** `my_map_region.tscn` wiele razy
 2. Pozycjonuj je na siatce (Vector2i grid)
-3. Ustaw pozycje w Inspektorze dla każdego Room:
+3. Ustaw pozycje w Inspektorze dla każdego MapRegion:
 ```
 Map Position: (1, 0)    # Kolumna 1, Rząd 0
 ```
@@ -801,7 +801,7 @@ signal item_picked_up(item_id: String)
 signal item_used(item_id: String)
 
 # Sygnały map
-signal room_changed(new_room: String)
+signal map_region_changed(new_map_region: String)
 signal boss_defeated(boss_name: String)
 
 # Sygnały UI
