@@ -54,8 +54,8 @@ folder_colors={
 "res://assets/scripts/entities/characters/player/": "blue",
 "res://assets/scripts/entities/items/": "green",
 "res://assets/scripts/entities/movement/": "orange",
-"res://assets/scripts/entities/player/player_stats/": "gray",
-"res://assets/scripts/entities/stats/": "purple"
+"res://assets/scripts/entities/other_data/": "purple",
+"res://assets/scripts/entities/player/player_stats/": "gray"
 }
 
 [global_group]

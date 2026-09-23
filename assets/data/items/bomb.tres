@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_p8ac1"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_w8bgg"]
 [ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="4_se31b"]
-[ext_resource type="PackedScene" uid="uid://sp1q5lo3d7t0" path="res://assets/scenes/game_objects/bomb.tscn" id="5_usx7s"]
+[ext_resource type="PackedScene" uid="uid://sp1q5lo3d7t0" path="res://assets/scenes/game_objects/throwables/bomb.tscn" id="5_usx7s"]
 [ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/knockback_effect.gd" id="5_w8bgg"]
 [ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/trigger_effect.gd" id="6_se31b"]
 [ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="6_t4u01"]

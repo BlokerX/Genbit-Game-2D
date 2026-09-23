@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="4_xejun"]
 [ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/knockback_effect.gd" id="5_cwepj"]
 [ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/trigger_effect.gd" id="6_2jdk1"]
-[ext_resource type="PackedScene" uid="uid://bd62a77tsjoc4" path="res://assets/scenes/game_objects/mine.tscn" id="6_m5np2"]
+[ext_resource type="PackedScene" uid="uid://bd62a77tsjoc4" path="res://assets/scenes/game_objects/throwables/mine.tscn" id="6_m5np2"]
 [ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="7_ir6b4"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="8_el0co"]
 [ext_resource type="Texture2D" uid="uid://nw0in0beb0bg" path="res://assets/textures/samples_examples/items/mine.png" id="10_3rkus"]

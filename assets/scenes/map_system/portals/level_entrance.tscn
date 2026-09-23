@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b0mlsnkqjtutp"]
 
-[ext_resource type="Script" uid="uid://b14rqc04o4cj8" path="res://assets/scripts/map_system/level_entrance.gd" id="1_yjko1"]
+[ext_resource type="Script" uid="uid://b14rqc04o4cj8" path="res://assets/scripts/map_system/portals/level_entrance.gd" id="1_yjko1"]
 [ext_resource type="Texture2D" uid="uid://b8xycbp13b438" path="res://assets/textures/samples_examples/door/wooden_door.png" id="2_yjko1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_u1njh"]
