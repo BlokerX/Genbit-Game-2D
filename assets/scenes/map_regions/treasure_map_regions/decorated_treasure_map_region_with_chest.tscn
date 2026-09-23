@@ -1,14 +1,14 @@
 [gd_scene format=4 uid="uid://datdhnwl8332c"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_yqh8y"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/map_regions/map_region.tscn" id="1_yqh8y"]
 [ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/chest.tscn" id="2_yqh8y"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_yqh8y"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[node name="DecoratedTreasureRoomWithChest" unique_id=1124479501 instance=ExtResource("1_yqh8y")]
-room_type = 2
+[node name="DecoratedTreasureMapRegionWithChest" unique_id=1124479501 instance=ExtResource("1_yqh8y")]
+map_region_type = 2
 manual_tilemap_override = true
 
 [node name="TileMap" parent="." index="0" unique_id=345412429]

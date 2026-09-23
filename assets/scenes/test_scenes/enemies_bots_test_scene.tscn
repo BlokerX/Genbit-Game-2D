@@ -96,7 +96,7 @@ vertices = PackedVector2Array(1844.0391, 1015.97656, 75, 1013.0078, 75, 73, 1847
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(65, 63, 65, 1023, 1854, 1026, 1858, 63)])
 
-[node name="Test Room Scene" type="Node2D" unique_id=451291155]
+[node name="Test MapRegion Scene" type="Node2D" unique_id=451291155]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 

@@ -9,8 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://c5hdepwp2h4oi" path="res://assets/scenes/gui/inventory_slot.tscn" id="7_dry7g"]
 [ext_resource type="Script" uid="uid://dln6cqtgwayy8" path="res://assets/scripts/ui/minimap.gd" id="8_xdyey"]
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="9_lgejv"]
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="10_35qoo"]
-[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/rooms/door.tscn" id="11_xm8je"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/map_regions/map_region.tscn" id="10_35qoo"]
+[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/map_regions/door.tscn" id="11_xm8je"]
 [ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="12_h750y"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/scripts/entities/stats/special_instations/player/player_movement_component.tres" id="13_0o4nw"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/scripts/entities/stats/special_instations/player/player_monitored_life_stats_component.tres" id="14_wg6qi"]
@@ -75,7 +75,7 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8f2pv"]
 size = Vector2(64.5, 64)
 
-[node name="Test Room Scene" type="Node2D" unique_id=451291155]
+[node name="Test MapRegion Scene" type="Node2D" unique_id=451291155]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=676441415]
 
@@ -112,7 +112,7 @@ offset_bottom = 80.0
 theme_override_styles/fill = ExtResource("3_hixib")
 show_percentage = false
 script = ExtResource("4_k0bl7")
-player = NodePath("../../../Map/StartRoom/Player")
+player = NodePath("../../../Map/StartMapRegion/Player")
 cooldown_label = NodePath("CooldownLabel")
 
 [node name="CooldownLabel" type="Label" parent="CanvasLayer/PlayerUIGroup/CooldownProgressBar" unique_id=886329592]
@@ -145,7 +145,7 @@ expand_mode = 1
 
 [node name="InventoryUIGroup" type="Node" parent="CanvasLayer" unique_id=1331560135 node_paths=PackedStringArray("player", "info_label")]
 script = ExtResource("6_levy2")
-player = NodePath("../../Map/StartRoom/Player")
+player = NodePath("../../Map/StartMapRegion/Player")
 info_label = NodePath("ItemInfoPanelContainer/InfoLabel")
 
 [node name="ItemInfoPanelContainer" type="PanelContainer" parent="CanvasLayer/InventoryUIGroup" unique_id=815114077]
@@ -211,19 +211,19 @@ script = ExtResource("8_xdyey")
 level_manager = NodePath("../../Map")
 cell_size = null
 cell_spacing = null
-current_room_color = null
-visited_room_color = null
+current_map_region_color = null
+visited_map_region_color = null
 discovered_not_visited_color = null
 background_color = null
 text_color = null
 
-[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_room") groups=["Map"]]
+[node name="Map" type="Node2D" parent="." unique_id=1979269645 node_paths=PackedStringArray("starting_map_region") groups=["Map"]]
 script = ExtResource("9_lgejv")
-starting_room = NodePath("StartRoom")
+starting_map_region = NodePath("StartMapRegion")
 
-[node name="StartRoom" parent="Map" unique_id=1187411125 instance=ExtResource("10_35qoo")]
+[node name="StartMapRegion" parent="Map" unique_id=1187411125 instance=ExtResource("10_35qoo")]
 
-[node name="RoomLabel" type="Label" parent="Map/StartRoom" unique_id=1778539474]
+[node name="MapRegionLabel" type="Label" parent="Map/StartMapRegion" unique_id=1778539474]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -241,12 +241,12 @@ text = "Pokój startowy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DoorDown1" parent="Map/StartRoom" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorDown1" parent="Map/StartMapRegion" unique_id=1193084852 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 1056)
 rotation = 3.1415927
-destination_door = NodePath("../../LootRoom2/DoorUp2")
+destination_door = NodePath("../../LootMapRegion2/DoorUp2")
 
-[node name="Player" type="CharacterBody2D" parent="Map/StartRoom" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" parent="Map/StartMapRegion" unique_id=78745694 node_paths=PackedStringArray("inventory", "character_sprite", "effects_collector") groups=["Player"]]
 unique_name_in_owner = true
 texture_filter = 5
 position = Vector2(960, 540)
@@ -262,46 +262,46 @@ character_sprite = NodePath("CharacterSprite")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
 
-[node name="InteractableComponent" parent="Map/StartRoom/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("16_cyf7l")]
+[node name="InteractableComponent" parent="Map/StartMapRegion/Player" unique_id=310092015 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("16_cyf7l")]
 target_sprite = NodePath("../CharacterSprite")
 target_collision = NodePath("../CollisionShape2D")
 
-[node name="Inventory" type="Node" parent="Map/StartRoom/Player" unique_id=2070691423]
+[node name="Inventory" type="Node" parent="Map/StartMapRegion/Player" unique_id=2070691423]
 script = ExtResource("17_gdw6n")
 
-[node name="EffectsCollector" type="Node" parent="Map/StartRoom/Player" unique_id=1333448843]
+[node name="EffectsCollector" type="Node" parent="Map/StartMapRegion/Player" unique_id=1333448843]
 
-[node name="AimController" type="Node2D" parent="Map/StartRoom/Player" unique_id=756643253]
+[node name="AimController" type="Node2D" parent="Map/StartMapRegion/Player" unique_id=756643253]
 script = ExtResource("18_u4iy3")
 
-[node name="AimScanner" type="RayCast2D" parent="Map/StartRoom/Player/AimController" unique_id=824312907]
+[node name="AimScanner" type="RayCast2D" parent="Map/StartMapRegion/Player/AimController" unique_id=824312907]
 collision_mask = 12
 hit_from_inside = true
 
-[node name="HeldItemHandler" type="Node2D" parent="Map/StartRoom/Player" unique_id=1042135675]
+[node name="HeldItemHandler" type="Node2D" parent="Map/StartMapRegion/Player" unique_id=1042135675]
 position = Vector2(24, 43)
 scale = Vector2(2, 2)
 
-[node name="HeldItemVisual" type="Sprite2D" parent="Map/StartRoom/Player/HeldItemHandler" unique_id=971580810]
+[node name="HeldItemVisual" type="Sprite2D" parent="Map/StartMapRegion/Player/HeldItemHandler" unique_id=971580810]
 texture_filter = 5
 
-[node name="CharacterSprite" type="Sprite2D" parent="Map/StartRoom/Player" unique_id=1849338578]
+[node name="CharacterSprite" type="Sprite2D" parent="Map/StartMapRegion/Player" unique_id=1849338578]
 self_modulate = Color(1, 0.866667, 0.235294, 1)
 position = Vector2(-0.099975586, 0)
 scale = Vector2(0.391406, 0.392)
 texture = ExtResource("5_kxvhm")
 flip_h = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartRoom/Player" unique_id=619512797]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/StartMapRegion/Player" unique_id=619512797]
 position = Vector2(-0.5, 0)
 shape = SubResource("RectangleShape2D_p58j5")
 debug_color = Color(0.862745, 0.905882, 0.270588, 0.203922)
 
-[node name="LootRoom2" parent="Map" unique_id=1124479501 instance=ExtResource("10_35qoo")]
+[node name="LootMapRegion2" parent="Map" unique_id=1124479501 instance=ExtResource("10_35qoo")]
 visible = false
 map_position = Vector2i(0, 1)
 
-[node name="RoomLabel" type="Label" parent="Map/LootRoom2" unique_id=58840949]
+[node name="MapRegionLabel" type="Label" parent="Map/LootMapRegion2" unique_id=58840949]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -319,34 +319,34 @@ text = "Pokój z przedmiotami"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DoorUp2" parent="Map/LootRoom2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorUp2" parent="Map/LootMapRegion2" unique_id=1747308733 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 32)
-destination_door = NodePath("../../StartRoom/DoorDown1")
+destination_door = NodePath("../../StartMapRegion/DoorDown1")
 
-[node name="DoorDown2" parent="Map/LootRoom2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorDown2" parent="Map/LootMapRegion2" unique_id=406558948 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 1056)
 rotation = -3.1415925
-destination_door = NodePath("../../HallRoom4/DoorUp4")
+destination_door = NodePath("../../HallMapRegion4/DoorUp4")
 
-[node name="Items" type="Node2D" parent="Map/LootRoom2" unique_id=2000525934]
+[node name="Items" type="Node2D" parent="Map/LootMapRegion2" unique_id=2000525934]
 
-[node name="ItemPickup2" parent="Map/LootRoom2/Items" unique_id=418610573 instance=ExtResource("19_2ngks")]
+[node name="ItemPickup2" parent="Map/LootMapRegion2/Items" unique_id=418610573 instance=ExtResource("19_2ngks")]
 position = Vector2(256, 840)
 
-[node name="ItemPickup3" parent="Map/LootRoom2/Items" unique_id=878630740 instance=ExtResource("19_2ngks")]
+[node name="ItemPickup3" parent="Map/LootMapRegion2/Items" unique_id=878630740 instance=ExtResource("19_2ngks")]
 position = Vector2(1560, 256)
 
-[node name="ItemPickup4" parent="Map/LootRoom2/Items" unique_id=1393213531 instance=ExtResource("19_2ngks")]
+[node name="ItemPickup4" parent="Map/LootMapRegion2/Items" unique_id=1393213531 instance=ExtResource("19_2ngks")]
 position = Vector2(1608, 731)
 
-[node name="ItemPickup5" parent="Map/LootRoom2/Items" unique_id=1643014827 instance=ExtResource("19_2ngks")]
+[node name="ItemPickup5" parent="Map/LootMapRegion2/Items" unique_id=1643014827 instance=ExtResource("19_2ngks")]
 position = Vector2(1296, 136)
 
-[node name="HallRoom4" parent="Map" unique_id=1732907218 instance=ExtResource("10_35qoo")]
+[node name="HallMapRegion4" parent="Map" unique_id=1732907218 instance=ExtResource("10_35qoo")]
 visible = false
 map_position = Vector2i(0, 2)
 
-[node name="RoomLabel" type="Label" parent="Map/HallRoom4" unique_id=768567471]
+[node name="MapRegionLabel" type="Label" parent="Map/HallMapRegion4" unique_id=768567471]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -364,27 +364,27 @@ text = "Pokój przejściowy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DoorUp4" parent="Map/HallRoom4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorUp4" parent="Map/HallMapRegion4" unique_id=1996080174 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 32)
-destination_door = NodePath("../../LootRoom2/DoorDown2")
+destination_door = NodePath("../../LootMapRegion2/DoorDown2")
 
-[node name="DoorRight4" parent="Map/HallRoom4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorRight4" parent="Map/HallMapRegion4" unique_id=418632289 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(1888, 544)
 rotation = 1.5707964
-destination_door = NodePath("../../SecretRoom5/DoorLeft5")
+destination_door = NodePath("../../SecretMapRegion5/DoorLeft5")
 
-[node name="DoorDown4" parent="Map/HallRoom4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorDown4" parent="Map/HallMapRegion4" unique_id=1114573996 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 1056)
 rotation = -3.1415925
-destination_door = NodePath("../../EnemyRoom3/DoorUp3")
+destination_door = NodePath("../../EnemyMapRegion3/DoorUp3")
 
-[node name="SecretRoom5" parent="Map" unique_id=1848038951 instance=ExtResource("10_35qoo")]
+[node name="SecretMapRegion5" parent="Map" unique_id=1848038951 instance=ExtResource("10_35qoo")]
 visible = false
 map_position = Vector2i(1, 2)
 is_secret = true
 floor_alt_id = 0
 
-[node name="RoomLabel" type="Label" parent="Map/SecretRoom5" unique_id=392174043]
+[node name="MapRegionLabel" type="Label" parent="Map/SecretMapRegion5" unique_id=392174043]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -402,20 +402,20 @@ text = "Sekretny pokój"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DoorLeft5" parent="Map/SecretRoom5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorLeft5" parent="Map/SecretMapRegion5" unique_id=1339168471 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(32, 544)
 rotation = -1.5707964
-destination_door = NodePath("../../HallRoom4/DoorRight4")
+destination_door = NodePath("../../HallMapRegion4/DoorRight4")
 
-[node name="ItemPickup" parent="Map/SecretRoom5" unique_id=313552387 instance=ExtResource("19_2ngks")]
+[node name="ItemPickup" parent="Map/SecretMapRegion5" unique_id=313552387 instance=ExtResource("19_2ngks")]
 position = Vector2(965, 459)
 
-[node name="EnemyRoom3" parent="Map" unique_id=81165659 instance=ExtResource("10_35qoo")]
+[node name="EnemyMapRegion3" parent="Map" unique_id=81165659 instance=ExtResource("10_35qoo")]
 visible = false
 map_position = Vector2i(0, 3)
 wall_alt_id = 0
 
-[node name="RoomLabel" type="Label" parent="Map/EnemyRoom3" unique_id=1729822279]
+[node name="MapRegionLabel" type="Label" parent="Map/EnemyMapRegion3" unique_id=1729822279]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -433,11 +433,11 @@ text = "Pokój przeciwnika"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DoorUp3" parent="Map/EnemyRoom3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
+[node name="DoorUp3" parent="Map/EnemyMapRegion3" unique_id=588944455 node_paths=PackedStringArray("destination_door") instance=ExtResource("11_xm8je")]
 position = Vector2(960, 32)
-destination_door = NodePath("../../HallRoom4/DoorDown4")
+destination_door = NodePath("../../HallMapRegion4/DoorDown4")
 
-[node name="Spider" type="CharacterBody2D" parent="Map/EnemyRoom3" unique_id=563277704 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
+[node name="Spider" type="CharacterBody2D" parent="Map/EnemyMapRegion3" unique_id=563277704 node_paths=PackedStringArray("effects_collector") groups=["Enemy", "NPC"]]
 position = Vector2(968, 928)
 collision_layer = 4
 collision_mask = 7
@@ -448,29 +448,29 @@ health_stats_script = ExtResource("22_ld5bb")
 interaction_and_attack_stats_script = ExtResource("23_5wnmt")
 effects_collector = NodePath("EffectsCollector")
 
-[node name="InteractableComponent" parent="Map/EnemyRoom3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("16_cyf7l")]
+[node name="InteractableComponent" parent="Map/EnemyMapRegion3/Spider" unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("16_cyf7l")]
 outline_material = null
 target_sprite = NodePath("../AnimatedSprite2D")
 target_collision = NodePath("../CollisionShape2D")
 
-[node name="EffectsCollector" type="Node" parent="Map/EnemyRoom3/Spider" unique_id=378154211]
+[node name="EffectsCollector" type="Node" parent="Map/EnemyMapRegion3/Spider" unique_id=378154211]
 
-[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyRoom3/Spider" unique_id=751573452]
+[node name="LineOfSight" type="RayCast2D" parent="Map/EnemyMapRegion3/Spider" unique_id=751573452]
 collision_mask = 3
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyRoom3/Spider" unique_id=1269572810]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Map/EnemyMapRegion3/Spider" unique_id=1269572810]
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Map/EnemyRoom3/Spider" unique_id=70196550]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Map/EnemyMapRegion3/Spider" unique_id=70196550]
 texture_filter = 5
 position = Vector2(-0.5, -0.5)
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_yuthg")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyRoom3/Spider" unique_id=1068071084]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/EnemyMapRegion3/Spider" unique_id=1068071084]
 shape = SubResource("RectangleShape2D_8f2pv")
 debug_color = Color(0.78431374, 0.78431374, 0.19607843, 0.47058824)
 
-[node name="HealthProgressBar" type="ProgressBar" parent="Map/EnemyRoom3/Spider" unique_id=734905429]
+[node name="HealthProgressBar" type="ProgressBar" parent="Map/EnemyMapRegion3/Spider" unique_id=734905429]
 texture_filter = 5
 offset_left = -32.0
 offset_top = -48.0
@@ -482,7 +482,7 @@ theme_override_styles/background = ExtResource("3_hixib")
 show_percentage = false
 script = ExtResource("25_f7o6i")
 
-[node name="Label2" type="Label" parent="Map/EnemyRoom3/Spider/HealthProgressBar" unique_id=2016708381]
+[node name="Label2" type="Label" parent="Map/EnemyMapRegion3/Spider/HealthProgressBar" unique_id=2016708381]
 texture_filter = 5
 layout_mode = 0
 offset_right = 64.0

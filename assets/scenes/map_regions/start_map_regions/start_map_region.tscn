@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dlqyv1khnsruk"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_iasij"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/map_regions/map_region.tscn" id="1_iasij"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_q8eeg"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
@@ -9,8 +9,8 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 [sub_resource type="SystemFont" id="SystemFont_iasij"]
 subpixel_positioning = 0
 
-[node name="StartRoom" unique_id=1124479501 instance=ExtResource("1_iasij")]
-room_type = 1
+[node name="StartMapRegion" unique_id=1124479501 instance=ExtResource("1_iasij")]
+map_region_type = 1
 
 [node name="NavigationRegion2D" parent="." index="1" unique_id=1239899796]
 navigation_polygon = SubResource("NavigationPolygon_q8eeg")
@@ -18,7 +18,7 @@ navigation_polygon = SubResource("NavigationPolygon_q8eeg")
 [node name="RespawnPoint" type="Marker2D" parent="." index="2" unique_id=924314961 groups=["RespawnPoint"]]
 position = Vector2(960, 540)
 
-[node name="RoomLabel" type="Label" parent="." index="3" unique_id=892873532]
+[node name="MapRegionLabel" type="Label" parent="." index="3" unique_id=892873532]
 texture_filter = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -35,6 +35,6 @@ size_flags_horizontal = 4
 theme_override_constants/outline_size = 15
 theme_override_fonts/font = SubResource("SystemFont_iasij")
 theme_override_font_sizes/font_size = 40
-text = "Start Room"
+text = "Start MapRegion"
 horizontal_alignment = 1
 vertical_alignment = 1

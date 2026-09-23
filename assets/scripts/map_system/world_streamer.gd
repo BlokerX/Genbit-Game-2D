@@ -2,7 +2,7 @@ extends Node2D
 class_name WorldStreamer
 
 @export_group("Konfiguracja Streamingu")
-## Rozmiar jednego chunka w pikselach (domyślnie nadpisywany przez Room z GlobalSettings)
+## Rozmiar jednego chunka w pikselach (domyślnie nadpisywany przez MapRegion z GlobalSettings)
 @export var chunk_size: int 
 
 @export_group("Debug")

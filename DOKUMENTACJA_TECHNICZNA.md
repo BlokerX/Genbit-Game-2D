@@ -88,7 +88,7 @@ func on_effect_end(target: Node2D) -> void:
 | Typ | Opis | Przykład |
 |-----|------|---------|
 | **Timed Effects** | Z limitem czasu | Poison (5s), Freeze (2s) |
-| **Infinite Effects** | Nieskończone (room aura) | Radiation, Darkness |
+| **Infinite Effects** | Nieskończone (map_region aura) | Radiation, Darkness |
 | **Instant Effects** | Jednokrotne | Damage, Heal |
 | **Toggle Effects** | Włączalne/wyłączalne | Shield, Invisibility |
 
@@ -330,16 +330,16 @@ func _physics_process(delta):
 
 ## System Mapy i Pokojów
 
-### Klasa Room
+### Klasa MapRegion
 
 ```gdscript
-class_name Room
+class_name MapRegion
 extends Node2D
 
-@export var room_type: RoomType = RoomType.NORMAL
+@export var map_region_type: MapRegionType = MapRegionType.NORMAL
 @export var map_position: Vector2i = Vector2i(0, 0)
 @export var size_px: Vector2 = Vector2(960, 540)
-@export var is_dark_room: bool = false
+@export var is_dark_map_region: bool = false
 @export var darkness_color: Color = Color.BLACK
 
 # Listy
@@ -352,7 +352,7 @@ var item_loot_pool: ItemLootPool
 ### Typy pokojów
 
 ```gdscript
-enum RoomType {
+enum MapRegionType {
 	NORMAL,        # Zwykły pokój
 	START,         # Pokój początkowy
 	BOSS,          # Pokój bossa
@@ -405,7 +405,7 @@ enum Direction {
    ↓
 3. Map._on_door_entered(door)
    ↓
-4. Map.change_room(next_room, door.destination_door)
+4. Map.change_map_region(next_map_region, door.destination_door)
    ↓
 5. Fade/Slide animacja
    ↓
@@ -620,8 +620,8 @@ Każdy efekt = ikona + timer
 
 ```gdscript
 # Renderuje odkryte pokoje na 2D texture
-func _on_room_changed(new_room: Room):
-	discovered_rooms.append(new_room)
+func _on_map_region_changed(new_map_region: MapRegion):
+	discovered_map_regions.append(new_map_region)
 	redraw_minimap()
 
 func redraw_minimap():
@@ -650,7 +650,7 @@ signal item_used(item_id: String)
 signal item_dropped(item_id: String)
 
 # Mapa
-signal room_changed(room: Room)
+signal map_region_changed(map_region: MapRegion)
 signal boss_defeated(boss_name: String)
 
 # UI
@@ -749,8 +749,8 @@ func return_projectile(p: Projectile):
 	projectile_pool.append(p)
 
 # 2. Unload Scenes poza widokiem
-if not current_room.visible:
-	current_room.process_mode = Node.PROCESS_MODE_DISABLED
+if not current_map_region.visible:
+	current_map_region.process_mode = Node.PROCESS_MODE_DISABLED
 ```
 
 ### Script Optimization
@@ -798,7 +798,7 @@ print("Czas: %d ms" % elapsed)
 - [ ] Object pooling dla pocisków i efektów
 - [ ] Cached NodeReferences (@onready)
 - [ ] Proper layer masks dla colizji
-- [ ] Unloaded old rooms
+- [ ] Unloaded old map_regions
 - [ ] Profiled hot paths
 - [ ] Minimal allocations w _process
 - [ ] Used early returns w conditionals

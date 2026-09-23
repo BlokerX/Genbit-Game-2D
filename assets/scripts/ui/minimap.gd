@@ -24,8 +24,8 @@ var map_sprite: Sprite2D
 
 @export_group("Kolory")
 var original_bg_color: Color
-@export var current_room_color : Color = Color(1.0, 1.0, 1.0, 0.9)
-@export var visited_room_color : Color = Color(0.6, 0.6, 0.6, 0.8)
+@export var current_map_region_color : Color = Color(1.0, 1.0, 1.0, 0.9)
+@export var visited_map_region_color : Color = Color(0.6, 0.6, 0.6, 0.8)
 @export var discovered_not_visited_color : Color = Color(0.3, 0.3, 0.3, 0.6)
 @export var background_color : Color = Color(0.0, 0.0, 0.0, 0.5)
 @export var text_color : Color = Color(0.0, 0.0, 0.0, 1.0)
@@ -45,7 +45,7 @@ var original_bg_color: Color
 # =========================================================================
 @export_group("Tryb Kamery (Live Map)")
 @export var use_camera_mode: bool = true
-@export var allowed_camera_room_types: Array[Room.RoomType] = [Room.RoomType.OPEN_WORLD]
+@export var allowed_camera_map_region_types: Array[MapRegion.MapRegionType] = [MapRegion.MapRegionType.OPEN_WORLD]
 @export var camera_tint: Color = Color(0.95, 0.95, 1.0, 1.0)
 @export var player_marker_color: Color = Color(0.0, 1.0, 0.0, 1.0)
 @export_range(0.0, 1.0) var opacity_preview: float = 0.8
@@ -244,13 +244,13 @@ func _is_camera_mode_active() -> bool:
 	if not use_camera_mode: return false
 	if requires_map_item_for_camera_mode and not _player_has_map: return false
 
-	if is_instance_valid(level_manager) and is_instance_valid(level_manager.current_room):
+	if is_instance_valid(level_manager) and is_instance_valid(level_manager.current_map_region):
 		
 		# NOWOŚĆ: Jeśli gracz wszedł do sekretnego/niemappowalnego pokoju - wyłącz UI minimapy
-		if "is_mappable" in level_manager.current_room and not level_manager.current_room.is_mappable:
+		if "is_mappable" in level_manager.current_map_region and not level_manager.current_map_region.is_mappable:
 			return false
 			
-		if level_manager.current_room.room_type in allowed_camera_room_types:
+		if level_manager.current_map_region.map_region_type in allowed_camera_map_region_types:
 			return true
 		return false
 
@@ -444,7 +444,7 @@ func _on_player_marker_draw() -> void:
 func _update_camera_limits() -> void:
 	if not is_instance_valid(map_camera): return
 
-	if not auto_calculate_bounds or not level_manager or level_manager.all_rooms.is_empty():
+	if not auto_calculate_bounds or not level_manager or level_manager.all_map_regions.is_empty():
 		map_world_rect = Rect2()
 		calculated_fit_zoom = zoom_fullscreen_default
 		if zoom_slider: zoom_slider.min_value = 0.01
@@ -454,24 +454,24 @@ func _update_camera_limits() -> void:
 	var min_y = INF
 	var max_x = -INF
 	var max_y = -INF
-	var rooms_found = false
+	var map_regions_found = false
 
-	var rooms_to_scan = level_manager.all_rooms if bounds_include_undiscovered else level_manager.discovered_rooms
-	if rooms_to_scan.is_empty() and not level_manager.discovered_rooms.is_empty():
-		rooms_to_scan = level_manager.discovered_rooms
+	var map_regions_to_scan = level_manager.all_map_regions if bounds_include_undiscovered else level_manager.discovered_map_regions
+	if map_regions_to_scan.is_empty() and not level_manager.discovered_map_regions.is_empty():
+		map_regions_to_scan = level_manager.discovered_map_regions
 
-	for room in rooms_to_scan:
-		if is_instance_valid(room):
-			rooms_found = true
-			var r_pos = room.global_position
-			var r_size = room.size_px if "size_px" in room else Vector2(1920, 1080)
+	for map_region in map_regions_to_scan:
+		if is_instance_valid(map_region):
+			map_regions_found = true
+			var r_pos = map_region.global_position
+			var r_size = map_region.size_px if "size_px" in map_region else Vector2(1920, 1080)
 
 			min_x = min(min_x, r_pos.x)
 			min_y = min(min_y, r_pos.y)
 			max_x = max(max_x, r_pos.x + r_size.x)
 			max_y = max(max_y, r_pos.y + r_size.y)
 
-	if rooms_found:
+	if map_regions_found:
 		var left = int(min_x) - bounds_padding_px
 		var top = int(min_y) - bounds_padding_px
 		var right = int(max_x) + bounds_padding_px
@@ -512,8 +512,8 @@ func _bind_map(new_map: Map) -> void:
 	# KLUCZ SYSTEMU ZERO TOUCH: Wczytywanie automatyczne na podstawie nazwy pliku nowej mapy
 	_load_automatic_minimap_data()
 	
-	if not level_manager.room_changed.is_connected(_on_map_state_changed):
-		level_manager.room_changed.connect(_on_map_state_changed)
+	if not level_manager.map_region_changed.is_connected(_on_map_state_changed):
+		level_manager.map_region_changed.connect(_on_map_state_changed)
 	if not level_manager.map_updated.is_connected(_on_map_state_changed):
 		level_manager.map_updated.connect(_on_map_state_changed)
 	
@@ -569,8 +569,8 @@ func _load_automatic_minimap_data() -> void:
 
 func _unbind_map() -> void:
 	if is_instance_valid(level_manager):
-		if level_manager.room_changed.is_connected(_on_map_state_changed):
-			level_manager.room_changed.disconnect(_on_map_state_changed)
+		if level_manager.map_region_changed.is_connected(_on_map_state_changed):
+			level_manager.map_region_changed.disconnect(_on_map_state_changed)
 		if level_manager.map_updated.is_connected(_on_map_state_changed):
 			level_manager.map_updated.disconnect(_on_map_state_changed)
 	level_manager = null
@@ -634,7 +634,7 @@ func _apply_visual_state(is_large: bool) -> void:
 	else:
 		target_zoom = zoom_preview_default
 
-func _on_map_state_changed(_room = null) -> void:
+func _on_map_state_changed(_map_region = null) -> void:
 	if not _is_camera_mode_active():
 		_clear_manual_marker()
 
@@ -654,21 +654,21 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), draw_bg)
 		return
 
-	if not level_manager or not level_manager.current_room: return
+	if not level_manager or not level_manager.current_map_region: return
 
-	var current_room = level_manager.current_room
+	var current_map_region = level_manager.current_map_region
 	var center_pos = size / 2.0
 
 	draw_rect(Rect2(Vector2.ZERO, size), background_color)
 
-	var reference_pos = current_room.map_position
+	var reference_pos = current_map_region.map_position
 	var current_zoom = 1.0
 
-	if is_map_toggled_large and level_manager.discovered_rooms.size() > 0:
+	if is_map_toggled_large and level_manager.discovered_map_regions.size() > 0:
 		var min_pos = Vector2(INF, INF)
 		var max_pos = Vector2(-INF, -INF)
 
-		for r in level_manager.discovered_rooms:
+		for r in level_manager.discovered_map_regions:
 			min_pos.x = min(min_pos.x, r.map_position.x)
 			min_pos.y = min(min_pos.y, r.map_position.y)
 			max_pos.x = max(max_pos.x, r.map_position.x)
@@ -689,24 +689,24 @@ func _draw() -> void:
 	var font = get_theme_default_font()
 	var font_size = max(1, int(actual_cell_size * 0.8))
 
-	for room in level_manager.all_rooms:
-		if level_manager.discovered_rooms.has(room):
-			var diff_x = room.map_position.x - reference_pos.x
-			var diff_y = room.map_position.y - reference_pos.y
+	for map_region in level_manager.all_map_regions:
+		if level_manager.discovered_map_regions.has(map_region):
+			var diff_x = map_region.map_position.x - reference_pos.x
+			var diff_y = map_region.map_position.y - reference_pos.y
 			var offset = Vector2(diff_x, diff_y) * (actual_cell_size + actual_spacing)
 			var box_pos = center_pos + offset - Vector2(actual_cell_size / 2.0, actual_cell_size / 2.0)
 			var box_rect = Rect2(box_pos, Vector2(actual_cell_size, actual_cell_size))
 
 			var draw_color = discovered_not_visited_color
-			if room == current_room:
-				draw_color = current_room_color
-			elif level_manager.visited_rooms.has(room):
-				draw_color = visited_room_color
+			if map_region == current_map_region:
+				draw_color = current_map_region_color
+			elif level_manager.visited_map_regions.has(map_region):
+				draw_color = visited_map_region_color
 
 			draw_color.a *= current_opacity
 			draw_rect(box_rect, draw_color)
 
-			if room == level_manager.starting_room:
+			if map_region == level_manager.starting_map_region:
 				var text = "S"
 				var text_size = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 				var text_pos = box_pos + (Vector2(actual_cell_size, actual_cell_size) / 2.0)
@@ -716,8 +716,8 @@ func _draw() -> void:
 				final_txt_color.a *= current_opacity
 				draw_string(font, text_pos - Vector2(text_size.x / 2.0, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, final_txt_color)
 
-			if level_manager.visited_rooms.has(room):
-				var target_parent = room
+			if level_manager.visited_map_regions.has(map_region):
+				var target_parent = map_region
 				var loot_icons_to_draw : Array[Texture2D] = []
 				for child in target_parent.get_children():
 					if child is ItemPickup and child.item != null and child.item.data != null and child.item.data.item_icon != null:

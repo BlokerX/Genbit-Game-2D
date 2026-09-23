@@ -58,34 +58,34 @@ func _process_single_map(map_path: String):
 	if not map_scene: return
 	
 	# Tworzymy instancję mapy. Silnik automatycznie odpali w niej _ready(),
-	# a pokoje uruchomią calculate_room_bounds() przeliczając size_px.
+	# a pokoje uruchomią calculate_map_region_bounds() przeliczając size_px.
 	var map_instance = map_scene.instantiate()
 	add_child(map_instance)
 	
-	# Wymuszamy odczekanie klatki, żeby cały kod Room.gd i TileMapy na pewno się załadował
+	# Wymuszamy odczekanie klatki, żeby cały kod MapRegion.gd i TileMapy na pewno się załadował
 	await get_tree().process_frame 
 	
 	var min_x = INF; var min_y = INF; var max_x = -INF; var max_y = -INF
-	var rooms_found = false
+	var map_regions_found = false
 	
-	var rooms = map_instance.find_children("*", "Room", true, false)
-	for room in rooms:
+	var map_regions = map_instance.find_children("*", "MapRegion", true, false)
+	for map_region in map_regions:
 		# NOWOŚĆ: Sprawdzamy flagę
-		if "is_mappable" in room and not room.is_mappable:
-			room.hide() # Znika z widoku kamery fotografującej
+		if "is_mappable" in map_region and not map_region.is_mappable:
+			map_region.hide() # Znika z widoku kamery fotografującej
 			continue    # Pomijamy go w matematyce (nie powiększy nam kadru)
 			
-		if "size_px" in room:
-			rooms_found = true
-			var start_px = room.global_position
-			var end_px = room.global_position + room.size_px
+		if "size_px" in map_region:
+			map_regions_found = true
+			var start_px = map_region.global_position
+			var end_px = map_region.global_position + map_region.size_px
 			
 			min_x = min(min_x, start_px.x)
 			min_y = min(min_y, start_px.y)
 			max_x = max(max_x, end_px.x)
 			max_y = max(max_y, end_px.y)
 
-	if not rooms_found:
+	if not map_regions_found:
 		print(" > Pominięto (brak mapowalnych pokoi)")
 		map_instance.queue_free()
 		return

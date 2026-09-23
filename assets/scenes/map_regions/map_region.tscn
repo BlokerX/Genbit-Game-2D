@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://cliypgfyur2gq"]
 
-[ext_resource type="Script" uid="uid://vp0vroyyx208" path="res://assets/scripts/map_system/room.gd" id="1_l3nri"]
-[ext_resource type="PackedScene" uid="uid://cjeqtxgfnvfvq" path="res://assets/scenes/rooms/room_light.tscn" id="2_8jlt0"]
+[ext_resource type="Script" uid="uid://vp0vroyyx208" path="res://assets/scripts/map_system/map_region.gd" id="1_l3nri"]
+[ext_resource type="PackedScene" uid="uid://cjeqtxgfnvfvq" path="res://assets/scenes/map_regions/map_region_light.tscn" id="2_8jlt0"]
 [ext_resource type="Shader" uid="uid://dhdace02w454n" path="res://assets/shaders/wood.gdshader" id="2_pl0hj"]
 [ext_resource type="Texture2D" uid="uid://d3knlm1tahctu" path="res://assets/textures/samples_examples/door/gray_door.png" id="3_bdw1o"]
 [ext_resource type="Texture2D" uid="uid://dg1csp7v0jbrm" path="res://assets/textures/samples_examples/tilesets/wood_planks_big_single.png" id="3_yursh"]
@@ -75,10 +75,10 @@ sources/4 = SubResource("TileSetAtlasSource_h2orb")
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 
-[node name="Room" type="Node2D" unique_id=1124479501 groups=["Rooms"]]
+[node name="MapRegion" type="Node2D" unique_id=1124479501 groups=["MapRegions"]]
 script = ExtResource("1_l3nri")
 transition_mode = 2
-is_dark_room = true
+is_dark_map_region = true
 has_center_light = true
 light_scene = ExtResource("2_8jlt0")
 floor_alt_id = 1

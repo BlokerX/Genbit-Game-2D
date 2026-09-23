@@ -30,7 +30,7 @@ var current_state : State = State.CLOSED
 ## Główna kłódka. Włącz w Inspektorze, aby drzwi były zamknięte np. na klucz, dźwignię lub questa.
 @export var is_mechanically_locked : bool = false
 
-## Wewnętrzna blokada. Steruje nią TYLKO system pokoju (Room) podczas walki.
+## Wewnętrzna blokada. Steruje nią TYLKO system pokoju (MapRegion) podczas walki.
 var is_combat_locked : bool = false
 
 func _ready() -> void:
@@ -119,16 +119,16 @@ func force_open() -> void:
 func _trigger_teleport() -> void:
 	# Bezpieczne sprawdzenie, czy programista na pewno podpiął drzwi w edytorze.
 	if destination_door == null:
-		push_error("BŁĄD KRYTYCZNY: Drzwi '%s' (Pokój: %s) nie mają przypisanego 'destination_door' w Inspektorze!" % [name, str(get_room().name) if get_room() else "Nieznany"])
+		push_error("BŁĄD KRYTYCZNY: Drzwi '%s' (Pokój: %s) nie mają przypisanego 'destination_door' w Inspektorze!" % [name, str(get_map_region().name) if get_map_region() else "Nieznany"])
 		return
 	
 	# Wywołujemy sygnał, który Map już obsługuje
 	player_entered_door.emit(self)
 
-func get_room() -> Room:
+func get_map_region() -> MapRegion:
 	var current_node = self
 	while current_node != null:
-		if current_node is Room:
+		if current_node is MapRegion:
 			return current_node
 		current_node = current_node.get_parent()
 	return null

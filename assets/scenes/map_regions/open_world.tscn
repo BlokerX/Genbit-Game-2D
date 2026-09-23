@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://mtkwvso1r6h1"]
 
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="1_c15xs"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/map_regions/map_region.tscn" id="1_c15xs"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_c15xs"]
 vertices = PackedVector2Array(0, 0, 2048, 0, 2048, 2048, 0, 2048)
@@ -9,12 +9,12 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 [node name="OpenWorld" unique_id=1124479501 instance=ExtResource("1_c15xs")]
 is_mappable = true
 transition_mode = 0
-room_type = 5
+map_region_type = 5
 ignore_combat_lock = true
-is_dark_room = false
+is_dark_map_region = false
 has_center_light = false
 camera_follows_player = true
-room_size_tiles = Vector2i(32, 32)
+map_region_size_tiles = Vector2i(32, 32)
 manual_tilemap_override = true
 tile_source_id = 1
 floor_alt_id = 0

@@ -1,9 +1,9 @@
 [gd_scene format=4 uid="uid://d3saawcuyun1f"]
 
 [ext_resource type="Script" uid="uid://dcoyduw006pg1" path="res://assets/scripts/map_system/map.gd" id="1_4033s"]
-[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/rooms/door.tscn" id="2_54epw"]
-[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/rooms/room.tscn" id="3_wq86f"]
-[ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/rooms/level_entrance.tscn" id="4_yjtvo"]
+[ext_resource type="PackedScene" uid="uid://dlfvmsi7aocoj" path="res://assets/scenes/map_regions/door.tscn" id="2_54epw"]
+[ext_resource type="PackedScene" uid="uid://cliypgfyur2gq" path="res://assets/scenes/map_regions/map_region.tscn" id="3_wq86f"]
+[ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/map_regions/level_entrance.tscn" id="4_yjtvo"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/bots/spider.tscn" id="5_qerwo"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="6_2o7gg"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="7_jn5m6"]
@@ -1748,21 +1748,21 @@ resource_local_to_scene = true
 script = ExtResource("9_dkn7e")
 hand_attack_data = SubResource("Resource_jnda7")
 
-[node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_room") groups=["LevelManager"]]
+[node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_map_region") groups=["LevelManager"]]
 script = ExtResource("1_4033s")
-starting_room = NodePath("OpenWorld")
+starting_map_region = NodePath("OpenWorld")
 reset_map_history_on_respawn = false
 auto_door_scene = ExtResource("2_54epw")
 
 [node name="OpenWorld" parent="." unique_id=174252311 node_paths=PackedStringArray("spawn_points") instance=ExtResource("3_wq86f")]
 is_mappable = true
 transition_mode = 0
-room_type = 5
+map_region_type = 5
 ignore_combat_lock = true
-is_dark_room = false
+is_dark_map_region = false
 has_center_light = false
 camera_follows_player = true
-room_size_tiles = Vector2i(240, 135)
+map_region_size_tiles = Vector2i(240, 135)
 manual_tilemap_override = true
 floor_alt_id = 0
 spawn_points = [null]
