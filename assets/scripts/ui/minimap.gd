@@ -538,7 +538,7 @@ func _load_automatic_minimap_data() -> void:
 		
 	if map_path == "": return
 	
-	var json_path = "res://assets/scenes/maps/minimaps_generated_data/minimaps_metadata.json"
+	var json_path = "res://assets/scenes/map_system/maps/minimaps_generated_data/minimaps_metadata.json"
 	if not FileAccess.file_exists(json_path): 
 		print("Minimapa: Brak pliku metadata.json. Czy uruchomiono generator?")
 		return

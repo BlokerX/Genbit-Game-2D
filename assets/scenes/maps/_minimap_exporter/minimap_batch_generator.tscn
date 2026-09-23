@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://dsduyrsgh8mau"]
-
-[ext_resource type="Script" uid="uid://cr47lbrhmh7d1" path="res://assets/scripts/dev_ops/minimap_batch_generator.gd" id="1_87txn"]
-
-[node name="MinimapExporter" type="Node2D" unique_id=39736319]
-script = ExtResource("1_87txn")

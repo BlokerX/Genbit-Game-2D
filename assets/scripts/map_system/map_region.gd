@@ -397,7 +397,7 @@ func _update_lighting() -> void:
 			# BEZPIECZNE ŁADOWANIE: Jeśli w Inspektorze jest pusto, bierzemy domyślny plik!
 			var scene_to_load = light_scene
 			if not scene_to_load:
-				scene_to_load = load("res://assets/scenes/map_region_light.tscn")
+				scene_to_load = load("res://assets/scenes/map_system/map_regions/map_region_light.tscn")
 				
 			if scene_to_load:
 				light = scene_to_load.instantiate()

@@ -1,7 +1,7 @@
 extends Node
 
-var maps_folder = "res://assets/scenes/maps/"
-var output_folder = "res://assets/scenes/maps/minimaps_generated_data/"
+var maps_folder = "res://assets/scenes/map_system/maps/"
+var output_folder = "res://assets/scenes/map_system/maps/minimaps_generated_data/"
 var padding = 256
 var max_image_size = 8192
 
