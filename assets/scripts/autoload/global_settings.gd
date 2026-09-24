@@ -49,6 +49,9 @@ var show_chunk_grid: bool = false
 var default_use_developer_camera: bool = false
 var use_developer_camera: bool = false
 
+## Czas w sekundach po jakim porzucone przedmioty znikają. 0.0 oznacza, że leżą na zawsze.
+var loot_despawn_time: float = 0#600.0
+
 # --- BIEŻĄCE WARTOŚCI ---
 var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float
 var surround_sound: bool; var mute_in_background: bool

@@ -459,16 +459,25 @@ func check_and_lock_map_region() -> void:
 
 #region Reżyser
 
-## Główny Reżyser: Czysto rozdzielone 3 niezależne systemy
+## Główny Reżyser: Kontroluje powoływanie do życia wrogów, elementów otoczenia oraz łupu (lootu).
+## Teraz obsługuje również zaawansowane EntitySpawnery.
 func _run_director_spawner() -> void:
+	print("[Reżyser MapRegion] %s: Rozpoczynam procedurę spawnowania obiektów." % name)
+	
 	var entities_node = find_child("Entities")
 	var parent_node = entities_node if entities_node else self
 	
+	# 1. Obsługa starych, podstawowych Markerów (kompatybilność wsteczna)
 	if enemy_pool != null:
+		var old_enemy_spawns_count = 0
 		for marker in enemy_spawns:
-			if randf() <= enemy_spawn_chance:
+			# Wykluczamy z tej pętli nowy system EntitySpawner
+			if marker is not EntitySpawner and randf() <= enemy_spawn_chance:
 				var scene = enemy_pool.get_random_enemy_scene()
 				_instantiate_scene(scene, marker.global_position, parent_node)
+				old_enemy_spawns_count += 1
+		if old_enemy_spawns_count > 0:
+			print("[Reżyser MapRegion] Klasyczny system wygenerował %d wrogów z 'enemy_pool'." % old_enemy_spawns_count)
 				
 	if object_pool != null:
 		for marker in object_spawns:
@@ -484,12 +493,32 @@ func _run_director_spawner() -> void:
 				
 				if entry != null and entry.item_data != null:
 					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
-					
-					# --- ZMIANA TUTAJ: Używamy nowej fabryki ---
 					pickup.item = _create_instance_from_entry(entry)
-					
 					var random_offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
 					_instantiate_node(pickup, marker.global_position + random_offset, parent_node)
+	
+	# 2. NOWOŚĆ: Obsługa inteligentnych spawnerów (EntitySpawner)!
+	# Szukamy wszystkich spawnerów w tym pokoju, które mają flagę DIRECTOR_ONLY
+	var advanced_spawners = find_children("*", "EntitySpawner", true, false)
+	var active_director_spawners = 0
+	
+	for child in advanced_spawners:
+		var spawner = child as EntitySpawner
+		if spawner.trigger_mode == EntitySpawner.TriggerMode.DIRECTOR_ONLY:
+			active_director_spawners += 1
+			# Decydujemy, czy spawner ma prawo zadziałać bazując na globalnej szansie pokoju
+			var type_chance = 1.0
+			# Wnioskujemy szansę na podstawie przypisanego zasobu w Inspektorze (Duck Typing)
+			if spawner.spawn_resource is EnemySpawnPool: type_chance = enemy_spawn_chance
+			elif spawner.spawn_resource is ObjectSpawnPool: type_chance = object_spawn_chance
+			elif spawner.spawn_resource is ItemLootPool: type_chance = item_spawn_chance
+			
+			if randf() <= type_chance:
+				print("[Reżyser MapRegion] Pociągam za sznurki zaawansowanego spawnera: %s" % spawner.name)
+				spawner.attempt_spawn()
+				
+	if active_director_spawners > 0:
+		print("[Reżyser MapRegion] Zakończono delegowanie zadań do %d zaawansowanych spawnerów." % active_director_spawners)
 
 ## Faza Hybrydowa: KROK 1 (Tworzenie listy lootu) -> KROK 2 (Rozrzucanie po skrzyni)
 func _fill_hybrid_containers(node: Node) -> void:

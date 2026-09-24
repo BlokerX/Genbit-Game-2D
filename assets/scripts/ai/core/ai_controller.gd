@@ -62,3 +62,43 @@ func _physics_process(delta: float) -> void:
 		navigation.process_navigation(delta)
 	if combat:
 		combat.process_combat(delta)
+
+# =========================================================================
+# SYSTEM WYBUDZANIA (Wywoływane przez wyższą klasę w trakcie streamingu)
+# =========================================================================
+
+## Twardy reset pamięci i stanu potwora. 
+## Czyści fałszywe cele i wymusza powrót do swobodnego zachowania.
+func reset_state() -> void:
+	# 1. Całkowite czyszczenie tablicy pamięci (Blackboard)
+	if blackboard:
+		blackboard.target = null
+		blackboard.has_last_known_position = false
+		blackboard.want_to_move = false
+		blackboard.avoidance_vector = Vector2.ZERO
+		blackboard.threat_level = 0.0
+	
+	# --- NAPRAWA A: RESET NAWIGACJI ---
+	# Kasujemy starą ścieżkę, nakazując AI nawigować "do samego siebie".
+	if navigation and navigation.nav_agent:
+		navigation.nav_agent.target_position = entity.global_position
+	
+	# 2. Reset maszyny stanów do bezpiecznego punktu wyjścia
+	if state_machine:
+		# Zakładamy, że kluczem bazowego stanu w Twojej maszynie jest "idle"
+		state_machine.change_state("Idle")
+		
+	print("[AIController] Zresetowano stan dla: ", entity.name)
+
+## Wymusza na komponencie percepcji natychmiastowe rozejrzenie się po okolicy,
+## pomijając czekanie na kolejną klatkę fizyki.
+func force_target_scan() -> void:
+	if perception:
+		# Przekazujemy deltę 0.0, ponieważ zależy nam wyłącznie na natychmiastowym 
+		# zaktualizowaniu 'blackboard.target', a nie na płynnym odliczaniu czasu.
+		perception.process_perception(0.0)
+		
+		# Jeśli po natychmiastowym skanie znaleźliśmy cel (gracza stojącego tuż obok), 
+		# od razu uruchamiamy pościg, by uniknąć stania w miejscu jak kołek.
+		if blackboard.target != null and state_machine:
+			state_machine.change_state("Chase")

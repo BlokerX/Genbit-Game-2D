@@ -14,6 +14,8 @@ class_name ItemPickup
 
 var can_pick_up: bool = false
 
+var _despawn_timer: float = 0.0
+
 func _ready() -> void:
 	z_index = GameLayers.LOOT
 	
@@ -47,6 +49,15 @@ func _ready() -> void:
 		prompt_label.text = item.data.item_name + "\n" + prompt_label.text
 	prompt_label.hide() # Na starcie ukrywamy napis
 
+func _physics_process(delta: float) -> void:
+	# Bezpiecznie sprawdzamy czy opcja w ogóle istnieje w GlobalSettings
+	var despawn_limit = GlobalSettings.get("loot_despawn_time") if "loot_despawn_time" in GlobalSettings else 0.0
+	
+	if despawn_limit > 0.0:
+		_despawn_timer += delta
+		if _despawn_timer >= despawn_limit:
+			queue_free()
+			print("Przedmiot został usunięty z powodu przekroczenia limitu czasu leżąc.")
 
 # --- FUNKCJE OD ETYKIETY ---
 
