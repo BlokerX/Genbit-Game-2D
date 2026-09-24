@@ -152,16 +152,6 @@ text = "Czekaj, sprawdzę ekwipunek!"
 target_id = &"node_0080"
 consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_yupr0")])
 
-[sub_resource type="Resource" id="Resource_r67ou"]
-script = ExtResource("16_r67ou")
-quest = ExtResource("15_ce8oc")
-metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
-
-[sub_resource type="Resource" id="Resource_6ortg"]
-script = ExtResource("1_xvdfj")
-text = "Otwórz drzwi (Quest)"
-consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_r67ou")])
-
 [sub_resource type="Resource" id="Resource_8n6t4"]
 script = ExtResource("16_r67ou")
 quest = ExtResource("17_r67ou")
@@ -173,6 +163,29 @@ script = ExtResource("1_xvdfj")
 text = "Znajdź pistolet"
 consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_8n6t4")])
 
+[sub_resource type="Resource" id="Resource_r67ou"]
+script = ExtResource("16_r67ou")
+quest = ExtResource("15_ce8oc")
+mode = 1
+metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
+[sub_resource type="Resource" id="Resource_6ortg"]
+script = ExtResource("1_xvdfj")
+text = "Rozpocznij Quest: The Doors? (Quest Start)"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_r67ou")])
+
+[sub_resource type="Resource" id="Resource_rqi0m"]
+script = ExtResource("16_r67ou")
+quest = ExtResource("15_ce8oc")
+mode = 1
+specific_stage = 1
+metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
+[sub_resource type="Resource" id="Resource_1rpee"]
+script = ExtResource("1_xvdfj")
+text = "Otwórz drzwi (Doors : Stage 0)"
+consequences = Array[ExtResource("4_ek4rl")]([SubResource("Resource_rqi0m")])
+
 [sub_resource type="Resource" id="Resource_u0dp3"]
 script = ExtResource("1_xvdfj")
 target_id = &"node_02"
@@ -182,7 +195,7 @@ script = ExtResource("10_xjmfk")
 id = &"node_01"
 speaker = ExtResource("11_52oi1")
 dialogue_text = "Witaj, oto okno dialogu!"
-outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_6ortg"), SubResource("Resource_ce8oc"), SubResource("Resource_u0dp3")])
+outputs = Array[ExtResource("1_xvdfj")]([SubResource("Resource_xvdfj"), SubResource("Resource_f3k5i"), SubResource("Resource_vwq27"), SubResource("Resource_ce8oc"), SubResource("Resource_6ortg"), SubResource("Resource_1rpee"), SubResource("Resource_u0dp3")])
 allow_cancel = true
 
 [sub_resource type="Resource" id="Resource_kfeh3"]

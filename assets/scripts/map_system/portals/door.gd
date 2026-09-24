@@ -2,7 +2,7 @@ extends Area2D
 class_name Door
 
 # todo problem z przenikaniem przez pokoje z tymi samymi drzwiami (pozycja drzwi w pokoju)
-signal player_entered_door(door_node)
+signal player_entered_door(door_node : Node)
 
 enum State { CLOSED, OPENING, OPEN }
 

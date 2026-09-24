@@ -18,11 +18,18 @@
 [ext_resource type="Script" uid="uid://djucrytie0x6j" path="res://assets/scripts/quests/components/story_event_reciver.gd" id="17_tpm7i"]
 [ext_resource type="PackedScene" uid="uid://btg6eh4dmf80t" path="res://assets/scenes/game_objects/world_triggers/world_area_trigger.tscn" id="18_18iqk"]
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="19_hlxsh"]
+[ext_resource type="Script" uid="uid://bug61sjuk3ce" path="res://assets/scripts/components/world_sensor_component.gd" id="19_qwwgy"]
+[ext_resource type="Script" uid="uid://di4apywurdjiw" path="res://assets/scripts/map_system/resources/item_loot_entry.gd" id="20_7lr31"]
 [ext_resource type="Resource" uid="uid://bjsclabh7p1id" path="res://assets/data/quests/q_get_pistol.tres" id="20_67f4b"]
+[ext_resource type="Resource" uid="uid://bmfpjt22blich" path="res://assets/data/items/map.tres" id="21_1dry5"]
 [ext_resource type="Script" uid="uid://rpt8mhq3dtqy" path="res://assets/scripts/quests/effects/update_quest_effect.gd" id="21_hlvp1"]
+[ext_resource type="Resource" uid="uid://0axh3xbaln4c" path="res://assets/data/quests/q01_test.tres" id="21_i27eh"]
 [ext_resource type="PackedScene" uid="uid://dyk6w2spo4agt" path="res://assets/scenes/spawnpoints/indywidual_spawnpoint/entity_spawner.tscn" id="22_mwej7"]
+[ext_resource type="Script" uid="uid://ckw2e5n0cvfht" path="res://assets/scripts/map_system/resources/item_loot_pool.gd" id="22_qwwgy"]
 [ext_resource type="Resource" uid="uid://dkpmxc6sp5g2y" path="res://assets/data/map_system_loot_enemies_objects/Test_Enemies.tres" id="23_q560g"]
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/general_spawnpoint/enemy_spawnpoint.tscn" id="24_q560g"]
+[ext_resource type="Resource" uid="uid://dtx4553mfd2b2" path="res://assets/data/map_system_loot_enemies_objects/Test_Loot.tres" id="25_m3vha"]
+[ext_resource type="Resource" uid="uid://b50get08bq4dt" path="res://assets/data/map_system_loot_enemies_objects/Test_Objects.tres" id="26_mxgbd"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/map_system/portals/level_entrance.tscn" id="42_xy8dj"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_m3vha"]
@@ -59,11 +66,28 @@ hand_attack_data = SubResource("Resource_p05go")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1hvyy"]
 size = Vector2(60, 60)
 
+[sub_resource type="Resource" id="Resource_bfs0a"]
+script = ExtResource("21_hlvp1")
+quest = ExtResource("21_i27eh")
+mode = 1
+mark_as_completed = true
+metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
 [sub_resource type="Resource" id="Resource_hlxsh"]
 script = ExtResource("21_hlvp1")
 quest = ExtResource("20_67f4b")
 mode = 1
 metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
+[sub_resource type="Resource" id="Resource_i27eh"]
+script = ExtResource("20_7lr31")
+item_data = ExtResource("21_1dry5")
+metadata/_custom_type_script = "uid://di4apywurdjiw"
+
+[sub_resource type="Resource" id="Resource_j72ff"]
+script = ExtResource("22_qwwgy")
+entries = Array[ExtResource("20_7lr31")]([SubResource("Resource_i27eh")])
+metadata/_custom_type_script = "uid://ckw2e5n0cvfht"
 
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_map_region") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
@@ -295,6 +319,11 @@ expected_event_name = "otworz_wrota"
 delay_seconds = 1.5
 metadata/_custom_type_script = "uid://djucrytie0x6j"
 
+[node name="WorldSensorComponent" type="Node" parent="OpenWorld/Door" unique_id=2002180077]
+script = ExtResource("19_qwwgy")
+consequences = Array[ExtResource("19_hlxsh")]([SubResource("Resource_bfs0a")])
+metadata/_custom_type_script = "uid://bug61sjuk3ce"
+
 [node name="Door2" parent="OpenWorld" unique_id=1407557011 node_paths=PackedStringArray("destination_door") instance=ExtResource("2_4p2la")]
 position = Vector2(8256, 4208)
 destination_door = NodePath("../Door")
@@ -305,15 +334,33 @@ position = Vector2(6752, 4280)
 
 [node name="WorldSensorComponent" parent="OpenWorld/WorldAreaTrigger" index="1" unique_id=657621410]
 consequences = Array[ExtResource("19_hlxsh")]([SubResource("Resource_hlxsh")])
-
-[node name="EntitySpawner" parent="OpenWorld" unique_id=1173911062 instance=ExtResource("22_mwej7")]
-position = Vector2(9926, 4303)
-spawn_resource = ExtResource("23_q560g")
-trigger_mode = 1
+only_player_can_trigger = true
 
 [node name="EnemySpawnpoint" parent="OpenWorld" unique_id=534280628 instance=ExtResource("24_q560g")]
 position = Vector2(9611, 4282)
 
+[node name="EntitySpawner" parent="OpenWorld" unique_id=412021287 instance=ExtResource("22_mwej7")]
+position = Vector2(9926, 4303)
+spawn_resource = ExtResource("23_q560g")
+trigger_mode = 1
+respawn_cooldown = 10.0
+
+[node name="EntitySpawner2" parent="OpenWorld" unique_id=1503170627 instance=ExtResource("22_mwej7")]
+position = Vector2(9903, 4614)
+spawn_resource = ExtResource("25_m3vha")
+trigger_mode = 1
+
+[node name="EntitySpawner3" parent="OpenWorld" unique_id=2078831255 instance=ExtResource("22_mwej7")]
+position = Vector2(9303, 4302)
+spawn_resource = ExtResource("26_mxgbd")
+
+[node name="EntitySpawner4" parent="OpenWorld" unique_id=1173911062 groups=["AlwaysActive"] instance=ExtResource("22_mwej7")]
+position = Vector2(8387, 4226)
+spawn_resource = SubResource("Resource_j72ff")
+trigger_mode = 3
+expected_event_name = "the_doors?"
+
+[connection signal="player_entered_door" from="OpenWorld/Door" to="OpenWorld/Door/WorldSensorComponent" method="trigger"]
 [connection signal="event_received" from="OpenWorld/Door/StoryEventReceiver" to="OpenWorld/Door" method="force_open"]
 
 [editable path="OpenWorld"]
