@@ -39,6 +39,8 @@ enum RespawnCondition {
 @export var trigger_mode: TriggerMode = TriggerMode.DIRECTOR_ONLY
 ## Jeśli fałsz, spawner jest uśpiony i nie zareaguje na żadne bodźce.
 @export var is_active: bool = true
+## Szansa na to, że ten spawner w ogóle zadziała (1.0 = 100%, 0.5 = 50%).
+@export_range(0.0, 1.0) var spawn_chance: float = 1.0
 
 @export_group("Zarządzanie Cyklem Życia")
 ## Maksymalna ilość jednocześnie żyjących instancji wygenerowanych z tego spawnera.
@@ -65,6 +67,8 @@ var _total_spawned_count: int = 0
 
 # Flaga zapobiegająca "Fałszywym Startom" przy ładowaniu wielkiej mapy
 var _initial_setup_done: bool = false
+# Flaga blokująca wielokrotne nasłuchiwanie na ten sam event / trigger
+var _is_unlocked: bool = false
 
 ## Wywoływane, gdy węzeł wchodzi do drzewa sceny.
 func _enter_tree() -> void:
@@ -85,13 +89,13 @@ func _enter_tree() -> void:
 
 	# --- INTELIGENTNE WZNAWIANIE (Gdy chunk wraca z pamięci RAM) ---
 	if _initial_setup_done:
-		if trigger_mode == TriggerMode.ON_CHUNK_ACTIVE:
-			call_deferred("attempt_spawn")
-		# NOWOŚĆ: Nadrabianie historii z EventBus po wybudzeniu
-		elif trigger_mode == TriggerMode.EVENT_BUS_SIGNAL and expected_event_name != "":
+		if trigger_mode == TriggerMode.EVENT_BUS_SIGNAL and not _is_unlocked:
+			# Nadrabianie historii z EventBus, jeśli zespawnowało nas a event minął
 			if EventBus.has_method("has_story_event_occurred") and EventBus.has_story_event_occurred(expected_event_name):
 				print("[%s] Wybudzono z uśpienia. Nadrabiam zaległy event: %s" % [name, expected_event_name])
 				call_deferred("attempt_spawn")
+		elif _is_unlocked and (trigger_mode == TriggerMode.ON_CHUNK_ACTIVE or respawn_condition in [RespawnCondition.ON_CHUNK_REENTER, RespawnCondition.ON_CHUNK_REENTER_AND_TIME]):
+			call_deferred("attempt_spawn")
 
 func _exit_tree() -> void:
 	# Zapisujemy dokładny czas (w sekundach) wylogowania chunka z pamięci
@@ -123,22 +127,36 @@ func _ready() -> void:
 	
 	# Jeśli po segregacji chunków znajdujemy się w chunku, na którym WŁAŚNIE ZRESPAWIŁ SIĘ GRACZ (jesteśmy w drzewie),
 	# spawniemy natychmiast bez czekania na zdarzenie wchodzenia do drzewa.
-	if trigger_mode == TriggerMode.ON_CHUNK_ACTIVE and is_inside_tree():
-		print("[EntitySpawner] %s: Gracz rozpoczął na moim chunku. Natychmiastowy spawn." % name)
-		attempt_spawn()
-	
+	if trigger_mode == TriggerMode.ON_CHUNK_ACTIVE:
+		_is_unlocked = true
+		if is_inside_tree():
+			print("[EntitySpawner] %s: Gracz rozpoczął na moim chunku. Natychmiastowy spawn." % name)
+			attempt_spawn()
+
 	# --- NOWOŚĆ: Nadrabianie historii zaraz po pierwszym wczytaniu mapy ---
 	if trigger_mode == TriggerMode.EVENT_BUS_SIGNAL and expected_event_name != "":
 		if EventBus.has_method("has_story_event_occurred") and EventBus.has_story_event_occurred(expected_event_name):
-			print("[%s] Pierwsze załadowanie. Nadrabiam zaległy event: %s" % [name, expected_event_name])
-			attempt_spawn()
+			if not _is_unlocked:
+				print("[%s] Pierwsze załadowanie. Nadrabiam zaległy event: %s" % [name, expected_event_name])
+				attempt_spawn()
 
 ## Główna pętla logiczna spawnera. Odlicza cooldowny i sprawdza dystans do gracza.
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not is_active:
 		return
 		
-	# 1. Odliczanie do odrodzenia
+	# Jeśli spawner czeka na aktywację i jest ustawiony na zasięg
+	if not _is_unlocked:
+		if trigger_mode == TriggerMode.PROXIMITY_PLAYER:
+			var player_ref = get_tree().get_first_node_in_group("Player")
+			if is_instance_valid(player_ref):
+				# Szybka matematyka na potęgach
+				if global_position.distance_squared_to(player_ref.global_position) <= (proximity_radius * proximity_radius):
+					print("[EntitySpawner] %s: Gracz wszedł w strefę %dpx! Zaczynam spawn." % [name, proximity_radius])
+					attempt_spawn()
+		return
+		
+	# 1. Odliczanie do odrodzenia (tylko po odbezpieczeniu _is_unlocked)
 	if respawn_condition != RespawnCondition.NEVER and respawn_condition != RespawnCondition.ON_CHUNK_REENTER:
 		# Filtrujemy martwe obiekty na żywo by sprawdzić warunki
 		_alive_entities = _alive_entities.filter(func(entity): return is_instance_valid(entity) and not entity.is_queued_for_deletion())
@@ -157,23 +175,26 @@ func _process(delta: float) -> void:
 			if _respawn_timer >= respawn_cooldown and respawn_condition != RespawnCondition.ON_CHUNK_REENTER_AND_TIME:
 				print("[EntitySpawner] %s: Cooldown respawnu minął. Próbuję przywrócić obiekt..." % name)
 				attempt_spawn()
-	
-	# 2. Tryb zbliżeniowy (Wykrywanie gracza)
-	if trigger_mode == TriggerMode.PROXIMITY_PLAYER and _alive_entities.size() < max_alive_entities:
-		var player_ref = get_tree().get_first_node_in_group("Player")
-		if is_instance_valid(player_ref):
-			# Szybka matematyka na potęgach
-			if global_position.distance_squared_to(player_ref.global_position) <= (proximity_radius * proximity_radius):
-				print("[EntitySpawner] %s: Gracz wszedł w strefę %dpx! Zaczynam spawn." % [name, proximity_radius])
-				attempt_spawn()
 
 ## Główna funkcja tworząca byt. Sprawdza limit żyjących obiektów i wywołuje kreację.
 func attempt_spawn() -> void:
 	if not is_active or spawn_resource == null:
 		return
 		
+	# Ściągamy zabezpieczenie przy pierwszej udanej próbie spawnu
+	_is_unlocked = true
+	
+	# Odrzucenie spawnu na podstawie losowej szansy procentowej (Tylko za PIERWSZYM razem)
+	if _total_spawned_count == 0 and randf() > spawn_chance:
+		is_active = false
+		return
+		
 	# Sprawdzanie globalnego limitu ilości wszystkich spawnów w ogóle
 	if max_total_spawns > 0 and _total_spawned_count >= max_total_spawns:
+		return
+		
+	# Ścisła blokada respawnu NEVER
+	if respawn_condition == RespawnCondition.NEVER and _total_spawned_count >= max_alive_entities:
 		return
 		
 	# Zabezpieczenie przed spawnem, jeśli chunk jest wymagany a warunki nie są spełnione
@@ -205,7 +226,7 @@ func _create_instance() -> Node:
 		var scene = spawn_resource.get_random_enemy_scene()
 		return scene.instantiate() if scene else null
 	# UWAGA: ItemLootPool oraz ObjectSpawnPool usunięte z tej sekcji, 
-	# skrzynki obsługiwane są teraz przez dedykowany InteractiveObjectSpawner.
+	# skrzynki obsługiwane są teraz przez dedykowany LootSpawner oraz ObjectSpawner.
 	return null
 
 ## Nadaje obiektowi pozycję, przypina go do odpowiedniego miejsca na mapie i rejestruje w Streamerze.
