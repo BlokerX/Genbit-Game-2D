@@ -28,7 +28,10 @@
 [ext_resource type="Resource" uid="uid://dtx4553mfd2b2" path="res://assets/data/map_system_loot_enemies_objects/Test_Loot.tres" id="25_m3vha"]
 [ext_resource type="Script" uid="uid://dqn8qp5l3h0ph" path="res://assets/scripts/spawn_system/object_spawner.gd" id="28_qwwgy"]
 [ext_resource type="Script" uid="uid://bcosqdhxucm4y" path="res://assets/scripts/spawn_system/loot_spawner.gd" id="29_7lr31"]
+[ext_resource type="Script" uid="uid://vu5duvx7ry26" path="res://assets/scripts/map_system/resources/guaranteed_loot_entry.gd" id="29_j72ff"]
 [ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/placed/chest.tscn" id="30_1dry5"]
+[ext_resource type="Resource" uid="uid://bmfpjt22blich" path="res://assets/data/items/map.tres" id="30_bfs0a"]
+[ext_resource type="Resource" uid="uid://dlbhf00me7vsc" path="res://assets/data/items/compass.tres" id="31_fsvqi"]
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/map_system/portals/level_entrance.tscn" id="42_xy8dj"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_1dry5"]
@@ -77,6 +80,17 @@ script = ExtResource("21_hlvp1")
 quest = ExtResource("20_67f4b")
 mode = 1
 metadata/_custom_type_script = "uid://rpt8mhq3dtqy"
+
+[sub_resource type="Resource" id="Resource_tono3"]
+script = ExtResource("29_j72ff")
+item_data = ExtResource("30_bfs0a")
+metadata/_custom_type_script = "uid://vu5duvx7ry26"
+
+[sub_resource type="Resource" id="Resource_cegbn"]
+script = ExtResource("29_j72ff")
+item_data = ExtResource("31_fsvqi")
+target_slot = 10
+metadata/_custom_type_script = "uid://vu5duvx7ry26"
 
 [node name="Map" type="Node2D" unique_id=957802044 node_paths=PackedStringArray("starting_map_region") groups=["LevelManager"]]
 script = ExtResource("1_gisam")
@@ -335,29 +349,29 @@ position = Vector2(9611, 4282)
 position = Vector2(9926, 4303)
 spawn_resource = ExtResource("23_q560g")
 trigger_mode = 1
-spawn_chance = null
 max_total_spawns = 1
 
 [node name="EntitySpawner2" parent="OpenWorld" unique_id=1503170627 instance=ExtResource("22_mwej7")]
 position = Vector2(9903, 4614)
-spawn_resource = ExtResource("25_m3vha")
+script = ExtResource("29_7lr31")
+loot_resource = null
+container_scene = ExtResource("30_1dry5")
+guaranteed_loot = Array[ExtResource("29_j72ff")]([SubResource("Resource_tono3"), SubResource("Resource_cegbn")])
 trigger_mode = 1
-spawn_chance = null
 
 [node name="EntitySpawner3" parent="OpenWorld" unique_id=2078831255 instance=ExtResource("22_mwej7")]
 position = Vector2(9303, 4302)
 script = ExtResource("28_qwwgy")
 spawn_resource = ExtResource("30_1dry5")
 drop_item_data = null
-spawn_chance = null
 
 [node name="EntitySpawner4" parent="OpenWorld" unique_id=1173911062 groups=["AlwaysActive"] instance=ExtResource("22_mwej7")]
 position = Vector2(8387, 4226)
 script = ExtResource("29_7lr31")
 loot_resource = ExtResource("25_m3vha")
 container_scene = ExtResource("30_1dry5")
+guaranteed_loot = null
 trigger_mode = 3
-spawn_chance = null
 max_total_spawns = 1
 expected_event_name = "the_doors?"
 

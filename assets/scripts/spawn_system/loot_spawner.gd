@@ -23,11 +23,15 @@ enum RespawnCondition {
 }
 
 @export_group("Konfiguracja Łupu")
-## Zasób określający zawartość. Może to być pojedynczy ItemData (np. apteczka) 
-## lub ItemLootPool (losowa paczka wielu przedmiotów).
+## Zasób określający LOSOWĄ zawartość. Może to być pojedynczy ItemData lub ItemLootPool (losowa paczka wielu przedmiotów).
 @export var loot_resource: Resource
-## (Opcjonalne) Scena pojemnika (np. chest.tscn). Jeśli jest puste, przedmiot pojawi się bezpośrednio na ziemi jako ItemPickup.
+## (Opcjonalne) Scena pojemnika (np. chest.tscn). Jeśli jest puste, przedmioty pojawią się bezpośrednio na ziemi.
 @export var container_scene: PackedScene
+
+@export_group("Gwarantowany Łup (100% Pewności)")
+## Przedmioty, które pojawią się ZAWSZE w określonej ilości (i ew. w wybranym slocie skrzyni). 
+## Idealne do zadań fabularnych lub unikalnych nagród.
+@export var guaranteed_loot: Array[GuaranteedLootEntry] = []
 
 @export_group("Wyzwalacze i Aktywność")
 @export var trigger_mode: TriggerMode = TriggerMode.DIRECTOR_ONLY
@@ -129,7 +133,8 @@ func _process(delta: float) -> void:
 				attempt_spawn()
 
 func attempt_spawn() -> void:
-	if not is_active or loot_resource == null: return
+	# Sprawdzamy czy użytkownik ustawił cokolwiek (losowy loot LUB gwarantowany loot)
+	if not is_active or (loot_resource == null and guaranteed_loot.is_empty()): return
 	
 	_is_unlocked = true
 	
@@ -145,49 +150,80 @@ func attempt_spawn() -> void:
 	_alive_entities = _alive_entities.filter(func(entity): return is_instance_valid(entity) and not entity.is_queued_for_deletion())
 	if _alive_entities.size() >= max_alive_entities: return
 		
-	var spawned_node = _create_and_fill_instance()
-	if spawned_node:
-		_finalize_spawn(spawned_node)
+	var spawned_nodes = _create_and_fill_instances()
+	if not spawned_nodes.is_empty():
+		for node in spawned_nodes:
+			_finalize_spawn(node)
 		_respawn_timer = 0.0
 		_total_spawned_count += 1
 		if max_total_spawns > 0 and _total_spawned_count >= max_total_spawns:
 			is_active = false
 
-## Buduje obiekt pojemnika (lub podnosidła) i wstrzykuje do niego loot
-func _create_and_fill_instance() -> Node:
-	var instance: Node = null
+## Buduje obiekt pojemnika LUB listę podnosideł na ziemi, obsługując Gwarantowany i Losowy Loot
+func _create_and_fill_instances() -> Array[Node]:
+	var instances: Array[Node] = []
 	
-	# Scenariusz A: Wstawiamy fizyczną skrzynię i napełniamy ją
+	# Scenariusz A: Wstawiamy fizyczną skrzynię
 	if container_scene != null:
-		instance = container_scene.instantiate()
-		var storage = instance.get_node_or_null("StorageComponent")
+		var container = container_scene.instantiate()
+		var storage = container.get_node_or_null("StorageComponent")
 		if storage != null:
+			# 1. NAJPIERW Gwarantowany Loot
+			for g_entry in guaranteed_loot:
+				if g_entry != null and g_entry.item_data != null:
+					var item_inst = _create_item_instance(g_entry.item_data, null, g_entry.amount)
+					
+					# Jeśli wymusiliśmy konkretną kratkę (i kratka istnieje w skrzyni)
+					if g_entry.target_slot >= 0 and g_entry.target_slot < storage.slots.size():
+						var new_slot = SlotData.new()
+						new_slot.item = item_inst
+						storage.slots[g_entry.target_slot] = new_slot
+					else:
+						# Domyślnie - włóż w pierwsze wolne miejsce
+						if storage.has_method("insert_instance"):
+							storage.insert_instance(item_inst)
+
+			# 2. POTEM Dopełnienie Skrzyni Losowym Lootem
 			if loot_resource is ItemLootPool:
 				var rolls = randi_range(2, 4)
 				for i in range(rolls):
 					var entry = loot_resource.get_random_entry()
 					if entry and entry.item_data:
-						storage.insert_instance(_create_item_instance(entry.item_data, entry))
+						if storage.has_method("insert_instance"):
+							storage.insert_instance(_create_item_instance(entry.item_data, entry))
 			elif loot_resource is ItemData:
-				storage.insert_instance(_create_item_instance(loot_resource))
+				if storage.has_method("insert_instance"):
+					storage.insert_instance(_create_item_instance(loot_resource))
+					
+		instances.append(container)
 	
-	# Scenariusz B: Pojawia się sam przedmiot na ziemi (ItemPickup)
+	# Scenariusz B: Generujemy przedmioty luźno na ziemi (ItemPickup)
 	else:
-		instance = ITEM_PICKUP_SCENE.instantiate()
+		# 1. Gwarantowany
+		for g_entry in guaranteed_loot:
+			if g_entry != null and g_entry.item_data != null:
+				var pickup = ITEM_PICKUP_SCENE.instantiate()
+				pickup.item = _create_item_instance(g_entry.item_data, null, g_entry.amount)
+				instances.append(pickup)
+				
+		# 2. Losowy (Tylko 1 losowy rzut na ziemię, by uniknąć sterty)
 		if loot_resource is ItemLootPool:
-			# Wyciąga JEDEN losowy przedmiot z puli i rzuca na ziemię
 			var entry = loot_resource.get_random_entry()
 			if entry and entry.item_data:
-				instance.item = _create_item_instance(entry.item_data, entry)
+				var pickup = ITEM_PICKUP_SCENE.instantiate()
+				pickup.item = _create_item_instance(entry.item_data, entry)
+				instances.append(pickup)
 		elif loot_resource is ItemData:
-			instance.item = _create_item_instance(loot_resource)
+			var pickup = ITEM_PICKUP_SCENE.instantiate()
+			pickup.item = _create_item_instance(loot_resource)
+			instances.append(pickup)
 			
-	return instance
+	return instances
 
-## Narzędzie generujące duszę (stan) przedmiotu.
-func _create_item_instance(i_data: ItemData, entry: ItemLootEntry = null) -> ItemInstance:
+## Narzędzie generujące duszę (stan) przedmiotu. Obsługuje ilość ręczną (forced_amount) lub losową z puli.
+func _create_item_instance(i_data: ItemData, entry: ItemLootEntry = null, forced_amount: int = 1) -> ItemInstance:
 	var unique_data = i_data.duplicate(true)
-	var amount = 1
+	var amount = forced_amount
 	if entry != null:
 		amount = randi_range(entry.min_amount, entry.max_amount)
 	
@@ -213,7 +249,13 @@ func _create_item_instance(i_data: ItemData, entry: ItemLootEntry = null) -> Ite
 	return item_inst
 
 func _finalize_spawn(entity: Node2D) -> void:
-	entity.global_position = global_position
+	# Odrobina fizyki: Jeśli spawnujemy kilka luźnych przedmiotów z jednego markera, rozrzucamy je na boki
+	if entity is RigidBody2D:
+		var scatter_offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+		entity.global_position = global_position + scatter_offset
+	else:
+		entity.global_position = global_position
+		
 	var parent_target = get_parent()
 	var map_region = _get_map_region()
 	if map_region:
