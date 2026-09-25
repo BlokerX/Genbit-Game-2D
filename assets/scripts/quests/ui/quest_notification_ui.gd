@@ -19,16 +19,14 @@ class_name QuestNotificationUI
 
 var _queue: Array[Dictionary] = []
 var _is_animating: bool = false
-
-# --- NOWOŚĆ: Przechowujemy referencję do aktualnej animacji ---
 var _active_tween: Tween 
-var _current_quest_id: StringName = &"" # <--- NOWOŚĆ: ID wyświetlanego zadania
+var _current_quest_id: StringName = &""
 
 func _ready() -> void:
 	layer = 60 # Warstwa wysoko, żeby była nad dziennikiem!
 	process_mode = Node.PROCESS_MODE_ALWAYS 
-	container.modulate.a = 0.0
 	
+	container.modulate.a = 0.0
 	# Ustawienia pod klikalność myszką
 	container.mouse_filter = Control.MOUSE_FILTER_STOP
 	container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -37,21 +35,53 @@ func _ready() -> void:
 	# Twarde wymuszenie niewidoczności na starcie
 	hide()
 	
-	# ZMIANA: Przekazujemy również q.id do kolejki
-	QuestManager.quest_started.connect(func(q): _queue_notification("NOWE ZADANIE", q.title, Color(1, 0.8, 0.2), q.id))
-	QuestManager.quest_updated.connect(func(q, _s): _queue_notification("ZAKTUALIZOWANO ZADANIE", q.title, Color(0.6, 0.8, 1), q.id))
-	QuestManager.quest_completed.connect(func(q): _queue_notification("ZADANIE UKOŃCZONE", q.title, Color(0.4, 0.9, 0.4), q.id))
-	QuestManager.quest_failed.connect(func(q): _queue_notification("ZADANIE OBLANE", q.title, Color(0.9, 0.3, 0.3), q.id))
+	# Zamiast bezpośrednich lambd, używamy wbudowanych metod weryfikujących
+	QuestManager.quest_started.connect(_on_quest_started)
+	QuestManager.quest_updated.connect(_on_quest_updated)
+	QuestManager.quest_completed.connect(_on_quest_completed)
+	QuestManager.quest_failed.connect(_on_quest_failed)
 
+# --- SYSTEM WERYFIKACJI CICHYCH ZADAŃ I ETAPÓW ---
+func _should_notify(quest: QuestData, stage_idx: int) -> bool:
+	# 1. Sprawdzenie, czy to ukryte zadanie techniczne (Kategoria HIDDEN z QuestData)
+	if quest.category == QuestData.QuestCategory.HIDDEN:
+		return false
+		
+	# 2. Sprawdzenie, czy konkretny etap jest oznaczony jako cichy
+	if stage_idx >= 0 and stage_idx < quest.stages.size():
+		var stage = quest.stages[stage_idx]
+		# Użycie bezpiecznego get(), na wypadek starych wersji zasobów
+		if stage.get("silent_stage") == true:
+			return false
+			
+	return true
+
+# --- OBSŁUGA ZDARZEŃ Z QUESMANAGER'A ---
+func _on_quest_started(quest: QuestData) -> void:
+	if _should_notify(quest, 0): # Start to zawsze wejście w Etap 0
+		_queue_notification("NOWE ZADANIE", quest.title, Color(1, 0.8, 0.2), quest.id)
+
+func _on_quest_updated(quest: QuestData, current_stage: int) -> void:
+	if _should_notify(quest, current_stage):
+		_queue_notification("ZAKTUALIZOWANO ZADANIE", quest.title, Color(0.6, 0.8, 1), quest.id)
+
+func _on_quest_completed(quest: QuestData) -> void:
+	if _should_notify(quest, -1): # Finał nie ma konkretnego etapu, sprawdzamy tylko czy nie HIDDEN
+		_queue_notification("ZADANIE UKOŃCZONE", quest.title, Color(0.4, 0.9, 0.4), quest.id)
+
+func _on_quest_failed(quest: QuestData) -> void:
+	if _should_notify(quest, -1):
+		_queue_notification("ZADANIE OBLANE", quest.title, Color(0.9, 0.3, 0.3), quest.id)
+
+# --- LOGIKA KOLEJKI I ANIMACJI ---
 func _queue_notification(title: String, quest_name: String, color: Color, quest_id: StringName) -> void:
 	_queue.append({"title": title, "name": quest_name, "color": color, "quest_id": quest_id})
 	
 	if not _is_animating:
 		_process_queue()
 	elif _active_tween and _active_tween.is_valid():
-		# --- ROZWIĄZANIE AAA: DYNAMICZNE PRZYSPIESZENIE Z INSPEKTORA ---
-		# Jeśli dodajemy nowe powiadomienie, a inne już wisi na ekranie,
-		# drastycznie przyspieszamy aktualną animację używając naszej zmiennej!
+		# DYNAMICZNE PRZYSPIESZENIE: Jeśli dodajemy nowe powiadomienie, a inne już wisi,
+		# przyspieszamy aktualną animację!
 		_active_tween.set_speed_scale(rush_speed_multiplier)
 
 func _process_queue() -> void:
@@ -76,19 +106,18 @@ func _process_queue() -> void:
 	_active_tween = create_tween()
 	_active_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS) 
 	
-	# Jeśli z jakiegoś powodu kolejka po zdjęciu naszego powiadomienia NADAL ma w sobie inne elementy,
-	# od razu ustawiamy tempo na szybkie. Jeśli nie - normalne x1.0.
+	# Jeśli w kolejce czekają inne elementy, narzucamy szybkie tempo.
 	if _queue.size() > 0:
 		_active_tween.set_speed_scale(rush_speed_multiplier)
 	else:
 		_active_tween.set_speed_scale(1.0)
-	
+		
 	# 1. Animacja wjazdu
 	container.position.y = off_screen_y
 	_active_tween.tween_property(container, "modulate:a", 1.0, slide_duration)
 	_active_tween.parallel().tween_property(container, "position:y", on_screen_y, slide_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
-	# 2. Czekanie (jeśli animacja została przyspieszona wyżej, czas czekania proporcjonalnie się zmniejszy)
+	# 2. Czekanie
 	_active_tween.tween_interval(display_duration)
 	
 	# 3. Animacja zjazdu
@@ -97,21 +126,19 @@ func _process_queue() -> void:
 	
 	_active_tween.finished.connect(_process_queue)
 
-# --- NOWOŚĆ: REAKCJA NA KLIKNIĘCIE ---
 func _on_container_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if _current_quest_id != &"":
 			# Szukamy Dziennika Zadań w drzewie sceny
 			var q_log = get_tree().root.find_child("QuestLogUI", true, false)
 			if q_log and q_log.has_method("force_open_quest"):
-				# Otwieramy dziennik na siłę z wybranym questem (automatycznie zmieni zakładkę!)
+				# Otwieramy dziennik na siłę z wybranym questem
 				q_log.force_open_quest(_current_quest_id)
 				
-				# Jeśli dziennik jest ukryty, to go otwieramy
 				if not q_log.visible:
 					q_log.open_log()
-				
-				# Błyskawiczne ukrycie tego powiadomienia (skoro i tak otworzyliśmy Dziennik)
-				if _active_tween and _active_tween.is_valid():
-					_active_tween.kill()
-				_process_queue()
+					
+			# Błyskawiczne ukrycie tego powiadomienia
+			if _active_tween and _active_tween.is_valid():
+				_active_tween.kill()
+			_process_queue()

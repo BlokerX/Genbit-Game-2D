@@ -21,6 +21,13 @@ enum QuestCategory { MAIN_STORY, SIDE_QUEST, CONTRACT, HIDDEN }
 ## Czas (w sekundach), po którym zadanie znika z listy "Ukończonych" i może być wzięte ponownie. (system typu daily quests)
 @export var cooldown_seconds: float = 0.0
 
+@export_group("Automatyzacja")
+## Czy etap zerowy (0) ma się zakończyć samoczynnie po wystartowaniu questa?
+## Przydatne, gdy etap 0 służy wyłącznie do wydania przedmiotów startowych lub odpalenia Eventu.
+@export var auto_complete_first_stage: bool = false
+## Opóźnienie (w sekundach) autozaliczenia pierwszego etapu po starcie questa.
+@export var auto_complete_delay: float = 0.0
+
 @export_group("Struktura")
 ## Poszczególne etapy questa jako potężne bloki danych.
 @export var stages: Array[QuestStage] = []

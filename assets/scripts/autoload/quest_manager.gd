@@ -194,7 +194,6 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	_grant_rewards(stage_data.start_rewards)
 	
 	# --- MAGIA: Jeśli dopiero co otrzymaliśmy zadanie, natychmiast odpytujemy ekwipunek Gracza! ---
-	# Dzięki temu, jeśli gracz MIAŁ JUŻ pistolet w plecaku, cel automatycznie się zaliczy.
 	var player = get_tree().get_first_node_in_group("Player")
 	if player and player.has_method("get_inventory"):
 		_on_game_event("inventory_changed", {"inventory": player.get_inventory()})
@@ -204,6 +203,19 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	# Jeśli gracz nie śledzi żadnego questa, automatycznie śledź ten nowy!
 	if is_new_quest and tracked_quest_id == &"":
 		track_quest(quest_id)
+
+	# --- NOWOŚĆ: AUTO ZALICZANIE ETAPU ZEROWEGO ---
+	if is_new_quest and quest.get("auto_complete_first_stage") == true:
+		var delay = quest.get("auto_complete_delay")
+		if delay > 0.0:
+			# Używamy timera, ale dla bezpieczeństwa w locie weryfikujemy stan questa
+			get_tree().create_timer(delay).timeout.connect(func():
+				if active_quests.has(quest_id) and active_quests[quest_id]["stage"] == 0:
+					advance_to_next_stage(quest_id)
+			)
+		else:
+			# Odroczenie na koniec klatki (call_deferred) chroni przed ucięciem innych sygnałów startowych
+			call_deferred("advance_to_next_stage", quest_id)
 
 
 ## Kończy zadanie sukcesem, przyznaje nagrody i uruchamia łańcuchy (jeśli istnieją).
@@ -233,7 +245,6 @@ func complete_quest(quest_id: StringName) -> void:
 		# Jeśli śledziliśmy to zadanie, zdejmujemy je ze śledzika
 		if tracked_quest_id == quest_id:
 			untrack_quest()
-		# Jeśli jest łańcuch, niżej zaktualizuje się automatycznie i tracker sam je złapie (dzięki logice z update_quest)
 		
 		if quest.next_quest_in_chain != null:
 			print("Quest: Automatyczne rozpoczęcie kolejnego ogniwa z łańcucha dla: ", quest.next_quest_in_chain.id)
@@ -312,6 +323,7 @@ func _load_all_quests(path: String) -> void:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	print("QuestManager: Gotowość systemu. Załadowano ", quest_db.size(), " zadań fabularnych do bazy.")
+
 
 # --- NOWOŚĆ: FUNKCJE ŚLEDZENIA ZADAŃ ---
 func track_quest(quest_id: StringName) -> void:
