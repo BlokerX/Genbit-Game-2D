@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://bo5oc8jfs2mb"]
+
+[node name="ChestSpawnpoint" type="Marker2D" unique_id=1944605914 groups=["ObjectSpawn"]]

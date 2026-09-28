@@ -3,6 +3,10 @@ class_name QuestStage
 
 @export_multiline var objective_text: String = "Opis celu dla gracza"
 
+@export_group("Opcje Interfejsu")
+## Jeśli włączone, po wejściu w ten etap na ekranie NIE pojawi się wyskakujące powiadomienie UI.
+@export var silent_stage: bool = false
+
 @export_group("Wymagania Ukończenia Etapu (Opcjonalne)")
 ## Lista celów. System sam przepchnie questa do kolejnego etapu, gdy gracz spełni te warunki (np. uzbiera 10x Drewno).
 @export var objectives: Array[QuestObjective] = []

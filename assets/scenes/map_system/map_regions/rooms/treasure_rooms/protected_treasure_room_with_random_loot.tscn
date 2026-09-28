@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cixwnresmohro"]
 
 [ext_resource type="PackedScene" uid="uid://pnoe6br2w22n" path="res://assets/scenes/map_system/map_regions/room.tscn" id="1_q1l54"]
-[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="2_v1lau"]
-[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="3_v1lau"]
+[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/general_spawnpoint/chest_spawnpoint.tscn" id="2_v1lau"]
+[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/general_spawnpoint/enemy_spawnpoint.tscn" id="3_v1lau"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_e7lt0"]
 vertices = PackedVector2Array(0, 0, 1920, 0, 1920, 1088, 0, 1088)

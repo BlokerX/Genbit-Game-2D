@@ -459,37 +459,55 @@ func check_and_lock_map_region() -> void:
 
 #region Reżyser
 
-## Główny Reżyser: Czysto rozdzielone 3 niezależne systemy
+## Główny Reżyser: Kontroluje powoływanie do życia wrogów, elementów otoczenia oraz łupu (lootu).
+## Obsługuje w pełni wszystkie zaawansowane spawnery (EntitySpawner, ObjectSpawner, LootSpawner).
 func _run_director_spawner() -> void:
+	print("[Reżyser MapRegion] %s: Rozpoczynam procedurę spawnowania obiektów." % name)
 	var entities_node = find_child("Entities")
 	var parent_node = entities_node if entities_node else self
 	
+	# 1. Obsługa starych, podstawowych Markerów (kompatybilność wsteczna)
 	if enemy_pool != null:
+		var old_enemy_spawns_count = 0
 		for marker in enemy_spawns:
-			if randf() <= enemy_spawn_chance:
+			if not marker.is_in_group("AdvancedSpawner") and randf() <= enemy_spawn_chance:
 				var scene = enemy_pool.get_random_enemy_scene()
 				_instantiate_scene(scene, marker.global_position, parent_node)
-				
+				old_enemy_spawns_count += 1
+		if old_enemy_spawns_count > 0:
+			print("[Reżyser MapRegion] Klasyczny system wygenerował %d wrogów." % old_enemy_spawns_count)
+
 	if object_pool != null:
 		for marker in object_spawns:
-			if randf() <= object_spawn_chance:
+			if not marker.is_in_group("AdvancedSpawner") and randf() <= object_spawn_chance:
 				var scene = object_pool.get_random_object_scene()
 				_instantiate_scene(scene, marker.global_position, parent_node)
 				
-	# 3. SYSTEM PRZEDMIOTÓW NA ZIEMI (Luzem)
 	if item_pool != null:
 		for marker in item_spawns:
-			if randf() <= item_spawn_chance:
+			if not marker.is_in_group("AdvancedSpawner") and randf() <= item_spawn_chance:
 				var entry = item_pool.get_random_entry()
-				
 				if entry != null and entry.item_data != null:
 					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
-					
-					# --- ZMIANA TUTAJ: Używamy nowej fabryki ---
 					pickup.item = _create_instance_from_entry(entry)
-					
 					var random_offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
 					_instantiate_node(pickup, marker.global_position + random_offset, parent_node)
+
+	# 2. NOWOŚĆ: Delegacja do zrównanych, inteligentnych spawnerów
+	var active_director_spawners = 0
+	for child in find_children("*", "Marker2D", true, false):
+		if not child.is_in_group("AdvancedSpawner"): 
+			continue
+			
+		var spawner = child
+		if spawner.get("trigger_mode") == 0: # 0 to TriggerMode.DIRECTOR_ONLY
+			active_director_spawners += 1
+			print("[Reżyser MapRegion] Odpalam zaawansowany spawner: %s" % spawner.name)
+			if spawner.has_method("attempt_spawn"):
+				spawner.attempt_spawn()
+				
+	if active_director_spawners > 0:
+		print("[Reżyser MapRegion] Zakończono delegowanie zadań do %d zaawansowanych spawnerów." % active_director_spawners)
 
 ## Faza Hybrydowa: KROK 1 (Tworzenie listy lootu) -> KROK 2 (Rozrzucanie po skrzyni)
 func _fill_hybrid_containers(node: Node) -> void:

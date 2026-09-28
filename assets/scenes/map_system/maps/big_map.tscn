@@ -9,9 +9,9 @@
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/other_data/attack_data.gd" id="6_57olb"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="7_8oq4s"]
 [ext_resource type="PackedScene" uid="uid://b56d8pmb4go24" path="res://assets/scenes/bots/enemies/soldier.tscn" id="8_xpub1"]
-[ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/item_spawnpoint.tscn" id="10_qdhr5"]
-[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/enemy_spawnpoint.tscn" id="11_57olb"]
-[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/chest_spawnpoint.tscn" id="12_8oq4s"]
+[ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/general_spawnpoint/item_spawnpoint.tscn" id="10_qdhr5"]
+[ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/general_spawnpoint/enemy_spawnpoint.tscn" id="11_57olb"]
+[ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/general_spawnpoint/chest_spawnpoint.tscn" id="12_8oq4s"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_2qls1"]
 vertices = PackedVector2Array(0, 0, 96000, 0, 96000, 54400, 0, 54400)

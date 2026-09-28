@@ -2,7 +2,7 @@ extends Node
 class_name WorldSensorComponent
 
 ## Uniwersalny, zaawansowany czujnik świata gry.
-## Podepnij sygnał (np. body_entered z Area2D lub pressed z Buttona) do funkcji trigger().
+## Podepnij sygnał (np. body_entered z Area2D, drzwi lub pressed z Buttona) do funkcji trigger().
 
 @export_group("Reakcja (Co ma się stać?)")
 ## Lista efektów (np. UpdateQuestEffect, DamageEffect, GiveItemEffect), które zostaną wywołane.
@@ -12,7 +12,7 @@ class_name WorldSensorComponent
 
 @export_group("Ograniczenia i Timery")
 ## Tylko gracz (węzeł z grupy 'Player') może aktywować ten czujnik. Ignoruje wrogów i pociski.
-@export var only_player_can_trigger: bool = true
+@export var only_player_can_trigger: bool = false
 ## Ile razy czujnik może zadziałać? (0 = nieskończoność, 1 = tylko raz)
 @export var max_triggers: int = 0
 ## Czas stygnięcia między kolejnymi aktywacjami (w sekundach).

@@ -13,6 +13,7 @@ shape = SubResource("CircleShape2D_3ym74")
 
 [node name="WorldSensorComponent" type="Node" parent="." unique_id=657621410]
 script = ExtResource("1_hkumi")
+only_player_can_trigger = true
 destroy_parent_after_max = true
 metadata/_custom_type_script = "uid://bug61sjuk3ce"
 

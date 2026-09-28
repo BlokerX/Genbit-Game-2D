@@ -42,15 +42,56 @@ func initialize(container: Node) -> void:
 	_current_render_level = GlobalSettings.chunk_render_distance
 	_last_grid_state = GlobalSettings.show_chunk_grid
 	
-	var initial_children = entities_container.get_children()
-	for child in initial_children:
-		register_entity(child)
+	# 1. NATYCHMIASTOWE USTALENIE POZYCJI GRACZA (Przed dodaniem czegokolwiek!)
+	player = get_tree().get_first_node_in_group("Player")
+	if is_instance_valid(player):
+		current_chunk = _calculate_chunk(player.global_position)
+	
+	# 2. GŁĘBOKIE SKANOWANIE MAPY (Spłaszczanie struktury folderów)
+	var entities_to_register: Array[Node] = []
+	_gather_streamables(entities_container, entities_to_register)
+	
+	for entity in entities_to_register:
+		register_entity(entity)
 		
+	# 3. NATYCHMIASTOWE WYMUSZENIE AKTUALIZACJI CHUNKÓW
+	# Zanim silnik narysuje pierwszą klatkę, chowamy wszystko, czego gracz nie widzi!
+	_update_active_chunks()
+
 	set_process(true)
 	
 	if GlobalSettings.show_chunk_grid:
 		queue_redraw()
 	print("[WorldStreamer] Zbudowano fizyczną siatkę chunków. Aktywna hibernacja obiektów.")
+
+## Funkcja głęboko skanująca drzewo. Wyciąga obiekty z pustych folderów Node2D.
+func _gather_streamables(node: Node, result: Array) -> void:
+	for child in node.get_children():
+		# Ignorujemy systemowe węzły
+		if child.name.begins_with("Chunk_") or child.name == "WorldStreamer":
+			continue
+			
+		if child is TileMapLayer or child is NavigationRegion2D or child is CanvasModulate or child is Camera2D:
+			continue
+			
+		if child.is_in_group("Player") or child.is_in_group("AlwaysActive"):
+			continue
+
+		if not child is Node2D:
+			continue
+			
+		# ROZPOZNAWANIE OBIEKTU: Definiujemy, co ma trafić do zamrażarki
+		var is_entity = false
+		if child is EntitySpawner or child.is_in_group("AdvancedSpawner"):
+			is_entity = true
+		elif child is CollisionObject2D or child.is_in_group("Enemy") or child.is_in_group("ItemPickup") or child.is_in_group("PlacedObject") or child.is_in_group("Hazard"):
+			is_entity = true
+		
+		if is_entity:
+			result.append(child)
+		else:
+			# Jeśli to zwykły "pusty folder" Node2D lub stary Marker2D, schodzimy warstwę głębiej!
+			_gather_streamables(child, result)
 
 # --- PRZEŁĄCZANIE W LOCIE (INPUT MAP) ---
 func _unhandled_input(event: InputEvent) -> void:
@@ -91,21 +132,36 @@ func register_entity(node: Node) -> void:
 	if node.is_in_group("Player"): return
 	if node.is_in_group("AlwaysActive"): return # Trigery ignorowane przez streamer
 	
-	# --- NOWA TARCZA: Streamer całkowicie ignoruje punkty nawigacyjne/spawnpointy! ---
-	if node is Marker2D: return
-	# --------------------------------------------------------------------------------
+	# --- NAPRAWA KRYTYCZNA ---
+	# Streamer ignoruje stare markery, ALE musi wpuścić nasz zaawansowany EntitySpawner!
+	if node is Marker2D and not node is EntitySpawner: 
+		return
+	# -------------------------
 	
 	# TARCZA 2: KRYTYCZNE ZABEZPIECZENIE STRUKTURY MAPY
-	# Streamer nigdy nie odetnie dróg, światła ani rysowania mapy
-	if node is TileMapLayer or node is NavigationRegion2D or node is CanvasModulate or node is Camera2D: return
-	
+	if node is TileMapLayer or node is NavigationRegion2D or node is CanvasModulate or node is Camera2D: 
+		return
 	# Zabezpieczenie przed zjadaniem własnych chunków
-	if node.name.begins_with("Chunk_") or node.name == "WorldStreamer": return
+	if node.name.begins_with("Chunk_") or node.name == "WorldStreamer": 
+		return
 
-	# WCHŁANIANIE: Cała reszta (Itemy, wrogowie, budowle, pociski) trafia do pudełek
+	# WCHŁANIANIE: Cała reszta trafia do pudełek
 	var chunk_coords = _calculate_chunk(node.global_position)
 	var chunk_node = _get_or_create_chunk(chunk_coords)
-	node.reparent(chunk_node, true)
+	
+	# --- BEZPIECZNE PRZENOSZENIE DO ZAMRAŻARKI (Clean Code) ---
+	# Unikamy funkcji `node.reparent()`, która w Godot 4 rzuca błędami, gdy chunk nie jest jeszcze w drzewie.
+	var global_trans = node.global_transform
+	
+	if node.get_parent():
+		node.get_parent().remove_child(node)
+		
+	chunk_node.add_child(node)
+	node.global_transform = global_trans
+	
+	# --- NAPRAWA B: Rejestrowanie w uśpionym chunku ---
+	if not chunk_node.is_inside_tree() and node is RigidBody2D:
+		node.freeze = true
 
 func _track_moving_entities() -> void:
 	# Skanujemy TYLKO pudełka załadowane do drzewa
@@ -160,17 +216,20 @@ func _get_offsets_for_current_level() -> Array[Vector2i]:
 
 func _update_active_chunks() -> void:
 	var new_active_chunks: Array[Vector2i] = []
-	
-	# Używamy odległości renderowania i zaawansowanych kształtów z ustawień gracza!
 	var offsets = _get_offsets_for_current_level()
 	for offset in offsets:
 		new_active_chunks.append(current_chunk + offset)
 
-	# ZAMRAŻANIE (0% użycia Procesora)
+	# ZAMRAŻANIE
 	for coords in active_chunks:
 		if not new_active_chunks.has(coords):
 			var chunk_node = chunk_nodes.get(coords)
 			if chunk_node and chunk_node.is_inside_tree():
+				# --- NAPRAWA B: Usypianie fizyki ---
+				for child in chunk_node.get_children():
+					if child is RigidBody2D:
+						child.freeze = true
+						
 				entities_container.remove_child(chunk_node)
 
 	# OŻYWIANIE
@@ -179,10 +238,13 @@ func _update_active_chunks() -> void:
 			var chunk_node = _get_or_create_chunk(coords)
 			if not chunk_node.is_inside_tree():
 				entities_container.add_child(chunk_node)
+				
+				# --- NAPRAWA B: Budzenie fizyki ---
+				for child in chunk_node.get_children():
+					if child is RigidBody2D:
+						child.freeze = false
 
 	active_chunks = new_active_chunks
-
-	# Odświeżamy rysowanie siatki, gdy gracz zmienił chunk lub zmieniły się opcje
 	if GlobalSettings.show_chunk_grid:
 		queue_redraw()
 

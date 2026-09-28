@@ -29,7 +29,10 @@
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="22_5c861"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="23_vlsbn"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/other_data/attack_data.gd" id="24_dkl2x"]
+[ext_resource type="Script" uid="uid://dp7yluysg5imj" path="res://assets/scripts/audio_system/music_player.gd" id="25_utrwp"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="25_x4ifb"]
+[ext_resource type="Script" uid="uid://cn16jym6j5qb4" path="res://assets/scripts/audio_system/music_playlist.gd" id="26_euyi3"]
+[ext_resource type="AudioStream" uid="uid://cq7e22m7p0nrt" path="res://assets/audio/game/music/under_village.mp3" id="28_l37h7"]
 
 [sub_resource type="Gradient" id="Gradient_vlsbn"]
 offsets = PackedFloat32Array(1)
@@ -37,6 +40,13 @@ colors = PackedColorArray(1, 1, 1, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_dkl2x"]
 gradient = SubResource("Gradient_vlsbn")
+
+[sub_resource type="Resource" id="Resource_e4nwf"]
+script = ExtResource("26_euyi3")
+playlist_name = "Game Music Playlist"
+tracks = Array[AudioStream]([ExtResource("17_1y80r"), ExtResource("28_l37h7")])
+delay_between_tracks = 30.0
+metadata/_custom_type_script = "uid://cn16jym6j5qb4"
 
 [sub_resource type="Resource" id="Resource_pd8se"]
 resource_local_to_scene = true
@@ -448,12 +458,10 @@ visible = false
 [node name="PauseMenu" parent="." unique_id=1986430408 instance=ExtResource("15_grwg2")]
 visible = false
 
-[node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1318962840]
+[node name="MusicPlayer" type="Node" parent="." unique_id=1318205212]
 process_mode = 3
-stream = ExtResource("17_1y80r")
-autoplay = true
-bus = &"Music"
-parameters/looping = true
+script = ExtResource("25_utrwp")
+default_playlist = SubResource("Resource_e4nwf")
 
 [node name="LevelContainer" type="Node2D" parent="." unique_id=325666330]
 

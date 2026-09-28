@@ -56,3 +56,63 @@ func receive_effect(effect: Effect) -> bool:
 			faction_component.process_revenge(attacker)
 			
 	return success
+
+# --- SYSTEM PRZEBUDZENIA Z CHUNKA (Naprawa "Choroby Hibernacyjnej") ---
+
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	call_deferred("_wake_up_from_hibernation")
+
+func _wake_up_from_hibernation() -> void:
+	# TARCZA 1: Je li Streamer zd  nas usun  przed odpaleniem tej funkcji - przerywamy!
+	if not is_inside_tree():
+		return
+		
+	is_frozen = false
+	
+	# --- 1. NAPRAWA STANU WALKI (Odblokowanie Softlocka Zdolności) ---
+	# Jeśli przeciwnik został wyciągnięty z mapy w trakcie rzucania skilla,
+	# flaga 'is_casting_ability' zacięła się na stałe. Wymuszamy jej reset.
+	if ai_controller:
+		var combat_ctrl = ai_controller.get_node_or_null("AICombatController")
+		if combat_ctrl:
+			combat_ctrl.is_casting_ability = false
+			
+	# --- 2. ZABICIE ZAWIESZONYCH LOTÓW/ANIMACJI ---
+	# Zabijamy stare Tweeny, by przeciwnik (np. boss z JumpSmashAbility)
+	# nie kontynuował starego lotu po wybudzeniu z hibernacji.
+	for t in active_tweens:
+		if t and t.is_valid():
+			t.kill()
+	active_tweens.clear()
+	
+	if interaction_and_attack_stats_script:
+		interaction_and_attack_stats_script.reset_cooldown()
+		
+	# --- 3. TWARDY RESTART SENSORÓW FIZYCZNYCH ---
+	for area in find_children("*", "Area2D", true, false):
+		if area.monitoring:
+			area.monitoring = false
+			area.monitoring = true
+			
+	for ray in find_children("*", "RayCast2D", true, false):
+		if ray.enabled:
+			ray.enabled = false
+			ray.enabled = true
+			ray.force_raycast_update()
+
+	# Czekamy na przeliczenie kolizji
+	#await get_tree().physics_frame
+	#await get_tree().physics_frame
+	
+	# TARCZA 2: Zabezpieczenie po odczekaniu klatek
+	if not is_inside_tree():
+		return
+	
+	# --- 4. RESET MÓZGU ---
+	if ai_controller and ai_controller.has_method("reset_state"):
+		ai_controller.reset_state()
+		
+	if ai_controller and ai_controller.has_method("force_target_scan"):
+		ai_controller.force_target_scan()

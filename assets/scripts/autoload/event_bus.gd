@@ -43,6 +43,25 @@ var active_menus: Dictionary = {
 	MENU_PAUSE: false
 }
 
+# --- NOWOŚĆ: REJESTR ZDARZEŃ FABULARNYCH ---
+## Pamięć wszystkich zdarzeń, które wydarzyły się w grze. 
+## Służy do synchronizacji obiektów wybudzanych z chunków.
+var story_events_history: Array[String] = []
+
+func _ready() -> void:
+	# Automatycznie nasłuchujemy własnego sygnału, aby zapisywać go do historii
+	story_event_triggered.connect(_record_story_event)
+
+## Zapisuje hasło do rejestru (uruchamiane automatycznie przez sygnał)
+func _record_story_event(event_name: String) -> void:
+	if not story_events_history.has(event_name):
+		story_events_history.append(event_name)
+		print("EventBus: Zapisano do historii zdarzenie -> ", event_name)
+
+## Sprawdza, czy dane zdarzenie fabularne już się kiedykolwiek wydarzyło.
+func has_story_event_occurred(event_name: String) -> bool:
+	return story_events_history.has(event_name)
+
 ## Funkcja aktualizująca dany stan UI. 
 ## 'emit_update' pozwala na cichą zmianę przy zamykaniu wielu okien naraz.
 func set_menu_state(menu_name: String, is_open: bool, emit_update: bool = true) -> void:
@@ -70,3 +89,8 @@ func reset(emit_update: bool = true) -> void:
 	if emit_update and was_any_open:
 		hud_visibility_requested.emit()
 		ui_state_changed.emit(false)
+
+## Wymusza wyczyszczenie historii (używane np. przy wychodzeniu do Menu Głównego z SaveManagerem)
+func clear_history() -> void:
+	story_events_history.clear()
+	print("EventBus: Historia zdarzeń fabularnych została wyczyszczona.")

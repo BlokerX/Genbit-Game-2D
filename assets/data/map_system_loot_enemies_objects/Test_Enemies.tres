@@ -1,22 +1,27 @@
 [gd_resource type="Resource" script_class="EnemySpawnPool" format=3 uid="uid://dkpmxc6sp5g2y"]
 
-[ext_resource type="Script" uid="uid://bppa36a616ks" path="res://assets/scripts/map_system/resources/enemy_spawn_entry.gd" id="1_ihtma"]
+[ext_resource type="Script" uid="uid://bppa36a616ks" path="res://assets/scripts/spawn_system/enemy_spawn_entry.gd" id="1_ihtma"]
 [ext_resource type="PackedScene" uid="uid://q4xj7lh64e4s" path="res://assets/scenes/bots/enemies/spider.tscn" id="2_y4eep"]
-[ext_resource type="Script" uid="uid://by435sfv5okql" path="res://assets/scripts/map_system/resources/enemy_spawn_pool.gd" id="3_jxf8t"]
+[ext_resource type="Script" uid="uid://by435sfv5okql" path="res://assets/scripts/spawn_system/enemy_spawn_pool.gd" id="3_jxf8t"]
 [ext_resource type="PackedScene" uid="uid://b56d8pmb4go24" path="res://assets/scenes/bots/enemies/soldier.tscn" id="3_y4eep"]
+[ext_resource type="PackedScene" uid="uid://blqj3v8dcpldy" path="res://assets/scenes/bots/enemies/mutant_prisoner.tscn" id="4_dp872"]
 
-[sub_resource type="Resource" id="Resource_upi1x"]
+[sub_resource type="Resource" id="Resource_7giyv"]
 script = ExtResource("1_ihtma")
 enemy_scene = ExtResource("2_y4eep")
-weight = 40.0
 metadata/_custom_type_script = "uid://bppa36a616ks"
 
-[sub_resource type="Resource" id="Resource_jxf8t"]
+[sub_resource type="Resource" id="Resource_63gjo"]
+script = ExtResource("1_ihtma")
+enemy_scene = ExtResource("4_dp872")
+metadata/_custom_type_script = "uid://bppa36a616ks"
+
+[sub_resource type="Resource" id="Resource_0k6qj"]
 script = ExtResource("1_ihtma")
 enemy_scene = ExtResource("3_y4eep")
 metadata/_custom_type_script = "uid://bppa36a616ks"
 
 [resource]
 script = ExtResource("3_jxf8t")
-entries = Array[ExtResource("1_ihtma")]([SubResource("Resource_upi1x"), SubResource("Resource_jxf8t")])
+entries = Array[ExtResource("1_ihtma")]([SubResource("Resource_7giyv"), SubResource("Resource_63gjo"), SubResource("Resource_0k6qj")])
 metadata/_custom_type_script = "uid://by435sfv5okql"

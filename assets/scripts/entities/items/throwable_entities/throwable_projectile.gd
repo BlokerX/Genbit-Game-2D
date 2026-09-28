@@ -19,22 +19,39 @@ class_name ThrowableProjectile
 @export var aoe_area: Area2D
 
 var shooter: Node2D = null
+var _shooter_faction_name: StringName = &""
 var current_velocity: Vector2 = Vector2.ZERO
 var friction: float = 0.0
 var effects_to_apply: Array[Effect] = []
 var _time_alive: float = 0.0
+var _is_fuse_lit: bool = false
+var _fuse_timer: float = 0.0
+var _direct_hit_ref: Node2D = null
 
 func _ready() -> void:
 	add_to_group("Hazard")
 	body_entered.connect(_on_body_entered)
 	if current_velocity != Vector2.ZERO:
 		rotation = current_velocity.angle()
+	
+	# <--- NAPRAWA C: Zapisujemy "dowód osobisty" strzelca
+	if is_instance_valid(shooter):
+		var my_faction = shooter.get_node_or_null("FactionComponent")
+		if my_faction:
+			_shooter_faction_name = my_faction.faction_name
 
 func _physics_process(delta: float) -> void:
 	_time_alive += delta
 	if not is_infinite and _time_alive >= lifetime:
 		trigger_effect(null) 
 		return
+
+	# --- NOWOŚĆ: Logika zapalnika odporna na zamrażanie ---
+	if _is_fuse_lit:
+		_fuse_timer += delta
+		if _fuse_timer >= activation_delay:
+			_is_fuse_lit = false
+			_execute_explosion(_direct_hit_ref)
 
 	if current_velocity.length() > 0:
 		current_velocity = current_velocity.move_toward(Vector2.ZERO, friction * delta)
@@ -59,7 +76,6 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if not destroy_on_impact: 
 		return
-		
 	trigger_effect(body)
 
 func trigger_effect(direct_hit: Node2D) -> void:
@@ -75,14 +91,13 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		main_sprite.texture = activated_texture
 
 	if activation_delay > 0.0 and direct_hit == null:
-		# Tarcza PRZED:
-		if not is_inside_tree(): return
-		
-		await get_tree().create_timer(activation_delay).timeout
-		
-		# Tarcza PO:
-		if not is_inside_tree(): return
+		_is_fuse_lit = true
+		_fuse_timer = 0.0
+		_direct_hit_ref = direct_hit
+	else:
+		_execute_explosion(direct_hit)
 
+func _execute_explosion(direct_hit: Node2D) -> void:
 	var targets: Array[Node2D] = []
 	
 	if aoe_area != null:
@@ -100,11 +115,9 @@ func trigger_effect(direct_hit: Node2D) -> void:
 		targets.append(direct_hit)
 		
 	for body in targets:
-		# Zabezpieczamy się sprawdzając czy shooter nadal istnieje
 		if is_instance_valid(shooter) and body == shooter and not friendly_fire:
 			continue
 			
-		# Zabezpieczenie sojuszników przed friendly fire!
 		if not friendly_fire and _is_ally(body):
 			continue
 			
@@ -113,13 +126,11 @@ func trigger_effect(direct_hit: Node2D) -> void:
 				if "source_position" in effect:
 					effect.source_position = self.global_position
 					
-				# --- KLUCZOWA POPRAWKA PROWOKACJI I BŁĘDU CRASHU ---
 				if "source_entity" in effect:
 					effect.source_entity = shooter if is_instance_valid(shooter) else null
 					
 				body.receive_effect(effect)
 
-	# --- 3. USUNIĘCIE OBIEKTU PO WYBUCHU ---
 	queue_free()
 
 func receive_effect(effect: Effect) -> bool:
@@ -142,16 +153,26 @@ func receive_effect(effect: Effect) -> bool:
 
 ## Sprawdza FactionComponent by zweryfikować czy cele są po tej samej stronie
 func _is_ally(body: Node2D) -> bool:
-	if not is_instance_valid(shooter) or not is_instance_valid(body): 
+	if not is_instance_valid(body) or not body.has_node("FactionComponent"): 
 		return false
 		
-	# Pobierz frakcję strzelca
-	var my_faction = shooter.get_node_or_null("FactionComponent")
-	if not my_faction:
-		return false
-		
-	# Sprawdź czy ofiara MA jakikolwiek FactionComponent (Duck Typing zamiast Class checking)
-	if body.has_node("FactionComponent"):
-		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
-		
+	var target_faction = body.get_node("FactionComponent")
+
+	# Sytuacja A: Strzelec nadal żyje na mapie
+	if is_instance_valid(shooter):
+		var my_faction = shooter.get_node_or_null("FactionComponent")
+		if my_faction:
+			return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
+			
+	# Sytuacja B: Strzelec zniknął (zginął lub został zamrożony), sprawdzamy zapamiętaną nazwę!
+	if _shooter_faction_name != &"":
+		# Własna frakcja jest domyślnie bezpieczna, jeśli zachowanie pozwala
+		if target_faction.faction_name == _shooter_faction_name and target_faction.friendly_to_same_faction:
+			return true
+			
+		# Sprawdzenie dyplomacji względem frakcji strzelca
+		if target_faction.faction_relations.has(_shooter_faction_name):
+			if target_faction.faction_relations[_shooter_faction_name] == FactionComponent.Disposition.FRIENDLY:
+				return true
+
 	return false
