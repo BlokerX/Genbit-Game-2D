@@ -28,7 +28,7 @@
 [ext_resource type="Resource" uid="uid://dtx4553mfd2b2" path="res://assets/data/map_system_loot_enemies_objects/Test_Loot.tres" id="25_m3vha"]
 [ext_resource type="Script" uid="uid://dqn8qp5l3h0ph" path="res://assets/scripts/spawn_system/object_spawner.gd" id="28_qwwgy"]
 [ext_resource type="Script" uid="uid://bcosqdhxucm4y" path="res://assets/scripts/spawn_system/loot_spawner.gd" id="29_7lr31"]
-[ext_resource type="Script" uid="uid://vu5duvx7ry26" path="res://assets/scripts/map_system/resources/guaranteed_loot_entry.gd" id="29_j72ff"]
+[ext_resource type="Script" uid="uid://vu5duvx7ry26" path="res://assets/scripts/spawn_system/guaranteed_loot_entry.gd" id="29_j72ff"]
 [ext_resource type="PackedScene" uid="uid://bnk5e152g3104" path="res://assets/scenes/game_objects/placed/chest.tscn" id="30_1dry5"]
 [ext_resource type="Resource" uid="uid://bmfpjt22blich" path="res://assets/data/items/map.tres" id="30_bfs0a"]
 [ext_resource type="Resource" uid="uid://dlbhf00me7vsc" path="res://assets/data/items/compass.tres" id="31_fsvqi"]
