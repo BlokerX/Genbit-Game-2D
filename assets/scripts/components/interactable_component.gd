@@ -38,6 +38,9 @@ enum TargetType {
 var parent_sprite: Node2D
 
 func _ready():
+	# Automatyczne ustawienie warstwy i sortowania
+	z_index = GameLayers.INTERACTABLE_HIGHLIGHT
+	
 	if highlight_sprite:
 		highlight_sprite.hide()
 		

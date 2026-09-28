@@ -9,6 +9,7 @@ const UI_HUD : int        = 50   # Twój główny ekran (Paski HP gracza, Minima
 
 # --- KONFIGURACJA WARSTW Z-INDEX ---
 #const WORLD_UI : int   = 100   # Paski HP nad głowami, latające cyferki DMG
+const INTERACTABLE_HIGHLIGHT = 30
 const HAZARD : int = 20
 const ENTITIES : int   = 10    # Gracz, Wrogowie, Skrzynie, Drzwi
 const LOOT : int       = 0     # Upuszczone przedmioty

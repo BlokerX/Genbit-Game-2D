@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c8ct3tr2di03g"]
+
+[ext_resource type="Script" uid="uid://bwf60qgdq3hgr" path="res://assets/scripts/entities/items/placeable_objects/placed_object.gd" id="1_drjc7"]
+[ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="3_hyj06"]
+[ext_resource type="PackedScene" uid="uid://5tg8lr31m6h" path="res://assets/scenes/game_objects/interactable_component.tscn" id="5_y1i3j"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pto2p"]
+size = Vector2(63, 63)
+
+[node name="WallObject" type="StaticBody2D" unique_id=1814421846]
+script = ExtResource("1_drjc7")
+item_pickup_scene = ExtResource("3_hyj06")
+max_health = 100
+
+[node name="BuildingTexture" type="Sprite2D" parent="." unique_id=1683539189]
+texture_filter = 5
+scale = Vector2(4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=437544051]
+shape = SubResource("RectangleShape2D_pto2p")
+
+[node name="InteractableComponent" parent="." unique_id=566081594 node_paths=PackedStringArray("target_sprite", "target_collision") instance=ExtResource("5_y1i3j")]
+target_type = 4
+target_sprite = NodePath("../BuildingTexture")
+target_collision = NodePath("../CollisionShape2D")
+
+[node name="BuildArea" type="Area2D" parent="." unique_id=768483361]
+collision_mask = 31
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BuildArea" unique_id=1152171812]
+shape = SubResource("RectangleShape2D_pto2p")

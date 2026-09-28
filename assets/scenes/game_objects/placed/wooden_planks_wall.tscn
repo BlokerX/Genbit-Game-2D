@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://biih0g4jasypu"]
+
+[ext_resource type="PackedScene" uid="uid://c8ct3tr2di03g" path="res://assets/scenes/game_objects/placed/wall_object.tscn" id="1_bkwi1"]
+[ext_resource type="Resource" uid="uid://c03jgu4l32x2x" path="res://assets/data/items/wooden_planks_wall.tres" id="2_bkwi1"]
+[ext_resource type="Texture2D" uid="uid://bmttx7kwc0vuu" path="res://assets/textures/samples_examples/tilesets/wood_planks.png" id="3_iyhsf"]
+
+[node name="WoodenPlanksWall" unique_id=1814421846 instance=ExtResource("1_bkwi1")]
+item_to_drop = ExtResource("2_bkwi1")
+
+[node name="BuildingTexture" parent="." index="0" unique_id=1683539189]
+texture = ExtResource("3_iyhsf")

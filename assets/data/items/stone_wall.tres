@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://b2hbpqy8cxi15"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_qes5d"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_vnt3i"]
+[ext_resource type="Script" uid="uid://b2k40ut4xgole" path="res://assets/scripts/entities/items/components/placeable_component.gd" id="3_h502v"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="4_ux50c"]
+[ext_resource type="Texture2D" uid="uid://btt11rqw4jubk" path="res://assets/textures/samples_examples/tilesets/concrete_tiles02.png" id="5_6mj07"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="6_1nrtd"]
+
+[sub_resource type="Resource" id="Resource_yndqt"]
+script = ExtResource("3_h502v")
+scene_path = "uid://bfnpnekia8t17"
+
+[sub_resource type="Resource" id="Resource_xx54w"]
+script = ExtResource("4_ux50c")
+
+[resource]
+script = ExtResource("6_1nrtd")
+item_id = &"stone_wall"
+item_name = "Stone Wall"
+item_description = "Build the wall."
+item_icon = ExtResource("5_6mj07")
+components = Array[ExtResource("1_qes5d")]([SubResource("Resource_yndqt"), SubResource("Resource_xx54w")])

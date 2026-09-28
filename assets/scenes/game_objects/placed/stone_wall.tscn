@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bfnpnekia8t17"]
+
+[ext_resource type="PackedScene" uid="uid://c8ct3tr2di03g" path="res://assets/scenes/game_objects/placed/wall_object.tscn" id="1_hek6m"]
+[ext_resource type="Resource" uid="uid://b2hbpqy8cxi15" path="res://assets/data/items/stone_wall.tres" id="2_jd8u4"]
+[ext_resource type="Texture2D" uid="uid://btt11rqw4jubk" path="res://assets/textures/samples_examples/tilesets/concrete_tiles02.png" id="3_6qp80"]
+
+[node name="StoneWall" unique_id=1814421846 instance=ExtResource("1_hek6m")]
+item_to_drop = ExtResource("2_jd8u4")
+max_health = 200
+
+[node name="BuildingTexture" parent="." index="0" unique_id=1683539189]
+texture = ExtResource("3_6qp80")
