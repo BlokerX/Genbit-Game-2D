@@ -16,7 +16,6 @@ metadata/_custom_type_script = "uid://byffpv3e7benb"
 
 [sub_resource type="Resource" id="Resource_rvkt0"]
 script = ExtResource("3_3ejbt")
-heal_per_tick = 4
 duration = 8.0
 tick_interval = 0.25
 metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"

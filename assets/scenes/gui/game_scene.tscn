@@ -49,13 +49,13 @@ tracks = Array[AudioStream]([ExtResource("17_1y80r"), ExtResource("28_l37h7"), E
 delay_between_tracks = 30.0
 metadata/_custom_type_script = "uid://cn16jym6j5qb4"
 
-[sub_resource type="Resource" id="Resource_l37h7"]
+[sub_resource type="Resource" id="Resource_euyi3"]
 resource_local_to_scene = true
 script = ExtResource("22_5c861")
 moveSpeed = 400.0
 metadata/_custom_type_script = "uid://qggqcqys4ruj"
 
-[sub_resource type="Resource" id="Resource_63xgh"]
+[sub_resource type="Resource" id="Resource_l37h7"]
 resource_local_to_scene = true
 script = ExtResource("23_vlsbn")
 
@@ -64,7 +64,7 @@ script = ExtResource("24_dkl2x")
 max_range = 200.0
 metadata/_custom_type_script = "uid://xdxv87pcx8uw"
 
-[sub_resource type="Resource" id="Resource_gdd6s"]
+[sub_resource type="Resource" id="Resource_63xgh"]
 resource_local_to_scene = true
 script = ExtResource("25_x4ifb")
 hand_attack_data = SubResource("Resource_osvyu")
@@ -469,6 +469,6 @@ default_playlist = SubResource("Resource_e4nwf")
 [node name="Player" parent="." unique_id=1016659893 instance=ExtResource("16_ykv0g")]
 unique_name_in_owner = true
 position = Vector2(960, 540)
-movement_universal_script = SubResource("Resource_l37h7")
-health_stats_script = SubResource("Resource_63xgh")
-interaction_and_attack_stats_script = SubResource("Resource_gdd6s")
+movement_universal_script = SubResource("Resource_euyi3")
+health_stats_script = SubResource("Resource_l37h7")
+interaction_and_attack_stats_script = SubResource("Resource_63xgh")

@@ -54,33 +54,35 @@ func _on_effect_removed(node: Node) -> void:
 		if effects_label: effects_label.visible = false
 
 func _create_effect_icon(effect_node: Node, effect_resource: Resource) -> void:
-	var container: Container
-	var has_icon = effect_resource.get("icon") != null
+	# Zawsze używamy HBoxContainer dla układu poziomego (ikona obok tekstu)
+	var container = HBoxContainer.new()
 	var effect_color: Color = Color.WHITE
 	
 	if effect_resource.get("effect_color") != null:
 		effect_color = effect_resource.effect_color
 
-	if has_icon:
-		container = VBoxContainer.new()
+	# 1. Tworzenie i dodawanie ikony (jeśli istnieje)
+	if effect_resource.get("icon") != null:
 		var icon = TextureRect.new()
 		icon.texture = effect_resource.icon
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.custom_minimum_size = Vector2(32, 32)
+		icon.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN 
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC
 		container.add_child(icon)
-	else:
-		container = HBoxContainer.new()
-		var name_label = Label.new()
-		name_label.text = effect_resource.effect_name + ": "
-		name_label.add_theme_color_override("font_color", effect_color)
-		container.add_child(name_label)
 
+	# 2. Tworzenie i dodawanie nazwy efektu
+	var name_label = Label.new()
+	name_label.text = effect_resource.effect_name + ": "
+	name_label.add_theme_color_override("font_color", effect_color)
+	container.add_child(name_label)
+
+	# 3. Tworzenie i dodawanie licznika czasu
 	var time_label = Label.new()
 	time_label.add_theme_color_override("font_color", effect_color)
-	if has_icon:
-		time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	
 	container.add_child(time_label)
+	
 	add_child(container)
 	
 	displayed_effects[effect_resource.effect_name] = {
