@@ -1,4 +1,4 @@
-extends SpeedEffect
+extends SpeedModifierEffect
 class_name SlowEffect
 
 func _init(_duration: float = 10.0, _slow_multiplier: float = 0.5) -> void:

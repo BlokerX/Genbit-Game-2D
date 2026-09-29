@@ -135,7 +135,7 @@ func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 		slow.effect_name = "Otępienie Zmysłów"
 		effects_to_apply.append(slow)
 	if apply_mind_decay_poison:
-		var poison = PoisonEffect.new()
+		var poison = PoisonDebuffEffect.new()
 		poison.effect_name = "Rozkład Umysłu"
 		poison.poison_damage_per_tick = poison_damage_per_tick
 		poison.duration = poison_duration

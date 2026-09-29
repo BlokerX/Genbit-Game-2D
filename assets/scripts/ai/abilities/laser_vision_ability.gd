@@ -194,7 +194,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			
 			var effects: Array[Effect] = [DamageEffect.new(laser_damage_per_tick)]
 			if apply_burn_effect:
-				var burn = PoisonEffect.new()
+				var burn = PoisonDebuffEffect.new()
 				burn.effect_name = "Podpalenie Lasera"
 				burn.poison_damage_per_tick = burn_damage_per_tick
 				burn.duration = burn_duration

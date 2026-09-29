@@ -123,7 +123,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			# 4. SPAWNOWANIE AOE (Pojedynczej plamy)
 			var aoe = TelegraphedAOE.new()
 			var dmg_eff = DamageEffect.new(impact_damage)
-			var poison_eff = PoisonEffect.new()
+			var poison_eff = PoisonDebuffEffect.new()
 			poison_eff.duration = poison_duration
 			poison_eff.poison_damage_per_tick = poison_damage_per_tick
 			

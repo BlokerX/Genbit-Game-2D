@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://0axh3xbaln4c"]
 
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="1_sntr0"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_sntr0"]
 [ext_resource type="Script" uid="uid://d006iaxvme57d" path="res://assets/scripts/quests/quest_data.gd" id="2_j8dfy"]
 [ext_resource type="Script" uid="uid://dr4gp1ec7ylx2" path="res://assets/scripts/quests/quest_stage.gd" id="3_8il2r"]
 [ext_resource type="Script" uid="uid://hp4oiwwvtan5" path="res://assets/scripts/quests/objectives/quest_objective.gd" id="4_j2amj"]

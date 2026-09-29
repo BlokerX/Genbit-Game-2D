@@ -1,5 +1,5 @@
 extends TimedEffect
-class_name SpeedEffect
+class_name SpeedModifierEffect
 
 @export var speed_multiplier: float = 1.0
 

@@ -5,16 +5,16 @@
 [ext_resource type="Texture2D" uid="uid://fmavd4epg4yc" path="res://assets/textures/samples_examples/items/knife.png" id="3_3ienj"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="3_faath"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="3_h0thy"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="4_b06ah"]
-[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/active_effects/poison_effect.gd" id="5_w8ndq"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="4_b06ah"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="5_w8ndq"]
 [ext_resource type="Script" uid="uid://cmsn2kpgdc7r" path="res://assets/scripts/entities/items/components/melee_weapon_component.gd" id="6_l5bdc"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_g0fm1"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="7_rqs12"]
-[ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/damage_effect.gd" id="7_w8ndq"]
-[ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/knockback_effect.gd" id="8_j4jxd"]
+[ext_resource type="Script" uid="uid://yp3q6jfx5qh8" path="res://assets/scripts/entities/effects/instant/damage_effect.gd" id="7_w8ndq"]
+[ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/instant/knockback_effect.gd" id="8_j4jxd"]
 [ext_resource type="Script" uid="uid://dam1sbs33o1q2" path="res://assets/scripts/entities/items/components/throwable_component.gd" id="8_l5bdc"]
 [ext_resource type="PackedScene" uid="uid://dvgmw3t8c8a83" path="res://assets/scenes/game_objects/throwables/knife.tscn" id="8_rqs12"]
-[ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/trigger_effect.gd" id="9_28a2h"]
+[ext_resource type="Script" uid="uid://rdfgyo20o1gx" path="res://assets/scripts/entities/effects/utility/trigger_effect.gd" id="9_28a2h"]
 
 [sub_resource type="Resource" id="Resource_j4jxd"]
 script = ExtResource("2_g0fm1")
@@ -24,9 +24,6 @@ stun_time = 0.5
 
 [sub_resource type="Resource" id="Resource_28a2h"]
 script = ExtResource("5_w8ndq")
-poison_damage_per_tick = 1
-duration = 10.0
-tick_interval = 0.5
 metadata/_custom_type_script = "uid://csdcvcev8ylem"
 
 [sub_resource type="Resource" id="Resource_go2b2"]
@@ -42,9 +39,6 @@ effect_name = "Damage"
 
 [sub_resource type="Resource" id="Resource_v1150"]
 script = ExtResource("5_w8ndq")
-poison_damage_per_tick = 1
-duration = 10.0
-tick_interval = 0.5
 metadata/_custom_type_script = "uid://csdcvcev8ylem"
 
 [sub_resource type="Resource" id="Resource_r45db"]

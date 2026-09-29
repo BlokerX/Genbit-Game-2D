@@ -3,7 +3,7 @@ extends ItemComponent
 
 @export_category("Konsumpcja")
 @export var use_cooldown: float = 0.5
-## Lista efektów (np. HealEffect, PoisonEffect, HasteEffect), które zostaną nałożone po użyciu.
+## Lista efektów, które zostaną nałożone po użyciu.
 @export var effects: Array[Effect] = []
 
 func execute(actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> void:

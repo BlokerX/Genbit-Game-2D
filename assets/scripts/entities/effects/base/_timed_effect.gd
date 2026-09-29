@@ -42,7 +42,7 @@ func apply_effect(target : Node2D) -> bool:
 
 	# 2. JEŚLI NIE MA TAKIEGO EFEKTU, DODAJEMY NOWY
 	var active_node = Node.new()
-	active_node.set_script(preload("res://assets/scripts/entities/effects/active_effects/_active_effect.gd"))
+	active_node.set_script(preload("res://assets/scripts/entities/effects/base/_active_effect.gd"))
 	
 	active_node.name = effect_name.replace(" ", "_") 
 	

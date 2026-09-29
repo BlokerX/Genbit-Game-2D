@@ -418,7 +418,7 @@ class AcidProjectileLogic extends Node2D:
 	func _apply_puddle_effects() -> void:
 		var effects: Array[Effect] = []
 		if a_poison:
-			var poison = PoisonEffect.new()
+			var poison = PoisonDebuffEffect.new()
 			poison.effect_name = "Kwasowa Zgnilizna"
 			poison.poison_damage_per_tick = p_dmg
 			poison.duration = p_dur

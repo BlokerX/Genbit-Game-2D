@@ -17,7 +17,7 @@
 [ext_resource type="Resource" uid="uid://bgqk6xdsp2vg" path="res://assets/data/dialogues_data/dialogues/entry_points/tutorial_dialogue_entry_point.tres" id="16_n1edl"]
 [ext_resource type="Script" uid="uid://djucrytie0x6j" path="res://assets/scripts/quests/components/story_event_reciver.gd" id="17_tpm7i"]
 [ext_resource type="PackedScene" uid="uid://btg6eh4dmf80t" path="res://assets/scenes/game_objects/world_triggers/world_area_trigger.tscn" id="18_18iqk"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="19_hlxsh"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="19_hlxsh"]
 [ext_resource type="Script" uid="uid://bug61sjuk3ce" path="res://assets/scripts/components/world_sensor_component.gd" id="19_qwwgy"]
 [ext_resource type="Resource" uid="uid://bjsclabh7p1id" path="res://assets/data/quests/q_get_pistol.tres" id="20_67f4b"]
 [ext_resource type="Script" uid="uid://rpt8mhq3dtqy" path="res://assets/scripts/quests/effects/update_quest_effect.gd" id="21_hlvp1"]

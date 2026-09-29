@@ -31,7 +31,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# Narysuj strefę na samym Naukowcu (Wybuch wokół niego)
 	var aoe = TelegraphedAOE.new()
 	var dmg_eff = DamageEffect.new(radiation_damage)
-	var poison = PoisonEffect.new()
+	var poison = PoisonDebuffEffect.new()
 	aoe.setup(attacker.global_position, blast_radius, cast_time, [dmg_eff, poison], attacker)
 	
 	# Wyłączamy friendly_fire dla strefy, żeby nie zabiła sojuszników
@@ -68,8 +68,6 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			if edge_dist <= blast_radius:
 				if my_faction.get_disposition_toward(ally) == FactionComponent.Disposition.FRIENDLY:
 					if ally.has_method("receive_effect"):
-						# BUFFOWANIE SOJUSZNIKÓW
-						ally.receive_effect(FrenzyBuffEffect.new())
 						ally.receive_effect(HealEffect.new(heal_amount))
 
 	# =========================================================

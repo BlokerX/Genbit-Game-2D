@@ -199,7 +199,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if apply_knockback: effects_to_apply.append(KnockbackEffect.new(knockback_force, knockback_duration))
 	if apply_stun: effects_to_apply.append(StunEffect.new(stun_time))
 	if apply_poison:
-		var poison = PoisonEffect.new()
+		var poison = PoisonDebuffEffect.new()
 		poison.effect_name = "Kwas Z Ogonu"
 		poison.poison_damage_per_tick = poison_damage_per_tick
 		poison.duration = poison_duration

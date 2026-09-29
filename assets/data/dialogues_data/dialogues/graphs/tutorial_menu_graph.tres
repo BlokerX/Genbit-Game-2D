@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dl7pf0vyf2fnh" path="res://assets/dialogue_system/resources/dialogue_connection.gd" id="1_q1iu6"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_65hrx"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/_effect.gd" id="3_4ywsg"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_4ywsg"]
 [ext_resource type="Script" uid="uid://c8vdk5bssyshm" path="res://assets/dialogue_system/resources/dialogue_node.gd" id="4_5n5r8"]
 [ext_resource type="Resource" uid="uid://cq15k3j6vanvo" path="res://assets/data/dialogues_data/speakers/samouczek.tres" id="5_x2xrh"]
 [ext_resource type="Script" uid="uid://cdad781l6jq5d" path="res://assets/dialogue_system/resources/dialogue_graph.gd" id="6_f2eun"]
