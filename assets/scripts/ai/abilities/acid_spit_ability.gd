@@ -125,7 +125,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			var dmg_eff = DamageEffect.new(impact_damage)
 			var poison_eff = PoisonDebuffEffect.new()
 			poison_eff.duration = poison_duration
-			poison_eff.poison_damage_per_tick = poison_damage_per_tick
+			poison_eff.hp_per_tick = poison_damage_per_tick
 			
 			aoe.setup(drop_pos, puddle_radius, puddle_cast_time, [dmg_eff, poison_eff], attacker)
 			aoe.friendly_fire = friendly_fire

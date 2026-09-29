@@ -5,8 +5,17 @@ class_name LifeStatsComponent
 signal health_changed(new_health, max_health)
 signal died
 
+@export_group("Zdrowie")
 @export var health : int = 100
 @export var max_health : int = 100
+
+@export_group("Pancerz i Obrona")
+@export var base_armor: float = 0.0
+var armor_adder: float = 0.0
+var armor_multiplier: float = 1.0
+
+func get_total_armor() -> int:
+	return int((base_armor + armor_adder) * armor_multiplier)
 
 # jeśli < 0 to jest niesmiertelna
 func is_alive() -> bool :
@@ -15,8 +24,16 @@ func is_alive() -> bool :
 	return true
 
 func take_damage(damage : int) -> void :
-	health -= damage
+	# Obliczamy obrażenia pomniejszone o pancerz
+	var final_damage = damage - get_total_armor()
+	
+	# Zabezpieczenie: cios zawsze zadaje co najmniej 1 punkt obrażeń
+	final_damage = max(1, final_damage)
+	
+	health -= final_damage
 	health_changed.emit(health, max_health) # Informujemy UI
+	print("Otrzymano cios! Obrażenia bazowe: ", damage, " | Zablokowano: ", get_total_armor(), " | Otrzymano: ", final_damage)
+	
 	if health <= 0 :
 		kill()
 

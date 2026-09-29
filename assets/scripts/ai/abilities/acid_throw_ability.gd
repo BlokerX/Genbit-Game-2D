@@ -420,7 +420,7 @@ class AcidProjectileLogic extends Node2D:
 		if a_poison:
 			var poison = PoisonDebuffEffect.new()
 			poison.effect_name = "Kwasowa Zgnilizna"
-			poison.poison_damage_per_tick = p_dmg
+			poison.hp_per_tick = p_dmg
 			poison.duration = p_dur
 			effects.append(poison)
 		if a_slow:

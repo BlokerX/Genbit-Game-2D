@@ -1,0 +1,85 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://c6d3egtmx6jrh"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_8p2dn"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_yns67"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_en4kl"]
+[ext_resource type="Script" uid="uid://c7l5kqe6qpcqt" path="res://assets/scripts/entities/effects/instant/full_restore_effect.gd" id="4_ftms2"]
+[ext_resource type="Script" uid="uid://bucrmdkvkkry5" path="res://assets/scripts/entities/effects/instant/clear_effects_effect.gd" id="4_yns67"]
+[ext_resource type="Script" uid="uid://dkd7i8lhtmsv8" path="res://assets/scripts/entities/effects/timed_effects/max_health/max_health_buff_effect.gd" id="5_dj16a"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/timed_effects/health/regeneration_buff_effect.gd" id="6_us7g3"]
+[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/timed_effects/speed/speed_effect.gd" id="7_400ob"]
+[ext_resource type="Script" uid="uid://dwp0cp6k8ruh7" path="res://assets/scripts/entities/effects/timed_effects/damage/damage_buff_effect.gd" id="8_kb5k8"]
+[ext_resource type="Script" uid="uid://beyuo20v0d0n" path="res://assets/scripts/entities/effects/timed_effects/range/range_buff_effect.gd" id="9_m6urc"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="10_tnk40"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="11_2dmp7"]
+[ext_resource type="Script" uid="uid://jtl3d554w1bg" path="res://assets/scripts/entities/effects/timed_effects/cooldown/cooldown_buff_effect.gd" id="11_en4kl"]
+[ext_resource type="Script" uid="uid://frydcgtw0aji" path="res://assets/scripts/entities/effects/timed_effects/armor/armor_buff_effect.gd" id="12_ftms2"]
+[ext_resource type="Texture2D" uid="uid://bisfq3lwxns8b" path="res://assets/textures/samples_examples/items/purple_potion_v2.png" id="12_vl8oh"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="13_auc82"]
+
+[sub_resource type="Resource" id="Resource_en4kl"]
+script = ExtResource("4_yns67")
+metadata/_custom_type_script = "uid://bucrmdkvkkry5"
+
+[sub_resource type="Resource" id="Resource_1fe1k"]
+script = ExtResource("4_ftms2")
+metadata/_custom_type_script = "uid://c7l5kqe6qpcqt"
+
+[sub_resource type="Resource" id="Resource_47b2n"]
+script = ExtResource("5_dj16a")
+max_health_adder = 900
+is_infinite = true
+metadata/_custom_type_script = "uid://dkd7i8lhtmsv8"
+
+[sub_resource type="Resource" id="Resource_ayluw"]
+script = ExtResource("6_us7g3")
+is_infinite = true
+tick_interval = 0.1
+metadata/_custom_type_script = "uid://b0jnwhxn2iyb5"
+
+[sub_resource type="Resource" id="Resource_o2vul"]
+script = ExtResource("7_400ob")
+speed_multiplier = 4.0
+is_infinite = true
+metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
+
+[sub_resource type="Resource" id="Resource_f4mlm"]
+script = ExtResource("8_kb5k8")
+damage_adder = 100000.0
+is_infinite = true
+metadata/_custom_type_script = "uid://dwp0cp6k8ruh7"
+
+[sub_resource type="Resource" id="Resource_60q0t"]
+script = ExtResource("9_m6urc")
+range_adder = 10000.0
+is_infinite = true
+metadata/_custom_type_script = "uid://beyuo20v0d0n"
+
+[sub_resource type="Resource" id="Resource_ftms2"]
+script = ExtResource("11_en4kl")
+cooldown_adder = -1000.0
+is_infinite = true
+metadata/_custom_type_script = "uid://jtl3d554w1bg"
+
+[sub_resource type="Resource" id="Resource_dj16a"]
+script = ExtResource("12_ftms2")
+armor_adder = 100000.0
+is_infinite = true
+metadata/_custom_type_script = "uid://frydcgtw0aji"
+
+[sub_resource type="Resource" id="Resource_lwss7"]
+script = ExtResource("10_tnk40")
+effects = Array[ExtResource("3_en4kl")]([SubResource("Resource_en4kl"), SubResource("Resource_1fe1k"), SubResource("Resource_47b2n"), SubResource("Resource_ayluw"), SubResource("Resource_o2vul"), SubResource("Resource_f4mlm"), SubResource("Resource_60q0t"), SubResource("Resource_ftms2"), SubResource("Resource_dj16a")])
+
+[sub_resource type="Resource" id="Resource_0p86o"]
+script = ExtResource("11_2dmp7")
+max_stack = 12
+
+[resource]
+script = ExtResource("13_auc82")
+item_id = &"devine_elixir"
+item_name = "Devine Elixir"
+item_description = "Obtain devine power."
+item_icon = ExtResource("12_vl8oh")
+components = Array[ExtResource("1_8p2dn")]([SubResource("Resource_lwss7"), SubResource("Resource_0p86o")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

@@ -23,7 +23,7 @@ func _init() -> void:
 	min_range = 0.0
 	max_range = 250.0
 
-func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
+func execute(attacker: CharacterEntity, _target: CharacterEntity) -> void:
 	if not is_instance_valid(attacker): return
 	var combat_ctrl = attacker.get_node_or_null("AIController/AICombatController")
 	if combat_ctrl: combat_ctrl.is_casting_ability = true
@@ -68,7 +68,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			if edge_dist <= blast_radius:
 				if my_faction.get_disposition_toward(ally) == FactionComponent.Disposition.FRIENDLY:
 					if ally.has_method("receive_effect"):
-						ally.receive_effect(HealEffect.new(heal_amount))
+						@warning_ignore("integer_division")
+						ally.receive_effect(RegenerationBuffEffect.new(5,1,int(heal_amount/5)))
+						ally.receive_effect(StunEffect.new(10))
 
 	# =========================================================
 	# TARCZA PRZED AWAIT (Zabezpiecza get_tree)
