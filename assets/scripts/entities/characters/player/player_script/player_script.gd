@@ -338,8 +338,7 @@ func _handle_global_inputs(event: InputEvent) -> bool:
 		if level_manager and level_manager.get("is_transitioning") == true: # TODO chyba martwy kod albo usuń albo zabezpiecz w pliku map.gd
 			print("Blokada: Menedżer Przejść jest zajęty animacją ekranu!")
 			return true # Ignoruj klawisz R, jeśli mapa się przesuwa
-			
-		is_respawning = true
+		
 		call_deferred("respawn_sequence")
 		return true
 	
@@ -583,30 +582,39 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 
 # Nadpisanie bazowej funkcji z CharacterEntity
 func respawn_sequence() -> void:
-	# Natychmiastowe zamrożenie gracza!
-	# Zapobiega wbieganiu w drzwi na ślepo, gdy ekran powoli ciemnieje.
+	if is_respawning:
+		return
+	is_respawning = true
+	
+	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE (Na widocznym ekranie) ---
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	
-	# --- NOWE: Informujemy świat (w tym UI), że gracz padł ---
-	EventBus.player_died.emit()
-	# ----------------------------------------------------------
+	# Czyścimy efekty i leczymy gracza NATYCHMIAST, by nic nas nie dobiło w trakcie animacji
+	purge_absolutely_everything()
 	
-	# --- NAPRAWA KRYTYCZNA: Czekamy na SYGNAŁ od menedżera, a nie na funkcję ---
+	if inventory:
+		inventory.inventory_updated.emit()
+	
+	EventBus.player_died.emit()
+	
+	# --- FAZA 2: ŚCIEMNIENIE ---
 	TransitionManager.fade_to_black(1.0)
 	await TransitionManager.on_fade_out_finished
-	# -------------------------------------------------------------------------
 	
-	# DOPIERO GDY JEST CIEMNO blokujemy procesy, by kamera nie skoczyła przedwcześnie
+	# --- FAZA 3: PRZESUWANIE CIAŁA (Gdy ekran jest czarny) ---
 	process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# 1. Odpalamy całą logikę bazową (leczenie, zerowanie prędkości, usuwanie efektów)
-	super() 
+	health_stats_script.heal_completely()
+	
+	# Ręcznie robimy to, co robiłoby super() z położeniem:
+	position = respawnVector
+	character_sprite.rotation_degrees = 0
+	character_sprite.frame = 0
 	
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 	
-	# 2. Przekazanie obsługi położenia do Map, 
-	# abyśmy przenieśli się też wewnątrz węzłów pokoi, a nie tylko wizualnie
+	# Przekazanie obsługi położenia do Menedżera Mapy
 	var level_manager = get_tree().get_first_node_in_group("Map")
 	if level_manager:
 		if level_manager.has_method("handle_player_respawn"):
@@ -614,7 +622,6 @@ func respawn_sequence() -> void:
 	else:
 		push_warning("Nie znaleziono Map podczas respawnu!")
 	
-	# Po rozjaśnieniu ekranu zdejmujemy tarczę klawisza "R"
 	is_respawning = false
 
 #endregion

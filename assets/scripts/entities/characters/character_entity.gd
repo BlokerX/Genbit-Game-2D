@@ -69,6 +69,11 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
+	# Zmiana wizualna: "Kładziemy" postać na ziemi
+	# (Możesz zamienić to na 'character_sprite.frame = 8', jeśli masz specjalną klatkę)
+	# character_sprite.rotation_degrees = 90
+	character_sprite.frame = 8 # TODO ZABEZPIECZYĆ dla tych co nie mają klatki i dodać w przyszłości animacje
+	
 	print(self.name + " zginął! Przetwarzanie łupu...")
 	
 	# 1. Źródło: Tabela Łupu (LootDropComponent)

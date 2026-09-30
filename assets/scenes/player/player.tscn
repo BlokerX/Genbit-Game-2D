@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://dkuq1wfjhb2hp" path="res://assets/textures/samples_examples/entities/Nick/nick_back_left.png" id="12_37c74"]
 [ext_resource type="Texture2D" uid="uid://covfan7f27yaa" path="res://assets/textures/samples_examples/entities/Nick/nick_left.png" id="13_u63vv"]
 [ext_resource type="Texture2D" uid="uid://ccql8716e4rit" path="res://assets/textures/samples_examples/entities/Nick/nick_front_left.png" id="14_lgxp8"]
+[ext_resource type="Texture2D" uid="uid://d1cvyqjmovrmh" path="res://assets/textures/samples_examples/entities/Nick/nick_dead.png" id="15_npq60"]
 [ext_resource type="Script" uid="uid://djg3r5l1r5ji2" path="res://assets/scripts/components/camera_component.gd" id="21_xflxm"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xflxm"]
@@ -48,6 +49,9 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("14_lgxp8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_npq60")
 }],
 "loop": true,
 "name": &"default",
