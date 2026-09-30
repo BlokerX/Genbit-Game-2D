@@ -173,15 +173,11 @@ vertical_alignment = 1
 
 [node name="HUDVisibilityConfig" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/PlayerUIGroup/HP_and_Cooldown_Bars/CooldownProgressBar" unique_id=912995909 instance=ExtResource("4_iftva")]
 
-[node name="StatsPanel" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer" unique_id=795723000 node_paths=PackedStringArray("player", "damage_label", "crit_rate_label", "range_label", "speed_label")]
+[node name="StatsPanel" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer" unique_id=795723000 node_paths=PackedStringArray("player")]
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_b4kdy")
 player = NodePath("../../../../../Player")
-damage_label = NodePath("DamageLabel")
-crit_rate_label = NodePath("CritLabel")
-range_label = NodePath("RangeLabel")
-speed_label = NodePath("SpeedLabel")
 
 [node name="StatsHeader" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/StatsPanel" unique_id=1796433041]
 layout_mode = 2
@@ -189,18 +185,6 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 18
 text = "STATS:"
-
-[node name="DamageLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/StatsPanel" unique_id=2014525515]
-layout_mode = 2
-
-[node name="CritLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/StatsPanel" unique_id=1361970591]
-layout_mode = 2
-
-[node name="RangeLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/StatsPanel" unique_id=1722019231]
-layout_mode = 2
-
-[node name="SpeedLabel" type="Label" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer/StatsPanel" unique_id=617311985]
-layout_mode = 2
 
 [node name="AcriveEffectsPanel" type="VBoxContainer" parent="UI_Canvas/HUD_Layer/TopLeft_Zone/MarginContainer" unique_id=515517333 node_paths=PackedStringArray("player")]
 layout_mode = 2

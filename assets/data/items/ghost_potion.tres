@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ci38uby6uvdvp"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_mrfhx"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_24ekt"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_4lmbw"]
+[ext_resource type="Script" uid="uid://b37f821a55jr1" path="res://assets/scripts/entities/effects/utility/ghost_effect.gd" id="4_wj35p"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_ltdx1"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_ar5qp"]
+[ext_resource type="Texture2D" uid="uid://dimqoakjir1ei" path="res://assets/textures/samples_examples/items/potion.png" id="7_odrh1"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_5xhpb"]
+
+[sub_resource type="Resource" id="Resource_67xgy"]
+script = ExtResource("4_wj35p")
+metadata/_custom_type_script = "uid://b37f821a55jr1"
+
+[sub_resource type="Resource" id="Resource_ps6ps"]
+script = ExtResource("5_ltdx1")
+use_cooldown = 0.0
+effects = Array[ExtResource("3_4lmbw")]([SubResource("Resource_67xgy")])
+
+[sub_resource type="Resource" id="Resource_3u56a"]
+script = ExtResource("6_ar5qp")
+max_stack = 12
+
+[resource]
+script = ExtResource("8_5xhpb")
+item_id = &"ghost_potion"
+item_name = "Ghost Potion"
+item_icon = ExtResource("7_odrh1")
+components = Array[ExtResource("1_mrfhx")]([SubResource("Resource_ps6ps"), SubResource("Resource_3u56a")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

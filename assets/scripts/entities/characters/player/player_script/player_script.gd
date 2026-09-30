@@ -115,9 +115,6 @@ var is_input_locked: bool = false
 # Blokada pacyfistyczna
 var is_in_pacifist_zone: bool = false
 
-# --- TARCZA RESPAWNU ---
-var is_respawning: bool = false
-
 #endregion
 
 #region Główne funkcje silnikowe
@@ -154,6 +151,9 @@ func _ready():
 		inventory.inventory_updated.connect(on_inventory_update)
 		on_inventory_update()
 		inventory.item_dropped.connect(_on_inventory_item_dropped)
+		
+		# --- DODANE: Wymuszamy odświeżenie UI po załadowaniu "pięści" ---
+		inventory.inventory_updated.emit()
 	#endregion
 	
 	#setup_complete.emit()
@@ -596,31 +596,36 @@ func respawn_sequence() -> void:
 	if inventory:
 		inventory.inventory_updated.emit()
 	
-	EventBus.player_died.emit()
+	# Sprawdzamy czy trafiliśmy tu z powodu utraty HP, czy z guzika:
+	if is_dead:
+		EventBus.player_died.emit()
+		
+		# Zatrzymujemy kod na 1.5 sekundy. Widzimy jak gracz leży martwy.
+		await get_tree().create_timer(1.5).timeout
+	else:
+		# Manualny respawn - pomijamy timer, następuje błyskawiczne wygaszenie
+		print("Gracz użył manualnego respawnu - pomijam fazę leżenia.")
 	
-	# --- FAZA 2: ŚCIEMNIENIE ---
-	TransitionManager.fade_to_black(1.0)
-	await TransitionManager.on_fade_out_finished
-	
-	# --- FAZA 3: PRZESUWANIE CIAŁA (Gdy ekran jest czarny) ---
+	# --- FAZA 2: ZLECENIE PRZENOSIN MAPIE ---
 	process_mode = Node.PROCESS_MODE_DISABLED
-	
-	health_stats_script.heal_completely()
-	
-	# Ręcznie robimy to, co robiłoby super() z położeniem:
-	position = respawnVector
-	character_sprite.rotation_degrees = 0
-	character_sprite.frame = 0
-	
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 	
-	# Przekazanie obsługi położenia do Menedżera Mapy
 	var level_manager = get_tree().get_first_node_in_group("Map")
 	if level_manager:
 		if level_manager.has_method("handle_player_respawn"):
+			# Await zatrzymuje gracza do momentu pełnego pojawienia się i rozjaśnienia mapy
 			await level_manager.handle_player_respawn(self)
 	else:
 		push_warning("Nie znaleziono Map podczas respawnu!")
+	
+	# --- FAZA 3: KONIEC ODRADZANIA (Ekran już jest jasny) ---
+	process_mode = Node.PROCESS_MODE_INHERIT
+	
+	# Czekamy równe dwie klatki fizyki zachowując tarczę "is_respawning".
+	# Dzięki temu, gdy gracz wyląduje na portalu/drzwiach, odrzucą one teleportację
+	# ułamek sekundy przed tym, jak oddamy graczowi pełną kontrolę!
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	
 	is_respawning = false
 

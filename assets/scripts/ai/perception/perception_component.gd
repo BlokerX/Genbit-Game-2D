@@ -24,7 +24,12 @@ func process_perception(_delta: float) -> void:
 	for potential_target in get_tree().get_nodes_in_group("Character"):
 		if potential_target == entity: 
 			continue
-			
+		
+		# --- NAPRAWA: Ignorowanie Niewidzialnych i Martwych celów ---
+		if potential_target.get("is_dead") == true or potential_target.has_meta("is_invisible"):
+			continue
+		# -----------------------------------------------------------
+		
 		var disposition = my_faction.get_disposition_toward(potential_target)
 		
 		# AI zaatakuje TYLKO sprowokowanych i otwartych wrogów

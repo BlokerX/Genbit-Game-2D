@@ -36,6 +36,14 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 		
 	if body.is_in_group("Player"):
+		# --- NAPRAWA: Zabezpieczenie przed teleportacją tuż po odrodzeniu ---
+		if body.get("is_respawning") == true:
+			# Gracz właśnie się zrespawnował W ŚRODKU tego portalu.
+			# Blokujemy portal! Zostanie odblokowany, gdy gracz z niego wyjdzie (_on_body_exited).
+			has_triggered = true
+			return
+		# ------------------------------------------------------------------
+		
 		if target_level_path != "":
 			has_triggered = true # Zamykamy bramkę na czas zmiany poziomu
 			print("Wchodzę do nowego poziomu ze ścieżki: ", target_level_path)

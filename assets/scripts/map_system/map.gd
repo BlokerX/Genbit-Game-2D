@@ -238,7 +238,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 
 	# ŚCIEMNIENIE EKRANU
 	if do_fade:
-		TransitionManager.fade_to_black(0.2)
+		TransitionManager.fade_to_black()
 		await TransitionManager.on_fade_out_finished
 	
 	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
@@ -304,6 +304,12 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
 		GlobalLevelManager.stored_player = null
 		
+		# --- ROZDZIELENIE LOGIKI: Zamiast grzebać w zmiennych gracza, prosimy go o reset ---
+		# Ekran w tym momencie jest całkowicie czarny!
+		if force_teleport and player.has_method("reset_state_for_respawn"):
+			player.reset_state_for_respawn()
+		# ----------------------------------------------------------------------------------
+		
 		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
 		if target_door:
 			if "spawn_point" in target_door and target_door.spawn_point != null:
@@ -359,7 +365,8 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	
 	# Jeśli BOTH, zaczynamy rozjaśniać w tle w trakcie przesuwania
 	if do_fade and do_slide:
-		TransitionManager.fade_to_normal(0.2)
+		TransitionManager.fade_to_normal()
+		await TransitionManager.on_fade_in_finished
 		
 	if do_slide:
 		# ANIMACJA PRZESUWANIA (TWEEN)
@@ -405,7 +412,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		global_darkness.color = target_color
 		
 		if do_fade:
-			TransitionManager.fade_to_normal(0.2)
+			TransitionManager.fade_to_normal()
 			await TransitionManager.on_fade_in_finished
 
 	# 8. ODMROŻENIE GRACZA (Przywrócenie fizyki po wszystkich animacjach!)
@@ -466,30 +473,14 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 	print("Menedżer Mapy: Gracz zainicjował respawn...")
 	
 	if starting_map_region:
-		# Czyścimy wszystkie negatywne efekty (jak przy przechodzeniu levelu)
-		if player.has_method("clear_all_effects"):
-			player.clear_all_effects()
-			
-		# Jeśli mapa jest stała, wczytujemy ją z pliku do czystego stanu
-		# (z pominięciem przedmiotów "usuniętych trwale") - przygotowanie do Serializacji!
 		if is_persistent_level:
 			print("Menedżer Mapy: Reset trwałej mapy. Oczekuję na mechanikę SaveManager'a...")
-			# W przyszłości: SaveManager.reload_map_from_disk(self)
 		else:
-			print("Menedżer Mapy: Miękki reset (odtworzenie proceduralnych zasobów pokoju).")
+			print("Menedżer Mapy: Miękki reset...")
 			
-		# Zdejmujemy ewentualne zaciemnienie po śmierci
-		TransitionManager.fade_to_normal(1) # Usuwa alfę
+		# Używamy AWAIT i przekazujemy 1.0s na powolne, gładkie przejście
+		await change_map_region(starting_map_region, null, true)
 		
-		# Przenosimy gracza z powrotem do pokoju startowego 
-		change_map_region(starting_map_region)
-		
-		if starting_map_region.spawn_points.size() > 0:
-			player.global_position = starting_map_region.spawn_points[0].global_position
-		else:
-			var map_region_center_offset = starting_map_region.size_px / 2.0
-			player.global_position = starting_map_region.global_position + map_region_center_offset
-
 		# Obsługa flagi historii mapy
 		if reset_map_history_on_respawn:
 			discovered_map_regions.clear()
@@ -500,7 +491,6 @@ func handle_player_respawn(player: PlayerCharacter) -> void:
 			
 		map_updated.emit()
 	else:
-		# Fallback - awaryjnie w ostateczności
 		push_error("Menedżer Mapy: Brak 'starting_map_region'. Twardy reset sceny.")
 		get_tree().reload_current_scene()
 

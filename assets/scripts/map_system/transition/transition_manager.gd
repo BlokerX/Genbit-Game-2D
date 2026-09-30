@@ -13,13 +13,13 @@ func _ready() -> void:
 	color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(color_rect)
 
-func fade_to_black(duration: float = 0.25) -> void:
+func fade_to_black(duration: float = 0.5) -> void:
 	var tween = create_tween()
 	tween.tween_property(color_rect, "color:a", 1.0, duration).set_trans(Tween.TRANS_SINE)
 	await tween.finished
 	on_fade_out_finished.emit()
 
-func fade_to_normal(duration: float = 0.25) -> void:
+func fade_to_normal(duration: float = 0.5) -> void:
 	var tween = create_tween()
 	tween.tween_property(color_rect, "color:a", 0.0, duration).set_trans(Tween.TRANS_SINE)
 	await tween.finished

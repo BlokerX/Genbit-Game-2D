@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dijwo6ndu8stl"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_r8100"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_xwyt3"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_tamh4"]
+[ext_resource type="Script" uid="uid://cka4oe07mcggv" path="res://assets/scripts/entities/effects/utility/invisibility_effect.gd" id="4_jc5hj"]
+[ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="5_q3djt"]
+[ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="6_pa38d"]
+[ext_resource type="Texture2D" uid="uid://dimqoakjir1ei" path="res://assets/textures/samples_examples/items/potion.png" id="7_mg7is"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_8662c"]
+
+[sub_resource type="Resource" id="Resource_67xgy"]
+script = ExtResource("4_jc5hj")
+metadata/_custom_type_script = "uid://cka4oe07mcggv"
+
+[sub_resource type="Resource" id="Resource_ps6ps"]
+script = ExtResource("5_q3djt")
+effects = Array[ExtResource("3_tamh4")]([SubResource("Resource_67xgy")])
+
+[sub_resource type="Resource" id="Resource_3u56a"]
+script = ExtResource("6_pa38d")
+max_stack = 12
+
+[resource]
+script = ExtResource("8_8662c")
+item_id = &"invisibility_potion"
+item_name = "Invisibility Potion"
+item_icon = ExtResource("7_mg7is")
+components = Array[ExtResource("1_r8100")]([SubResource("Resource_ps6ps"), SubResource("Resource_3u56a")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

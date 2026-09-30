@@ -37,9 +37,13 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var effects_collector : Node
 @export var destroy_entity_after_die : bool = true
 
+# --- TARCZA RESPAWNU ---
+var is_respawning: bool = false
+
 # --- Zmienne do kontrolowania zamrożenia ---
 var active_tweens: Array[Tween] = []
 var is_frozen: bool = false
+var is_dead: bool = false
 
 #region Główne funkcje silnikowe
 
@@ -69,10 +73,22 @@ func _physics_process(_delta):
 
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died():
+	# --- TARCZA NIEŚMIERTELNOŚCI (Immortality) ---
+	if has_meta("is_immortal") and get_meta("is_immortal") == true:
+		print("Zadziałała NIEŚMIERTELNOŚĆ! Postać odmawia śmierci i leczy się o 1 HP.")
+		is_dead = false
+		if health_stats_script:
+			health_stats_script.heal(1) # Zostawiamy postać na 1 HP, ratując ją przed zgonem
+		return
+	# ---------------------------------------------
+	
+	# Zabezpieczenie przed podwójnym wywołaniem śmierci w tej samej klatce
+	if is_dead:
+		return
+	is_dead = true
+	
 	# Zmiana wizualna: "Kładziemy" postać na ziemi
-	# (Możesz zamienić to na 'character_sprite.frame = 8', jeśli masz specjalną klatkę)
-	# character_sprite.rotation_degrees = 90
-	character_sprite.frame = 8 # TODO ZABEZPIECZYĆ dla tych co nie mają klatki i dodać w przyszłości animacje
+	character_sprite.frame = 8 # TODO ZABEZPIECZYĆ dla tych co nie mają klatki
 	
 	print(self.name + " zginął! Przetwarzanie łupu...")
 	
@@ -83,7 +99,7 @@ func _on_character_died():
 	# 2. Źródło: Aktualny Ekwipunek (Upuść wszystko, co trzymał/miał w plecaku)
 	if drop_from_inventory and has_method("get_inventory"):
 		# ZMIANA: call("nazwa_metody") omija sprawdzanie statyczne!
-		var inv = call("get_inventory") 
+		var inv = call("get_inventory")
 		if inv:
 			if inv is Inventory:
 				pass # TODO coś jest tu nie tak pewnie nie dokończone czy coś już nie pamiętam o co tu chodzi... może o to że gracz nie dropie ekwipunku
@@ -110,12 +126,28 @@ func respawn_sequence():
 	
 	purge_absolutely_everything()
 
+# --- FUNKCJA WYWOŁYWANA PRZEZ MAPĘ (Gdy ekran jest w 100% czarny) ---
+func reset_state_for_respawn() -> void:
+	# Mapa w ogóle nie wie, co tu się dzieje. Wie tylko, że ma to wywołać, gdy jest ciemno.
+	health_stats_script.heal_completely()
+	
+	# Przywracamy postać do pionu i resetujemy animację z "leżącej" na "stojącą"
+	character_sprite.rotation_degrees = 0
+	character_sprite.frame = 0
+	
+	# --- WSKRZESZENIE ---
+	is_dead = false
+
 #endregion
 
 #region Obsługa systemu akcji (Effect)
 
 ## Standardowa funkcja dla mikstur, pułapek i ataków (Zwykłe efekty, można wyleczyć)
 func receive_effect(effect: Effect) -> bool:
+	# Ignorujemy efekty, jeśli entity nie żyje LUB właśnie się teleportuje z ręcznego respawnu
+	if is_dead or is_respawning:
+		return false
+		
 	var success = effect.apply_effect(self)
 	if success:
 		print("Entity character otrzymał efekt: ", effect.effect_name)
@@ -125,6 +157,10 @@ func receive_effect(effect: Effect) -> bool:
 
 ## Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
 func receive_environment_effect(effect: Effect) -> bool:
+	# Ignorujemy efekty, jeśli entity nie żyje LUB właśnie się teleportuje z ręcznego respawnu
+	if is_dead or is_respawning:
+		return false
+	
 	if effects_collector == null: return false
 	
 	var success = effect.apply_effect(self)
