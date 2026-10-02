@@ -38,6 +38,12 @@ var actual_cooldown : float = 1.0
 @export var stun_adder : float = 0.0
 @export var stun_multiplier : float = 1.0
 
+# Knockback buff
+@export var knockback_adder : float = 0.0
+@export var knockback_multiplier : float = 1.0
+
+@export var armor_penetration_adder : float = 0.0
+
 # --- #
 
 # Cooldown buff
@@ -83,6 +89,16 @@ func get_total_range() -> float:
 
 func get_total_stun() -> float:
 	return ( actual_attack_data.stun_time + stun_adder ) * stun_multiplier
+
+# Obliczanie ostatecznej wartości:
+func get_total_knockback() -> float:
+	return ( actual_attack_data.knockback_force + knockback_adder ) * knockback_multiplier
+
+# Funkcja licząca całkowitą penetrację pancerza (ucinamy na 1.0, by nie było absurdalnych obrażeń ujemnych)
+func get_total_armor_penetration() -> float:
+	if actual_attack_data != null:
+		return clamp(actual_attack_data.armor_penetration + armor_penetration_adder, 0.0, 1.0)
+	return clamp(armor_penetration_adder, 0.0, 1.0)
 
 func get_total_actual_cooldown() -> float:
 	# Tu również aktualny cooldown zależy od tego czym atakujemy
@@ -132,6 +148,8 @@ func generate_attack_effects() -> Array[Effect]:
 	var final_crit_rate = get_total_critical_rate()
 	var final_crit_dmg = get_total_critical_damage()
 	var final_stun = get_total_stun()
+	var final_knockback = get_total_knockback()
+	var final_penetration = get_total_armor_penetration()
 	
 	# 2. Szansa na cios krytyczny
 	if randf() <= final_crit_rate:
@@ -139,11 +157,16 @@ func generate_attack_effects() -> Array[Effect]:
 		print("KRYTYK! Obrażenia: ", final_damage)
 	
 	# 3. Tworzymy efekty
-	effects.append(DamageEffect.new(final_damage))
+	
+	# Tworzymy główne obrażenia, PRZEKAZUJĄC penetrację jako DRUGI argument
+	effects.append(DamageEffect.new(final_damage, final_penetration))
 	
 	if final_stun > 0.0:
 		effects.append(StunEffect.new(final_stun))
-		
+	if final_knockback > 0.0:
+		# KnockbackEffect z domyślnym czasem trwania odepchnięcia
+		effects.append(KnockbackEffect.new(final_knockback)) 
+	
 	return effects
 
 ## Generuje listę wszystkich efektów, dołącza te z broni i resetuje cooldown

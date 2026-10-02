@@ -14,6 +14,15 @@ signal died
 var armor_adder: float = 0.0
 var armor_multiplier: float = 1.0
 
+@export_group("Odporności i Ciernie")
+## Odporność na kontrolę tłumu (0.0 = 0%, 1.0 = 100% niewrażliwości na odrzut i ogłuszenie)
+@export_range(0.0, 1.0) var cc_resistance: float = 0.0
+
+## Płaskie obrażenia zwrotne (zadawane atakującemu przy każdym otrzymanym ciosie)
+@export var thorns_damage: int = 0
+## Procent otrzymanych obrażeń (po redukcji przez pancerz) odbijanych w atakującego
+@export_range(0.0, 1.0) var thorns_percent: float = 0.0
+
 func get_total_armor() -> int:
 	return int((base_armor + armor_adder) * armor_multiplier)
 
@@ -23,9 +32,10 @@ func is_alive() -> bool :
 		return false
 	return true
 
-func take_damage(damage : int) -> void :
-	# Obliczamy obrażenia pomniejszone o pancerz
-	var final_damage = damage - get_total_armor()
+func take_damage(damage : int, armor_penetration : float) -> void :
+	# Pancerz jest redukowany o procent penetracji (np. 0.3 oznacza, że ignorujemy 30% pancerza)
+	var effective_armor = float(get_total_armor()) * (1.0 - armor_penetration)
+	var final_damage = damage - int(effective_armor)
 	
 	# Zabezpieczenie: cios zawsze zadaje co najmniej 1 punkt obrażeń
 	final_damage = max(1, final_damage)
