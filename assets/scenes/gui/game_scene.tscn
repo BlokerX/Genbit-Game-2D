@@ -73,12 +73,23 @@ hand_attack_data = SubResource("Resource_osvyu")
 script = ExtResource("1_ge8p3")
 initial_map_path = "uid://cbecj7vxyv5rc"
 
-[node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("chest_panel", "player_panel", "backpack_panel", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
+[node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("main_inventory_window", "chest_panel", "player_panel", "backpack_panel", "equipment_window", "equipment_collapsible", "toggle_equipment_btn", "eq_slot_head", "eq_slot_chest", "eq_slot_legs", "eq_slot_boots", "eq_slot_accessory", "eq_slot_amulet", "eq_slot_backpack", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
 process_mode = 3
 script = ExtResource("1_bpfx5")
-chest_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/ChestPanel")
-player_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/PlayerPanel")
-backpack_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer/BackpackPanel")
+main_inventory_window = NodePath("Menus_Layer/InventoryWindows")
+chest_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer/ChestPanel")
+player_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer/PlayerPanel")
+backpack_panel = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer/BackpackPanel")
+equipment_window = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow")
+equipment_collapsible = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible")
+toggle_equipment_btn = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/ToggleEquipmentBtn")
+eq_slot_head = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqHead")
+eq_slot_chest = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqChest")
+eq_slot_legs = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqLegs")
+eq_slot_boots = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqBoots")
+eq_slot_accessory = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqAccessory")
+eq_slot_amulet = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqAmulet")
+eq_slot_backpack = NodePath("Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/BackpackCenter/EqBackpack")
 hotbar_panel = NodePath("HUD_Layer/BottomCenter_Zone/InventoryUIGroup/HotbarPanel")
 cursor_item_rect = NodePath("CursorLayer/CursorItem")
 cursor_amount_label = NodePath("CursorLayer/CursorItem/Label")
@@ -362,6 +373,7 @@ layout_mode = 0
 player = NodePath("../../../Player")
 
 [node name="InventoryWindows" type="CenterContainer" parent="UI_Canvas/Menus_Layer" unique_id=1788338789]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -373,22 +385,176 @@ mouse_filter = 2
 [node name="PanelContainer" type="PanelContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows" unique_id=1136116868]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer" unique_id=1263793803]
+[node name="MainHBox" type="HBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer" unique_id=999999001]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="EquipmentWindow" type="MarginContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox" unique_id=999999002]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow" unique_id=999999004]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ToggleEquipmentBtn" type="Button" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox" unique_id=999999011]
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.8, 0.7, 0.4, 1)
+theme_override_colors/font_hover_color = Color(1, 0.901961, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "ZBROJA I AKCESORIA <<"
+flat = true
+
+[node name="EquipmentCollapsible" type="VBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox" unique_id=999999012]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="BackpackCenter" type="CenterContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible" unique_id=999999007]
+layout_mode = 2
+
+[node name="EqBackpack" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/BackpackCenter" unique_id=643106498 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/BackpackCenter/EqBackpack" unique_id=999999009]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Plecak"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="HSeparator" type="HSeparator" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible" unique_id=999999010]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="EqGrid" type="GridContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible" unique_id=999999100]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 15
+columns = 2
+
+[node name="EqHead" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=1608254291 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqHead" unique_id=999999102]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Głowa"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="EqChest" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=1184219955 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqChest" unique_id=999999104]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Tors"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="EqLegs" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=955037441 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqLegs" unique_id=999999106]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Spodnie"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="EqBoots" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=780678321 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqBoots" unique_id=999999108]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Buty"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="EqAccessory" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=339367703 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqAccessory" unique_id=999999110]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Dodatek"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="EqAmulet" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid" unique_id=560292925 instance=ExtResource("11_mbo3l")]
+layout_mode = 2
+
+[node name="BgLabel" type="Label" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/EquipmentWindow/VBox/EquipmentCollapsible/EqGrid/EqAmulet" unique_id=999999112]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 0.5)
+theme_override_font_sizes/font_size = 10
+text = "Amulet"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox" unique_id=1263793803]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 200
 
-[node name="ChestPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=1069289126 instance=ExtResource("14_1gqv0")]
+[node name="ChestPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer" unique_id=1069289126 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 
-[node name="BackpackPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=186742539 instance=ExtResource("14_1gqv0")]
+[node name="BackpackPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer" unique_id=186742539 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="PlayerPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/VBoxContainer" unique_id=1892079471 instance=ExtResource("14_1gqv0")]
+[node name="PlayerPanel" parent="UI_Canvas/Menus_Layer/InventoryWindows/PanelContainer/MainHBox/VBoxContainer" unique_id=1892079471 instance=ExtResource("14_1gqv0")]
 visible = false
 layout_mode = 2
 

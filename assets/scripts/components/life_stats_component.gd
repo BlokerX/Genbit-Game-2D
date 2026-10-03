@@ -24,7 +24,8 @@ var armor_multiplier: float = 1.0
 @export_range(0.0, 1.0) var thorns_percent: float = 0.0
 
 func get_total_armor() -> int:
-	return int((base_armor + armor_adder) * armor_multiplier)
+	# TARCZA: Pancerz nie może spaść poniżej 0, zapobiega to wpadnięciu w ujemne wartości przy lagach i ciągłych przeliczeniach
+	return max(0, int((base_armor + armor_adder) * armor_multiplier))
 
 # jeśli < 0 to jest niesmiertelna
 func is_alive() -> bool :

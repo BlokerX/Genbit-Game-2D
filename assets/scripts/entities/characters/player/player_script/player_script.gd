@@ -152,7 +152,11 @@ func _ready():
 		on_inventory_update()
 		inventory.item_dropped.connect(_on_inventory_item_dropped)
 		
-		# --- DODANE: Wymuszamy odświeżenie UI po załadowaniu "pięści" ---
+		# --- NOWE PODŁĄCZENIE (Zasada SRP) ---
+		inventory.held_passives_changed.connect(_sync_held_passives)
+		inventory.equipment_passives_changed.connect(_sync_equip_passives)
+		inventory.inventory_passives_changed.connect(_sync_inventory_passives)
+		
 		inventory.inventory_updated.emit()
 	#endregion
 	
@@ -593,9 +597,6 @@ func respawn_sequence() -> void:
 	# Czyścimy efekty i leczymy gracza NATYCHMIAST, by nic nas nie dobiło w trakcie animacji
 	purge_absolutely_everything()
 	
-	if inventory:
-		inventory.inventory_updated.emit()
-	
 	# Sprawdzamy czy trafiliśmy tu z powodu utraty HP, czy z guzika:
 	if is_dead:
 		EventBus.player_died.emit()
@@ -628,6 +629,16 @@ func respawn_sequence() -> void:
 	await get_tree().physics_frame
 	
 	is_respawning = false
+	
+	if inventory:
+		# --- NAPRAWA BUGU Z PASYWKAMI ---
+		# Czyścimy pamięć ekwipunku, aby po odrodzeniu system zorientował się,
+		# że musi nałożyć wszystkie pasywki z przedmiotów od zera!
+		inventory._last_held_sig = ""
+		inventory._last_equip_sig = ""
+		inventory._last_inv_sig = ""
+		
+		inventory.inventory_updated.emit()
 
 #endregion
 
@@ -657,5 +668,53 @@ func perform_attack() -> void:
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:
 	return float(interaction_and_attack_stats_script.get_total_range())
+
+#endregion
+
+#region System Pasywnych Efektów i Zbroi (SOLID)
+
+func _sync_held_passives() -> void:
+	_clear_passives_by_source("HELD")
+	_apply_passives(inventory.get_held_passives(), "HELD")
+
+func _sync_equip_passives() -> void:
+	_clear_passives_by_source("EQUIP")
+	_apply_passives(inventory.get_equipment_passives(), "EQUIP")
+
+func _sync_inventory_passives() -> void:
+	_clear_passives_by_source("INVENTORY")
+	_apply_passives(inventory.get_inventory_passives(), "INVENTORY")
+
+func _clear_passives_by_source(source_name: String) -> void:
+	if not effects_collector: return
+	
+	for active_effect in effects_collector.get_children():
+		if active_effect.is_queued_for_deletion(): continue
+		var res = active_effect.get("effect_resource")
+		
+		# Zabijamy tylko efekty z naszego konkretnego kanału (np. zdejmujemy zbroję to czyścimy kanał EQUIP)
+		if res and res.has_meta("passive_source") and res.get_meta("passive_source") == source_name:
+			active_effect.set_process(false)
+			if active_effect.has_method("end_effect"):
+				active_effect.end_effect()
+			else:
+				active_effect.queue_free()
+			# Wyrywamy od razu z drzewa, by zapobiec ułamkowym kaskadom
+			effects_collector.remove_child(active_effect)
+
+func _apply_passives(effects: Array[Effect], source_name: String) -> void:
+	for eff in effects:
+		if eff == null: continue # Zabezpieczenie przed pustymi polami w Inspektorze
+		
+		var clone = eff.duplicate(true)
+		# Naklejamy metadaną określającą z jakiego kanału pochodzi ten efekt
+		clone.set_meta("passive_source", source_name) 
+		
+		# mamy opcję czy jest infinite czy nie ale na wszelki wypadek zostawiam to tu:
+		# TARCZA: Sprawdzamy, czy efekt jest czasowy (TimedEffect) i posiada flagę "is_infinite"
+		#if "is_infinite" in clone:
+			#clone.is_infinite = true
+			
+		receive_effect(clone)
 
 #endregion
