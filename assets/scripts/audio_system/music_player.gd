@@ -81,6 +81,11 @@ func _setup_audio_players() -> void:
 	
 	_active_player = _player_a
 
+# Zatrzymujemy odtwarzacze przy wyjściu z drzewa - grający strumień trzymany przez AudioServer wycieka przy zamykaniu gry
+func _exit_tree() -> void:
+	_player_a.stop()
+	_player_b.stop()
+
 # ====================================================================
 # SYSTEM ZARZĄDZANIA ODTWARZANIEM
 # ====================================================================
@@ -118,8 +123,9 @@ func stop_music() -> void:
 	if _crossfade_tween and _crossfade_tween.is_valid():
 		_crossfade_tween.kill()
 		
-	_crossfade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	# Tween tworzymy tylko gdy jest co wyciszać - pusty Tween zgłasza błąd "started with no Tweeners"
 	if _active_player.playing:
+		_crossfade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		_crossfade_tween.tween_property(_active_player, "volume_db", -80.0, default_fade_out_time).set_trans(Tween.TRANS_SINE)
 		_crossfade_tween.finished.connect(func(): _active_player.stop())
 
@@ -169,20 +175,21 @@ func _crossfade_to(new_stream: AudioStream, fade_time: float) -> void:
 	if _crossfade_tween and _crossfade_tween.is_valid():
 		_crossfade_tween.kill()
 		
+	# Przejście natychmiastowe - bez Tweena (pusty Tween nie wywołuje finished, więc wskaźniki nie zostałyby zamienione)
+	if fade_time <= 0.0:
+		_active_player.stop()
+		next_player.volume_db = 0.0
+		_active_player = next_player
+		return
+	
 	_crossfade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	
 	# Wyciszanie obecnie grającego odtwarzacza
 	if _active_player.playing:
-		if fade_time > 0.0:
-			_crossfade_tween.tween_property(_active_player, "volume_db", -80.0, fade_time).set_trans(Tween.TRANS_SINE)
-		else:
-			_active_player.volume_db = -80.0
-		
+		_crossfade_tween.tween_property(_active_player, "volume_db", -80.0, fade_time).set_trans(Tween.TRANS_SINE)
+	
 	# Zgłaśnianie nowego odtwarzacza
-	if fade_time > 0.0:
-		_crossfade_tween.parallel().tween_property(next_player, "volume_db", 0.0, fade_time).set_trans(Tween.TRANS_SINE)
-	else:
-		next_player.volume_db = 0.0
+	_crossfade_tween.parallel().tween_property(next_player, "volume_db", 0.0, fade_time).set_trans(Tween.TRANS_SINE)
 	
 	# Po zakończeniu przejścia, twardo zatrzymujemy stary silnik i zamieniamy wskaźniki
 	_crossfade_tween.finished.connect(func():
