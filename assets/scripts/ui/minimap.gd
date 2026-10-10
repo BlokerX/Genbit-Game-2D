@@ -3,6 +3,7 @@ class_name Minimap
 
 const MinimapGridRendererType = preload("res://assets/scripts/ui/minimap_grid_renderer.gd")
 const MinimapMapControllerType = preload("res://assets/scripts/ui/minimap_map_controller.gd")
+const MinimapMarkerRendererType = preload("res://assets/scripts/ui/minimap_marker_renderer.gd")
 
 #@export_group("Ikony Pokoi")
 #@export var icon_treasure : Texture2D
@@ -50,13 +51,23 @@ var original_bg_color: Color
 @export var use_camera_mode: bool = true
 @export var allowed_camera_map_region_types: Array[MapRegion.MapRegionType] = [MapRegion.MapRegionType.OPEN_WORLD]
 @export var camera_tint: Color = Color(0.95, 0.95, 1.0, 1.0)
-@export var player_marker_color: Color = Color(0.0, 1.0, 0.0, 1.0)
+@export var player_marker_color: Color = Color(0.0, 1.0, 0.0, 1.0):
+	set(value):
+		player_marker_color = value
+		if is_instance_valid(_marker_renderer):
+			_marker_renderer.player_marker_color = value
+			_marker_renderer.queue_redraw()
 @export_range(0.0, 1.0) var opacity_preview: float = 0.8
 @export_range(0.0, 1.0) var opacity_fullscreen: float = 1.0
 
 @export_subgroup("Znacznik Manualny (Pin)")
 @export var allow_manual_marker: bool = true
-@export var manual_marker_color: Color = Color(1.0, 0.2, 0.2, 1.0)
+@export var manual_marker_color: Color = Color(1.0, 0.2, 0.2, 1.0):
+	set(value):
+		manual_marker_color = value
+		if is_instance_valid(_marker_renderer):
+			_marker_renderer.manual_marker_color = value
+			_marker_renderer.queue_redraw()
 
 @export_subgroup("Interakcja i Płynny Zoom")
 @export var allow_panning: bool = true
@@ -87,9 +98,26 @@ var is_panning: bool = false
 var is_camera_detached: bool = false
 var _initial_camera_snapped: bool = false
 
-# Stan znacznika (Pinu)
-var has_manual_marker: bool = false
-var manual_marker_world_pos: Vector2 = Vector2.ZERO
+# Stan znacznika (Pinu) jest własnością osobnego renderera.
+var has_manual_marker: bool:
+	get:
+		return _marker_renderer.has_manual_marker if is_instance_valid(_marker_renderer) else false
+	set(value):
+		if is_instance_valid(_marker_renderer):
+			_marker_renderer.has_manual_marker = value
+			_marker_renderer.queue_redraw()
+
+var manual_marker_world_pos: Vector2:
+	get:
+		return (
+			_marker_renderer.manual_marker_world_pos
+			if is_instance_valid(_marker_renderer)
+			else Vector2.ZERO
+		)
+	set(value):
+		if is_instance_valid(_marker_renderer):
+			_marker_renderer.manual_marker_world_pos = value
+			_marker_renderer.queue_redraw()
 
 # Cache ekwipunku gracza
 var _player_has_map: bool = false
@@ -99,7 +127,8 @@ var _player_has_compass: bool = false
 var camera_container: SubViewportContainer
 var camera_viewport: SubViewport
 var map_camera: Camera2D
-var player_marker: Control
+var player_marker: MinimapMarkerRendererType
+var _marker_renderer: MinimapMarkerRendererType
 var _grid_renderer: MinimapGridRendererType
 var _map_controller: MinimapMapControllerType
 
@@ -187,10 +216,17 @@ func _setup_camera_map() -> void:
 	camera_viewport.add_child(map_camera)
 	map_camera.make_current()
 
-	player_marker = Control.new()
+	player_marker = MinimapMarkerRendererType.new()
 	player_marker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	player_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	player_marker.draw.connect(_on_player_marker_draw)
+	player_marker.configure(
+		map_camera,
+		camera_container,
+		Callable(self, "_is_camera_mode_active"),
+		player_marker_color,
+		manual_marker_color
+	)
+	_marker_renderer = player_marker
 	add_child(player_marker)
 
 	ui_container = Control.new()
@@ -454,56 +490,6 @@ func _process(_delta: float) -> void:
 		map_camera.zoom = Vector2(current_z, current_z)
 
 	player_marker.queue_redraw()
-
-func _on_player_marker_draw() -> void:
-	if not _is_camera_mode_active() or not camera_container.visible: return
-	if not is_instance_valid(map_camera): return
-
-	var cam_center = map_camera.get_screen_center_position()
-	var center_ui = size / 2.0
-
-	var player = get_tree().get_first_node_in_group("Player")
-	if player:
-		var diff = player.global_position - cam_center
-		var draw_pos = center_ui + (diff * map_camera.zoom.x)
-		player_marker.draw_circle(draw_pos, 4.0, player_marker_color)
-		player_marker.draw_circle(draw_pos, 6.0, Color(0, 0, 0, 0.8), false, 2.0)
-
-	if has_manual_marker:
-		var m_diff = manual_marker_world_pos - cam_center
-		var m_draw_pos = center_ui + (m_diff * map_camera.zoom.x)
-
-		var is_offscreen = m_draw_pos.x < 0 or m_draw_pos.y < 0 or m_draw_pos.x > size.x or m_draw_pos.y > size.y
-
-		if is_offscreen:
-			var margin = 15.0
-			var half_w = center_ui.x - margin
-			var half_h = center_ui.y - margin
-
-			var dir = (m_draw_pos - center_ui).normalized()
-			var t_x = INF
-			if abs(dir.x) > 0.0001: t_x = half_w / abs(dir.x)
-			var t_y = INF
-			if abs(dir.y) > 0.0001: t_y = half_h / abs(dir.y)
-
-			var t = min(t_x, t_y)
-			var clamped_pos = center_ui + dir * t
-
-			var tip = clamped_pos
-			var left = clamped_pos - dir * 12.0 + dir.orthogonal() * 6.0
-			var right = clamped_pos - dir * 12.0 - dir.orthogonal() * 6.0
-
-			var points = PackedVector2Array([tip, left, right])
-			var colors = PackedColorArray([manual_marker_color, manual_marker_color, manual_marker_color])
-
-			player_marker.draw_polygon(points, colors)
-			player_marker.draw_polyline(PackedVector2Array([tip, left, right, tip]), Color.BLACK, 1.5)
-		else:
-			player_marker.draw_line(m_draw_pos, m_draw_pos + Vector2(0, 12), Color(0,0,0,0.8), 2.0)
-			player_marker.draw_line(m_draw_pos, m_draw_pos + Vector2(0, 12), manual_marker_color, 1.0)
-			player_marker.draw_circle(m_draw_pos, 4.5, manual_marker_color)
-			player_marker.draw_circle(m_draw_pos, 6.5, Color(0, 0, 0, 0.8), false, 2.0)
-
 
 func _update_camera_limits() -> void:
 	if not is_instance_valid(map_camera): return
