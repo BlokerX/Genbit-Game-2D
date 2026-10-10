@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://byxlvpvc1xhtm"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_vn7gi"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_m6xgw"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_v4ldu"]
+[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/timed_effects/speed/speed_effect.gd" id="4_vn7gi"]
+[ext_resource type="Script" uid="uid://cochrvny2i8iw" path="res://assets/scripts/entities/items/components/passive_item_component.gd" id="5_i6rqm"]
+[ext_resource type="Texture2D" uid="uid://crw6rxiec7cpi" path="res://assets/textures/samples_examples/items/heart.png" id="6_vn7gi"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="7_68oba"]
+
+[sub_resource type="Resource" id="Resource_m6xgw"]
+script = ExtResource("4_vn7gi")
+speed_multiplier = 4.0
+is_infinite = true
+metadata/_custom_type_script = "uid://bbjk7mcc7yknx"
+
+[sub_resource type="Resource" id="Resource_numt1"]
+script = ExtResource("5_i6rqm")
+requirement = 1
+passive_buffs = Array[ExtResource("3_v4ldu")]([SubResource("Resource_m6xgw")])
+metadata/_custom_type_script = "uid://cochrvny2i8iw"
+
+[resource]
+script = ExtResource("7_68oba")
+item_id = &"life_totem"
+item_name = "Life Totem"
+item_description = "It works only in active hand."
+item_icon = ExtResource("6_vn7gi")
+components = Array[ExtResource("1_vn7gi")]([SubResource("Resource_numt1")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

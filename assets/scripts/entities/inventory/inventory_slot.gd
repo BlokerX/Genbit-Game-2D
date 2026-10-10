@@ -71,9 +71,10 @@ func setup_as_player_slot(index: int, inventory_ref: Node) -> void:
 	slot_index = index
 	parent_reference = inventory_ref
 
-func setup_as_backpack_slot(inventory_ref: Node) -> void:
+func setup_as_equipment_slot(equip_slot_type: int, inventory_ref: Node) -> void:
 	is_storage_slot = false
-	slot_index = -2 # Celowo ujemny, aby odróżnić go od zwykłych slotów (0, 1, 2...)
+	# Mapujemy enum pancerza na ujemny indeks (np. 1 -> -11), by odciąć go od zwykłego ekwipunku
+	slot_index = -10 - equip_slot_type
 	parent_reference = inventory_ref
 
 func update_slot(slot: SlotData) -> void:

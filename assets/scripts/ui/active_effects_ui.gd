@@ -36,6 +36,16 @@ func _on_effect_added(node: Node) -> void:
 		return
 		
 	var res = node.effect_resource
+	
+	# --- TARCZA: Ukrywanie efektów pasywnych i środowiskowych w UI ---
+	if res.has_meta("passive_source"):
+		return
+	if res.has_meta("is_environment_aura") and res.get_meta("is_environment_aura") == true:
+		return
+	if node.has_meta("is_environment_aura") and node.get_meta("is_environment_aura") == true:
+		return
+	# -----------------------------------------------------------------
+	
 	if not displayed_effects.has(res.effect_name):
 		_create_effect_icon(node, res)
 		

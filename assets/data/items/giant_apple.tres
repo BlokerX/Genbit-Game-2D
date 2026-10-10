@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bm7kc1lxfj4g4"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_ay22d"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_dqyft"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_cy8v3"]
+[ext_resource type="Script" uid="uid://lcxsjhe5qlia" path="res://assets/scripts/entities/effects/timed_effects/size/giant_effect.gd" id="4_yhi01"]
+[ext_resource type="Script" uid="uid://cochrvny2i8iw" path="res://assets/scripts/entities/items/components/passive_item_component.gd" id="5_ncb3f"]
+[ext_resource type="Texture2D" uid="uid://0lgvo0ano8j3" path="res://assets/textures/samples_examples/items/apple.png" id="6_cpf0a"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="7_it5hn"]
+
+[sub_resource type="Resource" id="Resource_o2j8o"]
+script = ExtResource("4_yhi01")
+is_infinite = true
+metadata/_custom_type_script = "uid://lcxsjhe5qlia"
+
+[sub_resource type="Resource" id="Resource_numt1"]
+script = ExtResource("5_ncb3f")
+passive_buffs = Array[ExtResource("3_cy8v3")]([SubResource("Resource_o2j8o")])
+metadata/_custom_type_script = "uid://cochrvny2i8iw"
+
+[resource]
+script = ExtResource("7_it5hn")
+item_id = &"giant_apple"
+item_name = "Giant Apple"
+item_icon = ExtResource("6_cpf0a")
+components = Array[ExtResource("1_ay22d")]([SubResource("Resource_numt1")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

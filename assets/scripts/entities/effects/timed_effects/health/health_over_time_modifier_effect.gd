@@ -18,5 +18,6 @@ func on_effect_tick(target: Node2D) -> void:
 			target.health_stats_script.heal(hp_per_tick)
 			print(effect_name, " leczy o ", hp_per_tick, " HP.")
 		elif hp_per_tick < 0:
-			target.health_stats_script.take_damage(abs(hp_per_tick))
+			# NAPRAWA: Dodano drugi argument (1.0 = 100% przebicia pancerza, idealne dla trucizny)
+			target.health_stats_script.take_damage(abs(hp_per_tick), 1.0)
 			print(effect_name, " zadaje ", abs(hp_per_tick), " obrażeń.")

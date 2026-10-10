@@ -15,9 +15,6 @@ class_name Inventory
 ## Aktualnie wybrany indeks slotu
 @export var current_slot_index : int = 0
 
-## Specjalny slot przechowujący założony plecak
-@export var backpack_slot: SlotData = SlotData.new()
-
 #endregion
 
 
@@ -28,11 +25,27 @@ signal inventory_updated
 
 signal item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 
+# W sekcji sygnałów dodaj:
+signal equipment_updated
+
+# --- SYGNAŁY SRP DLA PASYWEK ---
+signal held_passives_changed
+signal equipment_passives_changed
+signal inventory_passives_changed
+
 #endregion
 
 ## PAMIĘĆ PODRĘCZNA DO CRAFTINGU (Format: { ID : Ilość })
 var _item_count_cache: Dictionary = {}
 var _tag_count_cache: Dictionary = {}
+
+# --- PAMIĘĆ SYGNATUR PASYWEK ---
+var _last_held_sig: String = ""
+var _last_equip_sig: String = ""
+var _last_inv_sig: String = ""
+
+## Słownik przechowujący założony sprzęt (Klucz to EquippableComponent.EquipSlot)
+@export var equipment_slots: Dictionary = {}
 
 ## Constructor
 func _init() -> void :
@@ -40,6 +53,12 @@ func _init() -> void :
 	slots.resize(slots_amount)
 	for i in range(slots_amount):
 		slots[i] = SlotData.new() # Przygotowanie pustych pojemników
+	
+	# --- Inicjalizacja pustych slotów zbroi ---
+	# Generujemy szufladkę dla każdego typu pancerza zdefiniowanego w komponencie
+	for slot_type in EquippableComponent.EquipSlot.values():
+		if slot_type != EquippableComponent.EquipSlot.NONE:
+			equipment_slots[slot_type] = SlotData.new()
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
@@ -67,19 +86,18 @@ func clean_dead_items() -> void:
 	
 	# Sprzątanie głównych slotów
 	for slot in slots:
-		# Pytamy bezpiecznie o słownik 'state' i czy item fizycznie istnieje
 		if slot.item != null and slot.item.state.has("amount"):
 			if slot.item.state["amount"] <= 0:
 				slot.clear_slot()
 				inventory_changed = true
 				
-	# Sprzątanie założonego plecaka (Tarcza ochronna na przyszłe mechaniki)
-	if backpack_slot.item != null and backpack_slot.item.state.has("amount"):
-		if backpack_slot.item.state["amount"] <= 0:
-			backpack_slot.clear_slot()
-			inventory_changed = true
+	# Sprzątanie CAŁEJ ZBROI (w tym plecaka)
+	for slot in equipment_slots.values():
+		if slot.item != null and slot.item.state.has("amount"):
+			if slot.item.state["amount"] <= 0:
+				slot.clear_slot()
+				inventory_changed = true
 
-	# Automatyczne odświeżenie UI i PAMIĘCI CRAFTINGU
 	if inventory_changed:
 		inventory_updated.emit()
 
@@ -374,54 +392,117 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 	inventory_updated.emit()
 	return remaining
 
-
-## Próba założenia lub wymiany plecaka w dedykowanym slocie
-func equip_backpack(new_backpack_instance: ItemInstance) -> ItemInstance:
-	var old_backpack = backpack_slot.item
-	backpack_slot.item = new_backpack_instance
+## Próba założenia przedmiotu do dedykowanego slotu zbroi. Zwraca stary przedmiot (lub null)
+func equip_item(new_equipment: ItemInstance, slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
+	var old_equipment = equipment_slots[slot_type].item
+	equipment_slots[slot_type].item = new_equipment
 	
-	_recalculate_slots_size()
+	_recalculate_slots_size() # <--- Przeliczamy rozmiar ekwipunku, bo mógł to być plecak!
+	equipment_updated.emit()
 	inventory_updated.emit()
-	
-	return old_backpack # Zwraca stary plecak (jeśli jakiś był założony), żeby wrócił do myszki/ekwipunku
+	return old_equipment
 
-func unequip_backpack() -> ItemInstance:
-	var backpack = backpack_slot.item
-	backpack_slot.clear_slot()
+## Zdejmuje zbroję i zwraca ją (żeby wróciła do kursora lub ekwipunku)
+func unequip_item(slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
+	var equipment = equipment_slots[slot_type].item
+	equipment_slots[slot_type].clear_slot()
 	
-	_recalculate_slots_size()
+	_recalculate_slots_size() # <--- Przeliczamy, wyrzucając nadmiar z plecaka na ziemię!
+	equipment_updated.emit()
 	inventory_updated.emit()
-	
-	return backpack
+	return equipment
+
+# =========================================================
+# --- SYSTEM PASYWEK (ZASADA POJEDYNCZEJ ODPOWIEDZIALNOŚCI) ---
+# =========================================================
+
+func get_held_passives() -> Array[Effect]:
+	var active_effects: Array[Effect] = []
+	var held_slot = get_current_slot()
+	if held_slot != null and not held_slot.is_empty() and held_slot.item.data.components != null:
+		for comp in held_slot.item.data.components:
+			if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.HELD:
+				var count = held_slot.item.state.get("amount", 1) if comp.stack_effects_with_amount else 1
+				for i in range(count): active_effects.append_array(comp.passive_buffs)
+	return active_effects
+
+func get_equipment_passives() -> Array[Effect]:
+	var active_effects: Array[Effect] = []
+	# Zbroja (w tym plecak, bo plecak to teraz po prostu zbroja na slocie BACKPACK!)
+	for slot_type in equipment_slots.keys():
+		var slot_data = equipment_slots[slot_type]
+		if not slot_data.is_empty() and slot_data.item.data.components != null:
+			for comp in slot_data.item.data.components:
+				if comp is EquippableComponent and comp.equip_slot_type == slot_type:
+					active_effects.append_array(comp.passive_buffs)
+	return active_effects
+
+func get_inventory_passives() -> Array[Effect]:
+	var active_effects: Array[Effect] = []
+	for slot_data in slots:
+		if not slot_data.is_empty() and slot_data.item.data.components != null:
+			for comp in slot_data.item.data.components:
+				if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.INVENTORY:
+					var count = slot_data.item.state.get("amount", 1) if comp.stack_effects_with_amount else 1
+					for i in range(count): active_effects.append_array(comp.passive_buffs)
+	return active_effects
+
+# --- GENERATORY SYGNATUR (Wykrywanie zmian w czasie rzeczywistym) ---
+func _check_passive_deltas() -> void:
+	var held_sig = ""
+	var held = get_current_item()
+	if held != null: held_sig = str(held.data.item_id) + ":" + str(held.state.get("amount", 1))
+	if held_sig != _last_held_sig:
+		_last_held_sig = held_sig
+		held_passives_changed.emit()
+
+	var inv_sig = ""
+	for slot in slots:
+		if not slot.is_empty() and slot.item.data.components != null:
+			for comp in slot.item.data.components:
+				if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.INVENTORY:
+					inv_sig += str(slot.item.data.item_id) + ":" + str(slot.item.state.get("amount", 1)) + "|"
+	if inv_sig != _last_inv_sig:
+		_last_inv_sig = inv_sig
+		inventory_passives_changed.emit()
+
+	var equip_sig = ""
+	# Cała zbroja i plecak w jednej, zgrabnej pętli:
+	for slot_type in equipment_slots.keys():
+		var slot_data = equipment_slots[slot_type]
+		if not slot_data.is_empty():
+			equip_sig += str(slot_type) + ":" + str(slot_data.item.data.item_id) + "|"
+	if equip_sig != _last_equip_sig:
+		_last_equip_sig = equip_sig
+		equipment_passives_changed.emit()
 
 ## Przelicza rozmiar ekwipunku bazowego + bonus z plecaka
 func _recalculate_slots_size() -> void:
 	var base_slots = slots_amount
 	var bonus_slots = 0
 	
-	# ZAMIAST PYTAĆ O KLASĘ 'BackpackItem', SZUKAMY KLOCKA 'BackpackComponent'
-	if not backpack_slot.is_empty():
-		for comp in backpack_slot.item.data.components:
-			if comp is BackpackComponent:
-				bonus_slots = comp.extra_slots_count
-				break
+	# Zabezpieczenie przed błędem, jeśli w equipment_slots nie ma jeszcze klucza BACKPACK
+	if equipment_slots.has(EquippableComponent.EquipSlot.BACKPACK):
+		var bp_slot = equipment_slots[EquippableComponent.EquipSlot.BACKPACK]
+		if not bp_slot.is_empty() and bp_slot.item.data.components != null:
+			for comp in bp_slot.item.data.components:
+				if comp is BackpackComponent:
+					bonus_slots = comp.extra_slots_count
+					break
 				
 	var target_total_size = base_slots + bonus_slots
 	
 	if slots.size() != target_total_size:
-		# Zabezpieczenie przed utratą itemów, jeśli zdejmujemy plecak i brakuje nam slotów
 		if target_total_size < slots.size():
 			for i in range(target_total_size, slots.size()):
 				if slots[i] != null and not slots[i].is_empty():
 					item_dropped.emit(slots[i].item, false) 
 					
-		# Dopasowanie rozmiaru tablicy
 		slots.resize(target_total_size)
 		for i in range(target_total_size):
 			if slots[i] == null:
 				slots[i] = SlotData.new()
 				
-		# Ściągamy kursor zaznaczenia w dół, jeśli znalazł się w "pustce"
 		if current_slot_index >= slots.size():
 			current_slot_index = max(0, slots.size() - 1)
 			
@@ -516,6 +597,9 @@ func _rebuild_cache() -> void:
 	# --- JEDNA LINIJKA, KTÓRA ZASILA WSZYSTKIE QUESTY ZBIERACKIE ---
 	# Podajemy cały ekwipunek, niech Questy same sobie w nim pogrzebią i sprawdzą co masz!
 	EventBus.game_event_occurred.emit("inventory_changed", {"inventory": self})
+	
+	# --- SPRAWDZENIE ZMIAN W PASYWKACH ---
+	_check_passive_deltas()
 
 # --- NARZĘDZIA DLA TAGÓW ---
 func get_tag_amount(tag: StringName) -> int:

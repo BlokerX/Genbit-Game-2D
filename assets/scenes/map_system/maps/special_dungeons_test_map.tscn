@@ -41,7 +41,7 @@
 [ext_resource type="PackedScene" uid="uid://c3lyleqgqpvse" path="res://assets/scenes/spawnpoints/general_spawnpoint/enemy_spawnpoint.tscn" id="37_mrkd6"]
 [ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/general_spawnpoint/item_spawnpoint.tscn" id="38_vmik7"]
 [ext_resource type="PackedScene" uid="uid://bo5oc8jfs2mb" path="res://assets/scenes/spawnpoints/general_spawnpoint/chest_spawnpoint.tscn" id="39_uw665"]
-[ext_resource type="Resource" path="res://assets/scripts/map_system/resources/templates/EasySpider.tres" id="40_ng0uo"]
+[ext_resource type="Resource" uid="uid://dkpmxc6sp5g2y" path="res://assets/data/map_system_loot_enemies_objects/Test_Enemies.tres" id="40_ng0uo"]
 [ext_resource type="Resource" uid="uid://dcrxl7xgcuu1g" path="res://assets/data/map_system_loot_enemies_objects/Potions_Loot.tres" id="41_wtiqd"]
 [ext_resource type="Texture2D" uid="uid://da1fo61w5i54r" path="res://assets/textures/samples_examples/door/black_door.png" id="44_ey8dr"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="45_3as82"]

@@ -118,6 +118,15 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	
 	get_tree().create_timer(0.5).timeout.connect(func(): is_changing_level = false)
 	
+# Zamrożone mapy i odpięty gracz są poza drzewem, więc przy zamykaniu gry silnik ich nie zwolni.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		for map_node in _cached_persistent_levels.values():
+			if is_instance_valid(map_node) and map_node.get_parent() == null:
+				map_node.free()
+		if is_instance_valid(stored_player) and stored_player.get_parent() == null:
+			stored_player.free()
+
 func clear_level_cache() -> void:
 	for map_node in _cached_persistent_levels.values():
 		if is_instance_valid(map_node):

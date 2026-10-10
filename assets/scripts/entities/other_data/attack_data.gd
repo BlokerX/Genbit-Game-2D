@@ -6,11 +6,15 @@ class_name AttackData
 @export var critical_rate : float = 0.0
 @export var max_range : float = 1.0
 @export var stun_time : float = 0.25
+@export var knockback_force : float = 0.0
+@export_range(0.0, 1.0) var armor_penetration : float = 0.0
 
 # Konstruktor, żeby łatwo tworzyć z kodu
-func _init(_dmg: int = 10, _crit_dmg: int = 0, _crit_rate: float = 0.0, _max_range: float = 100.0, _stun: float = 0.25):
+func _init(_dmg: int = 10, _crit_dmg: int = 0, _crit_rate: float = 0.0, _max_range: float = 100.0, _stun: float = 0.25, _knockback: float = 0.0, _armor_penetration : float = 0.0):
 	damage = _dmg
 	critical_damage = _crit_dmg
 	critical_rate = _crit_rate
 	max_range = _max_range
 	stun_time = _stun
+	knockback_force = _knockback
+	armor_penetration = _armor_penetration

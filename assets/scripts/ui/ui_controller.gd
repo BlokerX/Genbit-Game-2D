@@ -1,5 +1,4 @@
-class_name UIController
-extends CanvasLayer
+class_name UIController extends CanvasLayer
 
 const INPUT_TOGGLE_INVENTORY = "ToggleInventory"
 const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
@@ -8,17 +7,35 @@ const INPUT_GAME_PAUSE = "Game_Pause"
 
 const SLOT_SCENE = preload("res://assets/scenes/gui/inventory_slot.tscn")
 
+@export_category("Główne Okna")
+@export var main_inventory_window: Control # Cały kontener z tłem ekwipunku
+
+@export_category("Panele Siatek")
 @export var chest_panel: GridPanel
 @export var player_panel: GridPanel
 @export var backpack_panel: GridPanel
 
+@export_category("Ekwipunek i Zbroja")
+@export var equipment_window: Control
+@export var equipment_collapsible: Control
+@export var toggle_equipment_btn: Button
+
+@export var eq_slot_head: InventorySlot
+@export var eq_slot_chest: InventorySlot
+@export var eq_slot_legs: InventorySlot
+@export var eq_slot_boots: InventorySlot
+@export var eq_slot_accessory: InventorySlot
+@export var eq_slot_amulet: InventorySlot
+@export var eq_slot_backpack: InventorySlot
+
+var equipment_slot_uis: Dictionary = {}
+
+@export_category("Inne UI")
 @export var hotbar_panel: Control
 @export var cursor_item_rect: TextureRect
 @export var cursor_amount_label: Label
-
 @export var crafting_ui: Control
 @export var minimap_ui: Minimap
-var backpack_slot_ui: InventorySlot
 
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
@@ -29,8 +46,8 @@ var player_inventory: Inventory = null
 var _player_ref: Node2D = null
 
 var item_in_hand: ItemInstance = null
-
 var current_open_chest: Node = null
+
 var is_player_inventory_open: bool = false
 var is_crafting_open: bool = false
 var is_map_open: bool = false
@@ -47,265 +64,256 @@ func _ready() -> void:
 	# Automatycznie szukamy gracza w scenie po grupie "player"
 	var player = get_tree().get_first_node_in_group("Player")
 	if player:
-		_player_ref = player # <--- ZAPISUJEMY GRACZA DO SPRAWDZANIA ODLEGŁOŚCI
-		
-		# Zakładam, że wewnątrz gracza Twój skrypt inventory.gd ma węzeł o nazwie "Inventory"
-		# (Jeśli Twój węzeł nazywa się inaczej, zmień "$Inventory" na odpowiednią ścieżkę)
+		_player_ref = player
 		player_inventory = player.get_node_or_null("Inventory")
-	
+		
 	if not player_inventory:
-		push_error("UIController nie mógł znaleźć ekwipunku gracza! Upewnij się, że gracz jest w grupie 'player' i posiada węzeł Inventory.")
+		push_error("UIController nie mógł znaleźć ekwipunku gracza!")
 		return
-
+		
 	EventBus.open_storage_ui.connect(_on_storage_opened)
 	EventBus.close_storage_ui.connect(_on_storage_closed)
 	EventBus.slot_clicked.connect(_on_slot_clicked)
-	
 	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
 	
-	# ---  Reakcja na śmierć gracza ---
 	EventBus.player_died.connect(_close_all_ui)
-	
-	# --- NOWOŚĆ: Automatyczne GENEROWANIE slotu plecaka ---
-	if backpack_panel:
-		# 1. Czyścimy panel ze starych śmieci (jeśli jakieś zostały w Edytorze)
-		for child in backpack_panel.get_children():
-			backpack_panel.remove_child(child)
-			child.queue_free()
-			
-		# 2. Generujemy IDEALNIE JEDEN nowy slot i wrzucamy do panelu
-		backpack_slot_ui = SLOT_SCENE.instantiate()
-		backpack_panel.add_child(backpack_slot_ui)
-		
-		# 3. Konfigurujemy go do działania z plecakiem
-		backpack_slot_ui.setup_as_backpack_slot(player_inventory)
-		backpack_slot_ui.update_slot(player_inventory.backpack_slot)
-		player_inventory.inventory_updated.connect(func(): backpack_slot_ui.update_slot(player_inventory.backpack_slot))
-	else:
-		push_warning("Brak przypisanego 'backpack_panel' w Inspektorze UIController'a!")
-		
-	# Nasłuchujemy zmiany fokusu (gdy gracz nawiguje D-Padem)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
 	
 	_update_cursor_visuals()
-	
-	# Upewniamy się, że crafting jest domyślnie ukryty
+
 	if crafting_ui:
 		crafting_ui.hide()
+		
+	if toggle_equipment_btn:
+		toggle_equipment_btn.pressed.connect(_on_toggle_equipment_pressed)
+
+	# Ukrywamy główne tło ekwipunku i panel zbroi na starcie
+	if main_inventory_window:
+		main_inventory_window.hide()
+	_set_equipment_ui_visible(false)
+
+	# --- INICJALIZACJA SLOTÓW ZBROI Z PLIKU .TSCN ---
+	_setup_equipment_slots()
+
+func _setup_equipment_slots() -> void:
+	if eq_slot_head: eq_slot_head.setup_as_equipment_slot(EquippableComponent.EquipSlot.HEAD, player_inventory)
+	if eq_slot_chest: eq_slot_chest.setup_as_equipment_slot(EquippableComponent.EquipSlot.CHEST, player_inventory)
+	if eq_slot_legs: eq_slot_legs.setup_as_equipment_slot(EquippableComponent.EquipSlot.LEGS, player_inventory)
+	if eq_slot_boots: eq_slot_boots.setup_as_equipment_slot(EquippableComponent.EquipSlot.BOOTS, player_inventory)
+	if eq_slot_accessory: eq_slot_accessory.setup_as_equipment_slot(EquippableComponent.EquipSlot.ACCESSORY, player_inventory)
+	if eq_slot_amulet: eq_slot_amulet.setup_as_equipment_slot(EquippableComponent.EquipSlot.AMULET, player_inventory)
+	# TERAZ PLECAK KORZYSTA Z SYSTEMU ZBROI!
+	if eq_slot_backpack: eq_slot_backpack.setup_as_equipment_slot(EquippableComponent.EquipSlot.BACKPACK, player_inventory)
+
+	equipment_slot_uis = {
+		EquippableComponent.EquipSlot.HEAD: eq_slot_head,
+		EquippableComponent.EquipSlot.CHEST: eq_slot_chest,
+		EquippableComponent.EquipSlot.LEGS: eq_slot_legs,
+		EquippableComponent.EquipSlot.BOOTS: eq_slot_boots,
+		EquippableComponent.EquipSlot.ACCESSORY: eq_slot_accessory,
+		EquippableComponent.EquipSlot.AMULET: eq_slot_amulet,
+		EquippableComponent.EquipSlot.BACKPACK: eq_slot_backpack # DODANO
+	}
 	
-	# Upewniamy się, że plecak jest schowany na starcie gry
-	_set_backpack_ui_visible(false)
+	var slot_names = {
+		EquippableComponent.EquipSlot.HEAD: "Głowa",
+		EquippableComponent.EquipSlot.CHEST: "Tors",
+		EquippableComponent.EquipSlot.LEGS: "Spodnie",
+		EquippableComponent.EquipSlot.BOOTS: "Buty",
+		EquippableComponent.EquipSlot.ACCESSORY: "Akcesorium",
+		EquippableComponent.EquipSlot.AMULET: "Amulet",
+		EquippableComponent.EquipSlot.BACKPACK: "Plecak" # DODANO
+	}
+	
+	_refresh_all_eq_visuals(slot_names)
+	player_inventory.inventory_updated.connect(func(): _refresh_all_eq_visuals(slot_names))
+
+func _refresh_all_eq_visuals(names_dict: Dictionary) -> void:
+	# Usuwamy ten dziwny wyjątek dla plecaka, pętla zrobi to sama!
+	for slot_type in equipment_slot_uis.keys():
+		var ui_slot = equipment_slot_uis[slot_type]
+		var slot_data = player_inventory.equipment_slots[slot_type]
+		var default_name = names_dict.get(slot_type, "")
+		_update_single_eq_visual(ui_slot, slot_data, default_name)
+
+func _update_single_eq_visual(ui_slot: InventorySlot, slot_data: SlotData, default_name: String) -> void:
+	if not ui_slot: return
+	
+	ui_slot.update_slot(slot_data)
+	var bg_label = ui_slot.get_node_or_null("BgLabel")
+	
+	if slot_data.is_empty():
+		ui_slot.tooltip_text = "Slot: " + default_name
+		if bg_label: bg_label.show()
+	else:
+		ui_slot.tooltip_text = ""
+		if bg_label: bg_label.hide()
+
+func _on_toggle_equipment_pressed() -> void:
+	if equipment_collapsible:
+		equipment_collapsible.visible = !equipment_collapsible.visible
+		if equipment_collapsible.visible:
+			toggle_equipment_btn.text = "ZBROJA I AKCESORIA <<"
+		else:
+			toggle_equipment_btn.text = "ZBROJA I AKCESORIA >>"
 
 func _process(delta: float) -> void:
-	# --- TARCZA DIALOGOWA: Zamrażamy kursor, gdy jest dialog ---
-	if DialogueManager.is_active:
-		return
+	if DialogueManager.is_active: return
 	
-	# --- NOWE: ZABEZPIECZENIE PRZED ODEPCHNIĘCIEM OD SKRZYNI ---
 	if current_open_chest != null and is_instance_valid(_player_ref):
 		var physical_chest = current_open_chest.get_parent()
-		# Upewniamy się, że rodzic jest obiektem przestrzennym 2D
 		if is_instance_valid(physical_chest) and physical_chest is Node2D:
 			if _player_ref.global_position.distance_to(physical_chest.global_position) > 150.0:
 				_close_all_ui()
-	# -----------------------------------------------------------
 	
-	# --- 1. WIRTUALNY KURSOR DLA PADA ---
 	if is_any_ui_open():
-		# Odczytujemy lewą gałkę (używamy akcji ruchu Gracza)
 		var move_dir = Input.get_vector("Left", "Right", "Up", "Down")
-		
 		if move_dir != Vector2.ZERO:
-			# [NOWOŚĆ] Resetujemy klasyczny focus Godota, gdy ruszamy gałką!
-			# Zapobiega to "podwójnemu klikaniu" i uciekaniu podświetlenia.
 			var focus_owner = get_viewport().gui_get_focus_owner()
-			if focus_owner:
-				focus_owner.release_focus()
+			if focus_owner: focus_owner.release_focus()
 			
-			# Pobieramy aktualną pozycję prawdziwej myszki
 			var current_pos = get_viewport().get_mouse_position()
 			var new_pos = current_pos + (move_dir * gamepad_cursor_speed * delta)
 			
-			# Zabezpieczenie, żeby kursor nie wyleciał poza krawędzie ekranu
 			var screen_size = get_viewport().get_visible_rect().size
 			new_pos.x = clamp(new_pos.x, 0, screen_size.x)
 			new_pos.y = clamp(new_pos.y, 0, screen_size.y)
 			
-			# Przesuwamy systemową myszkę
 			get_viewport().warp_mouse(new_pos)
 			
-			# --- KLUCZOWA NAPRAWKA: Wstrzykujemy zdarzenie ruchu myszy ---
-			# To sprawia, że Godot natychmiast "widzi", nad jakim slotem jesteśmy
 			var motion_event = InputEventMouseMotion.new()
 			motion_event.global_position = new_pos
 			motion_event.position = new_pos
 			Input.parse_input_event(motion_event)
-		
-		# --- NOWOŚĆ: AUTO-FIRE WYRZUCANIA (Przytrzymanie klawisza) ---
-		# Jeśli trzymamy "Q", ale NIE trzymamy Ctrl/Shift (bo to by wyrzucało całe stacki)
-		if Input.is_action_pressed("DropItem") and not (Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_SHIFT)):
-			_drop_hold_time += delta
-			# Jeśli trzymamy klawisz dłużej niż 0.4 sekundy (tzw. opóźnienie startowe / initial delay)
-			if _drop_hold_time > 0.4:
-				_drop_tick_time += delta
-				# Wyrzucaj jedną sztukę co 0.1 sekundy (szybkość karabinu)
-				if _drop_tick_time > 0.1:
-					_try_drop_hovered_slot(false)
-					_drop_tick_time = 0.0 # resetujemy tylko czas "strzału", żeby strzelił znowu za 0.1s
-		else:
-			# Natychmiast resetujemy wszystko po puszczeniu klawisza
-			_drop_hold_time = 0.0
-			_drop_tick_time = 0.0
-	
-	# --- 2. Rysowanie trzymanego przedmiotu pod kursorem ---
+			
+	if Input.is_action_pressed("DropItem") and not (Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_SHIFT)):
+		_drop_hold_time += delta
+		if _drop_hold_time > 0.4:
+			_drop_tick_time += delta
+			if _drop_tick_time > 0.1:
+				_try_drop_hovered_slot(false)
+				_drop_tick_time = 0.0 
+	else:
+		_drop_hold_time = 0.0
+		_drop_tick_time = 0.0
+			
 	if item_in_hand != null:
-	 	# Odejmujemy połowę wielkości prostokąta, aby wyśrodkować ikonę na kursorze
 		cursor_item_rect.global_position = get_viewport().get_mouse_position() - (cursor_item_rect.size / 2.0)
+
 
 func toggle_player_inventory() -> void:
 	if is_player_inventory_open:
 		_close_all_ui()
 	else:
-		_close_all_ui() # Zamknij wszystko inne (np. crafting), zanim otworzysz ekwipunek
-		
+		_close_all_ui()
 		is_player_inventory_open = true
-		
-		# --- NOWE: Aktualizujemy słownik i wysyłamy sygnał HUD ---
 		EventBus.set_menu_state(EventBus.MENU_INVENTORY, true)
 		
+		# Pokazujemy główny kontener (tło)
+		if main_inventory_window:
+			main_inventory_window.show()
+			
 		player_panel.open_panel(player_inventory)
+		_set_equipment_ui_visible(true)
 		
-		# Pokazujemy slot plecaka ---
-		_set_backpack_ui_visible(true)
-		
-		if hotbar_panel:
-			hotbar_panel.hide()
+		if hotbar_panel: hotbar_panel.hide()
 
-## Funkcja do otwierania/zamykania Craftingu
-# (Wywołaj ją z miejsca, w którym włączasz crafting, np. po naciśnięciu "C" lub użyciu stołu)
 func toggle_crafting_ui() -> void:
 	if is_crafting_open:
 		_close_all_ui()
 	else:
-		_close_all_ui() # Zamknij ekwipunki i skrzynie, żeby zrobić czyste miejsce
-		
-		# --- ZATRZYMANIE CZASU W GRZE ---
+		_close_all_ui() 
 		get_tree().paused = true
-		
 		is_crafting_open = true
-		
-		# --- NOWE: Aktualizujemy słownik ---
 		EventBus.set_menu_state(EventBus.MENU_CRAFTING, true)
-		
-		if crafting_ui:
-			crafting_ui.show()
-		
-		# Zostawiamy hotbar widoczny podczas craftingu!
-		if hotbar_panel:
-			hotbar_panel.show()
+		if crafting_ui: crafting_ui.show()
+		if hotbar_panel: hotbar_panel.show()
 
 func toggle_map_ui() -> void:
 	if is_map_open:
 		_close_all_ui()
 	else:
-		_close_all_ui() # Zamyka ekwipunek/crafting
+		_close_all_ui()
 		is_map_open = true
-		
-		# --- NOWE: Aktualizujemy słownik ---
 		EventBus.set_menu_state(EventBus.MENU_MAP, true)
-		
-		if minimap_ui:
-			minimap_ui.toggle_large_map(true)
-			
-		if hotbar_panel:
-			hotbar_panel.hide()
+		if minimap_ui: minimap_ui.toggle_large_map(true)
+		if hotbar_panel: hotbar_panel.hide()
 
 func _on_storage_opened(storage_ref: Node) -> void:
 	_close_all_ui()
 	current_open_chest = storage_ref
-	
-	# Nasłuchujemy zniszczenia otwartej skrzyni
 	if current_open_chest.has_signal("storage_destroyed") and not current_open_chest.storage_destroyed.is_connected(_on_storage_destroyed):
 		current_open_chest.storage_destroyed.connect(_on_storage_destroyed)
-
+		
 	is_player_inventory_open = true
-	
-	# --- NOWE: Aktualizujemy słownik ---
 	EventBus.set_menu_state(EventBus.MENU_STORAGE, true)
 	
+	# Pokazujemy główny kontener (tło)
+	if main_inventory_window:
+		main_inventory_window.show()
+		
 	player_panel.open_panel(player_inventory)
 	chest_panel.open_panel(storage_ref)
-	if hotbar_panel:
-		hotbar_panel.hide()
+	_set_equipment_ui_visible(true)
+	
+	if hotbar_panel: hotbar_panel.hide()
 
-# Dodaj nową funkcję zamykającą
 func _on_storage_destroyed() -> void:
-	print("UIController: Skrzynia zniszczona! Zamykam interfejs.")
 	_close_all_ui()
 
 func _on_storage_closed() -> void:
 	_close_all_ui()
 
 func _close_all_ui() -> void:
-	# 0. Odmrożenie gry, niezależnie od tego, co było otwarte
 	get_tree().paused = false
 	
-	# 1. Odkładanie przedmiotu z ręki
 	if item_in_hand != null and player_inventory != null:
 		var remainder = player_inventory.add_instance(item_in_hand)
-		if remainder != null:
-			player_inventory.item_dropped.emit(remainder, true) 
+		if remainder != null: player_inventory.item_dropped.emit(remainder, true) 
 		item_in_hand = null
+		_update_cursor_visuals()
 		
-	_update_cursor_visuals()
-	
-	# 2. Reset zmiennych i ukrywanie paneli
 	current_open_chest = null
 	is_player_inventory_open = false
 	is_crafting_open = false
 	is_map_open = false
 	
-	if minimap_ui:
-		minimap_ui.toggle_large_map(false)
+	# Ukrywamy całkowicie okno główne ekwipunku (razem z tłem!)
+	if main_inventory_window:
+		main_inventory_window.hide()
 	
+	if minimap_ui: minimap_ui.toggle_large_map(false)
 	player_panel.close_panel()
-	_set_backpack_ui_visible(false)
-	
+	_set_equipment_ui_visible(false)
 	chest_panel.close_panel()
-	
-	if crafting_ui:
-		crafting_ui.hide()
+	if crafting_ui: crafting_ui.hide()
+	if hotbar_panel: hotbar_panel.show()
 		
-	if hotbar_panel:
-		hotbar_panel.show()
-	
-	# --- NOWE: Resetujemy wszystkie stany w słowniku ZANIM wyślemy sygnał zakończenia ---
 	EventBus.set_menu_state(EventBus.MENU_INVENTORY, false, false)
 	EventBus.set_menu_state(EventBus.MENU_CRAFTING, false, false)
 	EventBus.set_menu_state(EventBus.MENU_MAP, false, false)
-	EventBus.set_menu_state(EventBus.MENU_STORAGE, false, true) # Tutaj "true" odpala animację!
+	EventBus.set_menu_state(EventBus.MENU_STORAGE, false, true)
 
-# DODAJEMY NOWĄ FUNKCJĘ _input, KTÓRA JEST PIERWSZA W KOLEJCE:
 func _input(event: InputEvent) -> void:
-	# --- TARCZA DIALOGOWA ---
-	if DialogueManager.is_active:
-		return
-		
-	# Obsługa Pauzy (Zamykanie aktywnych okien)
+	if DialogueManager.is_active: return
+	
 	if event.is_action_pressed(INPUT_GAME_PAUSE):
-		if is_any_ui_open(): # <--- Skrócone i obejmujące mapę!
+		if is_any_ui_open():
 			_close_all_ui()
 			get_viewport().set_input_as_handled()
-	
-	# Wyrzucanie przedmiotu poza okno dla myszki
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-		if item_in_hand != null and is_player_inventory_open:
+			
+	# --- ULEPSZONE UPUSZCZANIE POZA OKNO (LPM = Wszystko, PPM = 1 Sztuka) ---
+	if event is InputEventMouseButton and not event.pressed:
+		if item_in_hand != null and is_any_ui_open():
 			if not _is_mouse_over_inventory_panels():
-				_drop_item_from_cursor()
-
-	# --- SYMULACJA KLIKNIĘĆ PADEM I INNE AKCJE (w _input) ---
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					_drop_item_from_cursor(true)  # Zrzut całego stacka
+					get_viewport().set_input_as_handled()
+				elif event.button_index == MOUSE_BUTTON_RIGHT:
+					_drop_item_from_cursor(false) # Zrzut tylko jednej sztuki
+					get_viewport().set_input_as_handled()
+				
 	if is_any_ui_open():
-		# Akcja "Interact" symuluje LEWY Przycisk Myszy (Podnoszenie przedmiotu)
 		if event.is_action_pressed("Interact"):
 			_simulate_mouse_click(MOUSE_BUTTON_LEFT, true)
 			get_viewport().set_input_as_handled()
@@ -313,258 +321,219 @@ func _input(event: InputEvent) -> void:
 			_simulate_mouse_click(MOUSE_BUTTON_LEFT, false)
 			get_viewport().set_input_as_handled()
 			
-		# Akcja "RotateBuilding" symuluje PRAWY Przycisk Myszy (Dzielenie przedmiotów na pół)
 		if event.is_action_pressed("RotateBuilding"):
 			_simulate_mouse_click(MOUSE_BUTTON_RIGHT, true)
 			get_viewport().set_input_as_handled()
 		elif event.is_action_released("RotateBuilding"):
 			_simulate_mouse_click(MOUSE_BUTTON_RIGHT, false)
 			get_viewport().set_input_as_handled()
-		
-		# --- WYRZUCANIE ITEMÓW (Pierwsze kliknięcie lub cała sterta) ---
+			
 		if event.is_action_pressed("DropItem"):
-			# Używamy Ctrl LUB Shift, żeby wyrzucić od razu całą stertę
 			if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_SHIFT):
 				_try_drop_hovered_slot(true)
 			else:
-				# Natychmiastowe wyrzucenie 1 sztuki po pierwszym kliknięciu
 				_try_drop_hovered_slot(false)
 			get_viewport().set_input_as_handled()
 
-# Pomocnicza funkcja sprawdzająca, czy kursor jest nad okienkiem ekwipunku
 func _is_mouse_over_inventory_panels() -> bool:
 	var mouse_pos = get_viewport().get_mouse_position()
 	
-	# Sprawdzamy panel gracza
-	if player_panel and player_panel.visible:
-		if player_panel.get_global_rect().has_point(mouse_pos):
+	# 1. Sprawdzamy ramkę samego ekwipunku/skrzyni
+	if main_inventory_window and main_inventory_window.visible:
+		var panel = main_inventory_window.get_node_or_null("PanelContainer")
+		if panel and panel.get_global_rect().has_point(mouse_pos):
 			return true
 			
-	# --- Sprawdzamy obszar slotu plecaka! ---
-	if backpack_panel and backpack_panel.visible:
-		if backpack_panel.get_global_rect().has_point(mouse_pos):
-			return true
-			
-	# Sprawdzamy panel skrzyni (jeśli jest otwarta)
-	if chest_panel and chest_panel.visible:
-		if chest_panel.get_global_rect().has_point(mouse_pos):
+	# 2. Sprawdzamy ramkę panelu Craftingu
+	if crafting_ui and crafting_ui.visible:
+		var panel = crafting_ui.get_node_or_null("BackgroundPanel")
+		if panel and panel.get_global_rect().has_point(mouse_pos):
 			return true
 			
 	return false
 
-# Funkcja wyrzucająca trzymany przedmiot z kursora
-func _drop_item_from_cursor() -> void:
-	var dropped_instance = item_in_hand
-	item_in_hand = null
+func _drop_item_from_cursor(drop_all: bool = true) -> void:
+	if item_in_hand == null: return
+	
+	var dropped_instance: ItemInstance
+	
+	if drop_all:
+		dropped_instance = item_in_hand
+		item_in_hand = null
+	else:
+		var hand_amount = item_in_hand.state.get("amount", 1)
+		var unique_data = item_in_hand.data.duplicate(true)
+		dropped_instance = ItemInstance.new(unique_data, 1)
+		dropped_instance.state = item_in_hand.state.duplicate(true)
+		dropped_instance.state["amount"] = 1
+		
+		item_in_hand.state["amount"] = hand_amount - 1
+		if item_in_hand.state["amount"] <= 0: item_in_hand = null
+			
 	_update_cursor_visuals()
 	_execute_drop_in_world(dropped_instance)
 
-# Uniwersalna funkcja fizycznie wyrzucająca przedmioty na świat gry
 func _execute_drop_in_world(dropped_instance: ItemInstance) -> void:
 	if dropped_instance == null: return
-	
+		
 	var player = get_tree().get_first_node_in_group("Player")
 	if player and player.has_node("ItemThrowerComponent"):
 		var thrower = player.get_node("ItemThrowerComponent")
 		var aim_target = Vector2.ZERO
 		if player.has_node("AimController") and player.get_node("AimController").aim_scanner:
 			aim_target = player.get_node("AimController").aim_scanner.target_position
-			
 		thrower.handle_item_drop(player, dropped_instance, true, true, aim_target)
 	else:
-		# Fallback awaryjny
-		if player_inventory:
-			player_inventory.item_dropped.emit(dropped_instance, true)
-			
-	print("UIController: Pomyślnie wyrzucono przedmiot (" + dropped_instance.data.item_name + ")!")
+		if player_inventory: player_inventory.item_dropped.emit(dropped_instance, true)
 
 func _try_drop_hovered_slot(drop_all: bool) -> void:
-	# 1. Priorytet 1: Jeśli mamy coś w ręku (kursorze), to najpierw wyrzucamy z kursora
 	if item_in_hand != null:
-		# ZMIANA: Pobieranie ilości ze słownika 'state'
 		var hand_amount = item_in_hand.state.get("amount", 1)
 		var amount_to_drop = hand_amount if drop_all else 1
-		
 		var unique_data = item_in_hand.data.duplicate(true)
 		var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
-		
-		# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
 		dropped_instance.state = item_in_hand.state.duplicate(true)
 		dropped_instance.state["amount"] = amount_to_drop
-		
-		# Odejmowanie ze słownika
 		item_in_hand.state["amount"] = hand_amount - amount_to_drop
-		if item_in_hand.state["amount"] <= 0:
-			item_in_hand = null
-			
+		if item_in_hand.state["amount"] <= 0: item_in_hand = null
 		_update_cursor_visuals()
 		_execute_drop_in_world(dropped_instance)
 		return
-
-	# 2. Priorytet 2: Sprawdzamy, na jaki element interfejsu najechał kursor
+		
 	var hovered = get_viewport().gui_get_hovered_control()
 	var target_slot_ui: InventorySlot = null
-	
-	# Szukamy po strukturze węzłów w górę, czy trafiliśmy w InventorySlot
 	while hovered != null:
 		if hovered is InventorySlot:
 			target_slot_ui = hovered
 			break
 		hovered = hovered.get_parent()
 		
-	# Jeśli kursor jest nad slotem
 	if target_slot_ui != null:
 		var parent_node = target_slot_ui.parent_reference
 		var slot_idx = target_slot_ui.slot_index
-		
-		# -- ZABEZPIECZENIE: WYRZUCANIE ZAŁOŻONEGO PLECAKA --
-		if slot_idx == -2 and parent_node is Inventory:
-			if not parent_node.backpack_slot.is_empty():
-				var backpack_to_drop = parent_node.unequip_backpack()
-				_execute_drop_in_world(backpack_to_drop)
-			return
-		
-		var target_slot: SlotData
-		if parent_node is StorageComponent:
-			target_slot = parent_node.slots[slot_idx]
-		elif parent_node is Inventory:
-			target_slot = parent_node.slots[slot_idx]
 			
-		# Odrywanie przedmiotu ze slota i rzut
+		var target_slot: SlotData
+		if parent_node is StorageComponent: target_slot = parent_node.slots[slot_idx]
+		elif parent_node is Inventory: 
+			# --- NAPRAWA: Zrozumienie slotów zbroi i plecaka ('Q' na akcesoriach) ---
+			if slot_idx <= -10:
+				var equip_type = abs(slot_idx + 10)
+				target_slot = parent_node.equipment_slots[equip_type]
+			else: 
+				target_slot = parent_node.slots[slot_idx]
+			
 		if target_slot and not target_slot.is_empty():
 			var slot_amount = target_slot.item.state.get("amount", 1)
 			var amount_to_drop = slot_amount if drop_all else 1
-			
 			var unique_data = target_slot.item.data.duplicate(true)
 			var dropped_instance = ItemInstance.new(unique_data, amount_to_drop)
-			
-			# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
 			dropped_instance.state = target_slot.item.state.duplicate(true)
 			dropped_instance.state["amount"] = amount_to_drop
 			
 			target_slot.item.state["amount"] = slot_amount - amount_to_drop
-			if target_slot.item.state["amount"] <= 0:
-				target_slot.clear_slot()
+			if target_slot.item.state["amount"] <= 0: target_slot.clear_slot()
 				
-			if parent_node is StorageComponent:
+			if parent_node is StorageComponent: 
 				parent_node.storage_updated.emit()
-			elif parent_node is Inventory:
+			elif parent_node is Inventory: 
+				# ZABEZPIECZENIE: Jeśli wyrzuciliśmy 'Q' coś z plecaka/zbroi, wymuszamy restart pasywek
+				if slot_idx <= -10:
+					parent_node._recalculate_slots_size()
+					parent_node.equipment_updated.emit()
 				parent_node.inventory_updated.emit()
 				
 			_execute_drop_in_world(dropped_instance)
 
-# ZMIENIAMY _unhandled_input TAK, ŻEBY OTWIERAŁO TYLKO EKWIPUNEK:
 func _unhandled_input(event: InputEvent) -> void:
-	# --- TARCZA DIALOGOWA: Całkowicie blokujemy otwieranie UI ---
-	if DialogueManager.is_active:
-		return
-		
-	# Otwieranie/Zamykanie ekwipunku
+	if DialogueManager.is_active: return
+	
 	if event.is_action_pressed(INPUT_TOGGLE_INVENTORY):
-		if current_open_chest == null:
-			toggle_player_inventory()
-		else:
-			_close_all_ui()
+		if current_open_chest == null: toggle_player_inventory()
+		else: _close_all_ui()
 		get_viewport().set_input_as_handled()
-		
-	# --- TUTAJ OBSŁUGUJEMY KLAWISZ CRAFTINGU ---
-	# Wpisz tu dokładną nazwę swojej akcji z Input Map (np. "ToggleCrafting" lub "Crafting")
 	elif event.is_action_pressed(INPUT_TOGGLE_CRAFTING): 
 		toggle_crafting_ui()
 		get_viewport().set_input_as_handled()
-	
-	# --- Otwieranie Mapy ---
 	elif event.is_action_pressed(INPUT_TOGGLE_MAP):
 		toggle_map_ui()
 		get_viewport().set_input_as_handled()
 
-# --- LOGIKA MINECRAFTOWA (KLIKNIĘCIA) ---
-
 func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> void:
-	if DialogueManager.is_active:
-		return
-		
-	var target_slot: SlotData
+	if DialogueManager.is_active: return
 	
+	var target_slot: SlotData
 	if parent_node is StorageComponent:
 		target_slot = parent_node.slots[slot_index]
 	elif parent_node is Inventory:
-		# Przechwytywanie kliknięcia w plecak
-		if slot_index == -2:
-			target_slot = parent_node.backpack_slot
-		else:
-			target_slot = parent_node.slots[slot_index]
-	else:
-		return
-
+		# Zauważ, że zniknął "if slot_index == -2". Od teraz plecak to też <= -10!
+		if slot_index <= -10:
+			var equip_type = abs(slot_index + 10)
+			target_slot = parent_node.equipment_slots[equip_type]
+		else: target_slot = parent_node.slots[slot_index]
+	else: return
+		
 	if button_index == MOUSE_BUTTON_LEFT:
 		_handle_left_click(target_slot)
 	elif button_index == MOUSE_BUTTON_RIGHT:
-		# Prawy klik na plecak go ignoruje (nie dzielimy plecaka na pół)
-		if slot_index == -2:
-			_handle_left_click(target_slot) 
+		if slot_index <= -10: _handle_left_click(target_slot) 
+		else: _handle_right_click(target_slot)
+	elif button_index == -1:  
+		if slot_index <= -10:
+			_handle_quick_unequip_accessory(abs(slot_index + 10))
 		else:
-			_handle_right_click(target_slot)
-	elif button_index == -1: 
-		# --- ZAKTUALIZOWANA Logika dla Shift + Klik ---
-		if slot_index == -2:
-			# Zdejmujemy plecak
-			_handle_quick_unequip_backpack()
-		else:
-			# Jeśli skrzynia JEST otwarta, priorytetem jest zawsze przerzucenie przedmiotu do niej
-			if current_open_chest != null:
-				_handle_quick_transfer(parent_node, slot_index)
-			else:
-				# Jeśli jesteśmy tylko w swoim ekwipunku, próbujemy założyć plecak
-				if not _try_quick_equip_backpack(parent_node, slot_index):
+			if not _try_quick_equip(parent_node, slot_index):
+				if current_open_chest != null:
 					_handle_quick_transfer(parent_node, slot_index)
-
+					
 	_update_cursor_visuals()
 	
-	if parent_node is StorageComponent:
-		parent_node.storage_updated.emit()
-	elif parent_node is Inventory:
-		parent_node.inventory_updated.emit()
+	if parent_node is StorageComponent: parent_node.storage_updated.emit()
+	elif parent_node is Inventory: parent_node.inventory_updated.emit()
 
 func _handle_left_click(slot: SlotData) -> void:
-	# --- SPECJALNA LOGIKA: SLOT PLECACA ---
-	if player_inventory != null and slot == player_inventory.backpack_slot:
+	var is_accessory_slot = false
+	var accessory_type = -1
+	
+	if player_inventory != null:
+		for key in player_inventory.equipment_slots.keys():
+			if slot == player_inventory.equipment_slots[key]:
+				is_accessory_slot = true
+				accessory_type = key
+				break
+				
+	if is_accessory_slot:
 		if item_in_hand == null:
 			if not slot.is_empty():
-				item_in_hand = player_inventory.unequip_backpack()
+				item_in_hand = player_inventory.unequip_item(accessory_type)
 		else:
-			# ZMIANA ECS: Zamiast "is BackpackItem", szukamy BackpackComponent
-			var is_backpack = false
+			var is_equippable = false
+			var item_equip_type = -1
 			if item_in_hand.data.components != null:
 				for comp in item_in_hand.data.components:
-					if comp is BackpackComponent:
-						is_backpack = true
+					if comp is EquippableComponent:
+						is_equippable = true
+						item_equip_type = comp.equip_slot_type
 						break
-			
-			if is_backpack:
-				# Odczyt ze słownika
+			if is_equippable and item_equip_type == accessory_type:
 				var hand_amount = item_in_hand.state.get("amount", 1)
 				if hand_amount > 1:
 					var unique_data = item_in_hand.data.duplicate(true)
-					var single_bp = ItemInstance.new(unique_data, 1)
-					
-					if item_in_hand.state.has("durability"):
-						single_bp.state["durability"] = item_in_hand.state["durability"]
-						
+					var single_eq = ItemInstance.new(unique_data, 1)
+					if item_in_hand.state.has("durability"): single_eq.state["durability"] = item_in_hand.state["durability"]
 					item_in_hand.state["amount"] = hand_amount - 1
-					var old_bp = player_inventory.equip_backpack(single_bp)
-					if old_bp != null:
-						var remainder = player_inventory.add_instance(old_bp)
-						if remainder != null:
-							player_inventory.item_dropped.emit(remainder, false)
+					var old_eq = player_inventory.equip_item(single_eq, accessory_type)
+					if old_eq != null:
+						var remainder = player_inventory.add_instance(old_eq)
+						if remainder != null: player_inventory.item_dropped.emit(remainder, false)
 				else:
-					var leftover = player_inventory.equip_backpack(item_in_hand)
+					var leftover = player_inventory.equip_item(item_in_hand, accessory_type)
 					item_in_hand = leftover
 			else:
-				print("W to miejsce można założyć tylko plecak!")
+				print("Ten przedmiot nie pasuje do tego slotu zbroi!")
 		return
 
-	# --- ZWYKŁA LOGIKA DLA INNYCH SLOTÓW ---
+	# CAŁY BLOK STAREGO PLECAKA ZOSTAŁ STĄD SKASOWANY! Pętla wyżej załatwi teraz i plecak i zbroję.
+
 	if item_in_hand == null:
 		if not slot.is_empty():
 			item_in_hand = slot.item
@@ -575,25 +544,20 @@ func _handle_left_click(slot: SlotData) -> void:
 			item_in_hand = null
 		else:
 			if slot.item.can_stack_with(item_in_hand):
-				# ZMIANA ECS: Szukamy max_stack w komponencie StackComponent
 				var max_stack = 1
 				if slot.item.data.components != null:
 					for comp in slot.item.data.components:
 						if comp is StackComponent:
 							max_stack = comp.max_stack
 							break
-							
 				var slot_amount = slot.item.state.get("amount", 1)
 				var hand_amount = item_in_hand.state.get("amount", 1)
 				var available_space = max_stack - slot_amount
-				
 				if available_space > 0:
 					var amount_to_add = min(available_space, hand_amount)
 					slot.item.state["amount"] = slot_amount + amount_to_add
 					item_in_hand.state["amount"] = hand_amount - amount_to_add
-					
-					if item_in_hand.state["amount"] <= 0:
-						item_in_hand = null
+					if item_in_hand.state["amount"] <= 0: item_in_hand = null
 			else:
 				var temp_item = slot.item
 				slot.item = item_in_hand
@@ -606,14 +570,10 @@ func _handle_right_click(slot: SlotData) -> void:
 			if slot_amount > 1:
 				@warning_ignore("integer_division")
 				var half_amount = int(slot_amount / 2) 
-				
 				var unique_data = slot.item.data.duplicate(true)
 				item_in_hand = ItemInstance.new(unique_data, half_amount)
-				
-				# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
 				item_in_hand.state = slot.item.state.duplicate(true)
 				item_in_hand.state["amount"] = half_amount
-					
 				slot.item.state["amount"] = slot_amount - half_amount
 			else:
 				item_in_hand = slot.item
@@ -622,16 +582,11 @@ func _handle_right_click(slot: SlotData) -> void:
 		if slot.is_empty():
 			var unique_data = item_in_hand.data.duplicate(true)
 			slot.item = ItemInstance.new(unique_data, 1)
-			
-			# --- OSTATECZNA ZMIANA ECS: Klonujemy CAŁY słownik state ---
 			slot.item.state = item_in_hand.state.duplicate(true)
 			slot.item.state["amount"] = 1
-				
 			var hand_amount = item_in_hand.state.get("amount", 1)
 			item_in_hand.state["amount"] = hand_amount - 1
-			if item_in_hand.state["amount"] <= 0:
-				item_in_hand = null
-				
+			if item_in_hand.state["amount"] <= 0: item_in_hand = null
 		elif slot.item.can_stack_with(item_in_hand):
 			var max_stack = 1
 			if slot.item.data.components != null:
@@ -639,91 +594,70 @@ func _handle_right_click(slot: SlotData) -> void:
 					if comp is StackComponent:
 						max_stack = comp.max_stack
 						break
-						
 			var slot_amount = slot.item.state.get("amount", 1)
 			var hand_amount = item_in_hand.state.get("amount", 1)
-			
 			if slot_amount < max_stack:
 				slot.item.state["amount"] = slot_amount + 1
 				item_in_hand.state["amount"] = hand_amount - 1
-				if item_in_hand.state["amount"] <= 0:
-					item_in_hand = null
+				if item_in_hand.state["amount"] <= 0: item_in_hand = null
 
 func _handle_quick_transfer(from_node: Node, slot_index: int) -> void:
 	if not current_open_chest or not player_inventory: return 
-	
 	if from_node is StorageComponent:
 		var instance_to_move = from_node.remove_instance(slot_index)
 		if instance_to_move != null:
 			var remainder = player_inventory.add_instance(instance_to_move)
-			if remainder != null:
-				from_node.insert_instance(remainder)
-
+			if remainder != null: from_node.insert_instance(remainder)
 	elif from_node is Inventory: 
 		var slot_data = from_node.slots[slot_index]
 		if not slot_data.is_empty():
 			var instance_to_move = slot_data.item 
 			slot_data.clear_slot()
-			
 			var remainder = current_open_chest.insert_instance(instance_to_move)
-			if remainder != null:
-				player_inventory.add_instance(remainder)
+			if remainder != null: player_inventory.add_instance(remainder)
 
-func _handle_quick_unequip_backpack() -> void:
-	if not player_inventory or player_inventory.backpack_slot.is_empty():
-		return
-		
-	# Zdejmujemy plecak do zmiennej.
-	# UWAGA: Ta funkcja w inventory.gd z miejsca uetnie ekwipunek i WYRZUCI nadmiar przedmiotów na ziemię
-	var backpack_to_unequip = player_inventory.unequip_backpack()
-	
-	# Teraz próbujemy dodać ściągnięty plecak w wolne miejsce pomniejszonego już ekwipunku
-	var remainder = player_inventory.add_instance(backpack_to_unequip)
-	
-	# Jeśli z jakiegoś powodu w ekwipunku bazowym (np. w Twoich domyślnych 4 slotach) 
-	# nie ma miejsca, ściągnięty plecak musi upaść na ziemię.
+func _handle_quick_unequip_accessory(equip_type: int) -> void:
+	if not player_inventory or player_inventory.equipment_slots[equip_type].is_empty(): return
+	var accessory_to_unequip = player_inventory.unequip_item(equip_type)
+	var remainder = player_inventory.add_instance(accessory_to_unequip)
 	if remainder != null:
 		player_inventory.item_dropped.emit(remainder, false)
-		print("Brak miejsca w ekwipunku! Ściągnięty plecak upada na ziemię.")
+		print("Brak miejsca w ekwipunku! Zbroja upada na ziemię.")
 
-func _try_quick_equip_backpack(from_node: Node, slot_index: int) -> bool:
-	if not player_inventory: 
+func _try_quick_equip(from_node: Node, slot_index: int) -> bool:
+	if not player_inventory: return false
+	
+	var slot_data: SlotData = null
+	if from_node is Inventory: slot_data = from_node.slots[slot_index]
+	elif from_node is StorageComponent: slot_data = from_node.slots[slot_index]
+		
+	if slot_data == null or slot_data.is_empty() or slot_data.item.data.components == null:
 		return false
 		
-	if from_node is Inventory:
-		var slot_data = from_node.slots[slot_index]
-		
-		# ZMIANA ECS: Szukamy klocka BackpackComponent
-		var is_backpack = false
-		if not slot_data.is_empty() and slot_data.item.data.components != null:
-			for comp in slot_data.item.data.components:
-				if comp is BackpackComponent:
-					is_backpack = true
-					break
-		
-		if is_backpack:
-			if player_inventory.backpack_slot.is_empty():
+	for comp in slot_data.item.data.components:
+		# Cała magia plecaka została stąd usunięta! Plecak korzysta teraz ze zwykłego EquippableComponent!
+		if comp is EquippableComponent:
+			if player_inventory.equipment_slots[comp.equip_slot_type].is_empty():
 				var unique_data = slot_data.item.data.duplicate(true)
-				var single_bp = ItemInstance.new(unique_data, 1)
+				var single_eq = ItemInstance.new(unique_data, 1)
 				
-				if slot_data.item.state.has("durability"):
-					single_bp.state["durability"] = slot_data.item.state["durability"]
+				single_eq.state = slot_data.item.state.duplicate(true)
+				single_eq.state["amount"] = 1
 				
 				var slot_amount = slot_data.item.state.get("amount", 1)
 				slot_data.item.state["amount"] = slot_amount - 1
-				if slot_data.item.state["amount"] <= 0:
-					slot_data.clear_slot()
-					
-				player_inventory.equip_backpack(single_bp)
+				if slot_data.item.state["amount"] <= 0: slot_data.clear_slot()
+				
+				player_inventory.equip_item(single_eq, comp.equip_slot_type)
+				
+				if from_node is StorageComponent: from_node.storage_updated.emit()
 				return true
 				
 	return false
 
 func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
-		# Całkowicie ukrywa kursor myszy
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
-		
 		cursor_item_rect.texture = item_in_hand.data.item_icon
 		cursor_item_rect.show()
 		var hand_amount = item_in_hand.state.get("amount", 1)
@@ -733,32 +667,22 @@ func _update_cursor_visuals() -> void:
 		else:
 			cursor_amount_label.hide()
 	else:
-		# Przywraca widoczność kursora
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		
 		cursor_item_rect.texture = null
 		cursor_item_rect.hide()
 		cursor_amount_label.hide()
 
-# Zwraca true, jeśli otwarty jest JAKIKOLWIEK panel interfejsu
 func is_any_ui_open() -> bool:
 	return is_player_inventory_open or current_open_chest != null or is_crafting_open or is_map_open or DialogueManager.is_active
 
-# Bezpieczna symulacja kliknięcia uwzględniająca zarówno przyciski, jak i sloty
 func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
 	var hovered = get_viewport().gui_get_hovered_control()
-	if hovered == null:
-		return
-
+	if hovered == null: return
 	var target = hovered
 	while target != null:
-		# 1. Jeśli to natywny przycisk (np. w menu craftingu / interfejsie)
 		if target is BaseButton:
-			if is_pressed and button_idx == MOUSE_BUTTON_LEFT:
-				target.emit_signal("pressed")
+			if is_pressed and button_idx == MOUSE_BUTTON_LEFT: target.emit_signal("pressed")
 			return
-		
-		# 2. Jeśli to nasz customowy element ze skryptem (np. InventorySlot)
 		if target.has_method("_gui_input"):
 			var ev = InputEventMouseButton.new()
 			ev.button_index = button_idx
@@ -766,36 +690,26 @@ func _simulate_mouse_click(button_idx: int, is_pressed: bool) -> void:
 			ev.position = target.get_local_mouse_position()
 			target._gui_input(ev)
 			return
-			
 		target = target.get_parent()
 
-# [NOWOŚĆ] Magnetyczne przyciąganie wirtualnej myszki do przycisków
 func _on_gui_focus_changed(control: Control) -> void:
 	if is_any_ui_open() and control != null:
-		# Obliczamy środek zaznaczonego elementu
 		var center_pos = control.get_global_rect().get_center()
-		# Teleportujemy systemową myszkę idealnie na środek przycisku
 		get_viewport().warp_mouse(center_pos)
 
-# Pomocnicza funkcja do pokazywania/ukrywania slotu na plecak
-func _set_backpack_ui_visible(show_slot: bool) -> void:
-	if backpack_panel:
-		backpack_panel.visible = show_slot
+func _set_equipment_ui_visible(show_panel: bool) -> void:
+	if equipment_window:
+		equipment_window.visible = show_panel
 
-# --- ZAAWANSOWANY SYSTEM UKRYWANIA HUD ---
 func _on_hud_visibility_requested() -> void:
-	if _hud_tween and _hud_tween.is_valid():
-		_hud_tween.kill()
-		
+	if _hud_tween and _hud_tween.is_valid(): _hud_tween.kill()
 	_hud_tween = create_tween().set_parallel(true)
 	_hud_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_hud_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	
 	for element in get_tree().get_nodes_in_group("HUD_Element"):
 		if element is CanvasItem:
 			var should_hide = false
 			var config = element.get_node_or_null("HUDVisibilityConfig")
-			
 			if config:
 				if config.hide_in_inventory and EventBus.active_menus[EventBus.MENU_INVENTORY]: should_hide = true
 				if config.hide_in_storage and EventBus.active_menus[EventBus.MENU_STORAGE]: should_hide = true
@@ -806,43 +720,21 @@ func _on_hud_visibility_requested() -> void:
 				if config.hide_in_quest_log and EventBus.active_menus[EventBus.MENU_QUEST_LOG]: should_hide = true
 			else:
 				should_hide = EventBus.is_any_menu_open()
-			
 			var target_alpha = 0.0 if should_hide else 1.0
 			_hud_tween.tween_property(element, "modulate:a", target_alpha, 0.25)
-			
 			if element is Control:
-				if not element.has_meta("original_mouse_filter"):
-					element.set_meta("original_mouse_filter", element.mouse_filter)
-				
-				if should_hide:
-					element.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				else:
-					element.mouse_filter = element.get_meta("original_mouse_filter")
+				if not element.has_meta("original_mouse_filter"): element.set_meta("original_mouse_filter", element.mouse_filter)
+				if should_hide: element.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				else: element.mouse_filter = element.get_meta("original_mouse_filter")
 
-# Obsługa żądania z dialogu i Dziennika
 func _on_open_fullscreen_menu(menu_name: String) -> void:
-	# 1. Zabezpieczamy focus. Jeśli myszka uciekła, resetujemy go.
 	var focus_owner = get_viewport().gui_get_focus_owner()
-	if focus_owner:
-		focus_owner.release_focus()
-		
-	# 2. Jeśli coś było otwarte (np. pozostałości po starych oknach), czyścimy stan.
+	if focus_owner: focus_owner.release_focus()
 	_close_all_ui()
-		
 	match menu_name:
-		"Crafting":
-			# Wywołujemy natywne otwarcie z pauzowaniem i flagami
-			toggle_crafting_ui()
-		"Shop":
-			# toggle_shop_ui() # Gdy stworzysz sklep
-			pass
-		"Inventory":
-			toggle_player_inventory()
-		"Map":
-			toggle_map_ui()
-		"QuestLog":
-			# Osobny CanvasLayer sam się otwiera po wciśnięciu J.
-			# My po prostu ukryliśmy Ekwipunek/Mapę funkcją _close_all_ui() wyżej!
-			pass
-		_:
-			push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)
+		"Crafting": toggle_crafting_ui()
+		"Shop": pass
+		"Inventory": toggle_player_inventory()
+		"Map": toggle_map_ui()
+		"QuestLog": pass
+		_: push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)

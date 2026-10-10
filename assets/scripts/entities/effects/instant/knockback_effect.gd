@@ -11,19 +11,31 @@ func _init(_force: float = 800.0, _duration: float = 0.25):
 	duration = _duration
 
 func apply_effect(target: Node2D) -> bool:
+	var final_knockback = knockback_force
+	
+	# --- ODCZYT ODPORNOŚCI NA ODRZUT (TENACITY) ---
+	if target.get("health_stats_script") != null:
+		var cc_res = target.health_stats_script.cc_resistance
+		if cc_res >= 1.0:
+			print("Cel ma 100% odporności. Ignoruje odrzut!")
+			return false # Anulujemy odrzut całkowicie
+		
+		# Zmniejszamy siłę odrzutu o procent odporności
+		final_knockback *= (1.0 - cc_res)
+	# ----------------------------------------------
+	
 	var dir = source_position.direction_to(target.global_position)
 	if dir == Vector2.ZERO:
 		dir = Vector2.RIGHT 
 		
 	# 1. WSZYSTKIE OBIEKTY FIZYCZNE 
-	# (To automatycznie obsłuży loot: ItemPickup, beczki, a także Twoje bomby z ThrowablePhysics!)
 	if target is RigidBody2D:
-		target.apply_central_impulse(dir * knockback_force)
+		target.apply_central_impulse(dir * final_knockback)
 		return true
 		
 	# 2. NASZE NIEMATERIALNE RZUTKI (Noże, Miny, Śnieżki oparte na ThrowableProjectile)
 	elif target is ThrowableProjectile:
-		target.current_velocity += dir * knockback_force
+		target.current_velocity += dir * final_knockback
 		return true
 		
 	# 3. POSTACIE (Gracz, Wrogowie np. Pająki na bazie CharacterBody2D)
@@ -38,7 +50,7 @@ func apply_effect(target: Node2D) -> bool:
 					target.velocity = vel
 					target.move_and_slide()
 					target.velocity = old_vel,
-			dir * knockback_force, 
+			dir * final_knockback, 
 			Vector2.ZERO, 
 			duration
 		).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)

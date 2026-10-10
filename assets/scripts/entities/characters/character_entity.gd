@@ -186,17 +186,20 @@ func clear_all_effects() -> void:
 		for active_effect in effects_collector.get_children():
 			
 			# --- TARCZA OCHRONNA DLA AUR ---
-			# Jeśli węzeł ma naszą etykietę środowiskową, całkowicie go ignorujemy!
 			if active_effect.has_meta("is_environment_aura") and active_effect.get_meta("is_environment_aura") == true:
 				continue
-			# -------------------------------
+			
+			# --- TARCZA OCHRONNA DLA EKWIPUNKU ---
+			# Zapobiega wyczyszczeniu zbroi/ringów przez potkę oczyszczającą.
+			if active_effect.get("effect_resource") != null and active_effect.effect_resource.has_meta("passive_source"):
+				continue
 			
 			active_effect.set_process(false)
 			if active_effect.has_method("end_effect"):
 				active_effect.end_effect()
 			else:
 				active_effect.queue_free()
-		print("Usunięto wszystkie zwykłe efekty z entity character (Aury pozostały na miejscu).")
+		print("Usunięto wszystkie zwykłe efekty z entity character (Aury i Pasywki pozostały na miejscu).")
 		return
 	print("Nie znaleziono kontenera efektów w entity character.")
 
