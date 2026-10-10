@@ -343,6 +343,43 @@ func equip_item(new_equipment: ItemInstance, slot_type: EquippableComponent.Equi
 	inventory_updated.emit()
 	return old_equipment
 
+## Atomowo zużywa składniki i zastępuje wyposażenie bez przejściowego zmniejszania pojemności.
+func try_replace_equipped_item_and_consume_requirements(
+	slot_type: EquippableComponent.EquipSlot,
+	expected_equipment: ItemInstance,
+	replacement_equipment: ItemInstance,
+	item_requirements: Dictionary,
+	tag_requirements: Dictionary
+) -> bool:
+	if (
+		not equipment_slots.has(slot_type)
+		or expected_equipment == null
+		or replacement_equipment == null
+		or equipment_slots[slot_type].item != expected_equipment
+		or _get_equippable_slot(replacement_equipment.data) != slot_type
+	):
+		return false
+
+	var plan_result = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
+	if not plan_result.get("valid", false):
+		return false
+
+	_apply_requirement_plan(plan_result)
+	equipment_slots[slot_type].item = replacement_equipment
+	_recalculate_slots_size()
+	equipment_updated.emit()
+	inventory_updated.emit()
+	return true
+
+## Zwraca slot wyposażenia przypisany do przedmiotu lub NONE, jeśli nie jest zakładalny.
+func _get_equippable_slot(item_data: ItemData) -> int:
+	if item_data == null or item_data.components == null:
+		return EquippableComponent.EquipSlot.NONE
+	for component in item_data.components:
+		if component is EquippableComponent:
+			return component.equip_slot_type
+	return EquippableComponent.EquipSlot.NONE
+
 ## Zdejmuje zbroję i zwraca ją (żeby wróciła do kursora lub ekwipunku)
 func unequip_item(slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
 	var equipment = equipment_slots[slot_type].item
@@ -457,6 +494,12 @@ func try_consume_requirements(item_requirements: Dictionary, tag_requirements: D
 	if not plan_result.get("valid", false):
 		return false
 
+	_apply_requirement_plan(plan_result)
+	inventory_updated.emit()
+	return true
+
+## Stosuje wcześniej zwalidowany plan zużycia i aktualizuje cache bez emitowania sygnału.
+func _apply_requirement_plan(plan_result: Dictionary) -> void:
 	var slot_consumption: Dictionary = plan_result["slot_consumption"]
 	for slot_index: int in slot_consumption:
 		var slot: SlotData = slots[slot_index]
@@ -468,9 +511,6 @@ func try_consume_requirements(item_requirements: Dictionary, tag_requirements: D
 			slot.clear_slot()
 		else:
 			item.state["amount"] = remaining_amount
-
-	inventory_updated.emit()
-	return true
 
 func _update_cache(item_id: StringName, diff: int) -> void:
 	if not _item_count_cache.has(item_id):

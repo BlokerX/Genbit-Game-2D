@@ -214,6 +214,7 @@ metadata/_custom_type_script = "uid://d1uphj5nbc5yk"
 [sub_resource type="Resource" id="Resource_e7dwc"]
 script = ExtResource("2_77p83")
 recipe_name = "Big Backpack"
+equipment_upgrade_slot = 5
 ingredients = Array[ExtResource("3_kl38u")]([SubResource("Resource_rjxtp"), SubResource("Resource_coadw")])
 results = Array[ExtResource("5_3a5og")]([SubResource("Resource_supo1")])
 metadata/_custom_type_script = "uid://crevd6m1abpfw"

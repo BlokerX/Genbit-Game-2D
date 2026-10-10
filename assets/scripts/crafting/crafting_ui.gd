@@ -94,20 +94,21 @@ func _update_details_panel() -> void:
 	
 	# --- SEKCJA 2: WYMAGANIA ---
 	details_text += "\n[center][b]Wymagane składniki:[/b][/center]\n"
-	var can_afford_all = true
 	
 	for ingredient in selected_recipe.ingredients:
-		var owned_amount = 0
+		var owned_amount := CraftingSystem.get_ingredient_available_amount(
+			inventory,
+			selected_recipe,
+			ingredient
+		)
 		var required_amount = ingredient.required_amount
 		var item_name = ""
 		
 		# Sprawdzamy czy czytamy z Tagu, czy z Konkretnego Itemu
 		if ingredient.required_tag != &"":
 			item_name = "Dowolne: " + str(ingredient.required_tag)
-			owned_amount = inventory.get_tag_amount(ingredient.required_tag)
 		elif ingredient.item_data != null:
 			item_name = ingredient.item_data.item_name
-			owned_amount = inventory.get_item_amount(ingredient.item_data.item_id)
 		else:
 			continue # Pusty składnik, ignorujemy
 			
@@ -116,10 +117,9 @@ func _update_details_panel() -> void:
 			details_text += "[color=green]  " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
 		else:
 			details_text += "[color=red]  " + item_name + ": " + str(owned_amount) + " / " + str(required_amount) + "[/color]\n"
-			can_afford_all = false
 			
 	ingredients_label.text = details_text
-	craft_button.disabled = !can_afford_all
+	craft_button.disabled = not CraftingSystem.can_craft(inventory, selected_recipe)
 
 func _on_craft_button_pressed() -> void:
 	if selected_recipe != null and player != null:

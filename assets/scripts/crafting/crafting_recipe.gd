@@ -10,3 +10,7 @@ class_name CraftingRecipe
 @export_group("Wyniki")
 ## Lista WSZYSTKICH przedmiotów, które gracz otrzyma
 @export var results: Array[RecipeResult] = []
+
+@export_group("Ulepszenie wyposażenia")
+## Slot wyposażenia, którego przedmiot jest zużywany i zastępowany wynikiem receptury.
+@export var equipment_upgrade_slot: EquippableComponent.EquipSlot = EquippableComponent.EquipSlot.NONE
