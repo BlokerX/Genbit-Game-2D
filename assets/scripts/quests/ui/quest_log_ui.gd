@@ -91,6 +91,15 @@ func switch_tab(tab: QuestTab, keep_selection: bool = false) -> void:
 
 func open_log() -> void:
 	EventBus.open_fullscreen_menu.emit("QuestLog")
+	if visible:
+		return
+	_show_log()
+
+func open_from_menu_request() -> void:
+	if not visible:
+		_show_log()
+
+func _show_log() -> void:
 	show()
 	get_tree().paused = true
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, true)

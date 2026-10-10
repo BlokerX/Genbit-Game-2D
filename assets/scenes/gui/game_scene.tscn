@@ -73,7 +73,7 @@ hand_attack_data = SubResource("Resource_osvyu")
 script = ExtResource("1_ge8p3")
 initial_map_path = "uid://cbecj7vxyv5rc"
 
-[node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("main_inventory_window", "chest_panel", "player_panel", "backpack_panel", "equipment_window", "equipment_collapsible", "toggle_equipment_btn", "eq_slot_head", "eq_slot_chest", "eq_slot_legs", "eq_slot_boots", "eq_slot_accessory", "eq_slot_amulet", "eq_slot_backpack", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui")]
+[node name="UI_Canvas" type="CanvasLayer" parent="." unique_id=402295387 node_paths=PackedStringArray("main_inventory_window", "chest_panel", "player_panel", "backpack_panel", "equipment_window", "equipment_collapsible", "toggle_equipment_btn", "eq_slot_head", "eq_slot_chest", "eq_slot_legs", "eq_slot_boots", "eq_slot_accessory", "eq_slot_amulet", "eq_slot_backpack", "hotbar_panel", "cursor_item_rect", "cursor_amount_label", "crafting_ui", "minimap_ui", "quest_log_ui")]
 process_mode = 3
 script = ExtResource("1_bpfx5")
 main_inventory_window = NodePath("Menus_Layer/InventoryWindows")
@@ -95,6 +95,7 @@ cursor_item_rect = NodePath("CursorLayer/CursorItem")
 cursor_amount_label = NodePath("CursorLayer/CursorItem/Label")
 crafting_ui = NodePath("Menus_Layer/CraftingUI")
 minimap_ui = NodePath("HUD_Layer/BottomRight_Zone/Minimap")
+quest_log_ui = NodePath("../QuestLogUI")
 
 [node name="HUD_Layer" type="MarginContainer" parent="UI_Canvas" unique_id=678210752]
 anchors_preset = 15

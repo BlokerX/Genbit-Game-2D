@@ -2,7 +2,7 @@ extends Effect
 class_name OpenMenuEffect
 
 ## Wybierz z listy menu, które ma się otworzyć po zakończeniu rozmowy
-@export_enum("Inventory", "Crafting", "Shop", "QuestLog", "Map") var menu_name: String = "Inventory"
+@export_enum("Inventory", "Crafting", "QuestLog", "Map") var menu_name: String = "Inventory"
 
 func _init() -> void:
 	effect_name = "Open Menu"

@@ -36,6 +36,7 @@ var equipment_slot_uis: Dictionary = {}
 @export var cursor_amount_label: Label
 @export var crafting_ui: Control
 @export var minimap_ui: Minimap
+@export var quest_log_ui: QuestLogUI
 
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
@@ -75,6 +76,9 @@ func _ready() -> void:
 	EventBus.close_storage_ui.connect(_on_storage_closed)
 	EventBus.slot_clicked.connect(_on_slot_clicked)
 	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
+	if not quest_log_ui:
+		push_error("UIController nie ma przypisanego dziennika zadań.")
+		return
 	
 	EventBus.player_died.connect(_close_all_ui)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
@@ -733,8 +737,8 @@ func _on_open_fullscreen_menu(menu_name: String) -> void:
 	_close_all_ui()
 	match menu_name:
 		"Crafting": toggle_crafting_ui()
-		"Shop": pass
+		"Shop": push_warning("UIController: Menu sklepu nie jest zaimplementowane.")
 		"Inventory": toggle_player_inventory()
 		"Map": toggle_map_ui()
-		"QuestLog": pass
+		"QuestLog": quest_log_ui.open_from_menu_request()
 		_: push_warning("UIController: Nieznane menu do otwarcia -> " + menu_name)

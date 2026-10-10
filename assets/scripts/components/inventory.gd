@@ -2,6 +2,8 @@
 extends Node
 class_name Inventory
 
+const RequirementPlanner = preload("res://assets/scripts/components/inventory_requirement_planner.gd")
+
 #region Inventory stats
 ## Rozmiar ekwipunku
 @export var slots_amount: int = 4
@@ -601,6 +603,31 @@ func consume_ingredients(item_id: StringName, required_amount: int) -> void:
 			if remaining <= 0: break
 			
 	inventory_updated.emit()
+
+## Sprawdza jednocześnie wymagania przedmiotów i tagów bez zmiany ekwipunku.
+func has_requirements(item_requirements: Dictionary, tag_requirements: Dictionary) -> bool:
+	return RequirementPlanner.build_plan(slots, item_requirements, tag_requirements).get("valid", false)
+
+## Zużywa wymagania atomowo: nie zmienia ekwipunku, jeśli brakuje choć jednego składnika.
+func try_consume_requirements(item_requirements: Dictionary, tag_requirements: Dictionary) -> bool:
+	var plan_result = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
+	if not plan_result.get("valid", false):
+		return false
+
+	var slot_consumption: Dictionary = plan_result["slot_consumption"]
+	for slot_index: int in slot_consumption:
+		var slot: SlotData = slots[slot_index]
+		var item: ItemInstance = slot.item
+		var consumed_amount: int = slot_consumption[slot_index]
+		var remaining_amount: int = item.state.get("amount", 1) - consumed_amount
+		_update_cache(item.data.item_id, -consumed_amount)
+		if remaining_amount <= 0:
+			slot.clear_slot()
+		else:
+			item.state["amount"] = remaining_amount
+
+	inventory_updated.emit()
+	return true
 
 func _update_cache(item_id: StringName, diff: int) -> void:
 	if not _item_count_cache.has(item_id):

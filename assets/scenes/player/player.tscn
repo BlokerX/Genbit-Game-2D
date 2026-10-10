@@ -93,6 +93,7 @@ loot_drop_script = ExtResource("6_yfi7d")
 character_sprite = NodePath("CharacterAnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
+drop_inventory_on_death = true
 
 [node name="FactionComponent" type="Node" parent="." unique_id=1413011526]
 script = ExtResource("6_xflxm")

@@ -27,7 +27,8 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 # KONFIGURACJA ŹRÓDEŁ DROPu:
 @export_category("System Łupu (Loot)")
 @export var drop_from_loot_table: bool = true
-@export var drop_from_inventory: bool = true
+## Po śmierci wyrzuca wszystkie przedmioty z ekwipunku i założonego sprzętu.
+@export var drop_inventory_on_death: bool = true
 @export var loot_drop_script : LootDropComponent
 
 @export_category("Dane Fizyczne")
@@ -113,7 +114,7 @@ func _on_character_died():
 		loot_drop_script.perform_drop(self)
 		
 	# 2. Źródło: Aktualny Ekwipunek (Upuść wszystko, co trzymał/miał w plecaku)
-	if drop_from_inventory and has_method("get_inventory"):
+	if drop_inventory_on_death and has_method("get_inventory"):
 		# ZMIANA: call("nazwa_metody") omija sprawdzanie statyczne!
 		var inv = call("get_inventory")
 		if inv and inv.has_method("drop_all_items"):
