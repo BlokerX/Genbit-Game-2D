@@ -273,3 +273,10 @@ func _draw() -> void:
 			draw_string(font, chunk_pos + Vector2(24, 84), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8))
 			# Rysujemy biały napis
 			draw_string(font, chunk_pos + Vector2(20, 80), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+
+# Zamrożone chunki są poza drzewem, więc silnik ich nie zwolni razem ze streamerem (wyciek przy zamykaniu gry).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		for chunk_node in chunk_nodes.values():
+			if is_instance_valid(chunk_node) and chunk_node.get_parent() == null:
+				chunk_node.free()

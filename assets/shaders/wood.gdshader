@@ -1,18 +1,14 @@
 shader_type canvas_item;
 
 uniform sampler2D texture_new : filter_nearest_mipmap_anisotropic;
-
-void vertex() {
-	// Called for every vertex the material is visible on.
-}
+// W TileMapLayer UV obejmuje cały atlas, a nie pojedynczy kafel, więc przeliczamy je na lokalne UV kafla.
+// Wartości muszą zgadzać się z TileSetAtlasSource (texture_region_size i use_texture_padding).
+uniform vec2 tile_size = vec2(64.0);
+uniform bool texture_padding = true;
 
 void fragment() {
-	vec3 final = texture(texture_new,UV).rgb;
-	COLOR.rgb = final;
-	// Called for every pixel the material is visible on.
+	float pad = texture_padding ? 1.0 : 0.0;
+	vec2 atlas_px = UV / TEXTURE_PIXEL_SIZE;
+	vec2 tile_uv = (mod(atlas_px, tile_size + 2.0 * pad) - pad) / tile_size;
+	COLOR.rgb = texture(texture_new, clamp(tile_uv, 0.0, 1.0)).rgb;
 }
-
-//void light() {
-//	// Called for every pixel for every light affecting the material.
-//	// Uncomment to replace the default light processing function with this one.
-//}
