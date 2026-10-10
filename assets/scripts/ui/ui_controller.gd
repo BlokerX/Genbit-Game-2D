@@ -5,7 +5,8 @@ const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
 const INPUT_TOGGLE_MAP = "ToggleMap"
 const INPUT_GAME_PAUSE = "Game_Pause"
 
-const SLOT_SCENE = preload("res://assets/scenes/gui/inventory_slot.tscn")
+const EquipmentInventoryUIType = preload("res://assets/scripts/ui/equipment_inventory_ui.gd")
+const InventorySlotInteractorType = preload("res://assets/scripts/ui/inventory_slot_interactor.gd")
 
 @export_category("Główne Okna")
 @export var main_inventory_window: Control # Cały kontener z tłem ekwipunku
@@ -15,21 +16,6 @@ const SLOT_SCENE = preload("res://assets/scenes/gui/inventory_slot.tscn")
 @export var player_panel: GridPanel
 @export var backpack_panel: GridPanel
 
-@export_category("Ekwipunek i Zbroja")
-@export var equipment_window: Control
-@export var equipment_collapsible: Control
-@export var toggle_equipment_btn: Button
-
-@export var eq_slot_head: InventorySlot
-@export var eq_slot_chest: InventorySlot
-@export var eq_slot_legs: InventorySlot
-@export var eq_slot_boots: InventorySlot
-@export var eq_slot_accessory: InventorySlot
-@export var eq_slot_amulet: InventorySlot
-@export var eq_slot_backpack: InventorySlot
-
-var equipment_slot_uis: Dictionary = {}
-
 @export_category("Inne UI")
 @export var hotbar_panel: Control
 @export var cursor_item_rect: TextureRect
@@ -37,6 +23,7 @@ var equipment_slot_uis: Dictionary = {}
 @export var crafting_ui: Control
 @export var minimap_ui: Minimap
 @export var quest_log_ui: QuestLogUI
+@export var equipment_inventory_ui: EquipmentInventoryUIType
 
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
@@ -45,8 +32,14 @@ var equipment_slot_uis: Dictionary = {}
 # Zmienna na ekwipunek gracza - znajdziemy ją automatycznie!
 var player_inventory: Inventory = null
 var _player_ref: Node2D = null
+var _slot_interactor: InventorySlotInteractorType
 
-var item_in_hand: ItemInstance = null
+var item_in_hand: ItemInstance:
+	get:
+		return _slot_interactor.held_item if _slot_interactor else null
+	set(value):
+		if _slot_interactor:
+			_slot_interactor.held_item = value
 var current_open_chest: Node = null
 
 var is_player_inventory_open: bool = false
@@ -67,10 +60,14 @@ func _ready() -> void:
 	if not player_inventory:
 		push_error("UIController nie mógł znaleźć ekwipunku gracza!")
 		return
+
+	_slot_interactor = InventorySlotInteractorType.new()
+	_slot_interactor.initialize(player_inventory)
+	_slot_interactor.held_item_changed.connect(_update_cursor_visuals)
 		
 	EventBus.open_storage_ui.connect(_on_storage_opened)
 	EventBus.close_storage_ui.connect(_on_storage_closed)
-	EventBus.slot_clicked.connect(_on_slot_clicked)
+	EventBus.slot_clicked.connect(_slot_interactor.handle_slot_clicked)
 	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
 	if not quest_log_ui:
 		push_error("UIController nie ma przypisanego dziennika zadań.")
@@ -84,78 +81,15 @@ func _ready() -> void:
 	if crafting_ui:
 		crafting_ui.hide()
 		
-	if toggle_equipment_btn:
-		toggle_equipment_btn.pressed.connect(_on_toggle_equipment_pressed)
-
 	# Ukrywamy główne tło ekwipunku i panel zbroi na starcie
 	if main_inventory_window:
 		main_inventory_window.hide()
 	_set_equipment_ui_visible(false)
 
-	# --- INICJALIZACJA SLOTÓW ZBROI Z PLIKU .TSCN ---
-	_setup_equipment_slots()
-
-func _setup_equipment_slots() -> void:
-	if eq_slot_head: eq_slot_head.setup_as_equipment_slot(EquippableComponent.EquipSlot.HEAD, player_inventory)
-	if eq_slot_chest: eq_slot_chest.setup_as_equipment_slot(EquippableComponent.EquipSlot.CHEST, player_inventory)
-	if eq_slot_legs: eq_slot_legs.setup_as_equipment_slot(EquippableComponent.EquipSlot.LEGS, player_inventory)
-	if eq_slot_boots: eq_slot_boots.setup_as_equipment_slot(EquippableComponent.EquipSlot.BOOTS, player_inventory)
-	if eq_slot_accessory: eq_slot_accessory.setup_as_equipment_slot(EquippableComponent.EquipSlot.ACCESSORY, player_inventory)
-	if eq_slot_amulet: eq_slot_amulet.setup_as_equipment_slot(EquippableComponent.EquipSlot.AMULET, player_inventory)
-	# TERAZ PLECAK KORZYSTA Z SYSTEMU ZBROI!
-	if eq_slot_backpack: eq_slot_backpack.setup_as_equipment_slot(EquippableComponent.EquipSlot.BACKPACK, player_inventory)
-
-	equipment_slot_uis = {
-		EquippableComponent.EquipSlot.HEAD: eq_slot_head,
-		EquippableComponent.EquipSlot.CHEST: eq_slot_chest,
-		EquippableComponent.EquipSlot.LEGS: eq_slot_legs,
-		EquippableComponent.EquipSlot.BOOTS: eq_slot_boots,
-		EquippableComponent.EquipSlot.ACCESSORY: eq_slot_accessory,
-		EquippableComponent.EquipSlot.AMULET: eq_slot_amulet,
-		EquippableComponent.EquipSlot.BACKPACK: eq_slot_backpack # DODANO
-	}
-	
-	var slot_names = {
-		EquippableComponent.EquipSlot.HEAD: "Głowa",
-		EquippableComponent.EquipSlot.CHEST: "Tors",
-		EquippableComponent.EquipSlot.LEGS: "Spodnie",
-		EquippableComponent.EquipSlot.BOOTS: "Buty",
-		EquippableComponent.EquipSlot.ACCESSORY: "Akcesorium",
-		EquippableComponent.EquipSlot.AMULET: "Amulet",
-		EquippableComponent.EquipSlot.BACKPACK: "Plecak" # DODANO
-	}
-	
-	_refresh_all_eq_visuals(slot_names)
-	player_inventory.inventory_updated.connect(func(): _refresh_all_eq_visuals(slot_names))
-
-func _refresh_all_eq_visuals(names_dict: Dictionary) -> void:
-	# Usuwamy ten dziwny wyjątek dla plecaka, pętla zrobi to sama!
-	for slot_type in equipment_slot_uis.keys():
-		var ui_slot = equipment_slot_uis[slot_type]
-		var slot_data = player_inventory.equipment_slots[slot_type]
-		var default_name = names_dict.get(slot_type, "")
-		_update_single_eq_visual(ui_slot, slot_data, default_name)
-
-func _update_single_eq_visual(ui_slot: InventorySlot, slot_data: SlotData, default_name: String) -> void:
-	if not ui_slot: return
-	
-	ui_slot.update_slot(slot_data)
-	var bg_label = ui_slot.get_node_or_null("BgLabel")
-	
-	if slot_data.is_empty():
-		ui_slot.tooltip_text = "Slot: " + default_name
-		if bg_label: bg_label.show()
+	if equipment_inventory_ui:
+		equipment_inventory_ui.initialize(player_inventory)
 	else:
-		ui_slot.tooltip_text = ""
-		if bg_label: bg_label.hide()
-
-func _on_toggle_equipment_pressed() -> void:
-	if equipment_collapsible:
-		equipment_collapsible.visible = !equipment_collapsible.visible
-		if equipment_collapsible.visible:
-			toggle_equipment_btn.text = "ZBROJA I AKCESORIA <<"
-		else:
-			toggle_equipment_btn.text = "ZBROJA I AKCESORIA >>"
+		push_error("UIController nie ma przypisanego EquipmentInventoryUI.")
 
 func _process(delta: float) -> void:
 	if DialogueManager.is_active: return
@@ -242,6 +176,7 @@ func toggle_map_ui() -> void:
 func _on_storage_opened(storage_ref: Node) -> void:
 	_close_all_ui()
 	current_open_chest = storage_ref
+	_slot_interactor.open_storage = storage_ref
 	if current_open_chest.has_signal("storage_destroyed") and not current_open_chest.storage_destroyed.is_connected(_on_storage_destroyed):
 		current_open_chest.storage_destroyed.connect(_on_storage_destroyed)
 		
@@ -274,6 +209,7 @@ func _close_all_ui() -> void:
 		_update_cursor_visuals()
 		
 	current_open_chest = null
+	_slot_interactor.open_storage = null
 	is_player_inventory_open = false
 	is_crafting_open = false
 	is_map_open = false
@@ -458,203 +394,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_map_ui()
 		get_viewport().set_input_as_handled()
 
-func _on_slot_clicked(parent_node: Node, slot_index: int, button_index: int) -> void:
-	if DialogueManager.is_active: return
-	
-	var target_slot: SlotData
-	if parent_node is StorageComponent:
-		target_slot = parent_node.slots[slot_index]
-	elif parent_node is Inventory:
-		# Zauważ, że zniknął "if slot_index == -2". Od teraz plecak to też <= -10!
-		if slot_index <= -10:
-			var equip_type = abs(slot_index + 10)
-			target_slot = parent_node.equipment_slots[equip_type]
-		else: target_slot = parent_node.slots[slot_index]
-	else: return
-		
-	if button_index == MOUSE_BUTTON_LEFT:
-		_handle_left_click(target_slot)
-	elif button_index == MOUSE_BUTTON_RIGHT:
-		if slot_index <= -10: _handle_left_click(target_slot) 
-		else: _handle_right_click(target_slot)
-	elif button_index == -1:  
-		if slot_index <= -10:
-			_handle_quick_unequip_accessory(abs(slot_index + 10))
-		else:
-			if not _try_quick_equip(parent_node, slot_index):
-				if current_open_chest != null:
-					_handle_quick_transfer(parent_node, slot_index)
-					
-	_update_cursor_visuals()
-	
-	if parent_node is StorageComponent: parent_node.storage_updated.emit()
-	elif parent_node is Inventory: parent_node.inventory_updated.emit()
-
-func _handle_left_click(slot: SlotData) -> void:
-	var is_accessory_slot = false
-	var accessory_type = -1
-	
-	if player_inventory != null:
-		for key in player_inventory.equipment_slots.keys():
-			if slot == player_inventory.equipment_slots[key]:
-				is_accessory_slot = true
-				accessory_type = key
-				break
-				
-	if is_accessory_slot:
-		if item_in_hand == null:
-			if not slot.is_empty():
-				item_in_hand = player_inventory.unequip_item(accessory_type)
-		else:
-			var is_equippable = false
-			var item_equip_type = -1
-			if item_in_hand.data.components != null:
-				for comp in item_in_hand.data.components:
-					if comp is EquippableComponent:
-						is_equippable = true
-						item_equip_type = comp.equip_slot_type
-						break
-			if is_equippable and item_equip_type == accessory_type:
-				var hand_amount = item_in_hand.state.get("amount", 1)
-				if hand_amount > 1:
-					var unique_data = item_in_hand.data.duplicate(true)
-					var single_eq = ItemInstance.new(unique_data, 1)
-					if item_in_hand.state.has("durability"): single_eq.state["durability"] = item_in_hand.state["durability"]
-					item_in_hand.state["amount"] = hand_amount - 1
-					var old_eq = player_inventory.equip_item(single_eq, accessory_type)
-					if old_eq != null:
-						var remainder = player_inventory.add_instance(old_eq)
-						if remainder != null: player_inventory.item_dropped.emit(remainder, false)
-				else:
-					var leftover = player_inventory.equip_item(item_in_hand, accessory_type)
-					item_in_hand = leftover
-			else:
-				print("Ten przedmiot nie pasuje do tego slotu zbroi!")
-		return
-
-	# CAŁY BLOK STAREGO PLECAKA ZOSTAŁ STĄD SKASOWANY! Pętla wyżej załatwi teraz i plecak i zbroję.
-
-	if item_in_hand == null:
-		if not slot.is_empty():
-			item_in_hand = slot.item
-			slot.clear_slot()
-	else:
-		if slot.is_empty():
-			slot.item = item_in_hand
-			item_in_hand = null
-		else:
-			if slot.item.can_stack_with(item_in_hand):
-				var max_stack = 1
-				if slot.item.data.components != null:
-					for comp in slot.item.data.components:
-						if comp is StackComponent:
-							max_stack = comp.max_stack
-							break
-				var slot_amount = slot.item.state.get("amount", 1)
-				var hand_amount = item_in_hand.state.get("amount", 1)
-				var available_space = max_stack - slot_amount
-				if available_space > 0:
-					var amount_to_add = min(available_space, hand_amount)
-					slot.item.state["amount"] = slot_amount + amount_to_add
-					item_in_hand.state["amount"] = hand_amount - amount_to_add
-					if item_in_hand.state["amount"] <= 0: item_in_hand = null
-			else:
-				var temp_item = slot.item
-				slot.item = item_in_hand
-				item_in_hand = temp_item
-
-func _handle_right_click(slot: SlotData) -> void:
-	if item_in_hand == null:
-		if not slot.is_empty():
-			var slot_amount = slot.item.state.get("amount", 1)
-			if slot_amount > 1:
-				@warning_ignore("integer_division")
-				var half_amount = int(slot_amount / 2) 
-				var unique_data = slot.item.data.duplicate(true)
-				item_in_hand = ItemInstance.new(unique_data, half_amount)
-				item_in_hand.state = slot.item.state.duplicate(true)
-				item_in_hand.state["amount"] = half_amount
-				slot.item.state["amount"] = slot_amount - half_amount
-			else:
-				item_in_hand = slot.item
-				slot.clear_slot()
-	else:
-		if slot.is_empty():
-			var unique_data = item_in_hand.data.duplicate(true)
-			slot.item = ItemInstance.new(unique_data, 1)
-			slot.item.state = item_in_hand.state.duplicate(true)
-			slot.item.state["amount"] = 1
-			var hand_amount = item_in_hand.state.get("amount", 1)
-			item_in_hand.state["amount"] = hand_amount - 1
-			if item_in_hand.state["amount"] <= 0: item_in_hand = null
-		elif slot.item.can_stack_with(item_in_hand):
-			var max_stack = 1
-			if slot.item.data.components != null:
-				for comp in slot.item.data.components:
-					if comp is StackComponent:
-						max_stack = comp.max_stack
-						break
-			var slot_amount = slot.item.state.get("amount", 1)
-			var hand_amount = item_in_hand.state.get("amount", 1)
-			if slot_amount < max_stack:
-				slot.item.state["amount"] = slot_amount + 1
-				item_in_hand.state["amount"] = hand_amount - 1
-				if item_in_hand.state["amount"] <= 0: item_in_hand = null
-
-func _handle_quick_transfer(from_node: Node, slot_index: int) -> void:
-	if not current_open_chest or not player_inventory: return 
-	if from_node is StorageComponent:
-		var instance_to_move = from_node.remove_instance(slot_index)
-		if instance_to_move != null:
-			var remainder = player_inventory.add_instance(instance_to_move)
-			if remainder != null: from_node.insert_instance(remainder)
-	elif from_node is Inventory: 
-		var slot_data = from_node.slots[slot_index]
-		if not slot_data.is_empty():
-			var instance_to_move = slot_data.item 
-			slot_data.clear_slot()
-			var remainder = current_open_chest.insert_instance(instance_to_move)
-			if remainder != null: player_inventory.add_instance(remainder)
-
-func _handle_quick_unequip_accessory(equip_type: int) -> void:
-	if not player_inventory or player_inventory.equipment_slots[equip_type].is_empty(): return
-	var accessory_to_unequip = player_inventory.unequip_item(equip_type)
-	var remainder = player_inventory.add_instance(accessory_to_unequip)
-	if remainder != null:
-		player_inventory.item_dropped.emit(remainder, false)
-		print("Brak miejsca w ekwipunku! Zbroja upada na ziemię.")
-
-func _try_quick_equip(from_node: Node, slot_index: int) -> bool:
-	if not player_inventory: return false
-	
-	var slot_data: SlotData = null
-	if from_node is Inventory: slot_data = from_node.slots[slot_index]
-	elif from_node is StorageComponent: slot_data = from_node.slots[slot_index]
-		
-	if slot_data == null or slot_data.is_empty() or slot_data.item.data.components == null:
-		return false
-		
-	for comp in slot_data.item.data.components:
-		# Cała magia plecaka została stąd usunięta! Plecak korzysta teraz ze zwykłego EquippableComponent!
-		if comp is EquippableComponent:
-			if player_inventory.equipment_slots[comp.equip_slot_type].is_empty():
-				var unique_data = slot_data.item.data.duplicate(true)
-				var single_eq = ItemInstance.new(unique_data, 1)
-				
-				single_eq.state = slot_data.item.state.duplicate(true)
-				single_eq.state["amount"] = 1
-				
-				var slot_amount = slot_data.item.state.get("amount", 1)
-				slot_data.item.state["amount"] = slot_amount - 1
-				if slot_data.item.state["amount"] <= 0: slot_data.clear_slot()
-				
-				player_inventory.equip_item(single_eq, comp.equip_slot_type)
-				
-				if from_node is StorageComponent: from_node.storage_updated.emit()
-				return true
-				
-	return false
-
 func _update_cursor_visuals() -> void:
 	if item_in_hand != null:
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -698,8 +437,8 @@ func _on_gui_focus_changed(control: Control) -> void:
 		get_viewport().warp_mouse(center_pos)
 
 func _set_equipment_ui_visible(show_panel: bool) -> void:
-	if equipment_window:
-		equipment_window.visible = show_panel
+	if equipment_inventory_ui:
+		equipment_inventory_ui.set_visible(show_panel)
 
 func _on_open_fullscreen_menu(menu_name: String) -> void:
 	var focus_owner = get_viewport().gui_get_focus_owner()
