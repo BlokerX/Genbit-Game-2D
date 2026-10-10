@@ -30,9 +30,20 @@ func _ready() -> void:
 	else:
 		has_triggered = false
 
+## Uruchamia zmianę poziomu tylko przy rzeczywistym wejściu gracza w aktywny portal.
 func _on_body_entered(body: Node2D) -> void:
 	# Jeśli portal jest zablokowany, ignorujemy wejście
 	if has_triggered:
+		return
+
+	# Blokada pozostaje aktywna po załadowaniu poziomu, dopóki gracz nie opuści
+	# konkretnego portalu docelowego. Chroni to przed wejściem w drugi portal obok.
+	if GlobalLevelManager.is_changing_level or GlobalLevelManager.target_entrance_id != "":
+		return
+	if (
+		is_instance_valid(GlobalLevelManager.arrival_entrance)
+		and GlobalLevelManager.arrival_entrance != self
+	):
 		return
 		
 	if body.is_in_group("Player"):
@@ -51,7 +62,9 @@ func _on_body_entered(body: Node2D) -> void:
 		else:
 			push_warning("Brak przypisanej ścieżki target_level_path w przejściu!")
 
+## Odblokowuje portal, gdy gracz opuści jego obszar.
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("Player"):
 		# Gdy gracz wyjdzie z obszaru drzwi, odblokowujemy portal do ponownego użytku
 		has_triggered = false
+		GlobalLevelManager.complete_level_arrival(self)

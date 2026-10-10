@@ -120,6 +120,7 @@ func initialize_level() -> void:
 			# musimy ręcznie powiedzieć mu, że gracz właśnie na niego spadł, 
 			# aby nie odesłał go od razu z powrotem.
 			entrance.has_triggered = true
+			GlobalLevelManager.register_arrival_entrance(entrance)
 			# ----------------------------------
 			
 		else:

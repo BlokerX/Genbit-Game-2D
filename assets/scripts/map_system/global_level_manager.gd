@@ -6,6 +6,9 @@ var stored_player: Node2D = null
 ## ID wejścia, w którym gracz ma się pojawić po załadowaniu nowej mapy
 var target_entrance_id: String = ""
 
+## Konkretne wejście docelowe blokujące kolejne portale do czasu opuszczenia strefy.
+var arrival_entrance: LevelEntrance
+
 ## Blokada zapobiegająca wielokrotnemu wywołaniu zmiany poziomu
 var is_changing_level: bool = false
 
@@ -31,6 +34,7 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 		
 	is_changing_level = true
 	target_entrance_id = entrance_id
+	arrival_entrance = null
 	
 	var tree = get_tree()
 	var player = tree.get_first_node_in_group("Player")
@@ -120,7 +124,19 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 				new_map_instance.initialize_level()
 	
 	get_tree().create_timer(0.5).timeout.connect(func(): is_changing_level = false)
-	
+
+## Rejestruje portal, do którego właśnie przenoszony jest gracz.
+func register_arrival_entrance(entrance: LevelEntrance) -> void:
+	if entrance == null:
+		push_error("GlobalLevelManager: Nie można zarejestrować pustego portalu docelowego.")
+		return
+	arrival_entrance = entrance
+
+## Zwalnia blokadę portali wyłącznie dla portalu docelowego po opuszczeniu jego strefy.
+func complete_level_arrival(entrance: LevelEntrance) -> void:
+	if entrance == arrival_entrance:
+		arrival_entrance = null
+
 # Zamrożone mapy i odpięty gracz są poza drzewem, więc przy zamykaniu gry silnik ich nie zwolni.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
