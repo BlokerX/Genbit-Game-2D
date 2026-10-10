@@ -9,6 +9,9 @@ const InventoryAmmunitionControllerType = preload(
 const InventoryPassiveControllerType = preload(
 	"res://assets/scripts/components/inventory_passive_controller.gd"
 )
+const InventoryCapacityControllerType = preload(
+	"res://assets/scripts/components/inventory_capacity_controller.gd"
+)
 
 #region Inventory stats
 ## Rozmiar ekwipunku
@@ -48,6 +51,7 @@ var _item_count_cache: Dictionary = {}
 var _tag_count_cache: Dictionary = {}
 var _ammunition_controller: InventoryAmmunitionControllerType
 var _passive_controller: InventoryPassiveControllerType
+var _capacity_controller: InventoryCapacityControllerType
 
 ## Słownik przechowujący założony sprzęt (Klucz to EquippableComponent.EquipSlot)
 @export var equipment_slots: Dictionary = {}
@@ -68,6 +72,7 @@ func _init() -> void :
 	_ammunition_controller = InventoryAmmunitionControllerType.new()
 	_ammunition_controller.initialize(self)
 	_passive_controller = InventoryPassiveControllerType.new()
+	_capacity_controller = InventoryCapacityControllerType.new()
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
@@ -378,35 +383,7 @@ func _check_passive_deltas() -> void:
 
 ## Przelicza rozmiar ekwipunku bazowego + bonus z plecaka
 func _recalculate_slots_size() -> void:
-	var base_slots = maxi(0, slots_amount)
-	var bonus_slots = 0
-	
-	# Zabezpieczenie przed błędem, jeśli w equipment_slots nie ma jeszcze klucza BACKPACK
-	if equipment_slots.has(EquippableComponent.EquipSlot.BACKPACK):
-		var bp_slot = equipment_slots[EquippableComponent.EquipSlot.BACKPACK]
-		if not bp_slot.is_empty() and bp_slot.item.data.components != null:
-			for comp in bp_slot.item.data.components:
-				if comp is BackpackComponent:
-					bonus_slots = comp.extra_slots_count
-					break
-				
-	var target_total_size = base_slots + bonus_slots
-	
-	if slots.size() != target_total_size:
-		if target_total_size < slots.size():
-			for i in range(target_total_size, slots.size()):
-				if slots[i] != null and not slots[i].is_empty():
-					item_dropped.emit(slots[i].item, false) 
-					
-		slots.resize(target_total_size)
-		for i in range(target_total_size):
-			if slots[i] == null:
-				slots[i] = SlotData.new()
-				
-		if current_slot_index >= slots.size():
-			current_slot_index = max(0, slots.size() - 1)
-			
-	_rebuild_cache()
+	_capacity_controller.recalculate_slots_size(self)
 
 # ----------------------------------------------------
 # --- NAWIGACJA ---
