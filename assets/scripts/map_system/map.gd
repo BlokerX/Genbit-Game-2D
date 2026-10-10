@@ -5,6 +5,9 @@ class_name Map
 # --- STAŁE (Wyeliminowanie magicznych stringów) ---
 ## Grupa gracza
 const PLAYER_GROUP = "Player"
+const MapLightingControllerType = preload(
+	"res://assets/scripts/map_system/map_lighting_controller.gd"
+)
 
 ## Sygnał zmiany pokoju
 signal map_region_changed(new_map_region: MapRegion)
@@ -50,6 +53,7 @@ var map_region_grid: Dictionary = {}
 
 ## Węzeł zaciemniający całą planszę (sterowany płynnie)
 var global_darkness: CanvasModulate
+var _lighting_controller: MapLightingControllerType
 
 @export_group("Generacja Drzwi")
 ## Scena drzwi, która ma być automatycznie wstawiana do pokoi
@@ -67,6 +71,8 @@ func _ready() -> void:
 	global_darkness.name = "GlobalDarkness"
 	global_darkness.color = Color.WHITE
 	add_child(global_darkness)
+	_lighting_controller = MapLightingControllerType.new()
+	_lighting_controller.initialize(global_darkness)
 	# ---------------------
 	
 	# Rejestracja i ustawianie pokoi
@@ -115,11 +121,9 @@ func initialize_level() -> void:
 		
 	# Ładujemy ustalony pokój i WWRZUCAMY do niego wyjętego wcześniej gracza
 	if map_region_to_load:
-		# Ustawiamy natychmiastowy kolor mroku dla pierwszego pokoju
-		global_darkness.color = map_region_to_load.darkness_color if map_region_to_load.is_dark_map_region else Color.WHITE
-		
 		if not map_region_to_load.is_inside_tree():
 			add_child(map_region_to_load)
+		_lighting_controller.apply_region(map_region_to_load)
 		
 		# --- NOWOŚĆ: PRE-POZYCJONOWANIE GRACZA ---
 		# (Żeby od samej pierwszej klatki kamera widziała poprawne koordynaty zamiast tych z Volcano)
@@ -275,6 +279,9 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	
 	if not current_map_region.is_inside_tree():
 		add_child(current_map_region)
+
+	if not do_slide:
+		_lighting_controller.apply_region(current_map_region)
 		
 	# Usuwamy stary pokój tylko jeśli to był INNY pokój
 	if not do_slide and old_map_region and not is_same_map_region:
@@ -382,23 +389,12 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		if old_map_region and not is_same_map_region:
 			tween.tween_property(old_map_region, "position", -slide_vector, anim_duration)
 			
-		# --- SYSTEM PŁYNNEGO PRZEJŚCIA ŚWIATEŁ ---
-		# 1. Płynna zmiana mroku całej planszy
-		var target_color = current_map_region.darkness_color if current_map_region.is_dark_map_region else Color.WHITE
-		tween.tween_property(global_darkness, "color", target_color, anim_duration)
-		
-		# 2. Wygaszamy starą latarkę, żeby nie świeciła do nowego pokoju
-		if old_map_region and not is_same_map_region:
-			var old_light = old_map_region.find_child("CenterMapRegionLight", false, false)
-			if old_light and old_light is PointLight2D:
-				tween.tween_property(old_light, "energy", 0.0, anim_duration)
-				
-		# 3. Płynnie zapalamy nową latarkę
-		var new_light = current_map_region.find_child("CenterMapRegionLight", false, false)
-		if new_light and new_light is PointLight2D:
-			new_light.energy = 0.0 # Zaczynamy od zgaszonej
-			tween.tween_property(new_light, "energy", current_map_region.center_light_energy, anim_duration)
-		# -----------------------------------------
+		_lighting_controller.add_transition_tweens(
+			tween,
+			old_map_region,
+			current_map_region,
+			anim_duration
+		)
 			
 		await tween.finished
 		
@@ -412,9 +408,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 			
 	else:
 		# Jeśli TYLKO FADE, stary pokój zniknął wyżej, zostaje tylko rozjaśnić obraz
-		var target_color = current_map_region.darkness_color if current_map_region.is_dark_map_region else Color.WHITE
-		global_darkness.color = target_color
-		
 		if do_fade:
 			TransitionManager.fade_to_normal()
 			await TransitionManager.on_fade_in_finished

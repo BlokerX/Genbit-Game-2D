@@ -120,8 +120,7 @@ func _notification(what: int) -> void:
 	_finish_application_shutdown.call_deferred()
 
 func _finish_application_shutdown() -> void:
-	await get_tree().process_frame
-	await get_tree().process_frame
+	await get_tree().create_timer(0.25, true, false, true).timeout
 	get_tree().quit()
 
 func _kill_tween(tween: Tween) -> void:
