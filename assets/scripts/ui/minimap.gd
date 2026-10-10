@@ -4,6 +4,9 @@ class_name Minimap
 const MinimapGridRendererType = preload("res://assets/scripts/ui/minimap_grid_renderer.gd")
 const MinimapMapControllerType = preload("res://assets/scripts/ui/minimap_map_controller.gd")
 const MinimapMarkerRendererType = preload("res://assets/scripts/ui/minimap_marker_renderer.gd")
+const MinimapCameraBoundsControllerType = preload(
+	"res://assets/scripts/ui/minimap_camera_bounds_controller.gd"
+)
 
 #@export_group("Ikony Pokoi")
 #@export var icon_treasure : Texture2D
@@ -131,6 +134,7 @@ var player_marker: MinimapMarkerRendererType
 var _marker_renderer: MinimapMarkerRendererType
 var _grid_renderer: MinimapGridRendererType
 var _map_controller: MinimapMapControllerType
+var _camera_bounds_controller: MinimapCameraBoundsControllerType
 
 # --- WĘZŁY INTERFEJSU (UI) ---
 var ui_container: Control
@@ -148,6 +152,7 @@ func _ready() -> void:
 	# -------------------------------------------------------------------
 
 	_map_controller = MinimapMapControllerType.new()
+	_camera_bounds_controller = MinimapCameraBoundsControllerType.new()
 
 	if not get_tree().node_added.is_connected(_on_node_added):
 		get_tree().node_added.connect(_on_node_added)
@@ -428,22 +433,7 @@ func _clear_manual_marker() -> void:
 func _clamp_camera_pos(pos: Vector2) -> Vector2:
 	if not auto_calculate_bounds or map_world_rect.size == Vector2.ZERO or not is_instance_valid(map_camera):
 		return pos
-
-	var half_screen = (size / 2.0) / target_zoom
-	var min_x = map_world_rect.position.x + half_screen.x
-	var max_x = map_world_rect.end.x - half_screen.x
-	var min_y = map_world_rect.position.y + half_screen.y
-	var max_y = map_world_rect.end.y - half_screen.y
-
-	var clamped = pos
-
-	if min_x > max_x: clamped.x = calculated_map_center.x
-	else: clamped.x = clamp(pos.x, min_x, max_x)
-
-	if min_y > max_y: clamped.y = calculated_map_center.y
-	else: clamped.y = clamp(pos.y, min_y, max_y)
-
-	return clamped
+	return _camera_bounds_controller.clamp_position(pos, size, target_zoom)
 
 func _process(_delta: float) -> void:
 	# --- DODANE: Śledzenie zmian z menu Ustawień na żywo ---
@@ -494,52 +484,23 @@ func _process(_delta: float) -> void:
 func _update_camera_limits() -> void:
 	if not is_instance_valid(map_camera): return
 
-	if not auto_calculate_bounds or not level_manager or level_manager.all_map_regions.is_empty():
-		map_world_rect = Rect2()
-		calculated_fit_zoom = zoom_fullscreen_default
+	_camera_bounds_controller.calculate_bounds(
+		level_manager if auto_calculate_bounds else null,
+		bounds_include_undiscovered,
+		bounds_padding_px,
+		size,
+		zoom_max_in,
+		zoom_fullscreen_default
+	)
+	map_world_rect = _camera_bounds_controller.world_rect
+	calculated_map_center = _camera_bounds_controller.map_center
+	calculated_fit_zoom = _camera_bounds_controller.fit_zoom
+
+	if not auto_calculate_bounds or not is_instance_valid(level_manager) or level_manager.all_map_regions.is_empty():
 		if zoom_slider: zoom_slider.min_value = 0.01
 		return
-
-	var min_x = INF
-	var min_y = INF
-	var max_x = -INF
-	var max_y = -INF
-	var map_regions_found = false
-
-	var map_regions_to_scan = level_manager.all_map_regions if bounds_include_undiscovered else level_manager.discovered_map_regions
-	if map_regions_to_scan.is_empty() and not level_manager.discovered_map_regions.is_empty():
-		map_regions_to_scan = level_manager.discovered_map_regions
-
-	for map_region in map_regions_to_scan:
-		if is_instance_valid(map_region):
-			map_regions_found = true
-			var r_pos = map_region.global_position
-			var r_size = map_region.size_px if "size_px" in map_region else Vector2(1920, 1080)
-
-			min_x = min(min_x, r_pos.x)
-			min_y = min(min_y, r_pos.y)
-			max_x = max(max_x, r_pos.x + r_size.x)
-			max_y = max(max_y, r_pos.y + r_size.y)
-
-	if map_regions_found:
-		var left = int(min_x) - bounds_padding_px
-		var top = int(min_y) - bounds_padding_px
-		var right = int(max_x) + bounds_padding_px
-		var bottom = int(max_y) + bounds_padding_px
-
-		map_world_rect = Rect2(left, top, right - left, bottom - top)
-		calculated_map_center = Vector2(left + right, top + bottom) / 2.0
-
-		var map_w = map_world_rect.size.x
-		var map_h = map_world_rect.size.y
-
-		if map_w > 0 and map_h > 0:
-			var z_x = size.x / map_w
-			var z_y = size.y / map_h
-			calculated_fit_zoom = min(min(z_x, z_y), zoom_max_in)
-
-			if auto_zoom_to_fit_fullscreen and is_instance_valid(zoom_slider):
-				zoom_slider.min_value = min(calculated_fit_zoom, zoom_slider.max_value)
+	if map_world_rect.size != Vector2.ZERO and auto_zoom_to_fit_fullscreen and is_instance_valid(zoom_slider):
+		zoom_slider.min_value = min(calculated_fit_zoom, zoom_slider.max_value)
 
 
 #region EVENT-DRIVEN MAP BINDING
