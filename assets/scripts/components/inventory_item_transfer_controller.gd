@@ -3,30 +3,29 @@ extends RefCounted
 
 ## Dodaje istniejącą instancję, łącząc ją z kompatybilnymi stosami przed zajęciem pustego slotu.
 func add_instance(inventory: Inventory, instance_to_add: ItemInstance) -> ItemInstance:
+	if instance_to_add == null:
+		return null
+	if instance_to_add.data == null:
+		push_error("InventoryItemTransferController nie może dodać instancji bez ItemData.")
+		return instance_to_add
+
 	# 1. Sprawdzamy stan poprzez bezpieczny odczyt słownika 'state'
-	var add_amount = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
-	if instance_to_add == null or add_amount <= 0:
+	var add_amount = instance_to_add.state.get("amount", 1)
+	if add_amount <= 0:
 		return null
 
 	# 2. ZAMIAST PYTAĆ O WŁAŚCIWOŚĆ, SZUKAMY KLOCKA 'StackComponent'
-	var is_stackable = false
-	var max_stack = 1
-	if instance_to_add.data.components != null:
-		for comp in instance_to_add.data.components:
-			if comp is StackComponent:
-				is_stackable = true
-				max_stack = comp.max_stack # Zapisujemy max_stack z komponentu
-				break
+	var stack_component := _get_stack_component(instance_to_add.data)
 
 	# 3. Jeśli przedmiot ma klocek do stackowania, szukamy dla niego miejsca w istniejących stosach
-	if is_stackable:
+	if stack_component != null:
 		for slot in inventory.slots:
 			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
-				var slot_amount = slot.item.state.get("amount", 1)
-				var available_space = max_stack - slot_amount
+				var slot_amount: int = slot.item.state.get("amount", 1)
+				var available_space: int = stack_component.max_stack - slot_amount
 
 				if available_space > 0:
-					var adding = min(instance_to_add.state.get("amount", 1), available_space)
+					var adding: int = mini(instance_to_add.state.get("amount", 1), available_space)
 
 					# Aktualizujemy stany obu przedmiotów
 					slot.item.state["amount"] = slot_amount + adding
@@ -68,14 +67,9 @@ func add_item(inventory: Inventory, item: ItemData, amount_to_add: int = 1) -> i
 	var remaining = amount_to_add
 
 	# SZUKAMY KLOCKA 'StackComponent' ZAMIAST CZYTAĆ ZMIENNE
-	var is_stackable = false
-	var max_item_stack = 1
-	if item.components != null:
-		for comp in item.components:
-			if comp is StackComponent:
-				is_stackable = true
-				max_item_stack = comp.max_stack
-				break
+	var stack_component := _get_stack_component(item)
+	var is_stackable := stack_component != null
+	var max_item_stack: int = stack_component.max_stack if is_stackable else 1
 
 	# 1. Szukanie w stosach
 	if is_stackable:
@@ -121,3 +115,14 @@ func add_item(inventory: Inventory, item: ItemData, amount_to_add: int = 1) -> i
 	# 4. Jeśli zabrakło miejsca w całym ekwipunku, zwracamy to, co nam zostało w dłoni
 	inventory.inventory_updated.emit()
 	return remaining
+
+## Zwraca komponent stosu przedmiotu; brak komponentu oznacza przedmiot nieukładalny w stos.
+func _get_stack_component(item: ItemData) -> StackComponent:
+	if item == null or item.components == null:
+		return null
+
+	for component in item.components:
+		if component is StackComponent:
+			return component
+
+	return null

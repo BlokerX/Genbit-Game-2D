@@ -8,6 +8,9 @@ extends Node
 const QuestObjectiveProgressControllerType = preload(
 	"res://assets/scripts/quests/quest_objective_progress_controller.gd"
 )
+const QuestTrackingControllerType = preload(
+	"res://assets/scripts/quests/quest_tracking_controller.gd"
+)
 
 # ==========================================
 # SYGNAŁY (Emitowane do UI Dziennika Zadań)
@@ -52,11 +55,14 @@ var failed_quests: Array[StringName] = []
 var cooldown_quests: Dictionary = {} 
 
 ## Obecnie śledzone zadanie (przypięte do ekranu)
-var tracked_quest_id: StringName = &""
-## Kolejka aktywnych zadań oczekujących na automatyczne śledzenie.
-var _tracking_queue: Array[StringName] = []
+var tracked_quest_id: StringName:
+	get:
+		return _tracking_controller.tracked_quest_id
+	set(value):
+		_tracking_controller.tracked_quest_id = value
 ## Unieważnia opóźnione akcje zadań, gdy kończy się sesja.
 var _session_generation: int = 0
+var _tracking_controller: QuestTrackingControllerType = QuestTrackingControllerType.new()
 var _objective_progress_controller: QuestObjectiveProgressControllerType = (
 	QuestObjectiveProgressControllerType.new()
 )
@@ -68,10 +74,15 @@ var _objective_progress_controller: QuestObjectiveProgressControllerType = (
 ## Inicjalizacja przy starcie gry.
 func _ready() -> void:
 	_load_all_quests("res://assets/data/quests/")
+	if not _tracking_controller.tracked_quest_changed.is_connected(_on_tracked_quest_changed):
+		_tracking_controller.tracked_quest_changed.connect(_on_tracked_quest_changed)
 	
 	# Nasłuchujemy całego świata! (Upewnij się, że masz ten sygnał w event_bus.gd)
 	if EventBus.has_signal("game_event_occurred") and not EventBus.game_event_occurred.is_connected(_on_game_event):
 		EventBus.game_event_occurred.connect(_on_game_event)
+
+func _on_tracked_quest_changed(quest_id: StringName) -> void:
+	quest_tracked_changed.emit(quest_id)
 
 
 ## Pętla gry, obsługująca upływ czasu (Timery limitowe w questach i ich Cooldowny po zakończeniu).
@@ -335,61 +346,30 @@ func _load_all_quests(path: String) -> void:
 
 ## Dodaje nowe aktywne zadanie do kolejki automatycznego śledzenia.
 func _queue_quest_for_tracking(quest_id: StringName) -> void:
-	if tracked_quest_id == quest_id or _tracking_queue.has(quest_id):
-		return
-
-	_tracking_queue.append(quest_id)
-	if tracked_quest_id == &"":
-		_promote_next_queued_quest()
+	_tracking_controller.queue_quest(quest_id, active_quests, quest_db)
 
 ## Usuwa zadanie z kolejki, np. po jego ukończeniu albo porażce.
 func _remove_quest_from_tracking_queue(quest_id: StringName) -> void:
-	_tracking_queue.erase(quest_id)
+	_tracking_controller.remove_quest(quest_id)
 
 ## Przypina najstarsze nadal aktywne zadanie oczekujące w kolejce.
 func _promote_next_queued_quest() -> void:
-	while not _tracking_queue.is_empty():
-		var next_quest_id: StringName = _tracking_queue.pop_front()
-		if active_quests.has(next_quest_id):
-			tracked_quest_id = next_quest_id
-			quest_tracked_changed.emit(tracked_quest_id)
-			print("QuestManager: Automatycznie śledzę zadanie [", quest_db[next_quest_id].title, "]")
-			return
-
-	tracked_quest_id = &""
-	quest_tracked_changed.emit(&"")
+	_tracking_controller.promote_next_queued_quest(active_quests, quest_db)
 
 # --- NOWOŚĆ: FUNKCJE ŚLEDZENIA ZADAŃ ---
 ## Ręcznie przypina aktywne zadanie i zachowuje poprzednie na początku kolejki.
 func track_quest(quest_id: StringName) -> void:
-	if not active_quests.has(quest_id) or tracked_quest_id == quest_id:
-		return
-
-	if tracked_quest_id != &"" and active_quests.has(tracked_quest_id):
-		_tracking_queue.erase(tracked_quest_id)
-		_tracking_queue.push_front(tracked_quest_id)
-
-	_tracking_queue.erase(quest_id)
-	tracked_quest_id = quest_id
-	quest_tracked_changed.emit(quest_id)
-	print("QuestManager: Śledzę zadanie [", quest_db[quest_id].title, "]")
+	_tracking_controller.track_quest(quest_id, active_quests, quest_db)
 
 ## Zdejmuje obecne zadanie ze śledzenia i promuje następne aktywne zadanie z kolejki.
 func untrack_quest() -> void:
-	if tracked_quest_id != &"":
-		_tracking_queue.erase(tracked_quest_id)
-	_promote_next_queued_quest()
+	_tracking_controller.untrack_quest(active_quests, quest_db)
 
 ## Czyści postęp i śledzenie zadań bez zwalniania załadowanej bazy danych.
 func reset_game_session() -> void:
 	_session_generation += 1
-	var was_tracking_quest := tracked_quest_id != &""
 	active_quests.clear()
 	completed_quests.clear()
 	failed_quests.clear()
 	cooldown_quests.clear()
-	_tracking_queue.clear()
-	tracked_quest_id = &""
-
-	if was_tracking_quest:
-		quest_tracked_changed.emit(&"")
+	_tracking_controller.reset()
