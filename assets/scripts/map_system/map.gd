@@ -11,6 +11,9 @@ const MapLightingControllerType = preload(
 const MapDoorGeneratorType = preload(
 	"res://assets/scripts/map_system/map_door_generator.gd"
 )
+const MapRegionEntryControllerType = preload(
+	"res://assets/scripts/map_system/map_region_entry_controller.gd"
+)
 
 ## Sygnał zmiany pokoju
 signal map_region_changed(new_map_region: MapRegion)
@@ -58,6 +61,7 @@ var map_region_grid: Dictionary = {}
 var global_darkness: CanvasModulate
 var _lighting_controller: MapLightingControllerType
 var _door_generator: MapDoorGeneratorType
+var _region_entry_controller: MapRegionEntryControllerType
 var _is_transitioning: bool = false
 
 @export_group("Generacja Drzwi")
@@ -80,6 +84,7 @@ func _ready() -> void:
 	_lighting_controller.initialize(global_darkness)
 	_door_generator = MapDoorGeneratorType.new()
 	_door_generator.configure(auto_door_scene, default_map_door_texture)
+	_region_entry_controller = MapRegionEntryControllerType.new()
 	# ---------------------
 	
 	# Rejestracja i ustawianie pokoi
@@ -319,63 +324,13 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	
 	# 4. UMIESZCZAMY GRACZA W NOWYM POKOJU
 	if player:
-		if not player.entity_spawn_requested.is_connected(_on_entity_spawn_requested):
-			player.entity_spawn_requested.connect(_on_entity_spawn_requested)
-		
-		# Szukamy węzła Y-Sort i dodajemy gracza
-		var target_parent = current_map_region.find_child("Entities")
-		if not target_parent:
-			target_parent = current_map_region
-		target_parent.add_child(player)
-		
-		# CZYŚCIMY SCHOWEK - gracz wrócił bezpiecznie do drzewa!
-		GlobalLevelManager.stored_player = null
-		
-		# --- ROZDZIELENIE LOGIKI: Zamiast grzebać w zmiennych gracza, prosimy go o reset ---
-		# Ekran w tym momencie jest całkowicie czarny!
-		if force_teleport and player.has_method("reset_state_for_respawn"):
-			player.reset_state_for_respawn()
-		# ----------------------------------------------------------------------------------
-		
-		# --- POPRAWIONE POZYCJONOWANIE (Zwrócony blok obsługujący RESPawn!) ---
-		if target_door:
-			if "spawn_point" in target_door and target_door.spawn_point != null:
-				if target_door is Door and target_door.spawn_point.position.length() > 5.0:
-					player.global_position = target_door.spawn_point.global_position
-				elif target_door is Door:
-					var inward_dir = -Vector2(target_door.get_direction_offset())
-					var safe_push_distance = 64.0
-					player.global_position = target_door.global_position + (inward_dir * safe_push_distance)
-				else:
-					player.global_position = target_door.spawn_point.global_position
-			else:
-				player.global_position = target_door.global_position
-		else:
-			# BRAK DRZWI: To jest Start Gry lub Respawn klawiszem R!
-			if current_map_region.spawn_points.size() > 0:
-				player.global_position = current_map_region.spawn_points[0].global_position
-			else:
-				player.global_position = current_map_region.global_position + (current_map_region.size_px / 2.0)
-		# ------------------------------------------------------------------------
-		
-		# Nakładamy nowe efekty typu AURA (nieskończone)
-		for effect in current_map_region.ambient_aura_effects:
-			if effect != null:
-				var infinite_effect = effect.duplicate()
-				
-				# --- NOWE PODEJŚCIE: Używamy nowej flagi nieskończoności ---
-				if "is_infinite" in infinite_effect:
-					infinite_effect.is_infinite = true
-				
-				_apply_entry_effect(player, infinite_effect, true)
-				
-		# Nakładamy efekty typu KLĄTWA (Zostają po wyjściu)
-		for effect in current_map_region.sticky_entry_effects:
-			if effect != null:
-				var normal_effect = effect.duplicate()
-				# Klątwy z pułapek normalnie nałożymy przez receive_effect, 
-				# aby gracz MÓGŁ wyleczyć je np. antidotum po wybiegnięciu z pokoju.
-				_apply_entry_effect(player, normal_effect, false)
+		_region_entry_controller.place_player_in_region(
+			player,
+			current_map_region,
+			target_door,
+			force_teleport,
+			_on_entity_spawn_requested
+		)
 		
 	# 5. Odpalamy logikę walki / blokady pokoju
 	current_map_region.check_and_lock_map_region()
@@ -439,14 +394,6 @@ func _finish_transition(player: PlayerCharacter) -> void:
 	if is_instance_valid(player):
 		player.process_mode = Node.PROCESS_MODE_INHERIT
 		player.set_physics_process(true)
-
-func _apply_entry_effect(player: Node, effect: Effect, is_environment_aura: bool) -> void:
-	if player.has_method("receive_map_entry_effect"):
-		player.call("receive_map_entry_effect", effect, is_environment_aura)
-	elif is_environment_aura and player.has_method("receive_environment_effect"):
-		player.call("receive_environment_effect", effect)
-	elif player.has_method("receive_effect"):
-		player.call("receive_effect", effect)
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
