@@ -2,34 +2,22 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
+const PlayerPassiveEffectControllerType = preload(
+	"res://assets/scripts/entities/characters/player/player_script/player_passive_effect_controller.gd"
+)
+const PlayerHeldItemControllerType = preload(
+	"res://assets/scripts/entities/characters/player/player_script/player_held_item_controller.gd"
+)
+const PlayerInputControllerType = preload(
+	"res://assets/scripts/entities/characters/player/player_script/player_input_controller.gd"
+)
+
 #region STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów)
 
 const INPUT_LEFT = "Left"
 const INPUT_RIGHT = "Right"
 const INPUT_UP = "Up"
 const INPUT_DOWN = "Down"
-
-const INPUT_AIM_LEFT = "AimLeft"
-const INPUT_AIM_RIGHT = "AimRight"
-const INPUT_AIM_UP = "AimUp"
-const INPUT_AIM_DOWN = "AimDown"
-
-const INPUT_DROP_ITEM = "DropItem"
-const INPUT_FULL_DROP_ITEM_KEY = "FullDropItemKey"
-const INPUT_ATTACK = "Attack"
-const INPUT_RELOAD = "Reload"
-const INPUT_USE_ITEM = "UseItemButton"
-const INPUT_INTERACT = "Interact"
-const INPUT_COLLECT = "Collect"
-const INPUT_RESPAWN = "RespawnButton"
-const INPUT_TOGGLE_ENEMY_PRIO = "ToggleEnemyPriority"
-
-const INPUT_INV_SLOT_PREFIX = "InventorySlot"
-const INPUT_INV_SCROLL_UP = "InventoryScrollUp"
-const INPUT_INV_SCROLL_DOWN = "InventoryScrollDown"
-
-## Przycisk obracania obiektów budowlanych (musisz go dodać w Input Map!)
-const INPUT_ROTATE = "RotateBuilding"
 
 #endregion
 
@@ -57,43 +45,19 @@ func get_inventory() -> Inventory:
 
 #endregion
 
-#region Komponent Celownik / Skaner
-
-# Pamięta, z jakiego kontrolera gracz ostatnio korzystał
-var is_using_mouse: bool = true
-
-#endregion
-
 #region Obsługa przedmiotów w inventory
 
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
+var _passive_effect_controller: PlayerPassiveEffectControllerType
+var _held_item_controller: PlayerHeldItemControllerType
+var _input_controller: PlayerInputControllerType
 
-## Przechowuje referencję do ostatnio podłączonego slotu, aby zapobiec wyciekom sygnałów
-var last_connected_slot = null
-
-# --- Zmienne do wyrzucania przedmiotów --- #
-
-## Zmienna do wyrzucania przedmiotów seryjnie
-var is_holding_drop: bool = false
-
-var has_dropped_serial: bool = false # Sprawdza, czy odpalono tryb seryjny
-
-var drop_hold_time: float = 0.0
-
-## Czas po którym zaczyna się wyrzut seryjny (przytrzymanie)
-var drop_initial_delay: float = 0.4 
-
-## Odstęp czasowy między wyrzucaniem kolejnych sztuk
-var drop_serial_cooldown: float = 0.1 
-
-var current_drop_timer: float = 0.0
-
-#endregion
-
-#region Atak
-
-# Pamięta, czy gracz trzyma przycisk ataku, żeby atakować seriami (ciągły atak)
-var is_holding_attack: bool = false
+var is_using_mouse: bool:
+	get:
+		return _input_controller.is_using_mouse if _input_controller != null else true
+	set(value):
+		if _input_controller != null:
+			_input_controller.is_using_mouse = value
 
 #endregion
 
@@ -120,8 +84,19 @@ var is_in_pacifist_zone: bool = false
 #region Główne funkcje silnikowe
 
 func _ready():
-	if movement_universal_script == null or health_stats_script == null or interaction_and_attack_stats_script == null:
-		push_error("PlayerCharacter: Brakuje wymaganego komponentu ruchu, zdrowia lub interakcji/ataku.")
+	if (
+		movement_universal_script == null
+		or health_stats_script == null
+		or interaction_and_attack_stats_script == null
+		or inventory == null
+		or aim_controller == null
+		or held_item_visual == null
+		or player_light == null
+	):
+		push_error(
+			"PlayerCharacter: Brakuje wymaganego komponentu ruchu, zdrowia, statystyk, "
+			+ "ekwipunku, celownika, wizualizacji przedmiotu lub światła."
+		)
 		set_process(false)
 		set_physics_process(false)
 		set_process_unhandled_input(false)
@@ -132,18 +107,33 @@ func _ready():
 	
 	# Health points bar initialization
 	super()
+	_passive_effect_controller = PlayerPassiveEffectControllerType.new()
+	_passive_effect_controller.initialize(self, effects_collector)
+	_held_item_controller = PlayerHeldItemControllerType.new()
+	_held_item_controller.initialize(
+		held_item_visual,
+		player_light,
+		interaction_and_attack_stats_script
+	)
+	_input_controller = PlayerInputControllerType.new()
+	_input_controller.initialize(
+		inventory,
+		aim_controller,
+		builder_component,
+		interaction_and_attack_stats_script
+	)
 	
 	# Przekazywanie sygnału spawnowania pocisku wyżej, do menedżera mapy
-	if attack_component:
-		attack_component.spawn_projectile_requested.connect(
-			func(node, pos): entity_spawn_requested.emit(node, pos)
-		)
+	if attack_component and not attack_component.spawn_projectile_requested.is_connected(
+		_on_spawn_requested
+	):
+		attack_component.spawn_projectile_requested.connect(_on_spawn_requested)
 	
 	# Przekazywanie sygnału spawnowania z wyrzucania przedmiotów wyżej
-	if item_thrower_component:
-		item_thrower_component.entity_spawn_requested.connect(
-			func(node, pos): entity_spawn_requested.emit(node, pos)
-		)
+	if item_thrower_component and not item_thrower_component.entity_spawn_requested.is_connected(
+		_on_spawn_requested
+	):
+		item_thrower_component.entity_spawn_requested.connect(_on_spawn_requested)
 	
 	#region Linkowanie zdarzeń
 	if inventory:
@@ -162,9 +152,16 @@ func _ready():
 	#setup_complete.emit()
 	
 	# Nasłuch na zamykanie/otwieranie interfejsu
-	EventBus.ui_state_changed.connect(
-		func(is_open: bool): is_input_locked = is_open
-	)
+	EventBus.ui_state_changed.connect(_on_ui_state_changed)
+	_on_ui_state_changed(EventBus.is_any_menu_open())
+
+func _on_spawn_requested(node: Node2D, spawn_position: Vector2) -> void:
+	entity_spawn_requested.emit(node, spawn_position)
+
+func _on_ui_state_changed(is_open: bool) -> void:
+	is_input_locked = is_open
+	if is_open and _input_controller != null:
+		_input_controller.reset_transient_input()
 
 func _process(delta):
 	# Update health gui data.
@@ -172,6 +169,11 @@ func _process(delta):
 
 func _physics_process(delta):
 	super(delta)
+
+	if is_respawning:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
 	
 	# --- Tarcza blokująca ruch przy otwartym UI ---
 	if is_input_locked:
@@ -208,19 +210,21 @@ func _physics_process(delta):
 	# Jeśli budujemy, używamy dystansu z komponentu budowniczego. Jeśli nie - z broni.
 	var current_range = builder_component.build_range if is_building else get_current_attack_range()
 	
-	aim_controller.process_aiming(is_using_mouse, current_range, is_building)
+	aim_controller.process_aiming(_input_controller.is_using_mouse, current_range, is_building)
 	
 	# Obsługa popychania TODO
 	_handle_pushing()
 	# Obsługa wyrzucania itemów
-	_handle_dropping(delta)
+	_input_controller.process_item_dropping(delta)
 	
 	# Zawsze aktualizujemy licznik cooldownu (bezpieczne wywołanie)
 	if interaction_and_attack_stats_script != null:
+		if is_in_pacifist_zone:
+			_input_controller.is_holding_attack = false
 		interaction_and_attack_stats_script.interaction_cooldown_process(delta)
 		
 		# Jeśli gracz trzyma przycisk ataku i skończył się cooldown -> wykonaj uderzenie!
-		if is_holding_attack and interaction_and_attack_stats_script.can_attack():
+		if _input_controller.is_holding_attack and interaction_and_attack_stats_script.can_attack():
 			perform_attack()
 
 func _handle_pushing() -> void:
@@ -239,240 +243,18 @@ func _handle_pushing() -> void:
 			# Dzięki użyciu move_and_collide pająk nie przejdzie przez ścianę, jeśli go do niej dociśniesz!
 			collider.move_and_collide(-collision.get_normal() * (push_force * 0.2))
 
-func _handle_dropping(delta: float) -> void:
-	# PRIORYTET 1: Wyrzucenie całego stacka (Ctrl+Q z obrazka image_0a1434.png)
-	if Input.is_action_just_pressed(INPUT_FULL_DROP_ITEM_KEY):
-		inventory.drop_current_item(true)
-		# Resetujemy stan, żeby "Ctrl+Q" nie weszło przypadkiem w konflikt ze zwykłym trzymaniem "Q"
-		is_holding_drop = false 
-		has_dropped_serial = false
-		return # Odcinamy dalszą logikę
-
-	# PRIORYTET 2: Rejestracja wciśnięcia Q (bez wyrzucania czegokolwiek!)
-	if Input.is_action_just_pressed(INPUT_DROP_ITEM):
-		is_holding_drop = true
-		has_dropped_serial = false
-		drop_hold_time = 0.0
-		current_drop_timer = 0.0
-
-	# PRIORYTET 3: Przytrzymanie Q (Wyrzut seryjny)
-	if Input.is_action_pressed(INPUT_DROP_ITEM) and is_holding_drop:
-		drop_hold_time += delta
-		
-		# Kiedy minie czas przytrzymania (drop_initial_delay), uruchamiamy tryb seryjny
-		if drop_hold_time >= drop_initial_delay:
-			if current_drop_timer <= 0.0:
-				inventory.drop_current_item(false)
-				has_dropped_serial = true # Oznaczamy, że leci seria
-				current_drop_timer = drop_serial_cooldown
-			else:
-				current_drop_timer -= delta
-
-	# PRIORYTET 4: Puszczenie Q (Sprawdzanie, czy to był krótki "klik")
-	if Input.is_action_just_released(INPUT_DROP_ITEM):
-		# Wyrzuć JEDNĄ sztukę tylko, jeśli puściłeś zanim upłynął czas opóźnienia 
-		# i nie wyrzuciłeś jeszcze niczego z serii
-		if is_holding_drop and not has_dropped_serial and drop_hold_time < drop_initial_delay:
-			inventory.drop_current_item(false)
-		
-		# Reset wszystkich wartości
-		is_holding_drop = false
-		has_dropped_serial = false
-		drop_hold_time = 0.0
-		current_drop_timer = 0.0
-
 # --- WYŁAPYWANIE AKCJI BEZ PRZEBIJANIA UI ---
 func _unhandled_input(event: InputEvent) -> void:
-	
-	# Detekcja typu urządzenia wejściowego
-	_detect_input_device(event)
-	
-	# 1. Globalne inputy (pauza, ekwipunek, priorytety) - działają zawsze, niezależnie od stanu
-	if _handle_global_inputs(event):
-		return
-	
-	# --- NOWOŚĆ: Tarcza blokująca kliknięcia/ataki przy otwartym UI ---
-	# Jeśli okno jest otwarte (a klawisz nie był np. Pauzą z Global Inputs), ignorujemy akcję
-	if is_input_locked:
-		return
-	# -------------------------------------------------------------------
-	
-	# 2. Inputy zależne od tego, co gracz aktualnie robi
-	match current_state:
-		PlayerState.DEFAULT:
-			_handle_default_inputs(event)
-		PlayerState.BUILDING:
-			_handle_building_inputs(event)
+	_input_controller.handle_unhandled_input(
+		self,
+		event,
+		is_input_locked,
+		is_respawning,
+		current_state == PlayerState.BUILDING,
+		is_in_pacifist_zone
+	)
 
 #region Methods sections
-
-func _detect_input_device(event: InputEvent) -> void:
-	if event is InputEventMouseMotion or event is InputEventMouseButton:
-		is_using_mouse = true
-	elif event is InputEventJoypadMotion and abs(event.axis_value) > 0.2:
-		is_using_mouse = false
-	elif event is InputEventJoypadButton:
-		is_using_mouse = false
-	elif event is InputEventKey and event.is_pressed():
-		if event.is_action(INPUT_AIM_LEFT) or event.is_action(INPUT_AIM_RIGHT) or event.is_action(INPUT_AIM_UP) or event.is_action(INPUT_AIM_DOWN):
-			is_using_mouse = false
-
-func _handle_global_inputs(event: InputEvent) -> bool:
-	# --- NOWOŚĆ: Tarcza odcinająca sterowanie! ---
-	# Jeśli menu (skrzynia/crafting) jest otwarte, ignorujemy wszystko poniżej.
-	if is_input_locked:
-		return false
-	# -------------------------------------------------------------
-	
-	#region Sterowanie priorytetowe
-	
-	# PAUZA
-	if event.is_action_pressed("Game_Pause"):
-		if current_state == PlayerState.BUILDING:
-			_cancel_building()
-			get_viewport().set_input_as_handled()
-		return true
-		
-	# RESPAWN
-	if event.is_action_pressed(INPUT_RESPAWN):
-		if is_respawning: return true # Ignoruj, jeśli gracz już się odradza
-		
-		var level_manager = get_tree().get_first_node_in_group("Map")
-		if level_manager and level_manager.get("is_transitioning") == true: # TODO chyba martwy kod albo usuń albo zabezpiecz w pliku map.gd
-			print("Blokada: Menedżer Przejść jest zajęty animacją ekranu!")
-			return true # Ignoruj klawisz R, jeśli mapa się przesuwa
-		
-		call_deferred("respawn_sequence")
-		return true
-	
-	#endregion
-	
-	#region Zarządzanie zachowaniem celownika
-	
-	# --- PRZEŁĄCZANIE TRYBU PRIORYTETU WROGA ---
-	if event.is_action_pressed(INPUT_TOGGLE_ENEMY_PRIO):
-		aim_controller.auto_enemy_selector = !aim_controller.auto_enemy_selector
-		aim_controller.auto_lock_closest_enemy = !aim_controller.auto_lock_closest_enemy
-		
-		# Opcjonalnie: Wyświetlamy informację w konsoli (później możesz to podpiąć pod jakiś napis na ekranie/UI)
-		if aim_controller.auto_enemy_selector:
-			print("Auto-Enemy Selector With Locking Closest Enemy: WŁĄCZONY")
-		else:
-			print("Auto-Enemy Selector With Locking Closest Enemy: WYŁĄCZONY")
-			
-			# Jeśli wyłączyliśmy tryb, a celownik trzymał wroga "na siłę", warto zresetować celownik:
-			aim_controller.clear_gamepad_target()
-		return true
-	
-	#endregion
-	
-	#region Sterowanie ekwipunkiem
-	
-	# Sterowanie ekwipunkiem
-	for i in range(1, 10):
-		if event.is_action_pressed(INPUT_INV_SLOT_PREFIX + str(i)):
-			inventory.select_item(i - 1)
-			return true
-		
-	if event.is_action_pressed(INPUT_INV_SCROLL_DOWN):
-		inventory.scroll_inventory(1)
-		return true
-	elif event.is_action_pressed(INPUT_INV_SCROLL_UP):
-		inventory.scroll_inventory(-1)
-		return true
-		
-	#endregion
-	
-	# w przypadku nieodczytania sygnału wejścia z listy
-	return false
-
-func _handle_default_inputs(event: InputEvent) -> void:
-	# Blokada Walki w pacifist zone
-	if is_in_pacifist_zone and (event.is_action_pressed(INPUT_ATTACK) or event.is_action_pressed(INPUT_USE_ITEM)):
-		print("Jesteś w Strefie Bezpiecznej! Walka zablokowana.")
-	# ATAK
-	elif event.is_action_pressed(INPUT_ATTACK):
-		is_holding_attack = true
-	elif event.is_action_released(INPUT_ATTACK):
-		is_holding_attack = false
-	
-	# Ręczne przeładowanie (np. R)
-	if event.is_action_pressed(INPUT_RELOAD): 
-		var _item = inventory.get_current_item()
-		if _item != null and _item.data.components != null:
-			# Szukamy komponentu broni dystansowej
-			for comp in _item.data.components:
-				if comp is RangedWeaponComponent and comp.uses_ammunition:
-					if inventory.reload_current_weapon():
-						interaction_and_attack_stats_script.trigger_reload_cooldown(comp.reload_time)
-					break # Znaleziono broń dystansową, kończymy pętlę
-
-	# --- ZAAWANSOWANA ZMIANA AMUNICJI ---
-	# TODO Skonfiguruj w InputMap np. klawisz "T" jako "ChangeAmmo" 
-	#if event.is_action_pressed("ChangeAmmo"):
-		#var _item = inventory.get_current_item()
-		#if _item and _item.data is ItemDistanceWeapon and _item.data.uses_ammunition:
-			#inventory.cycle_weapon_ammunition()
-			## Zmiana pocisku wymusza przeładowanie, więc znowu dajemy cooldown!
-			#interaction_and_attack_stats_script.trigger_reload_cooldown(_item.data.reload_time)
-	
-	# INTERAKCJA (Klawisz E - Otwieranie skrzyń, rozmowy itp.)
-	if event.is_action_pressed(INPUT_INTERACT):
-		if aim_controller.current_target != null:
-			aim_controller.current_target.interact(self)
-			
-	# --- ZBIERANIE (Klawisz F - Zwijanie budowli) ---
-	if event.is_action_pressed(INPUT_COLLECT):
-		if aim_controller.current_target != null:
-			# Wywołujemy naszą nową funkcję na celowniku
-			if aim_controller.current_target.has_method("collect_interaction"):
-				aim_controller.current_target.collect_interaction(self)
-
-	# UŻYCIE PRZEDMIOTU (lub wejście w tryb budowy)
-	if event.is_action_pressed(INPUT_USE_ITEM):
-		var _item = inventory.get_current_item()
-		if _item != null and _item.data != null and _item.data.components != null:
-			for comp in _item.data.components:
-				
-				# 1. Obsługa budowania (PlaceableComponent sam odpali _start_building)
-				if comp is PlaceableComponent:
-					comp.try_execute(self, self, _item)
-					break
-				
-				elif comp is ThrowableComponent:
-					if interaction_and_attack_stats_script.can_attack():
-						comp.try_execute(self, self, _item)
-					break
-				
-				# 2. Obsługa konsumpcji (Zabezpieczona zegarem ataku)
-				elif comp is ConsumableComponent:
-					if interaction_and_attack_stats_script.can_attack():
-						# Jeśli try_execute zwróci false, warunki nie zostały spełnione
-						var success = comp.try_execute(self, self, _item)
-						if not success:
-							print("Nie można użyć przedmiotu! Warunki niespełnione.")
-							# Tutaj możesz w przyszłości dodać np. dźwięk błędu z UI
-					break
-
-func _handle_building_inputs(event: InputEvent) -> void:
-	# W trybie budowy atak = postawienie obiektu
-	if event.is_action_pressed(INPUT_ATTACK):
-		if builder_component.try_place_object():
-			# --- NAPRAWA: Nowy system zużywania przedmiotów ---
-			var current_item = inventory.get_current_item()
-			if current_item != null:
-				current_item.consume_amount(1)
-				inventory.clean_dead_items()
-			# --------------------------------------------------
-			_cancel_building() # Wychodzimy z trybu budowy po udanym postawieniu
-	
-	# Obracanie obiektu
-	if event.is_action_pressed(INPUT_ROTATE):
-		builder_component.rotate_object()
-
-	# Anulowanie budowy (PPM lub ponowne wciśnięcie przycisku użycia)
-	if event.is_action_pressed(INPUT_INTERACT) or event.is_action_pressed(INPUT_USE_ITEM):
-		_cancel_building()
 
 func _start_building(placeable_comp: PlaceableComponent) -> void:
 	if not builder_component:
@@ -482,12 +264,13 @@ func _start_building(placeable_comp: PlaceableComponent) -> void:
 	# Zlecenie budowy bezpośrednio do Buildera (przekazujemy KOMPONENT, a nie item_data)
 	if builder_component.start_building(placeable_comp):
 		current_state = PlayerState.BUILDING
-		is_holding_attack = false # Na wszelki wypadek resetujemy trzymanie ataku
+		_input_controller.is_holding_attack = false
 		print("DEBUG: Wszedłem w stan BUILDING i odpaliłem ducha!")
 
 func _cancel_building() -> void:
 	if builder_component:
 		builder_component.stop_building()
+	_input_controller.reset_transient_input()
 	# POWRÓT DO STANU DOMYŚLNEGO
 	current_state = PlayerState.DEFAULT
 	print("DEBUG: Anulowano budowę, wróciłem do stanu DEFAULT.")
@@ -499,46 +282,10 @@ func _cancel_building() -> void:
 #region Obsługa sygnałów
 
 ## Wywołuje się kiedy ekwipunek jest aktualizowany.
-func on_inventory_update() :
-	var current_item = inventory.get_current_item()
-	
-	# Aktualizacja ręki gracza (itemu w ręce)
-	if current_item != null:
-		held_item_visual.texture = current_item.data.item_icon
-		held_item_visual.show() 
-	else:
-		held_item_visual.texture = null
-		held_item_visual.hide() 
-	
-	# ODCZYT STATYSTYK Z KOMPONENTÓW
-	interaction_and_attack_stats_script.actual_extra_effects = []
-	interaction_and_attack_stats_script.actual_attack_data = interaction_and_attack_stats_script.hand_attack_data # Domyślnie na pięści
-	
-	if current_item != null and current_item.data.components != null:
-		var has_custom_cooldown = false
-		for comp in current_item.data.components:
-			if comp is MeleeWeaponComponent:
-				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
-				if comp.attack_data != null:
-					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
-				interaction_and_attack_stats_script.actual_extra_effects = comp.effects
-				has_custom_cooldown = true
-				break
-			elif comp is RangedWeaponComponent:
-				interaction_and_attack_stats_script.change_item_cooldown(comp.use_cooldown)
-				if comp.attack_data != null:
-					interaction_and_attack_stats_script.actual_attack_data = comp.attack_data
-				interaction_and_attack_stats_script.actual_extra_effects = comp.weapon_effects
-				has_custom_cooldown = true
-				break
-			# UWAGA: ConsumableComponent i PlaceableComponent celowo pomijamy w tej pętli, 
-			# dzięki czemu trzymając jedzenie/surowiec, gracz zachowuje cooldown i statystyki "pięści"!
-				
-		if not has_custom_cooldown:
-			interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
-	else:
-		interaction_and_attack_stats_script.change_item_cooldown(interaction_and_attack_stats_script.hand_attack_cooldown)
-	
+func on_inventory_update() -> void:
+	var current_item: ItemInstance = inventory.get_current_item()
+	_held_item_controller.refresh(current_item)
+
 	# ZABEZPIECZENIE TRYBU BUDOWANIA
 	if current_state == PlayerState.BUILDING:
 		var is_placeable = false
@@ -549,24 +296,6 @@ func on_inventory_update() :
 					break
 		if not is_placeable:
 			_cancel_building()
-	
-	# --- SYSTEM OŚWIETLENIA (Dynamiczna moc) ---
-	var light_applied = false
-	if current_item != null and current_item.data.components != null:
-		for comp in current_item.data.components:
-			if comp is LightSourceComponent:
-				# Aplikujemy parametry prosto z komponentu przedmiotu!
-				player_light.enabled = true
-				player_light.energy = comp.light_energy
-				player_light.texture_scale = comp.light_scale
-				player_light.color = comp.light_color
-				light_applied = true
-				break
-				
-	# Jeśli przedmiot nie ma komponentu świecenia (lub mamy puste ręce), gasimy światło
-	if not light_applied:
-		player_light.energy = 0.0
-		player_light.enabled = false
 
 ## Wywołuje się podczas wyrzucania przedmiotu (fizyczne okodowanie Noda).
 func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
@@ -579,7 +308,13 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 			throw_direction = global_position.direction_to(target_pos).normalized()
 			
 		# Teraz Twój item_thrower_component otrzymuje dokładny kierunek lotu
-		item_thrower_component.handle_item_drop(self, dropped_instance, is_thrown, is_using_mouse, throw_direction)
+		item_thrower_component.handle_item_drop(
+			self,
+			dropped_instance,
+			is_thrown,
+			_input_controller.is_using_mouse,
+			throw_direction
+		)
 	else:
 		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 
@@ -588,6 +323,8 @@ func respawn_sequence() -> void:
 	if is_respawning:
 		return
 	is_respawning = true
+	_input_controller.reset_transient_input()
+	var scene_tree := get_tree()
 	
 	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE (Na widocznym ekranie) ---
 	velocity = Vector2.ZERO
@@ -599,45 +336,45 @@ func respawn_sequence() -> void:
 	# Sprawdzamy czy trafiliśmy tu z powodu utraty HP, czy z guzika:
 	if is_dead:
 		EventBus.player_died.emit()
-		
-		# Zatrzymujemy kod na 1.5 sekundy. Widzimy jak gracz leży martwy.
-		await get_tree().create_timer(1.5).timeout
+		await scene_tree.create_timer(1.5).timeout
 	else:
 		# Manualny respawn - pomijamy timer, następuje błyskawiczne wygaszenie
 		print("Gracz użył manualnego respawnu - pomijam fazę leżenia.")
+	if not is_inside_tree():
+		return
 	
 	# --- FAZA 2: ZLECENIE PRZENOSIN MAPIE ---
 	process_mode = Node.PROCESS_MODE_DISABLED
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 	
-	var level_manager = get_tree().get_first_node_in_group("Map")
-	if level_manager:
+	var level_manager := scene_tree.get_first_node_in_group("Map")
+	if is_instance_valid(level_manager):
 		if level_manager.has_method("handle_player_respawn"):
 			# Await zatrzymuje gracza do momentu pełnego pojawienia się i rozjaśnienia mapy
 			await level_manager.handle_player_respawn(self)
 	else:
 		push_warning("Nie znaleziono Map podczas respawnu!")
+	if not is_inside_tree():
+		return
 	
 	# --- FAZA 3: KONIEC ODRADZANIA (Ekran już jest jasny) ---
 	process_mode = Node.PROCESS_MODE_INHERIT
+	set_physics_process(true)
 	
 	# Czekamy równe dwie klatki fizyki zachowując tarczę "is_respawning".
 	# Dzięki temu, gdy gracz wyląduje na portalu/drzwiach, odrzucą one teleportację
 	# ułamek sekundy przed tym, jak oddamy graczowi pełną kontrolę!
-	await get_tree().physics_frame
-	await get_tree().physics_frame
+	await scene_tree.physics_frame
+	if not is_inside_tree():
+		return
+	await scene_tree.physics_frame
+	if not is_inside_tree():
+		return
 	
 	is_respawning = false
-	
+
 	if inventory:
-		# --- NAPRAWA BUGU Z PASYWKAMI ---
-		# Czyścimy pamięć ekwipunku, aby po odrodzeniu system zorientował się,
-		# że musi nałożyć wszystkie pasywki z przedmiotów od zera!
-		inventory._last_held_sig = ""
-		inventory._last_equip_sig = ""
-		inventory._last_inv_sig = ""
-		
-		inventory.inventory_updated.emit()
+		inventory.refresh_passives()
 
 #endregion
 
@@ -673,47 +410,12 @@ func get_current_attack_range() -> float:
 #region System Pasywnych Efektów i Zbroi (SOLID)
 
 func _sync_held_passives() -> void:
-	_clear_passives_by_source("HELD")
-	_apply_passives(inventory.get_held_passives(), "HELD")
+	_passive_effect_controller.sync_held_passives(inventory)
 
 func _sync_equip_passives() -> void:
-	_clear_passives_by_source("EQUIP")
-	_apply_passives(inventory.get_equipment_passives(), "EQUIP")
+	_passive_effect_controller.sync_equipment_passives(inventory)
 
 func _sync_inventory_passives() -> void:
-	_clear_passives_by_source("INVENTORY")
-	_apply_passives(inventory.get_inventory_passives(), "INVENTORY")
-
-func _clear_passives_by_source(source_name: String) -> void:
-	if not effects_collector: return
-	
-	for active_effect in effects_collector.get_children():
-		if active_effect.is_queued_for_deletion(): continue
-		var res = active_effect.get("effect_resource")
-		
-		# Zabijamy tylko efekty z naszego konkretnego kanału (np. zdejmujemy zbroję to czyścimy kanał EQUIP)
-		if res and res.has_meta("passive_source") and res.get_meta("passive_source") == source_name:
-			active_effect.set_process(false)
-			if active_effect.has_method("end_effect"):
-				active_effect.end_effect()
-			else:
-				active_effect.queue_free()
-			# Wyrywamy od razu z drzewa, by zapobiec ułamkowym kaskadom
-			effects_collector.remove_child(active_effect)
-
-func _apply_passives(effects: Array[Effect], source_name: String) -> void:
-	for eff in effects:
-		if eff == null: continue # Zabezpieczenie przed pustymi polami w Inspektorze
-		
-		var clone = eff.duplicate(true)
-		# Naklejamy metadaną określającą z jakiego kanału pochodzi ten efekt
-		clone.set_meta("passive_source", source_name) 
-		
-		# mamy opcję czy jest infinite czy nie ale na wszelki wypadek zostawiam to tu:
-		# TARCZA: Sprawdzamy, czy efekt jest czasowy (TimedEffect) i posiada flagę "is_infinite"
-		#if "is_infinite" in clone:
-			#clone.is_infinite = true
-			
-		receive_effect(clone)
+	_passive_effect_controller.sync_inventory_passives(inventory)
 
 #endregion

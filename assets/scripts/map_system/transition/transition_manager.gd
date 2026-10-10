@@ -8,6 +8,7 @@ signal on_fade_in_finished
 var _active_tween: Tween
 var _active_target_alpha: float
 var _active_completion: Callable
+var _is_transitioning: bool = false
 
 func _ready() -> void:
 	layer = GameLayers.UI_TRANSITION # Najwyższa warstwa, by zakryć grę i UI
@@ -26,10 +27,14 @@ func fade_to_black(duration: float = 0.5) -> void:
 func fade_to_normal(duration: float = 0.5) -> void:
 	_start_fade(0.0, duration, _emit_fade_in_finished)
 
+func is_transition_active() -> bool:
+	return _is_transitioning
+
 func _start_fade(target_alpha: float, duration: float, completion: Callable) -> void:
 	_cancel_active_fade()
 	_active_target_alpha = target_alpha
 	_active_completion = completion
+	_is_transitioning = true
 	_active_tween = create_tween()
 	_active_tween.tween_property(color_rect, "color:a", target_alpha, duration).set_trans(
 		Tween.TRANS_SINE
@@ -37,7 +42,10 @@ func _start_fade(target_alpha: float, duration: float, completion: Callable) -> 
 	_active_tween.finished.connect(_complete_active_fade)
 
 func _cancel_active_fade() -> void:
-	if _active_tween == null or not _active_tween.is_valid():
+	if _active_tween == null:
+		return
+	if not _active_tween.is_valid():
+		_complete_active_fade()
 		return
 
 	_active_tween.kill()
@@ -48,6 +56,7 @@ func _complete_active_fade() -> void:
 	var completion := _active_completion
 	_active_tween = null
 	_active_completion = Callable()
+	_is_transitioning = false
 	if completion.is_valid():
 		completion.call()
 

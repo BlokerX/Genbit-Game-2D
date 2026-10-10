@@ -54,6 +54,7 @@ var map_region_grid: Dictionary = {}
 ## Węzeł zaciemniający całą planszę (sterowany płynnie)
 var global_darkness: CanvasModulate
 var _lighting_controller: MapLightingControllerType
+var _is_transitioning: bool = false
 
 @export_group("Generacja Drzwi")
 ## Scena drzwi, która ma być automatycznie wstawiana do pokoi
@@ -216,8 +217,18 @@ func _discover_neighboring_map_regions(map_region: MapRegion) -> void:
 			if neighbor_map_region and not neighbor_map_region.is_secret:
 				discover_map_region(neighbor_map_region) # Odkrywamy go na mapie
 
+func is_transition_active() -> bool:
+	return _is_transitioning or TransitionManager.is_transition_active()
+
 ## Funkcja zmiany pokoju
 func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, force_teleport: bool = false) -> void:
+	if new_map_region == null:
+		push_error("Map: Nie można przejść do pustego pokoju.")
+		return
+	if is_transition_active():
+		return
+	_is_transitioning = true
+
 	# 1. NAJPIERW ŁAPIEMY GRACZA! Zanim cokolwiek usuniemy.
 	var player = get_player()
 	
@@ -245,6 +256,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		TransitionManager.fade_to_black()
 		await TransitionManager.on_fade_out_finished
 		if not is_inside_tree():
+			_finish_transition(player)
 			return
 	
 	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
@@ -349,11 +361,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 				if "is_infinite" in infinite_effect:
 					infinite_effect.is_infinite = true
 				
-				# --- ZMIANA: Używamy nowej, nieuleczalnej funkcji! ---
-				if player.has_method("receive_environment_effect"):
-					player.receive_environment_effect(infinite_effect)
-				else:
-					player.receive_effect(infinite_effect)
+				_apply_entry_effect(player, infinite_effect, true)
 				
 		# Nakładamy efekty typu KLĄTWA (Zostają po wyjściu)
 		for effect in current_map_region.sticky_entry_effects:
@@ -361,7 +369,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 				var normal_effect = effect.duplicate()
 				# Klątwy z pułapek normalnie nałożymy przez receive_effect, 
 				# aby gracz MÓGŁ wyleczyć je np. antidotum po wybiegnięciu z pokoju.
-				player.receive_effect(normal_effect)
+				_apply_entry_effect(player, normal_effect, false)
 		
 	# 5. Odpalamy logikę walki / blokady pokoju
 	current_map_region.check_and_lock_map_region()
@@ -397,6 +405,9 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		)
 			
 		await tween.finished
+		if not is_inside_tree():
+			_finish_transition(player)
+			return
 		
 		# Sprzątanie starego pokoju PO ANIMACJI
 		if old_map_region and not is_same_map_region:
@@ -412,13 +423,24 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 			TransitionManager.fade_to_normal()
 			await TransitionManager.on_fade_in_finished
 			if not is_inside_tree():
+				_finish_transition(player)
 				return
 
-	# 8. ODMROŻENIE GRACZA (Przywrócenie fizyki po wszystkich animacjach!)
-	if player:
+	_finish_transition(player)
+
+func _finish_transition(player: PlayerCharacter) -> void:
+	_is_transitioning = false
+	if is_instance_valid(player):
 		player.process_mode = Node.PROCESS_MODE_INHERIT
-		if player.has_method("set_physics_process"):
-			player.set_physics_process(true)
+		player.set_physics_process(true)
+
+func _apply_entry_effect(player: Node, effect: Effect, is_environment_aura: bool) -> void:
+	if player.has_method("receive_map_entry_effect"):
+		player.call("receive_map_entry_effect", effect, is_environment_aura)
+	elif is_environment_aura and player.has_method("receive_environment_effect"):
+		player.call("receive_environment_effect", effect)
+	elif player.has_method("receive_effect"):
+		player.call("receive_effect", effect)
 
 ## Obsługa spawnowania gracza z sygnału
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:

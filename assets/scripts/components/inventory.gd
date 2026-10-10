@@ -361,6 +361,12 @@ func get_equipment_passives() -> Array[Effect]:
 func get_inventory_passives() -> Array[Effect]:
 	return _passive_controller.get_inventory_passives(self)
 
+## Prosi obserwatorów o ponowne zastosowanie pasywek bez zmiany zawartości.
+func refresh_passives() -> void:
+	held_passives_changed.emit()
+	equipment_passives_changed.emit()
+	inventory_passives_changed.emit()
+
 func _check_passive_deltas() -> void:
 	var changes: Dictionary = _passive_controller.check_for_changes(self)
 	if changes.has(InventoryPassiveControllerType.Change.HELD):

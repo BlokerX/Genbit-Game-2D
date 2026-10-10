@@ -6,6 +6,7 @@ class_name CharacterEntity
 #region Signals
 
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
+@warning_ignore("unused_signal")
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
 # ## Sygnał wykonywany po skończonej inicjalizacji entity
@@ -164,7 +165,10 @@ func receive_effect(effect: Effect) -> bool:
 	# Ignorujemy efekty, jeśli entity nie żyje LUB właśnie się teleportuje z ręcznego respawnu
 	if is_dead or is_respawning:
 		return false
-		
+
+	return _apply_effect(effect)
+
+func _apply_effect(effect: Effect) -> bool:
 	var success = effect.apply_effect(self)
 	if success:
 		print("Entity character otrzymał efekt: ", effect.effect_name)
@@ -174,14 +178,24 @@ func receive_effect(effect: Effect) -> bool:
 
 ## Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
 func receive_environment_effect(effect: Effect) -> bool:
-	# Ignorujemy efekty, jeśli entity nie żyje LUB właśnie się teleportuje z ręcznego respawnu
 	if is_dead or is_respawning:
 		return false
-	
+
+	return _apply_environment_effect(effect)
+
+## Wejściowe efekty mapy muszą zostać zastosowane także podczas animowanego respawnu.
+func receive_map_entry_effect(effect: Effect, is_environment_aura: bool) -> bool:
+	if is_dead:
+		return false
+	if is_environment_aura:
+		return _apply_environment_effect(effect)
+	return _apply_effect(effect)
+
+func _apply_environment_effect(effect: Effect) -> bool:
 	if effects_collector == null: return false
-	
+
 	var success = effect.apply_effect(self)
-	
+
 	# Jeśli efekt został nałożony LUB odświeżony, szukamy go i twardo wbijamy właściwości aury
 	if success:
 		for child in effects_collector.get_children():
