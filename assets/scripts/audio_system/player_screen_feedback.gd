@@ -13,6 +13,7 @@ void fragment() {
 }
 """
 const FROZEN_BORDER_COLOR := Color(0.25, 0.75, 1.0, 1.0)
+const HEALING_BORDER_COLOR := Color(0.25, 1.0, 0.45, 1.0)
 
 @export_group("Obwódka ekranu")
 ## Intensywność obwódki utrzymywanej przy niskim zdrowiu.
@@ -21,15 +22,14 @@ const FROZEN_BORDER_COLOR := Color(0.25, 0.75, 1.0, 1.0)
 @export_range(0.01, 0.4, 0.01) var border_width: float = 0.12
 ## Kolor sygnalizujący krytycznie niski poziom zdrowia.
 @export var low_health_color: Color = Color(1.0, 0.04, 0.04, 1.0)
-## Czas jednego cyklu migania obwódki statusu.
-@export_range(0.08, 1.0, 0.01) var status_blink_interval: float = 0.2
+## Czas krótkiego zielonego rozjaśnienia po faktycznym przywróceniu zdrowia.
+@export_range(0.1, 1.0, 0.05) var healing_flash_duration: float = 0.35
 
 var _overlay_material: ShaderMaterial
 var _low_health_active: bool = false
 var _frozen_active: bool = false
-var _status_color: Color = Color.TRANSPARENT
 var _status_remaining: float = 0.0
-var _status_elapsed: float = 0.0
+var _status_duration: float = 0.0
 var _pulse_phase: float = 0.0
 
 func _ready() -> void:
@@ -55,12 +55,11 @@ func _process(delta: float) -> void:
 	var color := low_health_color
 	if _frozen_active:
 		color = FROZEN_BORDER_COLOR
-		strength = 0.72 if _is_status_blink_on() else 0.0
+		strength = 0.58 + 0.14 * sin(_pulse_phase * 2.0)
 	elif _status_remaining > 0.0:
-		color = _status_color
-		var fade_out := minf(1.0, _status_remaining / 0.12)
-		strength = (0.72 if _is_status_blink_on() else 0.0) * fade_out
-		_status_elapsed += delta
+		color = HEALING_BORDER_COLOR
+		var progress := 1.0 - (_status_remaining / _status_duration)
+		strength = 0.72 * sin(progress * PI)
 	elif _low_health_active:
 		strength = low_health_strength * (0.78 + 0.22 * sin(_pulse_phase * 3.0))
 	_overlay_material.set_shader_parameter("border_color", color)
@@ -70,17 +69,11 @@ func _process(delta: float) -> void:
 func set_low_health(is_active: bool) -> void:
 	_low_health_active = is_active
 
-## Utrzymuje migającą niebieską obwódkę przez cały czas zamrożenia.
+## Utrzymuje niebieską obwódkę przez cały czas zamrożenia.
 func set_frozen(is_active: bool) -> void:
 	_frozen_active = is_active
-	if is_active:
-		_status_elapsed = _pulse_phase
 
-## Wyświetla krótką obwódkę statusu, np. mrozu, buffa albo leczenia.
-func pulse(color: Color, duration: float) -> void:
-	_status_color = color
-	_status_remaining = maxf(_status_remaining, duration)
-	_status_elapsed = _pulse_phase
-
-func _is_status_blink_on() -> bool:
-	return fposmod(_pulse_phase - _status_elapsed, status_blink_interval) < status_blink_interval * 0.5
+## Pokazuje krótkie, płynne rozjaśnienie po przywróceniu zdrowia.
+func show_healing_feedback() -> void:
+	_status_duration = healing_flash_duration
+	_status_remaining = healing_flash_duration

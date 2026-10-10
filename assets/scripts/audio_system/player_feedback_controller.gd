@@ -60,6 +60,7 @@ var _player: PlayerCharacter
 var _screen_overlay: CanvasLayer
 var _movement_sound_timer: float = 0.0
 var _active_freeze_effect_count: int = 0
+var _last_known_health: int = -1
 
 ## Przypisuje kontroler do gracza, którego pozycja i sprite są źródłem oprawy.
 func initialize(player: PlayerCharacter) -> void:
@@ -109,7 +110,6 @@ func play_received_effect(effect: Effect) -> void:
 			_player.global_position,
 			_player
 		)
-		_pulse_screen(Color(0.25, 1.0, 0.45, 1.0), 0.65)
 	else:
 		_play_cue(
 			status_effect_cue,
@@ -167,14 +167,19 @@ func _play_cue(
 	GameFeedback.play_cue(cue, animation_target, world_position, sound_emitter)
 
 func _on_player_health_changed(current_health: int, maximum_health: int) -> void:
-	if not is_instance_valid(_screen_overlay):
-		return
-	var is_low_health := maximum_health > 0 and float(current_health) / maximum_health <= low_health_ratio
-	_screen_overlay.call("set_low_health", is_low_health)
-
-func _pulse_screen(color: Color, duration: float) -> void:
+	if (
+		_last_known_health >= 0
+		and current_health > _last_known_health
+		and is_instance_valid(_screen_overlay)
+	):
+		_screen_overlay.call("show_healing_feedback")
+	_last_known_health = current_health
 	if is_instance_valid(_screen_overlay):
-		_screen_overlay.call("pulse", color, duration)
+		var is_low_health := (
+			maximum_health > 0
+			and float(current_health) / maximum_health <= low_health_ratio
+		)
+		_screen_overlay.call("set_low_health", is_low_health)
 
 func _is_positive_effect(effect: Effect) -> bool:
 	return (
