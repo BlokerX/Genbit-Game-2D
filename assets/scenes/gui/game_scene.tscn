@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bb1p1ifmi7wtf"]
 
 [ext_resource type="Script" uid="uid://ck322cqxqek41" path="res://assets/scripts/ui/ui_controller.gd" id="1_bpfx5"]
+[ext_resource type="Script" path="res://assets/scripts/ui/hud_visibility_controller.gd" id="26_hud_visibility"]
 [ext_resource type="Script" uid="uid://cycvvw1tn66k3" path="res://assets/scripts/scene_scripts/game_scene/game_scene.gd" id="1_ge8p3"]
 [ext_resource type="Script" uid="uid://b0ps68vr8aav7" path="res://assets/scripts/ui/playtime_monitor.gd" id="2_ge8p3"]
 [ext_resource type="Script" uid="uid://bfweu055t6gth" path="res://assets/scripts/ui/player_stats_ui.gd" id="3_b4kdy"]
@@ -96,6 +97,9 @@ cursor_amount_label = NodePath("CursorLayer/CursorItem/Label")
 crafting_ui = NodePath("Menus_Layer/CraftingUI")
 minimap_ui = NodePath("HUD_Layer/BottomRight_Zone/Minimap")
 quest_log_ui = NodePath("../QuestLogUI")
+
+[node name="HUDVisibilityController" type="Node" parent="UI_Canvas"]
+script = ExtResource("26_hud_visibility")
 
 [node name="HUD_Layer" type="MarginContainer" parent="UI_Canvas" unique_id=678210752]
 anchors_preset = 15

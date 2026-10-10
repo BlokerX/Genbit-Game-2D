@@ -54,10 +54,7 @@ static func build_plan(
 
 		for slot_index in range(slot_count):
 			var slot: SlotData = available_slots[slot_index]
-			var item_data: ItemData = slot.item.data
-			var matches_item = requirement["item_id"] != &"" and item_data.item_id == requirement["item_id"]
-			var matches_tag = requirement["tag"] != &"" and item_data.has_tag(requirement["tag"])
-			if matches_item or matches_tag:
+			if _requirement_matches_slot(requirement, slot):
 				residual[requirement_node][first_slot_node + slot_index] = required_amount
 
 	for slot_index in range(slot_count):
@@ -107,11 +104,22 @@ static func build_plan(
 	for requirement_index in range(requirement_count):
 		var requirement_node = first_requirement_node + requirement_index
 		var requirement: Dictionary = requirements[requirement_index]
+		var required_amount: int = requirement["amount"]
 		for slot_index in range(slot_count):
 			var slot_node = first_slot_node + slot_index
-			var flow = requirement["amount"] - residual[requirement_node][slot_node]
+			var slot: SlotData = available_slots[slot_index]
+			if not _requirement_matches_slot(requirement, slot):
+				continue
+
+			var flow = required_amount - residual[requirement_node][slot_node]
 			if flow > 0:
 				var inventory_slot_index = inventory_slot_indices[slot_index]
 				slot_consumption[inventory_slot_index] = slot_consumption.get(inventory_slot_index, 0) + flow
 
 	return {"valid": true, "slot_consumption": slot_consumption}
+
+static func _requirement_matches_slot(requirement: Dictionary, slot: SlotData) -> bool:
+	var item_data: ItemData = slot.item.data
+	var matches_item = requirement["item_id"] != &"" and item_data.item_id == requirement["item_id"]
+	var matches_tag = requirement["tag"] != &"" and item_data.has_tag(requirement["tag"])
+	return matches_item or matches_tag
