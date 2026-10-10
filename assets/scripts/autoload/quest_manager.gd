@@ -11,6 +11,9 @@ const QuestObjectiveProgressControllerType = preload(
 const QuestTrackingControllerType = preload(
 	"res://assets/scripts/quests/quest_tracking_controller.gd"
 )
+const QuestTimerControllerType = preload(
+	"res://assets/scripts/quests/quest_timer_controller.gd"
+)
 
 # ==========================================
 # SYGNAŁY (Emitowane do UI Dziennika Zadań)
@@ -63,6 +66,7 @@ var tracked_quest_id: StringName:
 ## Unieważnia opóźnione akcje zadań, gdy kończy się sesja.
 var _session_generation: int = 0
 var _tracking_controller: QuestTrackingControllerType = QuestTrackingControllerType.new()
+var _timer_controller: QuestTimerControllerType = QuestTimerControllerType.new()
 var _objective_progress_controller: QuestObjectiveProgressControllerType = (
 	QuestObjectiveProgressControllerType.new()
 )
@@ -87,32 +91,15 @@ func _on_tracked_quest_changed(quest_id: StringName) -> void:
 
 ## Pętla gry, obsługująca upływ czasu (Timery limitowe w questach i ich Cooldowny po zakończeniu).
 func _process(delta: float) -> void:
-	# 1. Odliczanie czasu dla aktywnych questów czasowych
-	var quests_to_fail = []
-	for quest_id in active_quests.keys():
-		if active_quests[quest_id].has("timer") and active_quests[quest_id]["timer"] > 0:
-			active_quests[quest_id]["timer"] -= delta
-			if active_quests[quest_id]["timer"] <= 0:
-				print("QuestManager: Czas na wykonanie zadania [", quest_db[quest_id].title, "] minął!")
-				quests_to_fail.append(quest_id)
-				
-	for q_id in quests_to_fail:
-		fail_quest(q_id)
-		
-	# 2. Odliczanie cooldownu dla questów powtarzalnych
-	var quests_to_reset = []
-	for quest_id in cooldown_quests.keys():
-		cooldown_quests[quest_id] -= delta
-		if cooldown_quests[quest_id] <= 0:
-			quests_to_reset.append(quest_id)
-			
-	for q_id in quests_to_reset:
-		cooldown_quests.erase(q_id)
-		# POPRAWKA 3: Czyścimy OBA słowniki (sukcesy i porażki)
-		completed_quests.erase(q_id)
-		failed_quests.erase(q_id)
-		if quest_db.has(q_id):
-			print("QuestManager: Zadanie powtarzalne [", quest_db[q_id].title, "] jest znów dostępne.")
+	_timer_controller.process_timers(
+		delta,
+		active_quests,
+		quest_db,
+		cooldown_quests,
+		completed_quests,
+		failed_quests,
+		Callable(self, "fail_quest")
+	)
 
 
 # --- SYSTEM CZUJNIKÓW I CELÓW ---
