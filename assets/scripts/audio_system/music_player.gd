@@ -30,6 +30,8 @@ var _delay_tween: Tween # <-- Odpowiada za bezpieczne odliczanie odstępu międz
 # --- STAN PLAYLISTY ---
 var _current_playlist: MusicPlaylist = null
 var _current_track_stream: AudioStream = null
+var _previous_auto_accept_quit: bool = true
+var _shutdown_requested: bool = false
 
 # --- INTEGRACJA Z SYSTEMEM PAUZY ---
 # Utrzymuje kompatybilność z pause_menu.gd bez zmieniania tamtego kodu!
@@ -45,6 +47,8 @@ var _level_manager: Map = null
 func _ready() -> void:
 	# Odtwarzacz muzyki musi działać nawet po zapauzowaniu gry!
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_previous_auto_accept_quit = get_tree().auto_accept_quit
+	get_tree().auto_accept_quit = false
 	
 	# Inicjalizacja podwójnego silnika odtwarzania (do płynnych przejść)
 	_setup_audio_players()
@@ -81,10 +85,54 @@ func _setup_audio_players() -> void:
 	
 	_active_player = _player_a
 
-# Zatrzymujemy odtwarzacze przy wyjściu z drzewa - grający strumień trzymany przez AudioServer wycieka przy zamykaniu gry
 func _exit_tree() -> void:
-	_player_a.stop()
-	_player_b.stop()
+	if not _shutdown_requested and is_inside_tree():
+		get_tree().auto_accept_quit = _previous_auto_accept_quit
+
+	_stop_audio_players()
+	_active_player = null
+	_current_playlist = null
+	_current_track_stream = null
+
+	if is_inside_tree():
+		var scene_tree := get_tree()
+		if scene_tree.node_added.is_connected(_on_node_added):
+			scene_tree.node_added.disconnect(_on_node_added)
+		if scene_tree.node_removed.is_connected(_on_node_removed):
+			scene_tree.node_removed.disconnect(_on_node_removed)
+	_unbind_map()
+
+func _stop_audio_players() -> void:
+	_kill_tween(_crossfade_tween)
+	_kill_tween(_delay_tween)
+	_crossfade_tween = null
+	_delay_tween = null
+
+	_stop_and_release_player(_player_a)
+	_stop_and_release_player(_player_b)
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_CLOSE_REQUEST or _shutdown_requested:
+		return
+
+	_shutdown_requested = true
+	_stop_audio_players()
+	_finish_application_shutdown.call_deferred()
+
+func _finish_application_shutdown() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	get_tree().quit()
+
+func _kill_tween(tween: Tween) -> void:
+	if tween != null and tween.is_valid():
+		tween.kill()
+
+func _stop_and_release_player(player: AudioStreamPlayer) -> void:
+	if not is_instance_valid(player):
+		return
+	player.stop()
+	player.stream = null
 
 # ====================================================================
 # SYSTEM ZARZĄDZANIA ODTWARZANIEM

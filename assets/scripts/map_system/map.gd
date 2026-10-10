@@ -240,6 +240,8 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if do_fade:
 		TransitionManager.fade_to_black()
 		await TransitionManager.on_fade_out_finished
+		if not is_inside_tree():
+			return
 	
 	# --- TUTAJ GRA JEST CAŁKOWICIE ZAKRYTA CZERNIĄ LUB GOTOWA DO PRZESUNIĘCIA ---
 	current_map_region = new_map_region
@@ -367,6 +369,8 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if do_fade and do_slide:
 		TransitionManager.fade_to_normal()
 		await TransitionManager.on_fade_in_finished
+		if not is_inside_tree():
+			return
 		
 	if do_slide:
 		# ANIMACJA PRZESUWANIA (TWEEN)
@@ -414,6 +418,8 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 		if do_fade:
 			TransitionManager.fade_to_normal()
 			await TransitionManager.on_fade_in_finished
+			if not is_inside_tree():
+				return
 
 	# 8. ODMROŻENIE GRACZA (Przywrócenie fizyki po wszystkich animacjach!)
 	if player:
@@ -469,7 +475,7 @@ func _on_door_entered(door: Door) -> void:
 		push_warning("Map: Gracz wszedł w drzwi, ale nie przypisano im destination_door w edytorze.")
 
 ## Funkcja wywoływana, gdy gracz zostanie zrespawnowany
-func handle_player_respawn(player: PlayerCharacter) -> void:
+func handle_player_respawn(_player: PlayerCharacter) -> void:
 	print("Menedżer Mapy: Gracz zainicjował respawn...")
 	
 	if starting_map_region:

@@ -4,9 +4,15 @@ class_name InventoryAmmunitionController
 var _inventory: Inventory
 
 func initialize(inventory: Inventory) -> void:
+	if inventory == null:
+		push_error("InventoryAmmunitionController wymaga ekwipunku.")
+		return
 	_inventory = inventory
 
 func cycle_weapon_ammunition() -> void:
+	if not _has_inventory():
+		return
+
 	var slot := _inventory.get_current_slot()
 	if slot == null or slot.is_empty():
 		return
@@ -39,13 +45,23 @@ func cycle_weapon_ammunition() -> void:
 	var current_ammo_data: ItemData = (
 		ItemDatabase.get_item(current_ammo_id) if current_ammo_id != &"" else null
 	)
+	var current_ammo_count = weapon_instance.state.get("ammo_count", 0)
+	if current_ammo_count > 0 and current_ammo_data == null:
+		push_error(
+			"Nie można zmienić amunicji: nie znaleziono danych dla załadowanego ID '%s'."
+			% str(current_ammo_id)
+		)
+		return
 
-	if (preferred_ammo_id == null or str(preferred_ammo_id) == "") and current_ammo_data != null:
+	if (
+		(preferred_ammo_id == null or str(preferred_ammo_id) in ["", "-1"])
+		and current_ammo_data != null
+	):
 		preferred_ammo_id = current_ammo_data.item_id
 
 	var next_index := 0
 	for index in range(available_ammunition.size()):
-		if available_ammunition[index].item_id == preferred_ammo_id:
+		if str(available_ammunition[index].item_id) == str(preferred_ammo_id):
 			next_index = (index + 1) % available_ammunition.size()
 			break
 
@@ -53,7 +69,6 @@ func cycle_weapon_ammunition() -> void:
 	weapon_instance.state["preferred_ammo_id"] = next_ammo_data.item_id
 	print(">>> Zmieniono preferencję na: ", next_ammo_data.item_name)
 
-	var current_ammo_count = weapon_instance.state.get("ammo_count", 0)
 	if current_ammo_count > 0 and current_ammo_data != null:
 		var old_ammo = ItemInstance.new(current_ammo_data.duplicate(true), current_ammo_count)
 		var leftovers = _inventory.add_instance(old_ammo)
@@ -65,6 +80,9 @@ func cycle_weapon_ammunition() -> void:
 	reload_current_weapon()
 
 func reload_current_weapon() -> bool:
+	if not _has_inventory():
+		return false
+
 	var slot := _inventory.get_current_slot()
 	if slot == null or slot.is_empty():
 		return false
@@ -129,14 +147,8 @@ func _try_load_ammo(
 			continue
 
 		ammo_reference = slot.item.data
-		var slot_amount = slot.item.state.get("amount", 1)
-		var taking = min(slot_amount, ammo_needed - ammo_found)
-		slot.item.state["amount"] = slot_amount - taking
+		var taking := _inventory.consume_from_slot(index, ammo_needed - ammo_found)
 		ammo_found += taking
-		_inventory._update_cache(ammo_reference.item_id, -taking)
-
-		if slot.item.state["amount"] <= 0:
-			slot.clear_slot()
 
 		if ammo_found >= ammo_needed:
 			break
@@ -157,3 +169,6 @@ func _get_ranged_component(item: ItemInstance) -> RangedWeaponComponent:
 		if component is RangedWeaponComponent:
 			return component
 	return null
+
+func _has_inventory() -> bool:
+	return _inventory != null and is_instance_valid(_inventory)

@@ -119,6 +119,30 @@ func clean_dead_items() -> void:
 	if inventory_changed:
 		inventory_updated.emit()
 
+## Zużywa część stosu w slocie; wywołujący powiadamia o zakończeniu całej operacji.
+func consume_from_slot(slot_index: int, amount: int) -> int:
+	if amount <= 0 or slot_index < 0 or slot_index >= slots.size():
+		return 0
+
+	var slot: SlotData = slots[slot_index]
+	if slot == null or slot.is_empty():
+		return 0
+
+	var item: ItemInstance = slot.item
+	var available_amount: int = item.state.get("amount", 1)
+	var consumed_amount := mini(available_amount, amount)
+	if consumed_amount <= 0:
+		return 0
+
+	var remaining_amount := available_amount - consumed_amount
+	_update_cache(item.data.item_id, -consumed_amount)
+	if remaining_amount == 0:
+		slot.clear_slot()
+	else:
+		item.state["amount"] = remaining_amount
+
+	return consumed_amount
+
 ## Wyrzuca wszystkie przedmioty gracza po śmierci.
 func drop_all_items(_owner_entity: Node2D) -> void:
 	var dropped_any = false

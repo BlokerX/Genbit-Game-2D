@@ -49,6 +49,9 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	# 2. ŚCIEMNIENIE EKRANU
 	TransitionManager.fade_to_black(0.3)
 	await TransitionManager.on_fade_out_finished
+	if not is_inside_tree() or not is_instance_valid(tree.current_scene) or not tree.current_scene.is_inside_tree():
+		is_changing_level = false
+		return
 	
 	# 2.5. EKRAN JEST CZARNY - ODPINAMY GRACZA I WYŁĄCZAMY MU PROCESY
 	if player:
