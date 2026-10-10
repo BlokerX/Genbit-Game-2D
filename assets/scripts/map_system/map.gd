@@ -8,6 +8,9 @@ const PLAYER_GROUP = "Player"
 const MapLightingControllerType = preload(
 	"res://assets/scripts/map_system/map_lighting_controller.gd"
 )
+const MapDoorGeneratorType = preload(
+	"res://assets/scripts/map_system/map_door_generator.gd"
+)
 
 ## Sygnał zmiany pokoju
 signal map_region_changed(new_map_region: MapRegion)
@@ -54,6 +57,7 @@ var map_region_grid: Dictionary = {}
 ## Węzeł zaciemniający całą planszę (sterowany płynnie)
 var global_darkness: CanvasModulate
 var _lighting_controller: MapLightingControllerType
+var _door_generator: MapDoorGeneratorType
 var _is_transitioning: bool = false
 
 @export_group("Generacja Drzwi")
@@ -74,6 +78,8 @@ func _ready() -> void:
 	add_child(global_darkness)
 	_lighting_controller = MapLightingControllerType.new()
 	_lighting_controller.initialize(global_darkness)
+	_door_generator = MapDoorGeneratorType.new()
+	_door_generator.configure(auto_door_scene, default_map_door_texture)
 	# ---------------------
 	
 	# Rejestracja i ustawianie pokoi
@@ -552,155 +558,8 @@ func get_map_region_at(coords: Vector2i) -> MapRegion:
 
 ## Centralny system generowania drzwi. 
 func _auto_spawn_missing_doors() -> void:
-	if auto_door_scene == null:
-		return
-	
-	# Przeszukujemy każdy pokój na wirtualnej siatce
-	for coords in map_region_grid.keys():
-		var grid_map_region = map_region_grid[coords]
-		
-		# KRAWĘDŹ 1: Sprawdzamy sąsiada po PRAWEJ (X+1, Y)
-		var right_coords = coords + Vector2i(1, 0)
-		if map_region_grid.has(right_coords):
-			var right_map_region = map_region_grid[right_coords]
-			if grid_map_region.allow_door_right and right_map_region.allow_door_left:
-				_sync_door_pair(grid_map_region, Door.Direction.RIGHT, right_map_region, Door.Direction.LEFT)
-				
-		# KRAWĘDŹ 2: Sprawdzamy sąsiada W DÓŁ (X, Y+1)
-		var down_coords = coords + Vector2i(0, 1)
-		if map_region_grid.has(down_coords):
-			var down_map_region = map_region_grid[down_coords]
-			if grid_map_region.allow_door_down and down_map_region.allow_door_up:
-				_sync_door_pair(grid_map_region, Door.Direction.DOWN, down_map_region, Door.Direction.UP)
-
-
-## Inteligentne parowanie drzwi - obie strony przejścia ZAWSZE wyglądają identycznie!
-func _sync_door_pair(map_region_a: MapRegion, dir_a: Door.Direction, map_region_b: MapRegion, dir_b: Door.Direction) -> void:
-	var door_a = map_region_a.get_door(dir_a)
-	var door_b = map_region_b.get_door(dir_b)
-	
-	# PRIORYTET 1: Oba pokoje mają już Twoje ręczne drzwi. Automat nic nie robi.
-	if door_a != null and door_b != null:
-		return
-		
-	# PRIORYTET 2, 3 i 4: Nie ma żadnych ręcznych drzwi - pełen automat.
-	if door_a == null and door_b == null:
-		# --- KLUCZ: Wyliczamy jedną, najsilniejszą teksturę dla OBU pokoi naraz! ---
-		var best_tex = _get_best_door_texture(map_region_a, map_region_b)
-		
-		# Tworzymy i wstawiamy drzwi z tą samą teksturą po obu stronach ściany
-		door_a = map_region_a.spawn_auto_door(dir_a, auto_door_scene, best_tex)
-		door_b = map_region_b.spawn_auto_door(dir_b, auto_door_scene, best_tex)
-		return 
-		
-	# PRIORYTET 1 (dziedziczenie): TYLKO Pokój A ma ręczne drzwi. Pokój B musi je skopiować.
-	if door_a != null and door_b == null:
-		var tex_b = _get_manual_door_texture(door_a)
-		door_b = map_region_b.spawn_auto_door(dir_b, auto_door_scene, tex_b)
-		
-	# PRIORYTET 1 (dziedziczenie): TYLKO Pokój B ma ręczne drzwi. Pokój A musi je skopiować.
-	elif door_b != null and door_a == null:
-		var tex_a = _get_manual_door_texture(door_b)
-		door_a = map_region_a.spawn_auto_door(dir_a, auto_door_scene, tex_a)
-
-## Funkcja pomocnicza: Wylicza "najsilniejszą" teksturę dla całego połączenia
-func _get_best_door_texture(map_region_1: MapRegion, map_region_2: MapRegion) -> Texture2D:
-	# Priorytet 2: Niestandardowy obrazek z Inspektora (jeśli oba mają, wygrywa ten z lewej/góry)
-	if map_region_1.custom_door_texture != null:
-		return map_region_1.custom_door_texture
-	if map_region_2.custom_door_texture != null:
-		return map_region_2.custom_door_texture
-		
-	# Priorytet 3: Typ pokoju - WALKA NA PUNKTY WAŻNOŚCI
-	var weight_1 = _get_map_region_type_weight(map_region_1.map_region_type)
-	var weight_2 = _get_map_region_type_weight(map_region_2.map_region_type)
-	
-	# Jeśli chociaż jeden pokój jest "specjalny" (waga > 0)
-	if weight_1 > 0 or weight_2 > 0:
-		# Zwycięża ten, który ma więcej punktów!
-		if weight_1 >= weight_2:
-			return _get_door_texture_for_map_region_type(map_region_1.map_region_type)
-		else:
-			return _get_door_texture_for_map_region_type(map_region_2.map_region_type)
-		
-	# Priorytet 4: Domyślna tekstura dla Całej Mapy
-	if default_map_door_texture != null:
-		return default_map_door_texture
-		
-	# Priorytet 5: Absolutny domyślny wygląd
-	return null
-
-## Funkcja pomocnicza: Ustala, który typ pokoju jest "ważniejszy" przy zderzeniu
-func _get_map_region_type_weight(type: MapRegion.MapRegionType) -> int:
-	match type:
-		MapRegion.MapRegionType.BOSS: 
-			return 100 # Boss zawsze dominuje korytarz
-		MapRegion.MapRegionType.TREASURE: 
-			return 80
-		MapRegion.MapRegionType.SHOP: 
-			return 60
-		MapRegion.MapRegionType.ARENA: 
-			return 40
-		MapRegion.MapRegionType.DEV_ROOM: 
-			return 20
-		MapRegion.MapRegionType.START:
-			return 10
-	return 0 # NORMAL, OPEN_WORLD mają 0
-
-## Funkcja pomocnicza: Kradnie teksturę z drzwi, które postawiłeś ręcznie na scenie
-func _get_manual_door_texture(door: Door) -> Texture2D:
-	if door.door_texture != null:
-		return door.door_texture
-		
-	var sprite = door.get_node_or_null("Sprite2D")
-	if sprite and sprite.texture:
-		return sprite.texture
-		
-	return null
+	_door_generator.spawn_missing_doors(map_region_grid)
 
 ## Skrypt Hybrydowy do automatycznego parowania drzwi
 func _auto_link_doors() -> void:
-	for map_region in all_map_regions:
-		for door in map_region.doors:
-			# 1. HYBRYDA: Jeśli drzwi zostały połączone ręcznie przez Ciebie w Inspektorze, ignorujemy je
-			if door.destination_door != null:
-				continue
-				
-			# 2. Sprawdzamy kierunek drzwi
-			var offset = door.get_direction_offset()
-			if offset == Vector2i.ZERO:
-				continue # Jeśli zapomniałeś ustawić kierunek, pomijamy te drzwi
-				
-			# 3. Szukamy sąsiada na siatce względem naszego obecnego pokoju
-			var target_coords = map_region.map_position + offset
-			var neighbor_map_region = get_map_region_at(target_coords)
-			
-			if neighbor_map_region:
-				# 4. Szukamy drzwi u sąsiada, które patrzą DOKŁADNIE w naszą stronę (wektor przeciwny)
-				var opposite_offset = -offset
-				for neighbor_door in neighbor_map_region.doors:
-					
-					# Jeśli znajdziemy pasujące wolne drzwi...
-					if neighbor_door.destination_door == null and neighbor_door.get_direction_offset() == opposite_offset:
-						
-						# 5. ŁĄCZYMY DRZWI ZE SOBĄ Z OBU STRON!
-						door.destination_door = neighbor_door
-						neighbor_door.destination_door = door
-						
-						print("Map: Zszyto automatycznie drzwi między [" + map_region.name + "] a [" + neighbor_map_region.name + "]")
-						break
-
-## Pobiera odpowiednią teksturę drzwi na podstawie typu sąsiedniego pokoju
-func _get_door_texture_for_map_region_type(type: MapRegion.MapRegionType) -> Texture2D:
-	match type:
-		MapRegion.MapRegionType.BOSS:
-			return preload("res://assets/textures/samples_examples/door/red_door.png")
-		MapRegion.MapRegionType.SHOP:
-			return preload("res://assets/textures/samples_examples/door/purple_door.png")
-		MapRegion.MapRegionType.TREASURE:
-			return preload("res://assets/textures/samples_examples/door/orange_door.png")
-		MapRegion.MapRegionType.DEV_ROOM:
-			return preload("res://assets/textures/samples_examples/door/black_door.png")
-		MapRegion.MapRegionType.ARENA:
-			return preload("res://assets/textures/samples_examples/door/dark_blue_door.png")
-	return null # Zwraca null dla Normalnego, używając domyślnej tekstury
+	_door_generator.link_doors(all_map_regions, map_region_grid)
