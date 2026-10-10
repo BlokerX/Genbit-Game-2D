@@ -5,8 +5,8 @@ extends Resource
 ## Strumień dźwiękowy odtwarzany dla tego efektu.
 @export var audio_stream: AudioStream
 
-## Magistrala audio; domyślnie używa kanału SFX konfigurowanego w ustawieniach gry.
-@export var bus_name: StringName = &"SFX"
+## Kanał miksera: Entities dla encji, Ambient dla środowiska albo SFX dla pozostałych efektów.
+@export_enum("SFX", "Entities", "Ambient") var bus_name: String = "Entities"
 
 ## Względna głośność efektu w decybelach.
 @export_range(-80.0, 24.0, 0.1) var volume_db: float = 0.0

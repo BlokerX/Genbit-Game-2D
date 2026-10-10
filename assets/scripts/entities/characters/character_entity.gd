@@ -3,6 +3,10 @@ extends CharacterBody2D
 
 class_name CharacterEntity
 
+const CharacterEffectsControllerType = preload(
+	"res://assets/scripts/entities/characters/character_effects_controller.gd"
+)
+
 #region Signals
 
 ## Sygnał służący do spawnowania obiektów (pociski, wyrzucone przedmioty) bez wiedzy o Map
@@ -46,10 +50,12 @@ var is_respawning: bool = false
 var active_tweens: Array[Tween] = []
 var is_frozen: bool = false
 var is_dead: bool = false
+var _effects_controller: CharacterEffectsControllerType
 
 #region Główne funkcje silnikowe
 
 func _ready():
+	_effects_controller = CharacterEffectsControllerType.new()
 	# Automatyczne ustawienie warstwy i sortowania[cite: 3]
 	z_index = GameLayers.ENTITIES
 	
@@ -162,124 +168,49 @@ func reset_state_for_respawn() -> void:
 
 ## Standardowa funkcja dla mikstur, pułapek i ataków (Zwykłe efekty, można wyleczyć)
 func receive_effect(effect: Effect) -> bool:
-	# Ignorujemy efekty, jeśli entity nie żyje LUB właśnie się teleportuje z ręcznego respawnu
-	if is_dead or is_respawning:
-		return false
-
-	return _apply_effect(effect)
+	return _effects_controller.receive_effect(self, effect, is_dead, is_respawning)
 
 func _apply_effect(effect: Effect) -> bool:
-	var success = effect.apply_effect(self)
-	if success:
-		print("Entity character otrzymał efekt: ", effect.effect_name)
-	else:
-		print("Nie udało się nałożyć efektu na entity character.")
-	return success
+	return _effects_controller.apply_effect(self, effect)
 
 ## Funkcja nakładająca aurę środowiskową (Niewrażliwa na mikstury oczyszczające!)
 func receive_environment_effect(effect: Effect) -> bool:
-	if is_dead or is_respawning:
-		return false
-
-	return _apply_environment_effect(effect)
+	return _effects_controller.receive_environment_effect(
+		self,
+		effects_collector,
+		effect,
+		is_dead,
+		is_respawning
+	)
 
 ## Wejściowe efekty mapy muszą zostać zastosowane także podczas animowanego respawnu.
 func receive_map_entry_effect(effect: Effect, is_environment_aura: bool) -> bool:
-	if is_dead:
-		return false
-	if is_environment_aura:
-		return _apply_environment_effect(effect)
-	return _apply_effect(effect)
+	return _effects_controller.receive_map_entry_effect(
+		self,
+		effects_collector,
+		effect,
+		is_dead,
+		is_environment_aura
+	)
 
 func _apply_environment_effect(effect: Effect) -> bool:
-	if effects_collector == null: return false
-
-	var success = effect.apply_effect(self)
-
-	# Jeśli efekt został nałożony LUB odświeżony, szukamy go i twardo wbijamy właściwości aury
-	if success:
-		for child in effects_collector.get_children():
-			if child.get("effect_resource") != null and child.effect_resource.effect_name == effect.effect_name:
-				
-				# Zabezpieczamy węzeł metadaną
-				child.set_meta("is_environment_aura", true)
-				# Wymuszamy nieskończoność bezpośrednio na zaktualizowanym węźle
-				child.is_infinite = true
-				
-				print("Otrzymano/Odświeżono NIEUSUWONALNĄ aurę pokoju: ", effect.effect_name)
-				break # Zrobione, przerywamy pętlę
-		
-	return success
+	return _effects_controller.apply_environment_effect(self, effects_collector, effect)
 
 ## Funkcja zdejmująca efekty (używana przez mikstury). Ignoruje Aury Pokoju!
 func clear_all_effects() -> void:
-	if effects_collector != null:
-		for active_effect in effects_collector.get_children():
-			
-			# --- TARCZA OCHRONNA DLA AUR ---
-			if active_effect.has_meta("is_environment_aura") and active_effect.get_meta("is_environment_aura") == true:
-				continue
-			
-			# --- TARCZA OCHRONNA DLA EKWIPUNKU ---
-			# Zapobiega wyczyszczeniu zbroi/ringów przez potkę oczyszczającą.
-			if active_effect.get("effect_resource") != null and active_effect.effect_resource.has_meta("passive_source"):
-				continue
-			
-			active_effect.set_process(false)
-			if active_effect.has_method("end_effect"):
-				active_effect.end_effect()
-			else:
-				active_effect.queue_free()
-		print("Usunięto wszystkie zwykłe efekty z entity character (Aury i Pasywki pozostały na miejscu).")
-		return
-	print("Nie znaleziono kontenera efektów w entity character.")
+	_effects_controller.clear_all_effects(effects_collector)
 
 ## Wymuszone czyszczenie aur przy skakaniu między całymi poziomami
 func clear_all_environment_effects() -> void:
-	if effects_collector != null:
-		for active_effect in effects_collector.get_children():
-			if active_effect.has_meta("is_environment_aura") and active_effect.get_meta("is_environment_aura") == true:
-				active_effect.set_process(false)
-				if active_effect.has_method("end_effect"):
-					active_effect.end_effect()
-				else:
-					active_effect.queue_free()
-		print("System: Wymuszono usunięcie aur środowiskowych podczas zmiany mapy.")
+	_effects_controller.clear_all_environment_effects(effects_collector)
 
 ## Funkcja do twardego usuwania po nazwie (Zdejmuje Aury, gdy gracz wychodzi z pokoju)
 func remove_effect_by_name(eff_name: String) -> void:
-	if effects_collector != null:
-		for active_effect in effects_collector.get_children():
-			
-			# Szukamy po nazwie zasobu (pomijając te usunięte w tej samej klatce)
-			if active_effect.is_queued_for_deletion():
-				continue
-				
-			if active_effect.get("effect_resource") != null and active_effect.effect_resource.effect_name == eff_name:
-				
-				# Zatrzymujemy logikę
-				active_effect.set_process(false)
-				
-				# Odpalamy akcję kończącą (np. przywrócenie normalnej prędkości)
-				if active_effect.has_method("end_effect"):
-					active_effect.end_effect()
-				else:
-					active_effect.queue_free()
-				
-				# NATYCHMIASTOWE wyrwanie z drzewa sceny, by UI od razu ukryło ikonę
-				effects_collector.remove_child(active_effect)
-				print("System Mapy: Bezpiecznie zdjęto efekt: ", eff_name)
+	_effects_controller.remove_effect_by_name(effects_collector, eff_name)
 
 ## Całkowite czyszczenie absolutnie wszystkiego [Effects] (Używane przy śmierci/respawnie)
 func purge_absolutely_everything() -> void:
-	if effects_collector != null:
-		for active_effect in effects_collector.get_children():
-			active_effect.set_process(false)
-			if active_effect.has_method("end_effect"):
-				active_effect.end_effect()
-			else:
-				active_effect.queue_free()
-		print("System: Całkowicie zresetowano stan gracza (usunięto aury i efekty).")
+	_effects_controller.purge_absolutely_everything(effects_collector)
 
 #endregion
 

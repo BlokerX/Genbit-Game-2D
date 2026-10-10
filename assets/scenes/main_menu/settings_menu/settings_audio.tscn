@@ -85,6 +85,27 @@ horizontal_alignment = 2
 layout_mode = 2
 text = " ↺ "
 
+[node name="EntitiesRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="EntitiesRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Postacie i obiekty (Entities)"
+[node name="Slider" type="HSlider" parent="EntitiesRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+[node name="ValLabel" type="Label" parent="EntitiesRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+[node name="ResetBtn" type="Button" parent="EntitiesRow"]
+layout_mode = 2
+text = " ↺ "
+
 [node name="AmbientRow" type="HBoxContainer" parent="."]
 layout_mode = 2
 [node name="Label" type="Label" parent="AmbientRow"]

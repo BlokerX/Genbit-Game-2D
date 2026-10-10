@@ -10,6 +10,7 @@ extends Node
 @export_range(0.0, 1.0) var default_vol_music: float = 1.0
 @export_range(0.0, 1.0) var default_vol_sfx: float = 1.0
 @export_range(0.0, 1.0) var default_vol_ambient: float = 1.0
+@export_range(0.0, 1.0) var default_vol_entities: float = 1.0
 @export var default_surround_sound: bool = true
 @export var default_mute_in_background: bool = true
 
@@ -54,6 +55,7 @@ var loot_despawn_time: float = 0#600.0
 
 # --- BIEŻĄCE WARTOŚCI ---
 var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float
+var vol_entities: float
 var surround_sound: bool; var mute_in_background: bool
 
 var display_mode: int; var vsync_enabled: bool
@@ -133,6 +135,7 @@ func load_settings() -> void:
 	vol_music = config.get_value("Audio", "Music", default_vol_music)
 	vol_sfx = config.get_value("Audio", "SFX", default_vol_sfx)
 	vol_ambient = config.get_value("Audio", "Ambient", default_vol_ambient)
+	vol_entities = config.get_value("Audio", "Entities", default_vol_entities)
 	surround_sound = config.get_value("Audio", "Surround", default_surround_sound)
 	mute_in_background = config.get_value("Audio", "MuteBG", default_mute_in_background)
 	
@@ -163,6 +166,7 @@ func load_settings() -> void:
 func save_settings() -> void:
 	config.set_value("Audio", "Master", vol_master); config.set_value("Audio", "Music", vol_music)
 	config.set_value("Audio", "SFX", vol_sfx); config.set_value("Audio", "Ambient", vol_ambient)
+	config.set_value("Audio", "Entities", vol_entities)
 	config.set_value("Audio", "Surround", surround_sound); config.set_value("Audio", "MuteBG", mute_in_background)
 	
 	config.set_value("Graphics", "DisplayMode", display_mode); config.set_value("Graphics", "VSync", vsync_enabled)
@@ -187,6 +191,7 @@ func apply_all_settings() -> void:
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(vol_music))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(vol_sfx))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambient"), linear_to_db(vol_ambient))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Entities"), linear_to_db(vol_entities))
 	
 	DisplayServer.window_set_mode(display_mode)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED)
@@ -260,6 +265,7 @@ func reset_all_to_default(auto_save: bool = true) -> void:
 func reset_category_audio(auto_save: bool = true) -> void:
 	vol_master = default_vol_master; vol_music = default_vol_music; vol_sfx = default_vol_sfx
 	vol_ambient = default_vol_ambient; surround_sound = default_surround_sound; mute_in_background = default_mute_in_background
+	vol_entities = default_vol_entities
 	if auto_save: save_settings()
 
 func reset_category_graphics(auto_save: bool = true) -> void:
