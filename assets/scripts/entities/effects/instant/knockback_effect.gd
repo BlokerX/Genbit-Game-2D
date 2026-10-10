@@ -58,3 +58,6 @@ func apply_effect(target: Node2D) -> bool:
 		return true
 		
 	return false
+
+func is_offensive() -> bool:
+	return true

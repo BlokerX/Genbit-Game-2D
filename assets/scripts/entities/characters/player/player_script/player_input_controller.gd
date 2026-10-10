@@ -227,7 +227,7 @@ func _handle_default_inputs(
 					component.try_execute(player, player, item)
 				break
 			elif component is ConsumableComponent:
-				if is_in_pacifist_zone:
+				if is_in_pacifist_zone and component.has_offensive_effects():
 					print("Jesteś w Strefie Bezpiecznej! Walka zablokowana.")
 					break
 				if _attack_stats.can_attack() and not component.try_execute(player, player, item):

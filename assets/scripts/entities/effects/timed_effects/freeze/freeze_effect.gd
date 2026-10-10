@@ -82,6 +82,9 @@ func on_effect_end(target : Node2D) -> void:
 		sprite.self_modulate = target.get_meta("original_self_modulate")
 		target.remove_meta("original_self_modulate")
 
+func is_offensive() -> bool:
+	return true
+
 # Funkcja pomocnicza do znajdowania obrazka ofiary
 func _get_sprite_from_target(target: Node2D) -> Node:
 	if "character_sprite" in target and target.character_sprite != null:

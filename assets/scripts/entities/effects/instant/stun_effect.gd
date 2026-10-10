@@ -23,3 +23,6 @@ func apply_effect(target : Node2D) -> bool:
 		print("Nałożono stun na: ", final_stun, "s")
 		return true
 	return false
+
+func is_offensive() -> bool:
+	return true

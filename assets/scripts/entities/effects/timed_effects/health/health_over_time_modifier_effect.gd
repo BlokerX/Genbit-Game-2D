@@ -21,3 +21,6 @@ func on_effect_tick(target: Node2D) -> void:
 			# NAPRAWA: Dodano drugi argument (1.0 = 100% przebicia pancerza, idealne dla trucizny)
 			target.health_stats_script.take_damage(abs(hp_per_tick), 1.0)
 			print(effect_name, " zadaje ", abs(hp_per_tick), " obrażeń.")
+
+func is_offensive() -> bool:
+	return hp_per_tick < 0

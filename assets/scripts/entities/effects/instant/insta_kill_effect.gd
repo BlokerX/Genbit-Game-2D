@@ -10,3 +10,6 @@ func apply_effect(target: Node2D) -> bool:
 		print("CEL ZOSTAŁ NATYCHMIAST ZNISZCZONY!")
 		return true
 	return false
+
+func is_offensive() -> bool:
+	return true

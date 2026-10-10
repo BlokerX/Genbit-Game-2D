@@ -6,6 +6,12 @@ extends ItemComponent
 ## Lista efektów, które zostaną nałożone po użyciu.
 @export var effects: Array[Effect] = []
 
+func has_offensive_effects() -> bool:
+	for effect in effects:
+		if effect != null and effect.is_offensive():
+			return true
+	return false
+
 func execute(actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> void:
 	var any_effect_applied = false
 	

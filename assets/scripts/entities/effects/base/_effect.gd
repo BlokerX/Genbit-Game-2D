@@ -15,3 +15,7 @@ var source_position: Vector2 = Vector2.ZERO
 ## Zwraca true, jeśli efekt został pomyślnie nałożony na cel.
 func apply_effect(_target : Node2D) -> bool:
 	return false
+
+## Override when this effect represents a hostile action blocked by pacifist zones.
+func is_offensive() -> bool:
+	return false
