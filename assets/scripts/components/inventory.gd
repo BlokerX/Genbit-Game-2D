@@ -12,6 +12,9 @@ const InventoryPassiveControllerType = preload(
 const InventoryCapacityControllerType = preload(
 	"res://assets/scripts/components/inventory_capacity_controller.gd"
 )
+const InventoryItemTransferControllerType = preload(
+	"res://assets/scripts/components/inventory_item_transfer_controller.gd"
+)
 
 #region Inventory stats
 ## Rozmiar ekwipunku
@@ -52,6 +55,7 @@ var _tag_count_cache: Dictionary = {}
 var _ammunition_controller: InventoryAmmunitionControllerType
 var _passive_controller: InventoryPassiveControllerType
 var _capacity_controller: InventoryCapacityControllerType
+var _item_transfer_controller: InventoryItemTransferControllerType
 
 ## Słownik przechowujący założony sprzęt (Klucz to EquippableComponent.EquipSlot)
 @export var equipment_slots: Dictionary = {}
@@ -73,6 +77,7 @@ func _init() -> void :
 	_ammunition_controller.initialize(self)
 	_passive_controller = InventoryPassiveControllerType.new()
 	_capacity_controller = InventoryCapacityControllerType.new()
+	_item_transfer_controller = InventoryItemTransferControllerType.new()
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
@@ -214,124 +219,11 @@ func drop_current_item(drop_all: bool = false) -> void:
 
 ## Przyjmuje istniejącą instancję z mapy (np. zużyty miecz lub połączone stosy łupu)
 func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
-	# 1. Sprawdzamy stan poprzez bezpieczny odczyt słownika 'state'
-	var add_amount = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
-	if instance_to_add == null or add_amount <= 0: 
-		return null
-		
-	# 2. ZAMIAST PYTAĆ O WŁAŚCIWOŚĆ, SZUKAMY KLOCKA 'StackComponent'
-	var is_stackable = false
-	var max_stack = 1
-	if instance_to_add.data.components != null:
-		for comp in instance_to_add.data.components:
-			if comp is StackComponent:
-				is_stackable = true
-				max_stack = comp.max_stack # Zapisujemy max_stack z komponentu
-				break
-				
-	# 3. Jeśli przedmiot ma klocek do stackowania, szukamy dla niego miejsca w istniejących stosach
-	if is_stackable:
-		for slot in slots:
-			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
-				var slot_amount = slot.item.state.get("amount", 1)
-				var available_space = max_stack - slot_amount
-				
-				if available_space > 0:
-					var adding = min(instance_to_add.state.get("amount", 1), available_space)
-					
-					# Aktualizujemy stany obu przedmiotów
-					slot.item.state["amount"] = slot_amount + adding
-					instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
-					
-					# Rejestrujemy to w pamięci craftingu
-					_update_cache(instance_to_add.data.item_id, adding)
-					
-					if instance_to_add.state["amount"] <= 0:
-						inventory_updated.emit()
-						return null # Całość się zmieściła, kończymy pracę
-						
-	# 4. Jeśli przedmiot nie jest stackowalny, lub zostały nam resztki:
-	# Próbujemy wrzucić do slotu trzymanego aktualnie w dłoni (jeśli jest pusty)
-	var current_slot = get_current_slot()
-	if current_slot != null and current_slot.is_empty():
-		current_slot.item = instance_to_add
-		_update_cache(instance_to_add.data.item_id, instance_to_add.state.get("amount", 1))
-		inventory_updated.emit()
-		return null
-		
-	# 5. Szukamy jakiegokolwiek innego pustego slota od lewej
-	for slot in slots:
-		if slot.is_empty():
-			slot.item = instance_to_add 
-			_update_cache(instance_to_add.data.item_id, instance_to_add.state.get("amount", 1))
-			inventory_updated.emit()
-			return null
-			
-	# 6. Całkowity brak miejsca - zwracamy instancję z powrotem na ziemię
-	inventory_updated.emit()
-	return instance_to_add
+	return _item_transfer_controller.add_instance(self, instance_to_add)
 
 ## Klasyczne tworzenie nowego przedmiotu z definicji (przydatne np. w rzemiośle)
 func add_item(item: ItemData, amount_to_add: int = 1) -> int:
-	if item == null or amount_to_add <= 0:
-		return amount_to_add
-		
-	var remaining = amount_to_add
-	
-	# SZUKAMY KLOCKA 'StackComponent' ZAMIAST CZYTAĆ ZMIENNE
-	var is_stackable = false
-	var max_item_stack = 1
-	if item.components != null:
-		for comp in item.components:
-			if comp is StackComponent:
-				is_stackable = true
-				max_item_stack = comp.max_stack
-				break
-				
-	# 1. Szukanie w stosach
-	if is_stackable:
-		var temp_instance = ItemInstance.new(item, 1) 
-		for slot in slots:
-			if not slot.is_empty() and slot.item.can_stack_with(temp_instance):
-				var slot_amount = slot.item.state.get("amount", 1)
-				var available_space = max_item_stack - slot_amount
-				
-				if available_space > 0:
-					var adding = min(remaining, available_space)
-					slot.item.state["amount"] = slot_amount + adding
-					remaining -= adding
-					
-					_update_cache(item.item_id, adding)
-					
-					if remaining == 0:
-						inventory_updated.emit()
-						return 0
-						
-	# 2. Szukanie pustych w wybranej ręce
-	var current_slot = get_current_slot()
-	if current_slot != null and current_slot.is_empty():
-		var adding = min(remaining, max_item_stack) if is_stackable else 1
-		current_slot.set_item_data(item, adding)
-		remaining -= adding
-		_update_cache(item.item_id, adding)
-		if remaining == 0:
-			inventory_updated.emit()
-			return 0
-			
-	# 3. Szukanie dowolnego pustego od lewej
-	for slot in slots:
-		if slot.is_empty():
-			var adding = min(remaining, max_item_stack) if is_stackable else 1
-			slot.set_item_data(item, adding)
-			remaining -= adding
-			_update_cache(item.item_id, adding)
-			if remaining == 0:
-				inventory_updated.emit()
-				return 0
-				
-	# 4. Jeśli zabrakło miejsca w całym ekwipunku, zwracamy to, co nam zostało w dłoni
-	inventory_updated.emit()
-	return remaining
+	return _item_transfer_controller.add_item(self, item, amount_to_add)
 
 ## Próba założenia przedmiotu do dedykowanego slotu zbroi. Zwraca stary przedmiot (lub null)
 func equip_item(new_equipment: ItemInstance, slot_type: EquippableComponent.EquipSlot) -> ItemInstance:

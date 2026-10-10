@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dt5lmjgy4fgjv"]
 
-[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_script.gd" id="1_hyvrl"]
+[ext_resource type="Script" uid="uid://bgph2qupdybq" path="res://assets/scripts/entities/characters/player/player_script/player_character.gd" id="1_hyvrl"]
 [ext_resource type="Resource" uid="uid://bfcl2pbuh2gmw" path="res://assets/data/characters/stats/player/player_movement_component.tres" id="3_hsamt"]
 [ext_resource type="Resource" uid="uid://dyscf0ha0b316" path="res://assets/data/characters/stats/player/player_monitored_life_stats_component.tres" id="4_b3dqe"]
 [ext_resource type="Resource" uid="uid://ci4g8e5tn585m" path="res://assets/data/characters/stats/player/player_interaction_and_attack_stats_component.tres" id="5_u84jc"]
