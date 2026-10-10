@@ -2,6 +2,7 @@ extends Control
 class_name Minimap
 
 const MinimapGridRendererType = preload("res://assets/scripts/ui/minimap_grid_renderer.gd")
+const MinimapMapControllerType = preload("res://assets/scripts/ui/minimap_map_controller.gd")
 
 #@export_group("Ikony Pokoi")
 #@export var icon_treasure : Texture2D
@@ -100,6 +101,7 @@ var camera_viewport: SubViewport
 var map_camera: Camera2D
 var player_marker: Control
 var _grid_renderer: MinimapGridRendererType
+var _map_controller: MinimapMapControllerType
 
 # --- WĘZŁY INTERFEJSU (UI) ---
 var ui_container: Control
@@ -116,7 +118,7 @@ func _ready() -> void:
 		use_developer_physical_camera = GlobalSettings.use_developer_camera
 	# -------------------------------------------------------------------
 
-	_try_find_map()
+	_map_controller = MinimapMapControllerType.new()
 
 	if not get_tree().node_added.is_connected(_on_node_added):
 		get_tree().node_added.connect(_on_node_added)
@@ -127,6 +129,7 @@ func _ready() -> void:
 		EventBus.game_event_occurred.connect(_on_game_event_occurred)
 
 	_setup_camera_map()
+	_try_find_map()
 
 func _exit_tree() -> void:
 	if is_inside_tree():
@@ -167,6 +170,7 @@ func _setup_camera_map() -> void:
 	map_sprite = Sprite2D.new()
 	map_sprite.centered = false
 	camera_viewport.add_child(map_sprite)
+	_map_controller.initialize(map_sprite, use_developer_physical_camera)
 	
 	if use_developer_physical_camera:
 		# STARY SYSTEM: Zjada RAM i FPS, ale pokazuje fizyczny świat na żywo (do debugowania)
@@ -235,6 +239,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _toggle_developer_camera(enable: bool) -> void:
 	use_developer_physical_camera = enable
+	_map_controller.set_developer_camera_enabled(enable)
 	if not is_instance_valid(camera_viewport): return
 	
 	if use_developer_physical_camera:
@@ -566,18 +571,11 @@ func _bind_map(new_map: Map) -> void:
 	if not is_instance_valid(new_map):
 		return
 	if level_manager != new_map:
-		if is_instance_valid(level_manager):
-			_unbind_map()
+		_unbind_map()
 		level_manager = new_map
 		_initial_camera_snapped = false
-	
-	# KLUCZ SYSTEMU ZERO TOUCH: Wczytywanie automatyczne na podstawie nazwy pliku nowej mapy
-	_load_automatic_minimap_data()
-	
-	if not level_manager.map_region_changed.is_connected(_on_map_state_changed):
-		level_manager.map_region_changed.connect(_on_map_state_changed)
-	if not level_manager.map_updated.is_connected(_on_map_state_changed):
-		level_manager.map_updated.connect(_on_map_state_changed)
+
+	_map_controller.bind(level_manager, _on_map_state_changed)
 	
 	_update_camera_limits()
 	_clear_manual_marker()
@@ -586,56 +584,10 @@ func _bind_map(new_map: Map) -> void:
 
 ## Automatycznie ładuje plik PNG i dane po wejściu do nowej lokacji
 func _load_automatic_minimap_data() -> void:
-	# Upewniamy się, że wszystko istnieje zanim spróbujemy nałożyć grafikę
-	if not is_instance_valid(level_manager): return
-	if not is_instance_valid(map_sprite): return
-	if use_developer_physical_camera: return # Jeśli Developer mode ON, ignorujemy JSON
-	
-	# Ukrywamy poprzednią mapę na wypadek wejścia do dungeonu bez grafiki
-	map_sprite.texture = null
-	
-	# Pozyskujemy ścieżkę do aktywnego poziomu 
-	var map_path = level_manager.scene_file_path
-	if map_path == "" and "source_level_path" in level_manager:
-		map_path = level_manager.source_level_path # Używamy właściwości, którą posiadasz w map.gd
-		
-	if map_path == "": return
-	
-	var json_path = "res://assets/scenes/map_system/maps/minimaps_generated_data/minimaps_metadata.json"
-	if not FileAccess.file_exists(json_path): 
-		print("Minimapa: Brak pliku metadata.json. Czy uruchomiono generator?")
-		return
-		
-	# Pobranie metadanych wygenerowanych przez narzędzie Batch
-	var file = FileAccess.open(json_path, FileAccess.READ)
-	var json_str = file.get_as_text()
-	file.close()
-	
-	var json = JSON.new()
-	if json.parse(json_str) == OK:
-		var data = json.get_data()
-		# Jeśli generator znalazł i sfotografował tę mapę:
-		if data.has(map_path):
-			var map_data = data[map_path]
-			
-			var tex = load(map_data["texture_path"]) as Texture2D
-			if tex:
-				# Nakładamy teksturę
-				map_sprite.texture = tex
-				# Przywracamy pozycję X/Y do koordynatów przestrzeni z edytora
-				map_sprite.position = Vector2(map_data["offset_x"], map_data["offset_y"])
-				# Jeśli plik to skompresowane 8K, rozciągamy je z powrotem do np. 30000x30000 pikseli
-				var tex_scale = map_data["scale"]
-				map_sprite.scale = Vector2(tex_scale, tex_scale)
-				
-				print("UI Minimapa: Automatycznie załadowano grafikę dla: ", map_path.get_file())
+	_map_controller.load_automatic_minimap_data()
 
 func _unbind_map() -> void:
-	if is_instance_valid(level_manager):
-		if level_manager.map_region_changed.is_connected(_on_map_state_changed):
-			level_manager.map_region_changed.disconnect(_on_map_state_changed)
-		if level_manager.map_updated.is_connected(_on_map_state_changed):
-			level_manager.map_updated.disconnect(_on_map_state_changed)
+	_map_controller.unbind()
 	level_manager = null
 
 	_clear_manual_marker()
