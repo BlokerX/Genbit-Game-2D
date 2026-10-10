@@ -5,6 +5,10 @@ extends Node
 ## zarządzający pełnym cyklem życia zadań fabularnych. Nasłuchuje globalnych zdarzeń
 ## poprzez EventBus i weryfikuje cele w tle.
 
+const QuestObjectiveProgressControllerType = preload(
+	"res://assets/scripts/quests/quest_objective_progress_controller.gd"
+)
+
 # ==========================================
 # SYGNAŁY (Emitowane do UI Dziennika Zadań)
 # ==========================================
@@ -49,6 +53,9 @@ var cooldown_quests: Dictionary = {}
 
 ## Obecnie śledzone zadanie (przypięte do ekranu)
 var tracked_quest_id: StringName = &""
+var _objective_progress_controller: QuestObjectiveProgressControllerType = (
+	QuestObjectiveProgressControllerType.new()
+)
 
 # ==========================================
 # GŁÓWNA LOGIKA
@@ -96,41 +103,21 @@ func _process(delta: float) -> void:
 # --- SYSTEM CZUJNIKÓW I CELÓW ---
 ## Metoda wywoływana za każdym razem, gdy gra zgłasza dowolne wydarzenie fabularne/mechaniczne (EventBus).
 func _on_game_event(event_type: String, event_data: Dictionary) -> void:
-	for quest_id in active_quests.keys():
-		var quest: QuestData = quest_db[quest_id]
-		var q_data: Dictionary = active_quests[quest_id]
-		var stage_idx: int = q_data["stage"]
-		
-		if stage_idx >= quest.stages.size(): continue
-			
-		var stage: QuestStage = quest.stages[stage_idx]
-		var stage_completed = true
-		
-		for i in range(stage.objectives.size()):
-			var objective: QuestObjective = stage.objectives[i]
-			if objective == null: continue
-			
-			var current_val: int = q_data["progress"].get(i, 0)
-			var required_val: int = objective.get_required_amount()
-			
-			if current_val >= required_val: continue
-			
-			# Przekazujemy obecny postęp i dostajemy nowy!
-			var new_val = objective.check_event(event_type, event_data, current_val)
-			
-			if new_val != current_val:
-				q_data["progress"][i] = new_val
-				quest_objective_progressed.emit(quest, i, new_val)
-				print("QuestManager: Postęp w celu '", objective.objective_description, "' (", new_val, "/", required_val, ")")
-				
-			# Jeśli postęp wciąż jest mniejszy niż wymagany, blokujemy awans etapu
-			if new_val < required_val:
-				stage_completed = false
-		
-		# Auto-awans, jeśli wszystkie cele w etapie są gotowe!
-		if stage.objectives.size() > 0 and stage_completed:
-			print("QuestManager: Wszystkie cele ukończone! Automatyczny awans etapu dla: ", quest.title)
-			advance_to_next_stage(quest_id)
+	_objective_progress_controller.process_game_event(
+		event_type,
+		event_data,
+		active_quests,
+		quest_db,
+		Callable(self, "_emit_objective_progressed"),
+		Callable(self, "advance_to_next_stage")
+	)
+
+func _emit_objective_progressed(
+	quest: QuestData,
+	objective_index: int,
+	current_count: int
+) -> void:
+	quest_objective_progressed.emit(quest, objective_index, current_count)
 
 
 # --- ZARZĄDZANIE ETAPAMI ---
