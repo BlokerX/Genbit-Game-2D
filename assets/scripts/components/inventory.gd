@@ -62,6 +62,10 @@ func _init() -> void :
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
+	slots_amount = maxi(0, slots_amount)
+	if slots.size() < slots_amount:
+		slots.resize(slots_amount)
+
 	# ZABEZPIECZENIE: Odklejamy referencje startowych przedmiotów dodanych w Edytorze
 	for i in range(slots.size()):
 		if slots[i] != null:
@@ -72,6 +76,11 @@ func _ready() -> void:
 		else:
 			slots[i] = SlotData.new()
 			
+	if slots.is_empty():
+		current_slot_index = 0
+	else:
+		current_slot_index = clampi(current_slot_index, 0, slots.size() - 1)
+
 	_rebuild_cache()
 	# Zmuszamy pamięć podręczną do odświeżania się za każdym razem, 
 	# gdy w ekwipunku nastąpi jakakolwiek zmiana (np. przełożenie przedmiotu kursorem)!
@@ -99,6 +108,27 @@ func clean_dead_items() -> void:
 				inventory_changed = true
 
 	if inventory_changed:
+		inventory_updated.emit()
+
+## Wyrzuca wszystkie przedmioty gracza po śmierci.
+func drop_all_items(_owner_entity: Node2D) -> void:
+	var dropped_any = false
+
+	for slot in slots:
+		if not slot.is_empty():
+			item_dropped.emit(slot.item, false)
+			slot.clear_slot()
+			dropped_any = true
+
+	for slot in equipment_slots.values():
+		if not slot.is_empty():
+			item_dropped.emit(slot.item, false)
+			slot.clear_slot()
+			dropped_any = true
+
+	if dropped_any:
+		_recalculate_slots_size()
+		equipment_updated.emit()
 		inventory_updated.emit()
 
 # =========================================================================
@@ -313,8 +343,9 @@ func add_instance(instance_to_add: ItemInstance) -> ItemInstance:
 						
 	# 4. Jeśli przedmiot nie jest stackowalny, lub zostały nam resztki:
 	# Próbujemy wrzucić do slotu trzymanego aktualnie w dłoni (jeśli jest pusty)
-	if slots[current_slot_index].is_empty():
-		slots[current_slot_index].item = instance_to_add
+	var current_slot = get_current_slot()
+	if current_slot != null and current_slot.is_empty():
+		current_slot.item = instance_to_add
 		_update_cache(instance_to_add.data.item_id, instance_to_add.state.get("amount", 1))
 		inventory_updated.emit()
 		return null
@@ -368,9 +399,10 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 						return 0
 						
 	# 2. Szukanie pustych w wybranej ręce
-	if slots[current_slot_index].is_empty():
+	var current_slot = get_current_slot()
+	if current_slot != null and current_slot.is_empty():
 		var adding = min(remaining, max_item_stack) if is_stackable else 1
-		slots[current_slot_index].set_item_data(item, adding)
+		current_slot.set_item_data(item, adding)
 		remaining -= adding
 		_update_cache(item.item_id, adding)
 		if remaining == 0:
@@ -478,7 +510,7 @@ func _check_passive_deltas() -> void:
 
 ## Przelicza rozmiar ekwipunku bazowego + bonus z plecaka
 func _recalculate_slots_size() -> void:
-	var base_slots = slots_amount
+	var base_slots = maxi(0, slots_amount)
 	var bonus_slots = 0
 	
 	# Zabezpieczenie przed błędem, jeśli w equipment_slots nie ma jeszcze klucza BACKPACK
@@ -513,7 +545,7 @@ func _recalculate_slots_size() -> void:
 # ----------------------------------------------------
 
 func get_current_slot() -> SlotData :
-	if slots != null and slots.size() > 0 and current_slot_index < slots.size():
+	if slots != null and current_slot_index >= 0 and current_slot_index < slots.size():
 		return slots[current_slot_index]
 	else: return null
 

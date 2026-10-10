@@ -14,12 +14,8 @@ void vertex() {
 	VERTEX += sign(VERTEX) * outline_width;
 }
 
-// Funkcja pomocnicza: pobiera kolor, ale jeśli wyjdziemy poza oryginał obrazka, zwraca absolutną pustkę (transparent)
-vec4 get_texture_color(sampler2D tex, vec2 uv) {
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-		return vec4(0.0);
-	}
-	return texture(tex, uv);
+bool is_uv_in_bounds(vec2 uv) {
+	return uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
 }
 
 void fragment() {
@@ -29,7 +25,10 @@ void fragment() {
 	vec2 corrected_uv = (UV - 0.5) * uv_scale + 0.5;
 	
 	// Pobieramy kolor ze skorygowanego miejsca
-	vec4 sprite_color = get_texture_color(TEXTURE, corrected_uv);
+	vec4 sprite_color = vec4(0.0);
+	if (is_uv_in_bounds(corrected_uv)) {
+		sprite_color = texture(TEXTURE, corrected_uv);
+	}
 	float alpha = sprite_color.a;
 	
 	// Obliczamy rozmiar jednego piksela
@@ -37,16 +36,25 @@ void fragment() {
 	
 	// 3. RYSOWANIE OBRYSU
 	// Szukamy sąsiednich pikseli używając naszej skorygowanej siatki
-	float outline = get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, 0.0)).a;
-	outline += get_texture_color(TEXTURE, corrected_uv + vec2(0.0, size.y)).a;
-	outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, 0.0)).a;
-	outline += get_texture_color(TEXTURE, corrected_uv + vec2(0.0, -size.y)).a;
+	float outline = 0.0;
+	vec2 sample_uv = corrected_uv + vec2(-size.x, 0.0);
+	if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+	sample_uv = corrected_uv + vec2(0.0, size.y);
+	if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+	sample_uv = corrected_uv + vec2(size.x, 0.0);
+	if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+	sample_uv = corrected_uv + vec2(0.0, -size.y);
+	if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
 	
 	if (pattern) {
-		outline += get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, size.y)).a;
-		outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, size.y)).a;
-		outline += get_texture_color(TEXTURE, corrected_uv + vec2(-size.x, -size.y)).a;
-		outline += get_texture_color(TEXTURE, corrected_uv + vec2(size.x, -size.y)).a;
+		sample_uv = corrected_uv + vec2(-size.x, size.y);
+		if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+		sample_uv = corrected_uv + vec2(size.x, size.y);
+		if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+		sample_uv = corrected_uv + vec2(-size.x, -size.y);
+		if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
+		sample_uv = corrected_uv + vec2(size.x, -size.y);
+		if (is_uv_in_bounds(sample_uv)) outline += texture(TEXTURE, sample_uv).a;
 	}
 	
 	outline = min(outline, 1.0);

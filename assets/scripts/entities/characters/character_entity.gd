@@ -67,6 +67,22 @@ func _process(_delta):
 func _physics_process(_delta):
 	pass
 
+func _set_character_sprite_frame(frame_index: int) -> void:
+	if character_sprite == null or character_sprite.sprite_frames == null:
+		push_warning("CharacterEntity: Brak grafiki animowanej dla postaci " + name)
+		return
+
+	var animation_name = character_sprite.animation
+	if not character_sprite.sprite_frames.has_animation(animation_name):
+		push_warning("CharacterEntity: Brak animacji '" + str(animation_name) + "' dla postaci " + name)
+		return
+
+	if frame_index < 0 or frame_index >= character_sprite.sprite_frames.get_frame_count(animation_name):
+		push_warning("CharacterEntity: Klatka " + str(frame_index) + " nie istnieje w animacji '" + str(animation_name) + "' postaci " + name)
+		return
+
+	character_sprite.frame = frame_index
+
 #endregion
 
 #region Obsługa sygnałów
@@ -88,7 +104,7 @@ func _on_character_died():
 	is_dead = true
 	
 	# Zmiana wizualna: "Kładziemy" postać na ziemi
-	character_sprite.frame = 8 # TODO ZABEZPIECZYĆ dla tych co nie mają klatki
+	_set_character_sprite_frame(8)
 	
 	print(self.name + " zginął! Przetwarzanie łupu...")
 	
@@ -100,11 +116,10 @@ func _on_character_died():
 	if drop_from_inventory and has_method("get_inventory"):
 		# ZMIANA: call("nazwa_metody") omija sprawdzanie statyczne!
 		var inv = call("get_inventory")
-		if inv:
-			if inv is Inventory:
-				pass # TODO coś jest tu nie tak pewnie nie dokończone czy coś już nie pamiętam o co tu chodzi... może o to że gracz nie dropie ekwipunku
-			elif inv.has_method("drop_all_items"):
-				inv.drop_all_items(self)
+		if inv and inv.has_method("drop_all_items"):
+			inv.drop_all_items(self)
+		elif inv:
+			push_warning("Ekwipunek postaci nie obsługuje wyrzucania przedmiotów po śmierci: " + name)
 	
 	if destroy_entity_after_die:
 		self.queue_free()
@@ -122,7 +137,7 @@ func respawn_sequence():
 	velocity.y = 0
 	
 	# przywrócenie domyślnej orientacji
-	character_sprite.frame = 0
+	_set_character_sprite_frame(0)
 	
 	purge_absolutely_everything()
 
@@ -132,8 +147,9 @@ func reset_state_for_respawn() -> void:
 	health_stats_script.heal_completely()
 	
 	# Przywracamy postać do pionu i resetujemy animację z "leżącej" na "stojącą"
-	character_sprite.rotation_degrees = 0
-	character_sprite.frame = 0
+	if character_sprite:
+		character_sprite.rotation_degrees = 0
+	_set_character_sprite_frame(0)
 	
 	# --- WSKRZESZENIE ---
 	is_dead = false

@@ -120,13 +120,12 @@ var is_in_pacifist_zone: bool = false
 #region Główne funkcje silnikowe
 
 func _ready():
-	# ZABEZPIECZENIE
-	# Jeśli zapomniano dodać skrypty w Inspektorze.
-	# Jeśli coś jest null, to znaczy, że zapomniałeś podpiąć w edytorze
-	assert(movement_universal_script != null, "Brak komponentu ruchu!")
-	assert(health_stats_script != null, "Brak komponentu statystyk życia!")
-	assert(interaction_and_attack_stats_script != null, "Brak komponentu interakcji i ataku!")
-	# TODO assert() w Godocie jest wycinany w eksportowanym release buildzie (działa tylko w debug/edytorze). Jeśli ktoś zapomni podpiąć komponent, w wersji release gra się wywali z cichym null reference zamiast czytelnego błędu. Lepiej użyć push_error() + wczesny return, tak jak robisz to gdzie indziej w kodzie (np. _start_building).
+	if movement_universal_script == null or health_stats_script == null or interaction_and_attack_stats_script == null:
+		push_error("PlayerCharacter: Brakuje wymaganego komponentu ruchu, zdrowia lub interakcji/ataku.")
+		set_process(false)
+		set_physics_process(false)
+		set_process_unhandled_input(false)
+		return
 	
 	# Gracz nie umiera na zawsze
 	destroy_entity_after_die = false 

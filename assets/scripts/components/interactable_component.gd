@@ -77,8 +77,8 @@ func _detect_parent_type():
 	var parent = get_parent()
 	if parent == null:
 		return
-		
-	var p_name = parent.name.to_lower()
+	
+	var _p_name = parent.name.to_lower()
 	
 	# Sprawdzanie bazujące na nazwach widocznych na zdjęciu warstw (np. Enemy, ItemPickup, NPC)
 	if parent.is_in_group("Enemy"):
