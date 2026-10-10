@@ -53,6 +53,10 @@ var cooldown_quests: Dictionary = {}
 
 ## Obecnie śledzone zadanie (przypięte do ekranu)
 var tracked_quest_id: StringName = &""
+## Kolejka aktywnych zadań oczekujących na automatyczne śledzenie.
+var _tracking_queue: Array[StringName] = []
+## Unieważnia opóźnione akcje zadań, gdy kończy się sesja.
+var _session_generation: int = 0
 var _objective_progress_controller: QuestObjectiveProgressControllerType = (
 	QuestObjectiveProgressControllerType.new()
 )
@@ -135,8 +139,19 @@ func advance_to_next_stage(quest_id: StringName) -> void:
 	update_quest(quest_id, current_stage + 1)
 
 
+## Rozpoczyna nowe zadanie z inicjatywy gracza i nadaje mu priorytet śledzenia.
+func start_quest(quest_id: StringName, initial_stage: int = 0) -> void:
+	if active_quests.has(quest_id):
+		return
+
+	_update_quest(quest_id, initial_stage, true)
+
 ## Bezpośrednio aktualizuje zadanie do wskazanego etapu (lub rozpoczyna je, jeśli to etap 0).
 func update_quest(quest_id: StringName, stage_index: int) -> void:
+	_update_quest(quest_id, stage_index, false)
+
+## Wspólna implementacja aktualizacji etapu, z opcjonalnym priorytetem dla ręcznego startu.
+func _update_quest(quest_id: StringName, stage_index: int, prioritize_tracking: bool) -> void:
 	if completed_quests.has(quest_id) or failed_quests.has(quest_id):
 		print("QuestManager: Odmowa aktualizacji. Zadanie [", quest_id, "] jest już w archiwum (sukces/porażka).")
 		return
@@ -171,6 +186,9 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	if is_new_quest:
 		quest_started.emit(quest)
 		print("Quest: Rozpoczęto zadanie [", quest.title, "]")
+		_queue_quest_for_tracking(quest_id)
+		if prioritize_tracking:
+			track_quest(quest_id)
 	else:
 		quest_updated.emit(quest, stage_index)
 		print("Quest: Zaktualizowano zadanie [", quest.title, "]")
@@ -187,17 +205,18 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 	else:
 		print("QuestManager: Ostrzeżenie - nie znaleziono ekwipunku gracza do automatycznej weryfikacji.")
 	
-	# Jeśli gracz nie śledzi żadnego questa, automatycznie śledź ten nowy!
-	if is_new_quest and tracked_quest_id == &"":
-		track_quest(quest_id)
-
 	# --- NOWOŚĆ: AUTO ZALICZANIE ETAPU ZEROWEGO ---
 	if is_new_quest and quest.get("auto_complete_first_stage") == true:
 		var delay = quest.get("auto_complete_delay")
+		var scheduled_generation := _session_generation
 		if delay > 0.0:
 			# Używamy timera, ale dla bezpieczeństwa w locie weryfikujemy stan questa
 			get_tree().create_timer(delay).timeout.connect(func():
-				if active_quests.has(quest_id) and active_quests[quest_id]["stage"] == 0:
+				if (
+					scheduled_generation == _session_generation
+					and active_quests.has(quest_id)
+					and active_quests[quest_id]["stage"] == 0
+				):
 					advance_to_next_stage(quest_id)
 			)
 		else:
@@ -209,6 +228,7 @@ func update_quest(quest_id: StringName, stage_index: int) -> void:
 func complete_quest(quest_id: StringName) -> void:
 	if active_quests.has(quest_id):
 		active_quests.erase(quest_id)
+		_remove_quest_from_tracking_queue(quest_id)
 		completed_quests.append(quest_id)
 		
 		var quest: QuestData = quest_db[quest_id]
@@ -229,9 +249,9 @@ func complete_quest(quest_id: StringName) -> void:
 			
 		_grant_rewards(quest.completion_rewards)
 		
-		# Jeśli śledziliśmy to zadanie, zdejmujemy je ze śledzika
+		# Jeśli śledziliśmy to zadanie, automatycznie wybieramy następne z kolejki.
 		if tracked_quest_id == quest_id:
-			untrack_quest()
+			_promote_next_queued_quest()
 		
 		if quest.next_quest_in_chain != null:
 			print("Quest: Automatyczne rozpoczęcie kolejnego ogniwa z łańcucha dla: ", quest.next_quest_in_chain.id)
@@ -244,10 +264,11 @@ func complete_quest(quest_id: StringName) -> void:
 func fail_quest(quest_id: StringName) -> void:
 	if active_quests.has(quest_id):
 		active_quests.erase(quest_id)
+		_remove_quest_from_tracking_queue(quest_id)
 		failed_quests.append(quest_id)
 		
 		if tracked_quest_id == quest_id:
-			untrack_quest()
+			_promote_next_queued_quest()
 		
 		var quest: QuestData = quest_db[quest_id]
 		
@@ -312,13 +333,63 @@ func _load_all_quests(path: String) -> void:
 	print("QuestManager: Gotowość systemu. Załadowano ", quest_db.size(), " zadań fabularnych do bazy.")
 
 
-# --- NOWOŚĆ: FUNKCJE ŚLEDZENIA ZADAŃ ---
-func track_quest(quest_id: StringName) -> void:
-	if active_quests.has(quest_id):
-		tracked_quest_id = quest_id
-		quest_tracked_changed.emit(quest_id)
-		print("QuestManager: Śledzę zadanie [", quest_db[quest_id].title, "]")
+## Dodaje nowe aktywne zadanie do kolejki automatycznego śledzenia.
+func _queue_quest_for_tracking(quest_id: StringName) -> void:
+	if tracked_quest_id == quest_id or _tracking_queue.has(quest_id):
+		return
 
-func untrack_quest() -> void:
+	_tracking_queue.append(quest_id)
+	if tracked_quest_id == &"":
+		_promote_next_queued_quest()
+
+## Usuwa zadanie z kolejki, np. po jego ukończeniu albo porażce.
+func _remove_quest_from_tracking_queue(quest_id: StringName) -> void:
+	_tracking_queue.erase(quest_id)
+
+## Przypina najstarsze nadal aktywne zadanie oczekujące w kolejce.
+func _promote_next_queued_quest() -> void:
+	while not _tracking_queue.is_empty():
+		var next_quest_id: StringName = _tracking_queue.pop_front()
+		if active_quests.has(next_quest_id):
+			tracked_quest_id = next_quest_id
+			quest_tracked_changed.emit(tracked_quest_id)
+			print("QuestManager: Automatycznie śledzę zadanie [", quest_db[next_quest_id].title, "]")
+			return
+
 	tracked_quest_id = &""
 	quest_tracked_changed.emit(&"")
+
+# --- NOWOŚĆ: FUNKCJE ŚLEDZENIA ZADAŃ ---
+## Ręcznie przypina aktywne zadanie i zachowuje poprzednie na początku kolejki.
+func track_quest(quest_id: StringName) -> void:
+	if not active_quests.has(quest_id) or tracked_quest_id == quest_id:
+		return
+
+	if tracked_quest_id != &"" and active_quests.has(tracked_quest_id):
+		_tracking_queue.erase(tracked_quest_id)
+		_tracking_queue.push_front(tracked_quest_id)
+
+	_tracking_queue.erase(quest_id)
+	tracked_quest_id = quest_id
+	quest_tracked_changed.emit(quest_id)
+	print("QuestManager: Śledzę zadanie [", quest_db[quest_id].title, "]")
+
+## Zdejmuje obecne zadanie ze śledzenia i promuje następne aktywne zadanie z kolejki.
+func untrack_quest() -> void:
+	if tracked_quest_id != &"":
+		_tracking_queue.erase(tracked_quest_id)
+	_promote_next_queued_quest()
+
+## Czyści postęp i śledzenie zadań bez zwalniania załadowanej bazy danych.
+func reset_game_session() -> void:
+	_session_generation += 1
+	var was_tracking_quest := tracked_quest_id != &""
+	active_quests.clear()
+	completed_quests.clear()
+	failed_quests.clear()
+	cooldown_quests.clear()
+	_tracking_queue.clear()
+	tracked_quest_id = &""
+
+	if was_tracking_quest:
+		quest_tracked_changed.emit(&"")

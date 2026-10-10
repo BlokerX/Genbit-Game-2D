@@ -14,7 +14,7 @@ func _ready() -> void:
 	to_main_menu()
 
 # --- UNIWERSALNA FUNKCJA ZMIANY SCENY (Korzysta z Twojego menedżera!) ---
-func change_scene(scene_path: String) -> void:
+func change_scene(scene_path: String, reset_game_session: bool = false) -> void:
 	if scene_path == null or scene_path == "":
 		push_error("Błąd: Nie przypisano ścieżki do sceny w Inspektorze (węzeł Main)!")
 		return
@@ -23,6 +23,9 @@ func change_scene(scene_path: String) -> void:
 	var packed_scene = await SceneCollectionManager.get_packed_scene_deferred(scene_path)
 	
 	if packed_scene:
+		if reset_game_session:
+			_reset_game_session_state()
+
 		var scene_instance = packed_scene.instantiate()
 		
 		# Płynnie usuwamy starą scenę (np. Menu)
@@ -38,5 +41,14 @@ func change_scene(scene_path: String) -> void:
 func start_game() -> void:
 	change_scene(game_scene_path)
 
+## Czyści stan należący do rozgrywki, zachowując ustawienia i cache zasobów.
+func _reset_game_session_state() -> void:
+	get_tree().paused = false
+	GlobalLevelManager.reset_game_session()
+	QuestManager.reset_game_session()
+	DialogueManager.reset_game_session()
+	DialogueState.reset_state()
+	EventBus.reset_game_session()
+
 func to_main_menu() -> void:
-	change_scene(main_menu_scene_path)
+	change_scene(main_menu_scene_path, true)

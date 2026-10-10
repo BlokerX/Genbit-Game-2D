@@ -92,8 +92,7 @@ func _on_quit_pressed() -> void:
 	get_tree().paused = false 
 	
 	# Reset globalnych zmiennych:
-	DialogueState.reset_state()
-	EventBus.reset()
+	# Reset stanu całej sesji wykonuje Main przed aktywacją menu głównego.
 	
 	# Korzystamy z nowego systemu z main.gd, szukając go po grupie
 	var main_node = get_tree().get_first_node_in_group("Main")

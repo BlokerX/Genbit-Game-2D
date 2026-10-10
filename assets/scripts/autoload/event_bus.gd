@@ -94,3 +94,8 @@ func reset(emit_update: bool = true) -> void:
 func clear_history() -> void:
 	story_events_history.clear()
 	print("EventBus: Historia zdarzeń fabularnych została wyczyszczona.")
+
+## Czyści stan rozgrywki na magistrali, zachowując sygnały i ich połączenia.
+func reset_game_session() -> void:
+	reset()
+	clear_history()

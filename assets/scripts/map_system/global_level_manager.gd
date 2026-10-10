@@ -12,6 +12,9 @@ var arrival_entrance: LevelEntrance
 ## Blokada zapobiegająca wielokrotnemu wywołaniu zmiany poziomu
 var is_changing_level: bool = false
 
+## Numer bieżącej operacji transferu, unieważniający transfery po resecie sesji.
+var _level_change_generation: int = 0
+
 # --- SŁOWNIK POZIOMÓW ---
 ## Trzyma wygenerowane instancje map (Node2D), które mają zachowywać swój stan w RAM-ie 
 ## podczas jednej sesji gry (np. między respawnami). Kluczem jest ścieżka do pliku (.tscn)
@@ -33,6 +36,8 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	var resolved_path = get_normalized_path(level_path)
 		
 	is_changing_level = true
+	_level_change_generation += 1
+	var change_generation := _level_change_generation
 	target_entrance_id = entrance_id
 	arrival_entrance = null
 	
@@ -53,6 +58,8 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	# 2. ŚCIEMNIENIE EKRANU
 	TransitionManager.fade_to_black(0.3)
 	await TransitionManager.on_fade_out_finished
+	if change_generation != _level_change_generation:
+		return
 	if not is_inside_tree() or not is_instance_valid(tree.current_scene) or not tree.current_scene.is_inside_tree():
 		is_changing_level = false
 		return
@@ -123,7 +130,10 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			if new_map_instance.has_method("initialize_level"):
 				new_map_instance.initialize_level()
 	
-	get_tree().create_timer(0.5).timeout.connect(func(): is_changing_level = false)
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if change_generation == _level_change_generation:
+			is_changing_level = false
+	)
 
 ## Rejestruje portal, do którego właśnie przenoszony jest gracz.
 func register_arrival_entrance(entrance: LevelEntrance) -> void:
@@ -136,6 +146,19 @@ func register_arrival_entrance(entrance: LevelEntrance) -> void:
 func complete_level_arrival(entrance: LevelEntrance) -> void:
 	if entrance == arrival_entrance:
 		arrival_entrance = null
+
+## Czyści mapy i gracza przechowywane między poziomami na koniec sesji.
+func reset_game_session() -> void:
+	_level_change_generation += 1
+	clear_level_cache()
+
+	if is_instance_valid(stored_player) and stored_player.get_parent() == null:
+		stored_player.queue_free()
+
+	stored_player = null
+	target_entrance_id = ""
+	arrival_entrance = null
+	is_changing_level = false
 
 # Zamrożone mapy i odpięty gracz są poza drzewem, więc przy zamykaniu gry silnik ich nie zwolni.
 func _notification(what: int) -> void:

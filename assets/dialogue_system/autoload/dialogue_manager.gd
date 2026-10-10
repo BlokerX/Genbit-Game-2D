@@ -97,6 +97,18 @@ func end_dialogue(keep_paused: bool = false) -> void:
 		EventBus.set_menu_state(EventBus.MENU_DIALOGUE, false)
 	dialogue_ended.emit()
 
+## Czyści aktywną rozmowę i jej historię przy zakończeniu sesji gry.
+func reset_game_session() -> void:
+	if is_active:
+		end_dialogue()
+	else:
+		current_interactor = null
+		current_graph = null
+		current_node_id = &""
+
+	is_log_open = false
+	dialogue_history.clear()
+
 func add_to_history(speaker_name: String, text: String, color: Color = Color.WHITE, portrait: Texture2D = null) -> void:
 	dialogue_history.append({
 		"speaker": speaker_name,
