@@ -4,7 +4,10 @@ extends Node2D
 class_name MapRegion
 
 const ENEMY_GROUP = "Enemy"
-const ITEM_PICKUP_SCENE = preload("res://assets/scenes/game_objects/item_pickup.tscn")
+const MapRegionSpawnControllerType = preload(
+	"res://assets/scripts/map_system/map_region_spawn_controller.gd"
+)
+var _spawn_controller: MapRegionSpawnControllerType = MapRegionSpawnControllerType.new()
 
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
@@ -427,8 +430,7 @@ func check_and_lock_map_region() -> void:
 	# --- 1. NAJPIERW ODPALAMY REŻYSERA SPAWNU ---
 	# Robimy to zawsze (jeśli nie ma strefy pacyfizmu), niezależnie od tego, czy pokój to Arena czy Open World
 	if not has_spawned_entities and not pacifist_zone:
-		_run_director_spawner()
-		_fill_hybrid_containers(self) # Wypełnia RĘCZNE i WYLOSOWANE obiekty!
+		_spawn_controller.spawn_region(self)
 		has_spawned_entities = true
 
 	# --- 2. ZARZĄDZANIE DRZWIAMI (Blokady) ---
@@ -456,162 +458,6 @@ func check_and_lock_map_region() -> void:
 	else:
 		for door in doors:
 			door.unlock_combat_door()
-
-#region Reżyser
-
-## Główny Reżyser: Kontroluje powoływanie do życia wrogów, elementów otoczenia oraz łupu (lootu).
-## Obsługuje w pełni wszystkie zaawansowane spawnery (EntitySpawner, ObjectSpawner, LootSpawner).
-func _run_director_spawner() -> void:
-	print("[Reżyser MapRegion] %s: Rozpoczynam procedurę spawnowania obiektów." % name)
-	var entities_node = find_child("Entities")
-	var parent_node = entities_node if entities_node else self
-	
-	# 1. Obsługa starych, podstawowych Markerów (kompatybilność wsteczna)
-	if enemy_pool != null:
-		var old_enemy_spawns_count = 0
-		for marker in enemy_spawns:
-			if not marker.is_in_group("AdvancedSpawner") and randf() <= enemy_spawn_chance:
-				var scene = enemy_pool.get_random_enemy_scene()
-				_instantiate_scene(scene, marker.global_position, parent_node)
-				old_enemy_spawns_count += 1
-		if old_enemy_spawns_count > 0:
-			print("[Reżyser MapRegion] Klasyczny system wygenerował %d wrogów." % old_enemy_spawns_count)
-
-	if object_pool != null:
-		for marker in object_spawns:
-			if not marker.is_in_group("AdvancedSpawner") and randf() <= object_spawn_chance:
-				var scene = object_pool.get_random_object_scene()
-				_instantiate_scene(scene, marker.global_position, parent_node)
-				
-	if item_pool != null:
-		for marker in item_spawns:
-			if not marker.is_in_group("AdvancedSpawner") and randf() <= item_spawn_chance:
-				var entry = item_pool.get_random_entry()
-				if entry != null and entry.item_data != null:
-					var pickup = ITEM_PICKUP_SCENE.instantiate() as ItemPickup
-					pickup.item = _create_instance_from_entry(entry)
-					var random_offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
-					_instantiate_node(pickup, marker.global_position + random_offset, parent_node)
-
-	# 2. NOWOŚĆ: Delegacja do zrównanych, inteligentnych spawnerów
-	var active_director_spawners = 0
-	for child in find_children("*", "Marker2D", true, false):
-		if not child.is_in_group("AdvancedSpawner"): 
-			continue
-			
-		var spawner = child
-		if spawner.get("trigger_mode") == 0: # 0 to TriggerMode.DIRECTOR_ONLY
-			active_director_spawners += 1
-			print("[Reżyser MapRegion] Odpalam zaawansowany spawner: %s" % spawner.name)
-			if spawner.has_method("attempt_spawn"):
-				spawner.attempt_spawn()
-				
-	if active_director_spawners > 0:
-		print("[Reżyser MapRegion] Zakończono delegowanie zadań do %d zaawansowanych spawnerów." % active_director_spawners)
-
-## Faza Hybrydowa: KROK 1 (Tworzenie listy lootu) -> KROK 2 (Rozrzucanie po skrzyni)
-func _fill_hybrid_containers(node: Node) -> void:
-	for child in node.get_children():
-		var storage = child.get_node_or_null("StorageComponent")
-		
-		if storage != null and not child.has_meta("is_filled_by_director"):
-			child.set_meta("is_filled_by_director", true) 
-			
-			if item_pool != null:
-				# Ile razy Reżyser zakręci kołem fortuny dla tej skrzyni? (np. 3 razy)
-				var rolls_to_make = randi_range(2, 4) 
-				
-				# === KROK 1: GENEROWANIE PULI PRZEDMIOTÓW ===
-				var generated_loot: Array[ItemInstance] = []
-				
-				for i in range(rolls_to_make):
-					var entry = item_pool.get_random_entry()
-					if entry != null and entry.item_data != null:
-						var duplicated_entries = max(1, randi_range(entry.min_slots, entry.max_slots))
-						
-						for s in range(duplicated_entries):
-							# --- ZMIANA TUTAJ: Używamy nowej fabryki ---
-							var item_inst = _create_instance_from_entry(entry)
-							generated_loot.append(item_inst)
-				
-				# Mamy teraz gotową listę lootu! Np: [Miecz, Ciastko, Ciastko, Knife]
-				
-				# === KROK 2: ROZRZUCANIE PO PUSTYCH SLOTACH ===
-				for item_inst in generated_loot:
-					# Zbieramy wszystkie puste miejsca w skrzyni dla KAŻDEGO przedmiotu na nowo
-					var empty_slot_indexes: Array[int] = []
-					for slot_idx in range(storage.slots.size()):
-						if storage.slots[slot_idx].is_empty():
-							empty_slot_indexes.append(slot_idx)
-							
-					if not empty_slot_indexes.is_empty():
-						# Jeśli są wolne kratki, losujemy jedną z nich!
-						var random_slot_idx = empty_slot_indexes.pick_random()
-						storage.slots[random_slot_idx].item = item_inst
-					else:
-						# Fallback (skrzynia pełna) - wrzucamy systemowo (np. spróbuje połączyć stacki)
-						if storage.has_method("insert_instance"):
-							storage.insert_instance(item_inst)
-						
-		if child.get_child_count() > 0:
-			_fill_hybrid_containers(child)
-
-## Pomocnicze wstawianie PackedScene
-func _instantiate_scene(scene: PackedScene, pos: Vector2, parent: Node) -> void:
-	if scene == null: return
-	var instance = scene.instantiate()
-	_instantiate_node(instance, pos, parent)
-
-## Pomocnicze wstawianie fizycznego węzła do świata
-func _instantiate_node(instance: Node, pos: Vector2, parent: Node) -> void:
-	# 1. ZAWSZE najpierw dodajemy do drzewa sceny!
-	parent.add_child(instance)
-	
-	# 2. Ustawiamy pozycję, gdy obiekt jest już w świecie fizycznym
-	if "global_position" in instance:
-		instance.global_position = pos
-
-	# 3. Jeśli to Open World, streamer przeliczy gdzie obiekt uderzył i weźmie go do pudełka
-	if map_region_type == MapRegionType.OPEN_WORLD:
-		var streamer = get_node_or_null("WorldStreamer")
-		if streamer and streamer.has_method("register_entity"):
-			streamer.register_entity(instance)
-
-## Tworzy fizyczną instancję przedmiotu na podstawie wpisu z puli,
-## uwzględniając ilość oraz dwa tryby losowania wytrzymałości przez komponenty.
-func _create_instance_from_entry(entry: ItemLootEntry) -> ItemInstance:
-	var unique_data = entry.item_data.duplicate(true)
-	var amount = randi_range(entry.min_amount, entry.max_amount)
-	
-	# Tworzymy instancję (konstruktor _init automatycznie ustawi stack w słowniku state)
-	var instance = ItemInstance.new(unique_data, amount)
-	
-	# Szukamy maksymalnej wytrzymałości w klocku DurabilityComponent
-	var max_dur = 0
-	if unique_data.components != null:
-		for comp in unique_data.components:
-			if comp is DurabilityComponent:
-				max_dur = comp.max_durability
-				break
-				
-	# Jeśli wpis wymusza zużycie i przedmiot faktycznie posiada komponent wytrzymałości
-	if entry.randomize_durability and max_dur > 0:
-		var new_durability: int = max_dur
-		
-		# Sprawdzamy wybrany przez Ciebie w Inspektorze tryb
-		if entry.durability_mode == ItemLootEntry.DurabilityRollMode.PERCENTAGE:
-			var dur_percent = randf_range(entry.min_durability_percent, entry.max_durability_percent)
-			new_durability = int(float(max_dur) * dur_percent)
-		else:
-			# Tryb EXACT_VALUE (Twarde Cyfry)
-			new_durability = randi_range(entry.min_exact_durability, entry.max_exact_durability)
-			
-		# ZAPISUJEMY W WYMAGANYM SŁOWNIKU STATE ZAMIAST BEZPOŚREDNIEGO POLA
-		instance.state["durability"] = clampi(new_durability, 1, max_dur)
-		
-	return instance
-
-#endregion
 
 ## Szuka rekurencyjnie przeciwników pośród wszystkich dzieci pokoju
 func _find_enemies_recursive(node: Node) -> void:
