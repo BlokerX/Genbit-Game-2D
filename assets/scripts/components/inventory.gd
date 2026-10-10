@@ -6,6 +6,9 @@ const RequirementPlanner = preload("res://assets/scripts/components/inventory_re
 const InventoryAmmunitionControllerType = preload(
 	"res://assets/scripts/components/inventory_ammunition_controller.gd"
 )
+const InventoryPassiveControllerType = preload(
+	"res://assets/scripts/components/inventory_passive_controller.gd"
+)
 
 #region Inventory stats
 ## Rozmiar ekwipunku
@@ -44,11 +47,7 @@ signal inventory_passives_changed
 var _item_count_cache: Dictionary = {}
 var _tag_count_cache: Dictionary = {}
 var _ammunition_controller: InventoryAmmunitionControllerType
-
-# --- PAMIĘĆ SYGNATUR PASYWEK ---
-var _last_held_sig: String = ""
-var _last_equip_sig: String = ""
-var _last_inv_sig: String = ""
+var _passive_controller: InventoryPassiveControllerType
 
 ## Słownik przechowujący założony sprzęt (Klucz to EquippableComponent.EquipSlot)
 @export var equipment_slots: Dictionary = {}
@@ -68,6 +67,7 @@ func _init() -> void :
 
 	_ammunition_controller = InventoryAmmunitionControllerType.new()
 	_ammunition_controller.initialize(self)
+	_passive_controller = InventoryPassiveControllerType.new()
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
@@ -179,7 +179,7 @@ func reload_current_weapon() -> bool:
 ## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
 func drop_current_item(drop_all: bool = false) -> void:
 	var slot = get_current_slot()
-	if slot.is_empty():
+	if slot == null or slot.is_empty():
 		return
 		
 	var instance_to_drop: ItemInstance
@@ -353,63 +353,21 @@ func unequip_item(slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
 # =========================================================
 
 func get_held_passives() -> Array[Effect]:
-	var active_effects: Array[Effect] = []
-	var held_slot = get_current_slot()
-	if held_slot != null and not held_slot.is_empty() and held_slot.item.data.components != null:
-		for comp in held_slot.item.data.components:
-			if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.HELD:
-				var count = held_slot.item.state.get("amount", 1) if comp.stack_effects_with_amount else 1
-				for i in range(count): active_effects.append_array(comp.passive_buffs)
-	return active_effects
+	return _passive_controller.get_held_passives(self)
 
 func get_equipment_passives() -> Array[Effect]:
-	var active_effects: Array[Effect] = []
-	# Zbroja (w tym plecak, bo plecak to teraz po prostu zbroja na slocie BACKPACK!)
-	for slot_type in equipment_slots.keys():
-		var slot_data = equipment_slots[slot_type]
-		if not slot_data.is_empty() and slot_data.item.data.components != null:
-			for comp in slot_data.item.data.components:
-				if comp is EquippableComponent and comp.equip_slot_type == slot_type:
-					active_effects.append_array(comp.passive_buffs)
-	return active_effects
+	return _passive_controller.get_equipment_passives(self)
 
 func get_inventory_passives() -> Array[Effect]:
-	var active_effects: Array[Effect] = []
-	for slot_data in slots:
-		if not slot_data.is_empty() and slot_data.item.data.components != null:
-			for comp in slot_data.item.data.components:
-				if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.INVENTORY:
-					var count = slot_data.item.state.get("amount", 1) if comp.stack_effects_with_amount else 1
-					for i in range(count): active_effects.append_array(comp.passive_buffs)
-	return active_effects
+	return _passive_controller.get_inventory_passives(self)
 
-# --- GENERATORY SYGNATUR (Wykrywanie zmian w czasie rzeczywistym) ---
 func _check_passive_deltas() -> void:
-	var held_sig = ""
-	var held = get_current_item()
-	if held != null: held_sig = str(held.data.item_id) + ":" + str(held.state.get("amount", 1))
-	if held_sig != _last_held_sig:
-		_last_held_sig = held_sig
+	var changes: Dictionary = _passive_controller.check_for_changes(self)
+	if changes.has(InventoryPassiveControllerType.Change.HELD):
 		held_passives_changed.emit()
-
-	var inv_sig = ""
-	for slot in slots:
-		if not slot.is_empty() and slot.item.data.components != null:
-			for comp in slot.item.data.components:
-				if comp is PassiveItemComponent and comp.requirement == PassiveItemComponent.PassiveRequirement.INVENTORY:
-					inv_sig += str(slot.item.data.item_id) + ":" + str(slot.item.state.get("amount", 1)) + "|"
-	if inv_sig != _last_inv_sig:
-		_last_inv_sig = inv_sig
+	if changes.has(InventoryPassiveControllerType.Change.INVENTORY):
 		inventory_passives_changed.emit()
-
-	var equip_sig = ""
-	# Cała zbroja i plecak w jednej, zgrabnej pętli:
-	for slot_type in equipment_slots.keys():
-		var slot_data = equipment_slots[slot_type]
-		if not slot_data.is_empty():
-			equip_sig += str(slot_type) + ":" + str(slot_data.item.data.item_id) + "|"
-	if equip_sig != _last_equip_sig:
-		_last_equip_sig = equip_sig
+	if changes.has(InventoryPassiveControllerType.Change.EQUIPMENT):
 		equipment_passives_changed.emit()
 
 ## Przelicza rozmiar ekwipunku bazowego + bonus z plecaka
