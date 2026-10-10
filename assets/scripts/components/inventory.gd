@@ -3,6 +3,9 @@ extends Node
 class_name Inventory
 
 const RequirementPlanner = preload("res://assets/scripts/components/inventory_requirement_planner.gd")
+const InventoryAmmunitionControllerType = preload(
+	"res://assets/scripts/components/inventory_ammunition_controller.gd"
+)
 
 #region Inventory stats
 ## Rozmiar ekwipunku
@@ -40,6 +43,7 @@ signal inventory_passives_changed
 ## PAMIĘĆ PODRĘCZNA DO CRAFTINGU (Format: { ID : Ilość })
 var _item_count_cache: Dictionary = {}
 var _tag_count_cache: Dictionary = {}
+var _ammunition_controller: InventoryAmmunitionControllerType
 
 # --- PAMIĘĆ SYGNATUR PASYWEK ---
 var _last_held_sig: String = ""
@@ -61,6 +65,9 @@ func _init() -> void :
 	for slot_type in EquippableComponent.EquipSlot.values():
 		if slot_type != EquippableComponent.EquipSlot.NONE:
 			equipment_slots[slot_type] = SlotData.new()
+
+	_ammunition_controller = InventoryAmmunitionControllerType.new()
+	_ammunition_controller.initialize(self)
 
 ## Zbudowanie cache na start gry
 func _ready() -> void:
@@ -133,142 +140,13 @@ func drop_all_items(_owner_entity: Node2D) -> void:
 		equipment_updated.emit()
 		inventory_updated.emit()
 
-# =========================================================================
-# ZAAWANSOWANY SYSTEM AMUNICJI (EJECT & LOAD)
-# =========================================================================
-
-# --- NOWOŚĆ: Funkcja pomocnicza znajdująca komponent dystansowy w broni ---
-func _get_ranged_comp(item: ItemInstance) -> RangedWeaponComponent:
-	if item == null or item.data == null or item.data.components == null:
-		return null
-	for comp in item.data.components:
-		if comp is RangedWeaponComponent:
-			return comp
-	return null
-
-## Szybka zmiana typu amunicji (np. ze Zwykłej na Przeciwpancerną)
+## Zachowuje publiczny punkt wejścia używany przez broń i sterowanie gracza.
 func cycle_weapon_ammunition() -> void:
-	var slot = get_current_slot()
-	if slot.is_empty(): return
-		
-	# UŻYWAMY FUNKCJI POMOCNICZEJ ZAMIAST PYTAĆ O KLASĘ 'ItemDistanceWeapon'
-	var weapon_comp = _get_ranged_comp(slot.item)
-	if not weapon_comp or not weapon_comp.uses_ammunition: return
-		
-	var available_ammo: Array[ItemData] = []
-	for s in slots:
-		if not s.is_empty():
-			# SZUKAMY KLOCKA 'AmmunitionComponent'
-			for comp in s.item.data.components:
-				if comp is AmmunitionComponent and comp.ammunition_type == weapon_comp.accepted_ammunition_type:
-					if not available_ammo.has(s.item.data):
-						available_ammo.append(s.item.data)
-					break
-					
-	if available_ammo.is_empty():
-		print("Brak pasującej amunicji do zmiany w ekwipunku.")
-		return
-		
-	var inst = slot.item
-	var current_pref_id = inst.state.get("preferred_ammo_id", &"")
-	
-	# --- ZMIANA: Szukamy w bazie po ID ---
-	var current_ammo_id = inst.state.get("ammo_id", &"")
-	var current_ammo_data = ItemDatabase.get_item(current_ammo_id) if current_ammo_id != &"" else null
-	
-	if (current_pref_id == null or str(current_pref_id) == "") and current_ammo_data != null:
-		current_pref_id = current_ammo_data.item_id
-		
-	var next_index = 0
-	for i in range(available_ammo.size()):
-		if available_ammo[i].item_id == current_pref_id:
-			next_index = (i + 1) % available_ammo.size()
-			break
-			
-	var next_ammo_data = available_ammo[next_index]
-	inst.state["preferred_ammo_id"] = next_ammo_data.item_id
-	print(">>> Zmieniono preferencję na: ", next_ammo_data.item_name)
-	
-	var current_ammo_count = inst.state.get("ammo_count", 0)
-	# Zmienna current_ammo_data została już zadeklarowana i pobrana bezpiecznie wyżej!
-	
-	if current_ammo_count > 0 and current_ammo_data != null:
-		var old_instance = ItemInstance.new(current_ammo_data.duplicate(true), current_ammo_count)
-		var leftovers = add_instance(old_instance)
-		if leftovers != null:
-			item_dropped.emit(leftovers, false)
-			
-	inst.state["ammo_count"] = 0
-	inst.state["ammo_id"] = &"" # <--- ZMIANA z ammo_data na ammo_id
-	reload_current_weapon()
+	_ammunition_controller.cycle_weapon_ammunition()
 
-## Główna funkcja ładująca broń
+## Zachowuje publiczny punkt wejścia używany przez broń i sterowanie gracza.
 func reload_current_weapon() -> bool:
-	var slot = get_current_slot()
-	if slot.is_empty(): return false
-		
-	var weapon_comp = _get_ranged_comp(slot.item)
-	if not weapon_comp or not weapon_comp.uses_ammunition: return false
-		
-	var inst = slot.item
-	var current_ammo = inst.state.get("ammo_count", 0)
-	if current_ammo >= weapon_comp.magazine_capacity: return false
-		
-	var preferred_id = inst.state.get("preferred_ammo_id", &"")
-	
-	var ammo_found = _try_load_ammo(inst, weapon_comp, preferred_id)
-	
-	# Jeśli ulubiona amunicja się skończyła, próbujemy załadować cokolwiek, co pasuje (stąd puste &"")
-	if ammo_found <= 0 and str(preferred_id) != "":
-		ammo_found = _try_load_ammo(inst, weapon_comp, &"")
-		
-	return ammo_found > 0
-
-func _try_load_ammo(inst: ItemInstance, weapon_comp: RangedWeaponComponent, required_id: Variant) -> int:
-	var current_ammo = inst.state.get("ammo_count", 0)
-	var ammo_needed = weapon_comp.magazine_capacity - current_ammo
-	var ammo_found = 0
-	
-	# --- ZMIANA: Odczyt po ID z bazy ---
-	var current_ammo_id = inst.state.get("ammo_id", &"")
-	var ammo_reference: ItemData = ItemDatabase.get_item(current_ammo_id) if current_ammo_id != &"" else null
-	
-	for i in range(slots.size()):
-		if not slots[i].is_empty():
-			var ammo_comp: AmmunitionComponent = null
-			for comp in slots[i].item.data.components:
-				if comp is AmmunitionComponent:
-					ammo_comp = comp
-					break
-					
-			if ammo_comp and ammo_comp.ammunition_type == weapon_comp.accepted_ammunition_type:
-				var req_str = str(required_id)
-				if req_str != "" and req_str != "-1" and str(slots[i].item.data.item_id) != req_str:
-					continue
-					
-				if ammo_reference != null and ammo_reference.item_id != slots[i].item.data.item_id:
-					continue
-					
-				ammo_reference = slots[i].item.data
-				var slot_amount = slots[i].item.state.get("amount", 1)
-				var taking = min(slot_amount, ammo_needed - ammo_found)
-				
-				slots[i].item.state["amount"] = slot_amount - taking
-				ammo_found += taking
-				_update_cache(ammo_reference.item_id, -taking)
-				
-				if slots[i].item.state["amount"] <= 0:
-					slots[i].clear_slot()
-					
-				if ammo_found >= ammo_needed: break
-					
-	if ammo_found > 0:
-		inst.state["ammo_count"] = current_ammo + ammo_found
-		inst.state["ammo_id"] = ammo_reference.item_id # <--- ZMIANA
-		inventory_updated.emit()
-		print("Załadowano: ", ammo_found, " sztuk typu: ", ammo_reference.item_name)
-		
-	return ammo_found
+	return _ammunition_controller.reload_current_weapon()
 
 # ----------------------------------------------------
 # --- WYRZUCANIE I PODNOSZENIE ---
