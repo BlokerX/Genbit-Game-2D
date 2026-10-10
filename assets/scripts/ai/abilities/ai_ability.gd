@@ -1,10 +1,16 @@
 extends Resource
 class_name AIAbility
 
+const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
+
 @export var ability_name: String = "Special Ability"
 @export var cooldown: float = 5.0
 @export var min_range: float = 0.0
 @export var max_range: float = 200.0
+## Oprawa odtwarzana przy wykonaniu zdolności specjalnej przeciwnika.
+@export var feedback_cue: FeedbackCueType = preload(
+	"res://assets/data/feedback/enemy_super_attack.tres"
+)
 
 @export_category("Inteligencja i Wyjątki")
 ## O ile sekund AI musi być w aktywnej walce, zanim rzuci ten czar po raz pierwszy?

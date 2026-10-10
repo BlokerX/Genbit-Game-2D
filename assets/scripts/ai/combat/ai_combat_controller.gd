@@ -56,6 +56,13 @@ func process_combat(delta: float) -> void:
 		if _ability_cooldowns[ability] <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
 			# Rzut kością na nieprzewidywalność
 			if randf() <= ability.cast_chance:
+				if ability.feedback_cue != null:
+					GameFeedback.play_cue(
+						ability.feedback_cue,
+						entity.character_sprite,
+						entity.global_position,
+						entity
+					)
 				ability.execute(entity, blackboard.target)
 				_ability_cooldowns[ability] = ability.cooldown
 				ability_casted_this_frame = true
@@ -96,6 +103,8 @@ func process_combat(delta: float) -> void:
 	else:
 		if edge_dist <= stats.get_total_range() and stats.can_attack():
 			stats.execute_attack_on_target(entity, blackboard.target)
+			if entity.has_method("play_item_feedback"):
+				entity.call("play_item_feedback", null, blackboard.target)
 
 func _process_ability_cooldowns(delta: float) -> void:
 	for ability in _ability_cooldowns.keys():

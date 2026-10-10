@@ -1,6 +1,12 @@
 extends ItemComponent
 class_name ThrowableComponent
 
+const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+
+@export_group("Oprawa użycia")
+## Oprawa wizualna i dźwiękowa tego konkretnego rzutu.
+@export var use_feedback: FeedbackCue
+
 @export_category("Ustawienia Rzutu")
 @export var entity_scene: PackedScene
 @export var throw_force: float = 400.0
@@ -48,6 +54,7 @@ func execute(actor: Node2D, _target: Node2D, item_instance: ItemInstance) -> voi
 
 	if actor.has_signal("entity_spawn_requested"):
 		actor.emit_signal("entity_spawn_requested", entity, spawn_pos)
+	FeedbackDispatcherType.play_for_actor(use_feedback, actor, entity)
 
 	# 4. Sprawdzenie nieskończonej amunicji i ewentualne zużycie
 	var has_infinite_ammo = false

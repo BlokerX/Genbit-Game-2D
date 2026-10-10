@@ -1,5 +1,9 @@
 extends Control
 
+const SETTINGS_BUTTON_FEEDBACK: FeedbackCue = preload(
+	"res://assets/data/feedback/settings_button.tres"
+)
+
 @export_category("Nawigacja")
 @export var btn_audio: Button
 @export var btn_graphics: Button
@@ -21,6 +25,7 @@ extends Control
 var _current_confirm_action: Callable
 
 func _ready() -> void:
+	_bind_button_feedback(self)
 	if btn_audio: btn_audio.pressed.connect(func(): _switch_tab(panel_audio))
 	if btn_graphics: btn_graphics.pressed.connect(func(): _switch_tab(panel_graphics))
 	if btn_gui: btn_gui.pressed.connect(func(): _switch_tab(panel_gui))
@@ -35,6 +40,15 @@ func _ready() -> void:
 	
 	set_hover_description("Wybierz zakładkę z lewej strony, aby dostosować grę.")
 	_switch_tab(panel_audio)
+
+func _bind_button_feedback(node: Node) -> void:
+	for child in node.get_children():
+		if child is BaseButton and not child.button_down.is_connected(_play_button_feedback):
+			child.button_down.connect(_play_button_feedback)
+		_bind_button_feedback(child)
+
+func _play_button_feedback() -> void:
+	GameFeedback.play_cue(SETTINGS_BUTTON_FEEDBACK)
 
 func _switch_tab(active_panel: Control) -> void:
 	if panel_audio: panel_audio.hide()

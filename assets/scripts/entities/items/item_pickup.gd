@@ -109,16 +109,24 @@ func _on_interacted(interactor: Node) -> void:
 		var inventory = interactor.get_inventory() 
 		
 		if inventory != null:
+			var original_amount: int = item.state.get("amount", 1)
 			# --- UŻYWAMY NASZEJ NOWEJ FUNKCJI ---
 			# Przekazujemy całą instancję, zamiast rozbijać ją na item_data i amount
 			var leftovers = inventory.add_instance(item)
 			
 			if leftovers == null:
 				# Całość się zmieściła - usuwamy z ziemi
+				if interactor.has_method("play_item_pickup_feedback"):
+					interactor.call("play_item_pickup_feedback")
 				queue_free()
 			else:
 				# Plecak jest pełny, aktualizujemy naszą instancję na ziemi by zachowała resztki
 				item = leftovers
+				if (
+					int(item.state.get("amount", 1)) < original_amount
+					and interactor.has_method("play_item_pickup_feedback")
+				):
+					interactor.call("play_item_pickup_feedback")
 
 ## Odbieranie efektów środowiskowych (np. fali uderzeniowej z bomby)
 func receive_effect(effect: Effect) -> bool:

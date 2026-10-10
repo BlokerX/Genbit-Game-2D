@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/instant/knockback_effect.gd" id="5_q5y6b"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_86fyl"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_xo1qm"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_combat.tres" id="9_feedback"]
 
 [sub_resource type="Resource" id="Resource_uesbw"]
 script = ExtResource("1_5ah6c")
@@ -27,6 +28,7 @@ script = ExtResource("5_p38wo")
 attack_data = SubResource("Resource_uesbw")
 use_cooldown = 1.5
 effects = Array[ExtResource("1_jqv1w")]([SubResource("Resource_p38wo")])
+use_feedback = ExtResource("9_feedback")
 
 [sub_resource type="Resource" id="Resource_jwgen"]
 script = ExtResource("6_86fyl")

@@ -1,6 +1,10 @@
 class_name PlaceableComponent
 extends ItemComponent
 
+@export_group("Oprawa użycia")
+## Oprawa wizualna i dźwiękowa po skutecznym postawieniu tego obiektu.
+@export var use_feedback: FeedbackCue
+
 @export_category("Budowanie")
 @export_file("*.tscn") var scene_path: String
 

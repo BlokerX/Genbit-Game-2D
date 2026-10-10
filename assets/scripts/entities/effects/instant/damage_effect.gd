@@ -18,6 +18,13 @@ func apply_effect(target : Node2D) -> bool:
 		# 1. ZADANIE OBRAŻEŃ (Twój zaktualizowany skrypt z LifeStatsComponent zajmie się resztą)
 		stats.take_damage(damage_amount, armor_penetration)
 		print("Zadano obrażenia: ", damage_amount, " (Penetracja: ", armor_penetration * 100, "%)")
+
+		if (
+			is_instance_valid(source_entity)
+			and source_entity != target
+			and source_entity.has_method("notify_damage_dealt")
+		):
+			source_entity.call("notify_damage_dealt", target)
 		
 		# 2. LOGIKA CIERNI (THORNS REFLECTION)
 		# Upewniamy się, że to nie jest już odbity cios, oraz że sprawca żyje i nie bije sam siebie

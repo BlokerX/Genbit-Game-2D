@@ -1,6 +1,12 @@
 class_name ConsumableComponent
 extends ItemComponent
 
+const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+
+@export_group("Oprawa użycia")
+## Oprawa wizualna i dźwiękowa tego konkretnego przedmiotu jednorazowego.
+@export var use_feedback: FeedbackCue
+
 @export_category("Konsumpcja")
 @export var use_cooldown: float = 0.5
 ## Lista efektów, które zostaną nałożone po użyciu.
@@ -26,6 +32,7 @@ func execute(actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> vo
 	# Jeśli chociaż jeden efekt zadziałał (np. gracz nie miał pełnego HP przy leczeniu)
 	if any_effect_applied:
 		print("Przedmiot skonsumowany! Nałożono efekty.")
+		FeedbackDispatcherType.play_for_actor(use_feedback, actor, actor)
 		
 		# Odpalamy cooldown użycia
 		var stats = actor.get("interaction_and_attack_stats_script")

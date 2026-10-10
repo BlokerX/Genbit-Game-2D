@@ -1,6 +1,12 @@
 extends Node
 class_name NPCDialogueComponent
 
+@export_group("Oprawa dialogu")
+## Dźwięk odtwarzany, gdy NPC rozpoczyna rozmowę.
+@export var dialogue_start_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/dialogue_start.tres"
+)
+
 @export_category("Ustawienia Dialogu")
 ## Zasób grafu dialogowego do odtworzenia
 @export var dialogue_graph: DialogueGraph
@@ -20,6 +26,15 @@ func _on_interacted(interactor: Node) -> void:
 		
 	# 2. Wywołujemy Twój globalny system dialogów z PRAWIDŁOWYMI argumentami
 	if dialogue_graph != null and DialogueManager.has_method("start_dialogue"):
+		if dialogue_start_feedback != null:
+			var npc := get_parent() as Node2D
+			if is_instance_valid(npc):
+				GameFeedback.play_cue(
+					dialogue_start_feedback,
+					null,
+					npc.global_position,
+					npc
+				)
 		DialogueManager.start_dialogue(dialogue_graph, interactor)
 	else:
 		push_warning("Brak przypisanego grafu dialogowego w NPCDialogueComponent!")

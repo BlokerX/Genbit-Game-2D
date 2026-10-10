@@ -1,6 +1,12 @@
 class_name MeleeWeaponComponent
 extends ItemComponent
 
+const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+
+@export_group("Oprawa użycia")
+## Oprawa wizualna i dźwiękowa tego konkretnego ataku wręcz.
+@export var use_feedback: FeedbackCue
+
 @export var attack_data: AttackData
 @export var use_cooldown: float = 1.0
 @export var allow_auto_aim: bool = true
@@ -23,6 +29,7 @@ func execute(actor: Node2D, target: Node2D, _item_instance: ItemInstance) -> voi
 	
 	# 2. Wykonujemy cios (Twoja oryginalna funkcja!)
 	stats.execute_attack_on_target(actor, target)
+	FeedbackDispatcherType.play_for_actor(use_feedback, actor, target)
 	
 	# 3. Psujemy broń (Zlecamy to instancji!)
 	_item_instance.consume_durability(1)

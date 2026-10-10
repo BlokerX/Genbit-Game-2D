@@ -1,6 +1,12 @@
 extends Area2D
 class_name LevelEntrance
 
+@export_group("Oprawa dźwiękowa")
+## Dźwięk odtwarzany przy rozpoczęciu przejścia na inny poziom.
+@export var enter_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/level_portal.tres"
+)
+
 @export_group("Konfiguracja Przejścia")
 ## Moje ID (np. "dungeon_stairs_up", "surface_portal"). Musi być unikalne na mapie!
 @export var my_entrance_id: String = "start_point"
@@ -58,6 +64,8 @@ func _on_body_entered(body: Node2D) -> void:
 		if target_level_path != "":
 			has_triggered = true # Zamykamy bramkę na czas zmiany poziomu
 			print("Wchodzę do nowego poziomu ze ścieżki: ", target_level_path)
+			if enter_feedback != null:
+				GameFeedback.play_cue(enter_feedback, null, global_position, self)
 			GlobalLevelManager.change_level_by_path(target_level_path, target_entrance_id)
 		else:
 			push_warning("Brak przypisanej ścieżki target_level_path w przejściu!")

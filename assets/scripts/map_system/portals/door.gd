@@ -1,6 +1,16 @@
 extends Area2D
 class_name Door
 
+@export_group("Oprawa dźwiękowa")
+## Dźwięk odtwarzany, gdy drzwi zaczynają się otwierać.
+@export var opening_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/door_open.tres"
+)
+## Dźwięk przejścia gracza przez otwarte drzwi.
+@export var transition_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/door_transition.tres"
+)
+
 # todo problem z przenikaniem przez pokoje z tymi samymi drzwiami (pozycja drzwi w pokoju)
 signal player_entered_door(door_node : Node)
 
@@ -62,6 +72,7 @@ func _on_body_exited(body: Node2D) -> void:
 func _start_opening() -> void:
 	current_state = State.OPENING
 	print("Otwieranie drzwi... Czekaj %s sekundy." % opening_time)
+	_play_feedback(opening_feedback)
 	
 	# Używamy Tweena zamiast globalnego timera. Tween przypina się do tego 
 	# konkretnego węzła. Jeśli węzeł zostanie usunięty z pamięci, Tween sam zginie.
@@ -123,7 +134,12 @@ func _trigger_teleport() -> void:
 		return
 	
 	# Wywołujemy sygnał, który Map już obsługuje
+	_play_feedback(transition_feedback)
 	player_entered_door.emit(self)
+
+func _play_feedback(cue: FeedbackCue) -> void:
+	if cue != null:
+		GameFeedback.play_cue(cue, null, global_position, self)
 
 func get_map_region() -> MapRegion:
 	var current_node = self

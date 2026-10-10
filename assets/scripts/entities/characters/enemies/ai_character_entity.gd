@@ -1,6 +1,27 @@
 extends CharacterEntity
 class_name AICharacterEntity
 
+const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
+const VISUAL_ORIGIN_TARGET := 1
+
+@export_group("Oprawa dźwiękowa")
+## Domyślny dźwięk ataku przeciwnika; indywidualny cue broni może go nadpisać.
+@export var attack_feedback_cue: FeedbackCueType = preload(
+	"res://assets/data/feedback/enemy_attack.tres"
+)
+## Dźwięk przyjęcia obrażeń przez przeciwnika.
+@export var damage_received_feedback_cue: FeedbackCueType = preload(
+	"res://assets/data/feedback/enemy_damage_received.tres"
+)
+## Dźwięk zadania obrażeń przez przeciwnika.
+@export var damage_dealt_feedback_cue: FeedbackCueType = preload(
+	"res://assets/data/feedback/enemy_damage_dealt.tres"
+)
+## Dźwięk śmierci przeciwnika.
+@export var death_feedback_cue: FeedbackCueType = preload(
+	"res://assets/data/feedback/enemy_death.tres"
+)
+
 @export_category("AI")
 @export var ai_controller: AIController
 
@@ -40,6 +61,26 @@ func get_inventory() -> Node:
 		return ai_controller.get_node_or_null("AIInventoryController")
 	return null
 
+## Udostępnia dispatcherowi wspólny punkt odtwarzania oprawy ataku AI.
+func play_item_feedback(cue: FeedbackCueType, target: Node2D) -> void:
+	var selected_cue := cue if cue != null else attack_feedback_cue
+	if selected_cue == null:
+		return
+	var effect_position := global_position
+	if (
+		selected_cue.visual_origin == VISUAL_ORIGIN_TARGET
+		and is_instance_valid(target)
+	):
+		effect_position = target.global_position
+	GameFeedback.play_cue(selected_cue, character_sprite, effect_position, self)
+
+## Odtwarza cue po potwierdzonym trafieniu zadanym przez przeciwnika.
+func notify_damage_dealt(target: Node2D) -> void:
+	if damage_dealt_feedback_cue == null:
+		return
+	var effect_position := target.global_position if is_instance_valid(target) else global_position
+	GameFeedback.play_cue(damage_dealt_feedback_cue, null, effect_position, self)
+
 # Przejęta logika ruchu, z której korzysta StateChase
 func set_movement_target(movement_target: Vector2) -> void:
 	if navigation_agent:
@@ -48,6 +89,13 @@ func set_movement_target(movement_target: Vector2) -> void:
 # --- SYSTEM ZEMSTY ---
 func receive_effect(effect: Effect) -> bool:
 	var success = super.receive_effect(effect)
+	if success and effect is DamageEffect and damage_received_feedback_cue != null:
+		GameFeedback.play_cue(
+			damage_received_feedback_cue,
+			character_sprite,
+			global_position,
+			self
+		)
 	
 	if success and effect is DamageEffect and effect.source_entity != null:
 		var attacker = effect.source_entity
@@ -56,6 +104,16 @@ func receive_effect(effect: Effect) -> bool:
 			faction_component.process_revenge(attacker)
 			
 	return success
+
+## Odtwarza dźwięk śmierci przed bazową obsługą i usunięciem przeciwnika.
+func _on_character_died() -> void:
+	if (
+		not is_dead
+		and not (has_meta("is_immortal") and get_meta("is_immortal") == true)
+		and death_feedback_cue != null
+	):
+		GameFeedback.play_cue(death_feedback_cue, character_sprite, global_position, self)
+	super()
 
 # --- SYSTEM PRZEBUDZENIA Z CHUNKA (Naprawa "Choroby Hibernacyjnej") ---
 

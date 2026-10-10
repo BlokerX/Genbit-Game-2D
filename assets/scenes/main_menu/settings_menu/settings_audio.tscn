@@ -127,6 +127,27 @@ horizontal_alignment = 2
 layout_mode = 2
 text = " ↺ "
 
+[node name="UIRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+[node name="Label" type="Label" parent="UIRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Interfejs (UI)"
+[node name="Slider" type="HSlider" parent="UIRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+[node name="ValLabel" type="Label" parent="UIRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+[node name="ResetBtn" type="Button" parent="UIRow"]
+layout_mode = 2
+text = " ↺ "
+
 [node name="SurroundRow" type="HBoxContainer" parent="."]
 layout_mode = 2
 [node name="Label" type="Label" parent="SurroundRow"]

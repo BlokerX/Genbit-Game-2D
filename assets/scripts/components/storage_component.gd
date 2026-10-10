@@ -1,6 +1,12 @@
 class_name StorageComponent
 extends Node
 
+@export_group("Oprawa dźwiękowa")
+## Dźwięk odtwarzany przy otwarciu interfejsu skrzyni.
+@export var open_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/chest_open.tres"
+)
+
 #region Storage stats
 ## Rozmiar skrzyni
 @export var slots_amount: int = 16
@@ -55,6 +61,9 @@ func _ready() -> void:
 
 func _on_interacted(_interactor: Node) -> void:
 	# Wysyłamy w świat informację: "Otwórzcie interfejs dla tego magazynu!"
+	var storage_owner := get_parent() as Node2D
+	if open_feedback != null and is_instance_valid(storage_owner):
+		GameFeedback.play_cue(open_feedback, null, storage_owner.global_position, storage_owner)
 	EventBus.open_storage_ui.emit(self)
 
 

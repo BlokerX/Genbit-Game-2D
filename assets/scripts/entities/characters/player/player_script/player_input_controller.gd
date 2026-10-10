@@ -1,6 +1,8 @@
 class_name PlayerInputController
 extends RefCounted
 
+const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+
 const INPUT_AIM_LEFT = "AimLeft"
 const INPUT_AIM_RIGHT = "AimRight"
 const INPUT_AIM_UP = "AimUp"
@@ -195,8 +197,11 @@ func _handle_default_inputs(
 		if item != null and item.data.components != null:
 			for component in item.data.components:
 				if component is RangedWeaponComponent and component.uses_ammunition:
-					if _inventory.reload_current_weapon():
+					var reload_succeeded := _inventory.reload_current_weapon()
+					if reload_succeeded:
 						_attack_stats.trigger_reload_cooldown(component.reload_time)
+					if player.has_method("play_reload_feedback"):
+						player.call("play_reload_feedback", reload_succeeded)
 					break
 
 	if event.is_action_pressed(INPUT_INTERACT):
@@ -239,6 +244,15 @@ func _handle_building_inputs(player: Node2D, event: InputEvent) -> void:
 		if _builder_component.try_place_object():
 			var current_item: ItemInstance = _inventory.get_current_item()
 			if current_item != null:
+				if current_item.data != null and current_item.data.components != null:
+					for component in current_item.data.components:
+						if component is PlaceableComponent:
+							FeedbackDispatcherType.play_for_actor(
+								component.use_feedback,
+								player,
+								player
+							)
+							break
 				current_item.consume_amount(1)
 				_inventory.clean_dead_items()
 			player.call("_cancel_building")

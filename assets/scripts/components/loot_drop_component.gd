@@ -9,6 +9,10 @@ class_name LootDropComponent
 # Funkcja wywoływana przez entity, kiedy ten umiera.
 # Przekazujemy w niej 'spawner' (czyli samego entity), żeby zasób wiedział skąd wziąć pozycję.
 func perform_drop(spawner: Node2D) -> void:
+	if not is_instance_valid(spawner):
+		push_error("LootDropComponent: Nie można wyrzucić łupu bez poprawnego obiektu spawnera!")
+		return
+
 	# Czy tabela lootu jest pusta?
 	if loot_table.is_empty():
 		return 
@@ -20,6 +24,12 @@ func perform_drop(spawner: Node2D) -> void:
 	var spawn_parent = spawner.get_parent()
 	if not spawn_parent:
 		return
+
+	var world_2d := spawner.get_world_2d() if spawner.is_inside_tree() else null
+	if not is_instance_valid(world_2d):
+		push_warning(
+			"LootDropComponent: Spawner nie ma aktywnego World2D; łup zostanie wyrzucony bez sprawdzania ścian."
+		)
 	
 	# Przechodzimy przez każdy potencjalny loot
 	for loot_item in loot_table:
@@ -53,23 +63,26 @@ func perform_drop(spawner: Node2D) -> void:
 		# --- DODANY KOD OCHRONNY (RAYCAST) - NICZEGO NIE USUNIĘTO ---
 		var desired_spawn_pos = spawner.global_position + random_offset
 		var final_spawn_pos = desired_spawn_pos
-		
-		var space_state = spawner.get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(spawner.global_position, desired_spawn_pos)
-		
-		# UWAGA: Upewnij się, że "1" to maska kolizji Twoich ścian!
-		query.collision_mask = 1 
-		
-		if spawner is CollisionObject2D:
-			query.exclude = [spawner.get_rid()]
-			
-		var result = space_state.intersect_ray(query)
-		if result:
-			# Jeśli offset wepchnąłby przedmiot w ścianę, kładziemy go lekko PRZED ścianą
-			var dir = spawner.global_position.direction_to(desired_spawn_pos)
-			if dir == Vector2.ZERO:
-				dir = Vector2.DOWN
-			final_spawn_pos = result.position - (dir * 5.0)
+
+		if is_instance_valid(world_2d):
+			var query = PhysicsRayQueryParameters2D.create(
+				spawner.global_position,
+				desired_spawn_pos
+			)
+
+			# UWAGA: Upewnij się, że "1" to maska kolizji Twoich ścian!
+			query.collision_mask = 1
+
+			if spawner is CollisionObject2D:
+				query.exclude = [spawner.get_rid()]
+
+			var result = world_2d.direct_space_state.intersect_ray(query)
+			if result:
+				# Jeśli offset wepchnąłby przedmiot w ścianę, kładziemy go lekko PRZED ścianą
+				var dir = spawner.global_position.direction_to(desired_spawn_pos)
+				if dir == Vector2.ZERO:
+					dir = Vector2.DOWN
+				final_spawn_pos = result.position - (dir * 5.0)
 		# ------------------------------------------------------------
 		
 		pickup_instance.global_position = final_spawn_pos

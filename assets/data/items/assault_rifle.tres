@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_bhye6"]
 [ext_resource type="Script" uid="uid://barho03v1ogy0" path="res://assets/scripts/entities/effects/instant/knockback_effect.gd" id="8_0uwnp"]
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="8_3b6gh"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_ranged_fire.tres" id="9_feedback"]
 
 [sub_resource type="Resource" id="Resource_aknrp"]
 script = ExtResource("2_aknrp")
@@ -35,6 +36,7 @@ projectile_texture = ExtResource("5_bhye6")
 projectile_speed = 4500.0
 projectile_lifetime = 1.0
 projectile_scene = ExtResource("4_0uwnp")
+use_feedback = ExtResource("9_feedback")
 
 [sub_resource type="Resource" id="Resource_qan2r"]
 script = ExtResource("6_bhye6")

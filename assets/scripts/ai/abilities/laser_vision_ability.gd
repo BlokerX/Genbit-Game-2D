@@ -1,6 +1,16 @@
 extends AIAbility
 class_name LaserVisionAbility
 
+@export_group("Oprawa dźwiękowa")
+## Dźwięk narastającego ładowania promienia.
+@export var charge_feedback_cue: FeedbackCue = preload(
+	"res://assets/data/feedback/laser_charge.tres"
+)
+## Dźwięk wystrzału po zakończeniu celowania.
+@export var fire_feedback_cue: FeedbackCue = preload(
+	"res://assets/data/feedback/laser_fire.tres"
+)
+
 @export_category("Zdolność: Laserowy Wzrok")
 
 @export_group("Celowanie i Zasięg")
@@ -66,6 +76,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# Przypisanie warstwy i odcięcie relatywności
 	laser_node.z_index = laser_z_index
 	laser_node.z_as_relative = false
+	if charge_feedback_cue != null:
+		GameFeedback.play_cue(charge_feedback_cue, null, attacker.global_position, attacker)
 	
 	# BEZPIECZNE SPAWNOWANIE LASERA
 	if attacker.has_signal("entity_spawn_requested"):
@@ -143,6 +155,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		return
 
 	laser_node.phase = 1 
+	if fire_feedback_cue != null:
+		GameFeedback.play_cue(fire_feedback_cue, null, attacker.global_position, attacker)
 	
 	var fire_elapsed: float = 0.0
 	var next_damage_tick: float = 0.0

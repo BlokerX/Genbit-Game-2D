@@ -14,22 +14,58 @@ func play_visual_effect(effect: VisualEffectType, world_position: Vector2) -> No
 	if effect == null:
 		push_error("GameFeedback nie może odtworzyć pustego VisualEffect.")
 		return null
+	var effect_instance := _create_visual_effect_instance(effect)
+	if effect_instance == null:
+		return null
+
+	var effect_parent := _get_effect_parent()
+	if effect_instance.has_method("configure_effect"):
+		effect_instance.call("configure_effect", effect.style, effect.tint)
+	effect_parent.add_child(effect_instance)
+	effect_instance.global_position = world_position + effect.position_offset
+	if effect.texture != null or effect.sprite_frames != null:
+		effect_instance.scale = effect.texture_scale
+
+	if effect.lifetime_seconds > 0.0:
+		_schedule_visual_effect_cleanup(effect_instance, effect.lifetime_seconds)
+	elif effect.texture != null:
+		_schedule_visual_effect_cleanup(effect_instance, 0.4)
+
+	return effect_instance
+
+func _create_visual_effect_instance(effect: VisualEffectType) -> Node2D:
+	if effect.sprite_frames != null:
+		if (
+			effect.animation_name.is_empty()
+			or not effect.sprite_frames.has_animation(effect.animation_name)
+		):
+			push_error("GameFeedback: SpriteFrames nie zawiera animacji '%s'." % effect.animation_name)
+			return null
+		var animated_sprite := AnimatedSprite2D.new()
+		animated_sprite.sprite_frames = effect.sprite_frames
+		animated_sprite.animation = effect.animation_name
+		animated_sprite.modulate = effect.tint
+		if (
+			effect.lifetime_seconds <= 0.0
+			and not effect.sprite_frames.get_animation_loop(effect.animation_name)
+		):
+			animated_sprite.animation_finished.connect(animated_sprite.queue_free)
+		animated_sprite.play()
+		return animated_sprite
+
+	if effect.texture != null:
+		var sprite := Sprite2D.new()
+		sprite.texture = effect.texture
+		sprite.modulate = effect.tint
+		return sprite
+
 	if effect.effect_scene == null:
-		push_error("GameFeedback: VisualEffect nie ma przypisanej sceny efektu.")
+		push_error("GameFeedback: VisualEffect wymaga sceny, tekstury PNG lub SpriteFrames.")
 		return null
 
 	var effect_instance := effect.effect_scene.instantiate() as Node2D
 	if effect_instance == null:
 		push_error("GameFeedback: Root sceny VisualEffect musi dziedziczyć po Node2D.")
-		return null
-
-	var effect_parent := _get_effect_parent()
-	effect_parent.add_child(effect_instance)
-	effect_instance.global_position = world_position + effect.position_offset
-
-	if effect.lifetime_seconds > 0.0:
-		_schedule_visual_effect_cleanup(effect_instance, effect.lifetime_seconds)
-
 	return effect_instance
 
 ## Odtwarza dźwięk globalnie lub w pozycji emitera 2D.

@@ -2,6 +2,8 @@
 extends CharacterEntity
 class_name PlayerCharacter
 
+const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
+
 const PlayerPassiveEffectControllerType = preload(
 	"res://assets/scripts/entities/characters/player/player_script/player_passive_effect_controller.gd"
 )
@@ -10,6 +12,9 @@ const PlayerHeldItemControllerType = preload(
 )
 const PlayerInputControllerType = preload(
 	"res://assets/scripts/entities/characters/player/player_script/player_input_controller.gd"
+)
+const PlayerFeedbackControllerType = preload(
+	"res://assets/scripts/audio_system/player_feedback_controller.gd"
 )
 
 #region STAŁE WEJŚCIA (Wyeliminowanie magicznych stringów)
@@ -51,6 +56,7 @@ func get_inventory() -> Inventory:
 var _passive_effect_controller: PlayerPassiveEffectControllerType
 var _held_item_controller: PlayerHeldItemControllerType
 var _input_controller: PlayerInputControllerType
+@onready var _feedback_controller: PlayerFeedbackControllerType = $PlayerFeedbackController
 
 var is_using_mouse: bool:
 	get:
@@ -109,6 +115,8 @@ func _ready():
 	super()
 	_passive_effect_controller = PlayerPassiveEffectControllerType.new()
 	_passive_effect_controller.initialize(self, effects_collector)
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.initialize(self)
 	_held_item_controller = PlayerHeldItemControllerType.new()
 	_held_item_controller.initialize(
 		held_item_visual,
@@ -158,6 +166,65 @@ func _ready():
 func _on_spawn_requested(node: Node2D, spawn_position: Vector2) -> void:
 	entity_spawn_requested.emit(node, spawn_position)
 
+## Zachowuje bazową logikę śmierci i dodaje oprawę przypisaną do gracza.
+func _on_character_died() -> void:
+	if not is_dead and is_instance_valid(_feedback_controller):
+		_feedback_controller.play_death()
+	super()
+
+## Zachowuje obsługę efektu bazowego i uruchamia reakcję na jego faktyczne przyjęcie.
+func receive_effect(effect: Effect) -> bool:
+	var effect_applied := super.receive_effect(effect)
+	if effect_applied and is_instance_valid(_feedback_controller):
+		_feedback_controller.play_received_effect(effect)
+	return effect_applied
+
+## Przekazuje początek i koniec mrozu do ekranowej oprawy gracza.
+func set_freeze_feedback_active(is_active: bool) -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.set_freeze_feedback_active(is_active)
+
+## Wywoływane przez efekty obrażeń po trafieniu zadanym przez gracza.
+func notify_damage_dealt(target: Node2D) -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.play_damage_dealt(target)
+
+## Przekazuje wynik przeładowania do kontrolera oprawy gracza.
+func play_reload_feedback(succeeded: bool) -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.play_reload(succeeded)
+
+## Odtwarza oprawę udanego zebrania przedmiotu ze świata.
+func play_item_pickup_feedback() -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.play_item_pickup()
+
+## Odtwarza oprawę wyrzucenia przedmiotu z dowolnego panelu ekwipunku.
+func play_item_drop_feedback() -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.play_item_drop()
+
+## Punkt wejścia dla komponentów przedmiotów z własną oprawą w Inspectorze.
+## Odtwarza oprawę przedmiotu albo domyślną oprawę akcji zależnie od jego komponentu.
+func play_item_feedback(cue: FeedbackCueType, target: Node2D) -> void:
+	if not is_instance_valid(_feedback_controller):
+		return
+	if cue != null:
+		_feedback_controller.play_item_use(cue, target)
+		return
+
+	var current_item := inventory.get_current_item() if inventory != null else null
+	if current_item != null and current_item.data != null and current_item.data.components != null:
+		for component in current_item.data.components:
+			if (
+				component is MeleeWeaponComponent
+				or component is RangedWeaponComponent
+				or component is ThrowableComponent
+			):
+				_feedback_controller.play_combat(target)
+				return
+	_feedback_controller.play_item_use(null, target)
+
 func _on_ui_state_changed(is_open: bool) -> void:
 	is_input_locked = is_open
 	if is_open and _input_controller != null:
@@ -198,6 +265,8 @@ func _physics_process(delta):
 	_update_sprite_direction(Vector2(horizontal, vertical))
 	
 	move_and_slide()
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.process_movement_feedback(delta, get_real_velocity())
 	
 	# D_E_B_U_G
 	#print("Monitor prędkości gracza: ", velocity)
@@ -315,6 +384,11 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 			_input_controller.is_using_mouse,
 			throw_direction
 		)
+		if (
+			item_thrower_component.item_pickup_scene != null
+			and is_instance_valid(_feedback_controller)
+		):
+			_feedback_controller.play_item_drop()
 	else:
 		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 
@@ -392,7 +466,7 @@ func perform_attack() -> void:
 	
 	# Gracz po prostu mówi: "Komponencie, uderz tym, co trzymam. Masz tu mój ekwipunek!"
 	if attack_component:
-		attack_component.execute_attack(
+		var attack_succeeded := attack_component.execute_attack(
 			self, 
 			target_enemy, 
 			current_item, 
@@ -400,6 +474,22 @@ func perform_attack() -> void:
 			interaction_and_attack_stats_script,
 			has_los
 		)
+		var is_using_combat_item := false
+		if current_item != null and current_item.data != null and current_item.data.components != null:
+			for component in current_item.data.components:
+				if (
+					component is MeleeWeaponComponent
+					or component is RangedWeaponComponent
+					or component is ThrowableComponent
+				):
+					is_using_combat_item = true
+					break
+		if (
+			attack_succeeded
+			and not is_using_combat_item
+			and is_instance_valid(_feedback_controller)
+		):
+			_feedback_controller.play_combat(target_enemy)
 
 # Zwraca aktualny zasięg ataku w zależności od przedmiotu
 func get_current_attack_range() -> float:

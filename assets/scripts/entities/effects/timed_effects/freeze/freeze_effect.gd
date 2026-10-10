@@ -49,6 +49,8 @@ func on_effect_start(target : Node2D) -> void:
 		if sprite != null:
 			target.set_meta("original_self_modulate", sprite.self_modulate)
 			sprite.self_modulate = freeze_modulate
+	if target.has_method("set_freeze_feedback_active"):
+		target.call("set_freeze_feedback_active", true)
 
 func on_effect_end(target : Node2D) -> void:
 	print("Odmrażam obiekt: ", target.name)
@@ -81,6 +83,8 @@ func on_effect_end(target : Node2D) -> void:
 	if sprite != null and target.has_meta("original_self_modulate"):
 		sprite.self_modulate = target.get_meta("original_self_modulate")
 		target.remove_meta("original_self_modulate")
+	if target.has_method("set_freeze_feedback_active"):
+		target.call("set_freeze_feedback_active", false)
 
 func is_offensive() -> bool:
 	return true

@@ -201,6 +201,11 @@ func _execute_drop_in_world(dropped_instance: ItemInstance) -> void:
 		if player.has_node("AimController") and player.get_node("AimController").aim_scanner:
 			aim_target = player.get_node("AimController").aim_scanner.target_position
 		thrower.handle_item_drop(player, dropped_instance, true, true, aim_target)
+		if (
+			thrower.get("item_pickup_scene") != null
+			and player.has_method("play_item_drop_feedback")
+		):
+			player.call("play_item_drop_feedback")
 	else:
 		if _player_inventory:
 			_player_inventory.item_dropped.emit(dropped_instance, true)

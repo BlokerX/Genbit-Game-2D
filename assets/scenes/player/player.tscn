@@ -22,6 +22,21 @@
 [ext_resource type="Texture2D" uid="uid://ccql8716e4rit" path="res://assets/textures/samples_examples/entities/Nick/nick_front_left.png" id="14_lgxp8"]
 [ext_resource type="Texture2D" uid="uid://d1cvyqjmovrmh" path="res://assets/textures/samples_examples/entities/Nick/nick_dead.png" id="15_npq60"]
 [ext_resource type="Script" uid="uid://djg3r5l1r5ji2" path="res://assets/scripts/components/camera_component.gd" id="21_xflxm"]
+[ext_resource type="Script" path="res://assets/scripts/audio_system/player_feedback_controller.gd" id="22_feedback"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_combat.tres" id="23_combat"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_item_use.tres" id="24_item_use"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_death.tres" id="25_death"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_damage_received.tres" id="26_damage_received"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_damage_dealt.tres" id="27_damage_dealt"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_freeze.tres" id="28_freeze"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_status_effect.tres" id="29_status"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_reload.tres" id="30_reload"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_reload_failed.tres" id="31_reload_failed"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_pickup.tres" id="32_pickup"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_drop.tres" id="33_drop"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player_movement.tres" id="34_movement"]
+[ext_resource type="Resource" path="res://assets/data/feedback/dialogue_start.tres" id="35_dialogue"]
+[ext_resource type="Script" path="res://assets/scripts/audio_system/player_screen_feedback.gd" id="36_screen_feedback"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xflxm"]
 animations = [{
@@ -155,3 +170,22 @@ texture = SubResource("GradientTexture2D_xflxm")
 script = ExtResource("21_xflxm")
 
 [node name="AudioListener2D" type="AudioListener2D" parent="." unique_id=1175445845]
+
+[node name="PlayerFeedbackController" type="Node" parent="."]
+script = ExtResource("22_feedback")
+combat_cue = ExtResource("23_combat")
+item_use_cue = ExtResource("24_item_use")
+death_cue = ExtResource("25_death")
+damage_received_cue = ExtResource("26_damage_received")
+damage_dealt_cue = ExtResource("27_damage_dealt")
+freeze_cue = ExtResource("28_freeze")
+status_effect_cue = ExtResource("29_status")
+reload_cue = ExtResource("30_reload")
+reload_failed_cue = ExtResource("31_reload_failed")
+item_pickup_cue = ExtResource("32_pickup")
+item_drop_cue = ExtResource("33_drop")
+movement_cue = ExtResource("34_movement")
+dialogue_cue = ExtResource("35_dialogue")
+
+[node name="PlayerScreenFeedback" type="CanvasLayer" parent="."]
+script = ExtResource("36_screen_feedback")

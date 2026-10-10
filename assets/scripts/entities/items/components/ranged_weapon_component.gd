@@ -1,6 +1,12 @@
 class_name RangedWeaponComponent
 extends ItemComponent
 
+const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+
+@export_group("Oprawa użycia")
+## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
+@export var use_feedback: FeedbackCue
+
 enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_RIFLE_BULLET, SHOTGUN_BULLET }
 
 @export_category("Ustawienia Dystansowe")
@@ -62,6 +68,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 			if auto_reload and inv != null and inv.has_method("reload_current_weapon"):
 				if inv.reload_current_weapon():
 					stats.trigger_reload_cooldown(reload_time)
+					if actor.has_method("play_reload_feedback"):
+						actor.call("play_reload_feedback", true)
 			return
 			
 		var stored_ammo_id = item_instance.state.get("ammo_id", &"")
@@ -135,6 +143,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 
 	if actor.has_signal("entity_spawn_requested"):
 		actor.emit_signal("entity_spawn_requested", proj, actor.global_position)
+	FeedbackDispatcherType.play_for_actor(use_feedback, actor, target)
 
 	# 5. ZUŻYCIE BRONI I ZEGAR
 	item_instance.consume_durability(1)

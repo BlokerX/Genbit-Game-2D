@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="FeedbackCue" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
+[ext_resource type="Script" path="res://assets/scripts/audio_system/visual_effect.gd" id="2_visual"]
+[ext_resource type="PackedScene" path="res://assets/scenes/vfx/player_feedback_burst.tscn" id="3_scene"]
+[ext_resource type="Script" path="res://assets/scripts/audio_system/sound_effect.gd" id="4_sound"]
+[ext_resource type="AudioStream" path="res://assets/audio/game/sfx/player/item_use.wav" id="5_audio"]
+
+[sub_resource type="Resource" id="VisualEffect_item"]
+script = ExtResource("2_visual")
+effect_scene = ExtResource("3_scene")
+style = "Burst"
+tint = Color(0.35, 0.9, 1, 1)
+position_offset = Vector2(0, -12)
+lifetime_seconds = 0.4
+
+[sub_resource type="Resource" id="SoundEffect_item"]
+script = ExtResource("4_sound")
+audio_stream = ExtResource("5_audio")
+bus_name = "Entities"
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.08
+max_distance = 1000.0
+
+[resource]
+script = ExtResource("1_cue")
+visual_effect = SubResource("VisualEffect_item")
+sound_effect = SubResource("SoundEffect_item")

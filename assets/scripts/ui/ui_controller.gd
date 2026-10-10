@@ -26,6 +26,12 @@ const InventoryCursorControllerType = preload("res://assets/scripts/ui/inventory
 @export var quest_log_ui: QuestLogUI
 @export var equipment_inventory_ui: EquipmentInventoryUIType
 
+@export_group("Oprawa dźwiękowa")
+## Dźwięk odtwarzany przy otwarciu pełnoekranowej mapy.
+@export var map_open_feedback: FeedbackCue = preload(
+	"res://assets/data/feedback/map_open.tres"
+)
+
 @export_category("Gamepad UI")
 ## Szybkość poruszania kursorem myszy za pomocą lewej gałki
 @export var gamepad_cursor_speed: float = 700.0
@@ -181,6 +187,10 @@ func toggle_map_ui() -> void:
 	else:
 		_close_all_ui()
 		is_map_open = true
+		if map_open_feedback != null:
+			var emitter := _player_ref if is_instance_valid(_player_ref) else null
+			var position := emitter.global_position if emitter != null else Vector2.ZERO
+			GameFeedback.play_cue(map_open_feedback, null, position, emitter)
 		EventBus.set_menu_state(EventBus.MENU_MAP, true)
 		if minimap_ui: minimap_ui.toggle_large_map(true)
 		if hotbar_panel: hotbar_panel.hide()
