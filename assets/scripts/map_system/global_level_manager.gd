@@ -165,9 +165,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		for map_node in _cached_persistent_levels.values():
 			if is_instance_valid(map_node) and map_node.get_parent() == null:
-				map_node.free()
+				map_node.queue_free()
 		if is_instance_valid(stored_player) and stored_player.get_parent() == null:
-			stored_player.free()
+			stored_player.queue_free()
 
 func clear_level_cache() -> void:
 	for map_node in _cached_persistent_levels.values():

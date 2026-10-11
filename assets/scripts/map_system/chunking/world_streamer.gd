@@ -279,4 +279,4 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		for chunk_node in chunk_nodes.values():
 			if is_instance_valid(chunk_node) and chunk_node.get_parent() == null:
-				chunk_node.free()
+				chunk_node.queue_free()

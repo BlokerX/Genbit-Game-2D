@@ -82,7 +82,7 @@ func _start_opening() -> void:
 	
 	# Zabezpieczenie: Sprawdzamy, czy po odczekaniu drzwi nadal są w aktywnym drzewie 
 	# (bo Map mógł w międzyczasie usunąć pokój przez remove_child)
-	if not is_inside_tree():
+	if not is_instance_valid(self) or not is_inside_tree():
 		current_state = State.CLOSED
 		return
 	
