@@ -61,7 +61,9 @@ func _physics_process(delta: float) -> void:
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(global_position, global_position + move_vector)
 	query.collision_mask = collision_mask 
-	if shooter != null and shooter is CollisionObject2D:
+	
+	# POPRAWKA KRYTYCZNA: Bezpieczne sprawdzanie instancji strzelca w masce kolizji
+	if is_instance_valid(shooter) and shooter is CollisionObject2D:
 		query.exclude = [shooter.get_rid()]
 
 	var result = space_state.intersect_ray(query)
@@ -79,7 +81,8 @@ func _on_body_entered(body: Node2D) -> void:
 	trigger_effect(body)
 
 func trigger_effect(direct_hit: Node2D) -> void:
-	if direct_hit == shooter:
+	# POPRAWKA KRYTYCZNA: Zabezpiecza przed Crash'em, gdy sprawca zginął przed trafieniem
+	if is_instance_valid(shooter) and direct_hit == shooter:
 		if not friendly_fire or _time_alive < 0.1:
 			return
 

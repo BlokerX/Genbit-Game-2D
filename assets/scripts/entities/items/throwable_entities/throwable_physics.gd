@@ -43,7 +43,8 @@ func _ready() -> void:
 		if my_faction:
 			_shooter_faction_name = my_faction.faction_name
 	
-	if shooter != null and shooter is CollisionObject2D:
+	# POPRAWKA KRYTYCZNA: Bezpieczne sprawdzanie instancji strzelca
+	if is_instance_valid(shooter) and shooter is CollisionObject2D:
 		add_collision_exception_with(shooter)
 		if arming_delay > 0.0:
 			get_tree().create_timer(arming_delay).timeout.connect(func():
@@ -77,7 +78,8 @@ func _on_body_entered(body: Node) -> void:
 		trigger_effect(body_2d)
 
 func trigger_effect(direct_hit: Node2D) -> void:
-	if direct_hit == shooter:
+	# POPRAWKA KRYTYCZNA: Zapobiega wywrotce (Crash), jeśli shooter został zabity przed trafieniem pocisku
+	if is_instance_valid(shooter) and direct_hit == shooter:
 		if not friendly_fire or _time_alive < 0.1:
 			return
 
