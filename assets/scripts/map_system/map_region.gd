@@ -467,14 +467,23 @@ func _find_enemies_recursive(node: Node) -> void:
 			active_enemies_count += 1
 			
 			# Nasłuchujemy, kiedy przeciwnik zniknie (zginie)
+			# --- NAPRAWA: ZABEZPIECZENIE PRZED WORLDSTREAMEREM ---
+			# Używamy bind(), aby funkcja dokładnie wiedziała, o jakiego wroga chodzi
 			if not child.tree_exited.is_connected(_on_enemy_died):
-				child.tree_exited.connect(_on_enemy_died)
+				child.tree_exited.connect(_on_enemy_died.bind(child))
 				
 		if child.get_child_count() > 0:
 			_find_enemies_recursive(child)
 
 ## Reaguje na śmierć (usunięcie) przeciwnika
-func _on_enemy_died() -> void:
+func _on_enemy_died(enemy: Node = null) -> void:
+	# --- TARCZA OCHRONNA (Rozwiązanie Błędu Chunkowania) ---
+	# Jeśli wróg znika z drzewa sceny, ale NIE otrzymał sygnału śmierci (queue_free),
+	# oznacza to, że został po prostu schowany (zamrożony) przez WorldStreamera!
+	if enemy != null and not enemy.is_queued_for_deletion():
+		return
+	# ---------------------------------------------------------
+	
 	active_enemies_count -= 1
 	if active_enemies_count <= 0:
 		map_region_cleared.emit()
