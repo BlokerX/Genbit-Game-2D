@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="FeedbackCue" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://6411xeypqsin"]
 
-[ext_resource type="Script" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
-[ext_resource type="AudioStream" path="res://assets/audio/game/sfx/player/freeze.wav" id="3_audio"]
+[ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
+[ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
+[ext_resource type="AudioStream" uid="uid://bbwces6cmkksf" path="res://assets/audio/game/sfx/player/freeze.wav" id="3_audio"]
 
 [sub_resource type="Resource" id="SoundEffect_level_portal"]
 script = ExtResource("2_sound")
@@ -11,7 +11,6 @@ bus_name = "Ambient"
 volume_db = -2.0
 pitch_min = 0.8
 pitch_max = 1.2
-max_distance = 2000.0
 
 [resource]
 script = ExtResource("1_cue")

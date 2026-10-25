@@ -1,16 +1,14 @@
-[gd_resource type="Resource" script_class="FeedbackCue" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://cm46hysohngii"]
 
-[ext_resource type="Script" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
-[ext_resource type="AudioStream" path="res://assets/audio/game/sfx/player/damage_dealt.wav" id="3_audio"]
+[ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
+[ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
+[ext_resource type="AudioStream" uid="uid://ba0toxfmdrdaj" path="res://assets/audio/game/sfx/player/damage_dealt.wav" id="3_audio"]
 
 [sub_resource type="Resource" id="SoundEffect_enemy_damage_dealt"]
 script = ExtResource("2_sound")
 audio_stream = ExtResource("3_audio")
-bus_name = "Entities"
 volume_db = -3.0
 pitch_min = 0.8
-pitch_max = 1.0
 max_distance = 1800.0
 
 [resource]

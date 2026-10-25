@@ -115,16 +115,28 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		var target_color = orig_modulate.lerp(acid_color, 0.7)
 		visual_tween.tween_property(sprite, "self_modulate", target_color, telegraph_time).set_trans(Tween.TRANS_SINE)
 		
-	# Tarcza chroniąca przed crashem przy uśpieniu pająka podczas napinania się do rzutu
+	# NAPRAWA: Zabezpieczenie chroniące przed crashem i miękkim zablokowaniem AI przy uśpieniu potwora 
 	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		if is_instance_valid(attacker) and combat_ctrl:
+			combat_ctrl.is_casting_ability = false
 		return
 	
 	await attacker.get_tree().create_timer(telegraph_time).timeout
 	
+	# NAPRAWA: Po powrocie z await upewniamy się, że obiekt nadal znajduje się w aktywnym świecie.
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		if is_instance_valid(attacker) and combat_ctrl:
+			combat_ctrl.is_casting_ability = false
+		return
+		
 	if sprite and is_instance_valid(sprite): 
 		sprite.self_modulate = orig_modulate
 
-	if not is_instance_valid(attacker) or not is_instance_valid(target): return
+	# NAPRAWA: Jeśli gracz zginął w trakcie ładowania (await), wróg musi prawidłowo przerwać czar!
+	if not is_instance_valid(target): 
+		if combat_ctrl: 
+			combat_ctrl.is_casting_ability = false
+		return
 
 	# =========================================================
 	# FAZA 2: RZUT I LOT POCISKU (Obliczanie trajektorii)
@@ -179,6 +191,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 # ==============================================================================
 class AcidProjectileLogic extends Node2D:
 	var attacker_ref: Node2D
+	var _attacker_faction_name: StringName = &"" # NAPRAWA: Zapisana tożsamość na wypadek śmierci rzucającego
 	var start_pos: Vector2
 	var target_pos: Vector2
 	var flight_duration: float
@@ -233,6 +246,13 @@ class AcidProjectileLogic extends Node2D:
 		_z_index: int # <--- ODBIÓR Z-INDEXU
 	) -> void:
 		attacker_ref = _attacker
+		
+		# NAPRAWA: Pobieranie wizytówki (frakcji) potwora, gdybyśmy zginęli a nasza kałuża została na ziemi.
+		if is_instance_valid(attacker_ref):
+			var faction = attacker_ref.get_node_or_null("FactionComponent")
+			if faction:
+				_attacker_faction_name = faction.faction_name
+		
 		start_pos = _start
 		target_pos = _target
 		flight_duration = _flight_dur
@@ -420,7 +440,7 @@ class AcidProjectileLogic extends Node2D:
 		if a_poison:
 			var poison = PoisonDebuffEffect.new()
 			poison.effect_name = "Kwasowa Zgnilizna"
-			poison.hp_per_tick = p_dmg
+			poison.hp_per_tick = -abs(p_dmg)
 			poison.duration = p_dur
 			effects.append(poison)
 		if a_slow:
@@ -459,11 +479,28 @@ class AcidProjectileLogic extends Node2D:
 			if los_result and los_result.collider != col:
 				continue
 			
-			if not f_fire and is_instance_valid(attacker_ref):
-				var attacker_faction = attacker_ref.get_node_or_null("FactionComponent")
-				if attacker_faction and col is CharacterEntity:
-					if attacker_faction.get_disposition_toward(col) == FactionComponent.Disposition.FRIENDLY:
-						continue
+			# NAPRAWA: Bezpieczne sprawdzanie frakcji nawet po śmierci pająka
+			if not f_fire:
+				var is_ally = false
+				if col.has_node("FactionComponent"):
+					var col_faction = col.get_node("FactionComponent")
+					
+					# Jeśli rzucający jeszcze żyje, standardowo:
+					if is_instance_valid(attacker_ref):
+						var attacker_faction = attacker_ref.get_node_or_null("FactionComponent")
+						if attacker_faction and attacker_faction.get_disposition_toward(col) == FactionComponent.Disposition.FRIENDLY:
+							is_ally = true
+					# Jeśli rzucający umarł, polegamy na zapisanej w pamięci pieczątce frakcji:
+					elif _attacker_faction_name != &"":
+						if col_faction.faction_name == _attacker_faction_name and col_faction.friendly_to_same_faction:
+							is_ally = true
+						elif col_faction.faction_relations.has(_attacker_faction_name):
+							if col_faction.faction_relations[_attacker_faction_name] == FactionComponent.Disposition.FRIENDLY:
+								is_ally = true
+				
+				# Pomijamy sojuszników (np. inne pająki)
+				if is_ally:
+					continue
 			
 			if col.has_method("receive_effect"):
 				for eff in effects_to_apply:

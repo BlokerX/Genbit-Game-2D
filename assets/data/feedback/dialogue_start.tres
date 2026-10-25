@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="FeedbackCue" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://blxjuy565hpo8"]
 
-[ext_resource type="Script" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
-[ext_resource type="AudioStream" path="res://assets/audio/game/sfx/ui/dialogue_start.wav" id="3_audio"]
+[ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
+[ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="2_sound"]
+[ext_resource type="AudioStream" uid="uid://c55fvtpg7i5td" path="res://assets/audio/game/sfx/ui/dialogue_start.wav" id="3_audio"]
 
 [sub_resource type="Resource" id="SoundEffect_dialogue_start"]
 script = ExtResource("2_sound")
