@@ -466,11 +466,17 @@ func _find_enemies_recursive(node: Node) -> void:
 		if child.is_in_group(ENEMY_GROUP):
 			active_enemies_count += 1
 			
-			# Nasłuchujemy, kiedy przeciwnik zniknie (zginie)
-			# --- NAPRAWA: ZABEZPIECZENIE PRZED WORLDSTREAMEREM ---
-			# Używamy bind(), aby funkcja dokładnie wiedziała, o jakiego wroga chodzi
-			if not child.tree_exited.is_connected(_on_enemy_died):
-				child.tree_exited.connect(_on_enemy_died.bind(child))
+			# --- NAPRAWA: ZABEZPIECZENIE PRZED WORLDSTREAMEREM (Architektura Event-Driven) ---
+			# Zamiast nasłuchiwać usunięcia z drzewa, nasłuchujemy faktycznej śmierci ze statystyk!
+			var has_health_script = child.get("health_stats_script") != null
+			
+			if has_health_script:
+				if not child.health_stats_script.died.is_connected(_on_enemy_died):
+					child.health_stats_script.died.connect(_on_enemy_died)
+			else:
+				# Fallback dla prymitywnych przeciwników bez health_stats_script (np. beczki)
+				if not child.tree_exited.is_connected(_on_enemy_died):
+					child.tree_exited.connect(_on_enemy_died.bind(child))
 				
 		if child.get_child_count() > 0:
 			_find_enemies_recursive(child)
@@ -478,8 +484,8 @@ func _find_enemies_recursive(node: Node) -> void:
 ## Reaguje na śmierć (usunięcie) przeciwnika
 func _on_enemy_died(enemy: Node = null) -> void:
 	# --- TARCZA OCHRONNA (Rozwiązanie Błędu Chunkowania) ---
-	# Jeśli wróg znika z drzewa sceny, ale NIE otrzymał sygnału śmierci (queue_free),
-	# oznacza to, że został po prostu schowany (zamrożony) przez WorldStreamera!
+	# Jeśli używamy fallbacku (tree_exited), sprawdzamy czy to nie jest zamrożenie.
+	# Jeśli sygnał pochodzi z 'died', enemy będzie nullem i warunek zignoruje blokadę (co jest poprawne).
 	if enemy != null and not enemy.is_queued_for_deletion():
 		return
 	# ---------------------------------------------------------
