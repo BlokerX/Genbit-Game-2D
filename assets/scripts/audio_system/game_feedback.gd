@@ -5,6 +5,7 @@ const SoundEffectType = preload("res://assets/scripts/audio_system/sound_effect.
 const VisualEffectType = preload("res://assets/scripts/audio_system/visual_effect.gd")
 const AnimationEffectType = preload("res://assets/scripts/audio_system/animation_effect.gd")
 const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
+const TargetFollowerType = preload("res://assets/scripts/audio_system/target_follower.gd")
 
 ## Odtwarza animacje, dźwięki przestrzenne i globalne oraz jednorazowe efekty wizualne.
 ## Dostępny w projekcie jako autoload GameFeedback.
@@ -161,7 +162,8 @@ func play_cue(
 	cue: FeedbackCueType,
 	animation_target: Node = null,
 	world_position: Vector2 = Vector2.ZERO,
-	sound_emitter: Node2D = null
+	sound_emitter: Node2D = null,
+	visual_target: Node2D = null # <-- NOWY, OPCJONALNY PARAMETR
 ) -> bool:
 	if cue == null:
 		push_error("GameFeedback nie może odtworzyć pustego FeedbackCue.")
@@ -169,6 +171,7 @@ func play_cue(
 
 	var played_any := false
 	var succeeded := true
+
 	if cue.animation_effect != null:
 		if animation_target == null:
 			push_error("GameFeedback: FeedbackCue wymaga węzła docelowego animacji.")
@@ -178,11 +181,21 @@ func play_cue(
 		else:
 			succeeded = false
 
+	# --- ZMIENIONY BLOK EFEKTÓW WIZUALNYCH ---
 	if cue.visual_effect != null:
-		if play_visual_effect(cue.visual_effect, world_position) != null:
+		var vfx_instance = play_visual_effect(cue.visual_effect, world_position)
+		if vfx_instance != null:
 			played_any = true
-		else:
-			succeeded = false
+			
+			# PODPINANIE ŚLEDZENIA (Follower)
+			if cue.attach_to_target and is_instance_valid(visual_target):
+				var follower = TargetFollowerType.new()
+				vfx_instance.add_child(follower)
+				var vfx_offset := cue.visual_effect.position_offset if cue.visual_effect != null else Vector2.ZERO
+				follower.setup(vfx_instance, visual_target, vfx_offset)
+			else:
+				succeeded = false
+	# ----------------------------------------
 
 	if cue.sound_effect != null:
 		if play_sound(cue.sound_effect, sound_emitter) != null:
@@ -193,6 +206,7 @@ func play_cue(
 	if not played_any and succeeded:
 		push_warning("GameFeedback: FeedbackCue nie zawiera żadnego efektu.")
 		return false
+
 	return succeeded and played_any
 
 func _get_effect_parent() -> Node:

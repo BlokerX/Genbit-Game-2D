@@ -77,20 +77,24 @@ func initialize(player: PlayerCharacter) -> void:
 ## Odtwarza akcję ataku gracza i umieszcza wizualny efekt przy celu lub graczu.
 func play_combat(target: Node2D) -> void:
 	var effect_position := _get_action_position(combat_cue, target)
-	_play_cue(combat_cue, _player.character_sprite, effect_position, _player)
+	var v_target: Node2D = target if (combat_cue != null and combat_cue.visual_origin == VISUAL_ORIGIN_TARGET and is_instance_valid(target)) else _player
+	_play_cue(combat_cue, _player.character_sprite, effect_position, _player, v_target)
 
 ## Odtwarza domyślną albo nadpisaną przez komponent przedmiotu oprawę użycia.
 func play_item_use(cue: FeedbackCueType, target: Node2D) -> void:
 	var selected_cue := cue if cue != null else item_use_cue
 	var effect_position := _get_action_position(selected_cue, target)
-	_play_cue(selected_cue, _player.character_sprite, effect_position, _player)
+	var v_target: Node2D = target if (selected_cue != null and selected_cue.visual_origin == VISUAL_ORIGIN_TARGET and is_instance_valid(target)) else _player
+	_play_cue(selected_cue, _player.character_sprite, effect_position, _player, v_target)
 
 ## Odtwarza efekt trafienia zadanego przez gracza w pozycji trafionego celu.
 func play_damage_dealt(target: Node2D) -> void:
 	var effect_position := _player.global_position
+	var v_target: Node2D = _player
 	if is_instance_valid(target):
 		effect_position = target.global_position
-	_play_cue(damage_dealt_cue, null, effect_position, _player)
+		v_target = target
+	_play_cue(damage_dealt_cue, null, effect_position, _player, v_target)
 
 ## Odtwarza reakcję na otrzymanie obrażeń lub efektu statusu.
 func play_received_effect(effect: Effect) -> void:
@@ -160,11 +164,17 @@ func _play_cue(
 	cue: FeedbackCueType,
 	animation_target: Node,
 	world_position: Vector2,
-	sound_emitter: Node2D
+	sound_emitter: Node2D,
+	visual_target: Node2D = null # <-- Dodane
 ) -> void:
 	if cue == null:
 		return
-	GameFeedback.play_cue(cue, animation_target, world_position, sound_emitter)
+	
+	# Jeśli żaden specyficzny cel nie został podany, zakładamy, że efekty (np. leczenie, reload, krok) mają się "kleić" do gracza
+	if visual_target == null:
+		visual_target = _player
+		
+	GameFeedback.play_cue(cue, animation_target, world_position, sound_emitter, visual_target)
 
 func _on_player_health_changed(current_health: int, maximum_health: int) -> void:
 	if (

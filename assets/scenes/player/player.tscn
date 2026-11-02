@@ -22,21 +22,21 @@
 [ext_resource type="Texture2D" uid="uid://ccql8716e4rit" path="res://assets/textures/samples_examples/entities/Nick/nick_front_left.png" id="14_lgxp8"]
 [ext_resource type="Texture2D" uid="uid://d1cvyqjmovrmh" path="res://assets/textures/samples_examples/entities/Nick/nick_dead.png" id="15_npq60"]
 [ext_resource type="Script" uid="uid://djg3r5l1r5ji2" path="res://assets/scripts/components/camera_component.gd" id="21_xflxm"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/player_feedback_controller.gd" id="22_feedback"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_combat.tres" id="23_combat"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_item_use.tres" id="24_item_use"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_death.tres" id="25_death"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_damage_received.tres" id="26_damage_received"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_damage_dealt.tres" id="27_damage_dealt"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_freeze.tres" id="28_freeze"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_status_effect.tres" id="29_status"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_reload.tres" id="30_reload"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_reload_failed.tres" id="31_reload_failed"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_pickup.tres" id="32_pickup"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_drop.tres" id="33_drop"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player_movement.tres" id="34_movement"]
-[ext_resource type="Resource" path="res://assets/data/feedback/dialogue_start.tres" id="35_dialogue"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/player_screen_feedback.gd" id="36_screen_feedback"]
+[ext_resource type="Script" uid="uid://b7waew7ui3op2" path="res://assets/scripts/audio_system/player_feedback_controller.gd" id="22_feedback"]
+[ext_resource type="Resource" uid="uid://ja8wiguo6gdy" path="res://assets/data/feedback/player_combat.tres" id="23_combat"]
+[ext_resource type="Resource" uid="uid://bh6mxuqxvv1ha" path="res://assets/data/feedback/player_item_use.tres" id="24_item_use"]
+[ext_resource type="Resource" uid="uid://bpejclayqq1x8" path="res://assets/data/feedback/player_death.tres" id="25_death"]
+[ext_resource type="Resource" uid="uid://cb2lhqvo6og0w" path="res://assets/data/feedback/player_damage_received.tres" id="26_damage_received"]
+[ext_resource type="Resource" uid="uid://s15t3rjnk35y" path="res://assets/data/feedback/player_damage_dealt.tres" id="27_damage_dealt"]
+[ext_resource type="Resource" uid="uid://boi3lrettrmgt" path="res://assets/data/feedback/player_freeze.tres" id="28_freeze"]
+[ext_resource type="Resource" uid="uid://bgwsjpupojck4" path="res://assets/data/feedback/player_status_effect.tres" id="29_status"]
+[ext_resource type="Resource" uid="uid://bnxxvic55mnmu" path="res://assets/data/feedback/player_reload.tres" id="30_reload"]
+[ext_resource type="Resource" uid="uid://jkr06rpg3vr4" path="res://assets/data/feedback/player_reload_failed.tres" id="31_reload_failed"]
+[ext_resource type="Resource" uid="uid://bgk4jry2qk3kc" path="res://assets/data/feedback/player_pickup.tres" id="32_pickup"]
+[ext_resource type="Resource" uid="uid://cqat8geogafmq" path="res://assets/data/feedback/player_drop.tres" id="33_drop"]
+[ext_resource type="Resource" uid="uid://becavr4bq661b" path="res://assets/data/feedback/player_movement.tres" id="34_movement"]
+[ext_resource type="Resource" uid="uid://blxjuy565hpo8" path="res://assets/data/feedback/dialogue_start.tres" id="35_dialogue"]
+[ext_resource type="Script" uid="uid://dscevpllqwpdu" path="res://assets/scripts/audio_system/player_screen_feedback.gd" id="36_screen_feedback"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xflxm"]
 animations = [{
@@ -108,7 +108,6 @@ loot_drop_script = ExtResource("6_yfi7d")
 character_sprite = NodePath("CharacterAnimatedSprite2D")
 effects_collector = NodePath("EffectsCollector")
 destroy_entity_after_die = false
-drop_inventory_on_death = true
 
 [node name="FactionComponent" type="Node" parent="." unique_id=1413011526]
 script = ExtResource("6_xflxm")
@@ -171,8 +170,10 @@ script = ExtResource("21_xflxm")
 
 [node name="AudioListener2D" type="AudioListener2D" parent="." unique_id=1175445845]
 
-[node name="PlayerFeedbackController" type="Node" parent="."]
+[node name="PlayerFeedbackController" type="Node" parent="." unique_id=919515216]
 script = ExtResource("22_feedback")
+movement_cue = ExtResource("34_movement")
+dialogue_cue = ExtResource("35_dialogue")
 combat_cue = ExtResource("23_combat")
 item_use_cue = ExtResource("24_item_use")
 death_cue = ExtResource("25_death")
@@ -184,8 +185,6 @@ reload_cue = ExtResource("30_reload")
 reload_failed_cue = ExtResource("31_reload_failed")
 item_pickup_cue = ExtResource("32_pickup")
 item_drop_cue = ExtResource("33_drop")
-movement_cue = ExtResource("34_movement")
-dialogue_cue = ExtResource("35_dialogue")
 
-[node name="PlayerScreenFeedback" type="CanvasLayer" parent="."]
+[node name="PlayerScreenFeedback" type="CanvasLayer" parent="." unique_id=1992948506]
 script = ExtResource("36_screen_feedback")

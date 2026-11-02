@@ -1,10 +1,18 @@
-[gd_resource type="Resource" script_class="FeedbackCue" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://boi3lrettrmgt"]
 
-[ext_resource type="Script" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/visual_effect.gd" id="2_visual"]
-[ext_resource type="PackedScene" path="res://assets/scenes/vfx/player_feedback_burst.tscn" id="3_scene"]
-[ext_resource type="Script" path="res://assets/scripts/audio_system/sound_effect.gd" id="4_sound"]
-[ext_resource type="AudioStream" path="res://assets/audio/game/sfx/player/freeze.wav" id="5_audio"]
+[ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
+[ext_resource type="Script" uid="uid://cesfsi6hca6s" path="res://assets/scripts/audio_system/visual_effect.gd" id="2_visual"]
+[ext_resource type="PackedScene" uid="uid://cu3xx3rnj7ix2" path="res://assets/scenes/vfx/player_feedback_burst.tscn" id="3_scene"]
+[ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="4_sound"]
+[ext_resource type="AudioStream" uid="uid://bbwces6cmkksf" path="res://assets/audio/game/sfx/player/freeze.wav" id="5_audio"]
+
+[sub_resource type="Resource" id="SoundEffect_freeze"]
+script = ExtResource("4_sound")
+audio_stream = ExtResource("5_audio")
+volume_db = -3.0
+pitch_min = 0.95
+pitch_max = 1.08
+max_distance = 1200.0
 
 [sub_resource type="Resource" id="VisualEffect_freeze"]
 script = ExtResource("2_visual")
@@ -13,15 +21,6 @@ style = "Frost"
 tint = Color(0.42, 0.86, 1, 1)
 position_offset = Vector2(0, -16)
 lifetime_seconds = 0.55
-
-[sub_resource type="Resource" id="SoundEffect_freeze"]
-script = ExtResource("4_sound")
-audio_stream = ExtResource("5_audio")
-bus_name = "Entities"
-volume_db = -3.0
-pitch_min = 0.95
-pitch_max = 1.08
-max_distance = 1200.0
 
 [resource]
 script = ExtResource("1_cue")

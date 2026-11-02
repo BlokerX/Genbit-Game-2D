@@ -19,3 +19,5 @@ enum VisualOrigin { ACTOR, TARGET }
 
 ## Określa, czy VFX wyświetlić przy postaci, czy przy celu akcji.
 @export var visual_origin: VisualOrigin = VisualOrigin.ACTOR
+
+@export var attach_to_target: bool = true
