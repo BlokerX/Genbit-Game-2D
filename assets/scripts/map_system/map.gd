@@ -471,10 +471,14 @@ func handle_player_respawn(_player: PlayerCharacter) -> void:
 
 ## Zwrócenie gracza ze sceny lub ze schowka (między-poziomowego)
 func get_player() -> PlayerCharacter:
-	# 1. Próbujemy znaleźć gracza normalnie w drzewie
-	var player = get_tree().get_first_node_in_group(PLAYER_GROUP)
+	var tree = get_tree()
+	var player = null
 	
-	# 2. Jeśli go nie ma, bo ładuje się poziom, bierzemy go ze schowka Menedżera!
+	# 1. Próbujemy znaleźć gracza w drzewie (TARCZA: sprawdzamy czy drzewo istnieje)
+	if tree:
+		player = tree.get_first_node_in_group(PLAYER_GROUP)
+		
+	# 2. Jeśli go nie ma, bierzemy go ze schowka Menedżera!
 	if player == null and GlobalLevelManager.get("stored_player") != null:
 		player = GlobalLevelManager.stored_player
 		
