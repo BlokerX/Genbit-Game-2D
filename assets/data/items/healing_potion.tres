@@ -9,7 +9,7 @@
 [ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/timed_effects/health/regeneration_buff_effect.gd" id="5_tb5bx"]
 [ext_resource type="Script" uid="uid://dwcvij0jduu4c" path="res://assets/scripts/entities/items/components/consumable_component.gd" id="6_bu331"]
 [ext_resource type="Script" uid="uid://hvanwi787her" path="res://assets/scripts/entities/items/components/stack_component.gd" id="7_svrkv"]
-[ext_resource type="Resource" path="res://assets/data/feedback/potion_drink.tres" id="8_feedback"]
+[ext_resource type="Resource" path="res://assets/data/feedback/player/potion_drink.tres" id="8_feedback"]
 
 [sub_resource type="Resource" id="Resource_5nqpw"]
 script = ExtResource("4_bap3u")

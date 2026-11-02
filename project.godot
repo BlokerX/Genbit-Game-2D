@@ -53,9 +53,9 @@ enabled=PackedStringArray("res://addons/dialogue_editor/plugin.cfg", "res://addo
 folder_colors={
 "res://assets/scripts/entities/characters/enemies/": "red",
 "res://assets/scripts/entities/characters/player/": "blue",
+"res://assets/scripts/entities/combat/": "purple",
 "res://assets/scripts/entities/items/": "green",
 "res://assets/scripts/entities/movement/": "orange",
-"res://assets/scripts/entities/other_data/": "purple",
 "res://assets/scripts/entities/player/player_stats/": "gray"
 }
 

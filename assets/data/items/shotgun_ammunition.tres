@@ -19,8 +19,8 @@ script = ExtResource("6_7bqeg")
 
 [resource]
 script = ExtResource("3_wgm5f")
-item_id = &"shotgun_ammunation"
-item_name = "Shotgun Ammunation"
+item_id = &"shotgun_ammunition"
+item_name = "Shotgun Ammunition"
 item_description = "Shotgun bullet."
 item_icon = ExtResource("3_gjhr6")
 components = Array[ExtResource("1_dr2dm")]([SubResource("Resource_ipdfb"), SubResource("Resource_omqr7")])

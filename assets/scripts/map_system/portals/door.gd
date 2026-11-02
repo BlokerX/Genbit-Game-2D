@@ -4,11 +4,11 @@ class_name Door
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk odtwarzany, gdy drzwi zaczynają się otwierać.
 @export var opening_feedback: FeedbackCue = preload(
-	"res://assets/data/feedback/door_open.tres"
+	"res://assets/data/feedback/environment/door_open.tres"
 )
 ## Dźwięk przejścia gracza przez otwarte drzwi.
 @export var transition_feedback: FeedbackCue = preload(
-	"res://assets/data/feedback/door_transition.tres"
+	"res://assets/data/feedback/environment/door_transition.tres"
 )
 
 # todo problem z przenikaniem przez pokoje z tymi samymi drzwiami (pozycja drzwi w pokoju)

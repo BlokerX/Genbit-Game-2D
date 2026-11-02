@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://d1pwrfy72pr74" path="res://assets/scenes/game_objects/item_pickup.tscn" id="1_idbtf"]
 [ext_resource type="Script" uid="uid://1f2qvv7y72gg" path="res://assets/scripts/entities/items/loot_item.gd" id="2_ha1e0"]
-[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="3_xulls"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunition.tres" id="3_xulls"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="4_ha1e0"]
 [ext_resource type="Script" uid="uid://brgrsjbml6fve" path="res://assets/scripts/components/loot_drop_component.gd" id="4_r43aq"]
 

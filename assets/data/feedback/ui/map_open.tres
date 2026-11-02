@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://dfcj4nygs3bni"]
+
+[ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_uodhx"]
+[ext_resource type="AudioStream" uid="uid://bkk8n33wft4a0" path="res://assets/audio/game/sfx/player/item_use.wav" id="2_rn0h8"]
+[ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="3_s6hdr"]
+
+[sub_resource type="Resource" id="SoundEffect_map"]
+script = ExtResource("3_s6hdr")
+audio_stream = ExtResource("2_rn0h8")
+bus_name = "SFX"
+volume_db = -5.0
+pitch_min = 0.95
+pitch_max = 1.05
+
+[resource]
+script = ExtResource("1_uodhx")
+sound_effect = SubResource("SoundEffect_map")

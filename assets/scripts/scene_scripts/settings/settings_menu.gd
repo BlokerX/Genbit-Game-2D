@@ -1,7 +1,7 @@
 extends Control
 
 const SETTINGS_BUTTON_FEEDBACK: FeedbackCue = preload(
-	"res://assets/data/feedback/settings_button.tres"
+	"res://assets/data/feedback/ui/settings_button.tres"
 )
 
 @export_category("Nawigacja")

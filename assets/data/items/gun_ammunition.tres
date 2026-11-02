@@ -18,8 +18,8 @@ script = ExtResource("6_1hxya")
 
 [resource]
 script = ExtResource("3_n7inm")
-item_id = &"gun_ammunation"
-item_name = "Gun Ammunation"
+item_id = &"gun_ammunition"
+item_name = "Gun Ammunition"
 item_description = "Standard gun bullet."
 item_icon = ExtResource("3_lbysw")
 components = Array[ExtResource("1_k1mwc")]([SubResource("Resource_vgdri"), SubResource("Resource_ragoo")])

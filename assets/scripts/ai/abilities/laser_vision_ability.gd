@@ -4,11 +4,11 @@ class_name LaserVisionAbility
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk narastającego ładowania promienia.
 @export var charge_feedback_cue: FeedbackCue = preload(
-	"res://assets/data/feedback/laser_charge.tres"
+	"res://assets/data/feedback/enemies/laser_charge.tres"
 )
 ## Dźwięk wystrzału po zakończeniu celowania.
 @export var fire_feedback_cue: FeedbackCue = preload(
-	"res://assets/data/feedback/laser_fire.tres"
+	"res://assets/data/feedback/enemies/laser_fire.tres"
 )
 
 @export_category("Zdolność: Laserowy Wzrok")

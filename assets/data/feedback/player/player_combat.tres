@@ -1,28 +1,29 @@
-[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://bh6mxuqxvv1ha"]
+[gd_resource type="Resource" script_class="FeedbackCue" format=3 uid="uid://ja8wiguo6gdy"]
 
 [ext_resource type="Script" uid="uid://dm6o0sh64ekd5" path="res://assets/scripts/audio_system/feedback_cue.gd" id="1_cue"]
 [ext_resource type="Script" uid="uid://cesfsi6hca6s" path="res://assets/scripts/audio_system/visual_effect.gd" id="2_visual"]
 [ext_resource type="PackedScene" uid="uid://cu3xx3rnj7ix2" path="res://assets/scenes/vfx/player_feedback_burst.tscn" id="3_scene"]
 [ext_resource type="Script" uid="uid://da3hopgan34d7" path="res://assets/scripts/audio_system/sound_effect.gd" id="4_sound"]
-[ext_resource type="AudioStream" uid="uid://bkk8n33wft4a0" path="res://assets/audio/game/sfx/player/item_use.wav" id="5_audio"]
+[ext_resource type="AudioStream" uid="uid://lhp2b8lywjcd" path="res://assets/audio/game/sfx/player/combat_slash.wav" id="5_audio"]
 
-[sub_resource type="Resource" id="SoundEffect_item"]
+[sub_resource type="Resource" id="SoundEffect_combat"]
 script = ExtResource("4_sound")
 audio_stream = ExtResource("5_audio")
-volume_db = -4.0
-pitch_min = 0.94
-pitch_max = 1.08
+volume_db = -2.0
+pitch_min = 0.9
+pitch_max = 1.12
 max_distance = 1000.0
 
-[sub_resource type="Resource" id="VisualEffect_item"]
+[sub_resource type="Resource" id="VisualEffect_combat"]
 script = ExtResource("2_visual")
 effect_scene = ExtResource("3_scene")
-tint = Color(0.35, 0.9, 1, 1)
-position_offset = Vector2(0, -12)
+style = "Slash"
+tint = Color(1, 0.72, 0.3, 1)
+position_offset = Vector2(0, -18)
 lifetime_seconds = 0.4
 
 [resource]
 script = ExtResource("1_cue")
-visual_effect = SubResource("VisualEffect_item")
-sound_effect = SubResource("SoundEffect_item")
-attach_to_target = true
+visual_effect = SubResource("VisualEffect_combat")
+sound_effect = SubResource("SoundEffect_combat")
+visual_origin = 1

@@ -27,7 +27,7 @@ const InventoryCursorControllerType = preload("res://assets/scripts/ui/inventory
 @export var equipment_inventory_ui: EquipmentInventoryUIType
 
 @export_group("Oprawa dźwiękowa")
-@export var map_open_feedback: FeedbackCue = preload("res://assets/data/feedback/map_open.tres")
+@export var map_open_feedback: FeedbackCue = preload("res://assets/data/feedback/ui/map_open.tres")
 
 @export_category("Gamepad UI")
 @export var gamepad_cursor_speed: float = 700.0

@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://hp4oiwwvtan5" path="res://assets/scripts/quests/objectives/quest_objective.gd" id="4_8570q"]
 [ext_resource type="Resource" uid="uid://d26ydrnx3wo6w" path="res://assets/data/items/gun.tres" id="5_4iopv"]
 [ext_resource type="Script" uid="uid://xyw88e45atht" path="res://assets/scripts/quests/objectives/objective_gather.gd" id="6_rcsqo"]
-[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunation.tres" id="8_1a3s5"]
+[ext_resource type="Resource" uid="uid://bt7hlvjfty8sl" path="res://assets/data/items/gun_ammunition.tres" id="8_1a3s5"]
 [ext_resource type="Resource" uid="uid://qqgx27ghjvi1" path="res://assets/data/items/reset_potion.tres" id="9_x6uw4"]
 [ext_resource type="Script" uid="uid://rlbaeabbej6v" path="res://assets/dialogue_system/effects/give_item_effect.gd" id="9_yjl5l"]
 

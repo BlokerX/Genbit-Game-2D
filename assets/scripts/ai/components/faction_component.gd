@@ -146,6 +146,10 @@ func process_revenge(attacker: CharacterEntity, is_shared: bool = false) -> void
 		var my_owner = get_parent() as CharacterEntity
 		if not my_owner: return
 		
+		# --- NOWE ZABEZPIECZENIE ---
+		var tree = get_tree()
+		if not tree: return
+		
 		for char_node in get_tree().get_nodes_in_group("Character"):
 			if char_node == my_owner or char_node == attacker: 
 				continue

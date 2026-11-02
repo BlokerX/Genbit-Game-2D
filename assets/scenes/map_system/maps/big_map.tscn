@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://b0mlsnkqjtutp" path="res://assets/scenes/map_system/portals/level_entrance.tscn" id="4_64acl"]
 [ext_resource type="Script" uid="uid://qggqcqys4ruj" path="res://assets/scripts/components/movement_component.gd" id="4_j4d82"]
 [ext_resource type="Script" uid="uid://c8haxva8ra810" path="res://assets/scripts/components/monitored_life_stats_component.gd" id="5_qdhr5"]
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/other_data/attack_data.gd" id="6_57olb"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="6_57olb"]
 [ext_resource type="Script" uid="uid://bhf7u5pstn1te" path="res://assets/scripts/components/interaction_and_attack_stats_component.gd" id="7_8oq4s"]
 [ext_resource type="PackedScene" uid="uid://b56d8pmb4go24" path="res://assets/scenes/bots/enemies/soldier.tscn" id="8_xpub1"]
 [ext_resource type="PackedScene" uid="uid://fvolgeo7jfhp" path="res://assets/scenes/spawnpoints/general_spawnpoint/item_spawnpoint.tscn" id="10_qdhr5"]

@@ -4,7 +4,7 @@ extends Node
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk odtwarzany przy otwarciu interfejsu skrzyni.
 @export var open_feedback: FeedbackCue = preload(
-	"res://assets/data/feedback/chest_open.tres"
+	"res://assets/data/feedback/environment/chest_open.tres"
 )
 
 #region Storage stats

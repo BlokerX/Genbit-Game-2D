@@ -4,7 +4,7 @@ class_name NPCDialogueComponent
 @export_group("Oprawa dialogu")
 ## Dźwięk odtwarzany, gdy NPC rozpoczyna rozmowę.
 @export var dialogue_start_feedback: FeedbackCue = preload(
-	"res://assets/data/feedback/dialogue_start.tres"
+	"res://assets/data/feedback/ui/dialogue_start.tres"
 )
 
 @export_category("Ustawienia Dialogu")

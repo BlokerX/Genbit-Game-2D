@@ -77,8 +77,8 @@ max_stack = 12
 
 [resource]
 script = ExtResource("13_auc82")
-item_id = &"devine_elixir"
-item_name = "Devine Elixir"
+item_id = &"divine_elixir"
+item_name = "Divine Elixir"
 item_description = "Obtain devine power."
 item_icon = ExtResource("12_vl8oh")
 components = Array[ExtResource("1_8p2dn")]([SubResource("Resource_lwss7"), SubResource("Resource_0p86o")])

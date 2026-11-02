@@ -4,7 +4,7 @@ class_name LevelEntrance
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk odtwarzany przy rozpoczęciu przejścia na inny poziom.
 @export var enter_feedback: FeedbackCue = preload(
-	"res://assets/data/feedback/level_portal.tres"
+	"res://assets/data/feedback/environment/level_portal.tres"
 )
 
 @export_group("Konfiguracja Przejścia")

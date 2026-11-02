@@ -7,19 +7,19 @@ const VISUAL_ORIGIN_TARGET := 1
 @export_group("Oprawa dźwiękowa")
 ## Domyślny dźwięk ataku przeciwnika; indywidualny cue broni może go nadpisać.
 @export var attack_feedback_cue: FeedbackCueType = preload(
-	"res://assets/data/feedback/enemy_attack.tres"
+	"res://assets/data/feedback/enemies/enemy_attack.tres"
 )
 ## Dźwięk przyjęcia obrażeń przez przeciwnika.
 @export var damage_received_feedback_cue: FeedbackCueType = preload(
-	"res://assets/data/feedback/enemy_damage_received.tres"
+	"res://assets/data/feedback/enemies/enemy_damage_received.tres"
 )
 ## Dźwięk zadania obrażeń przez przeciwnika.
 @export var damage_dealt_feedback_cue: FeedbackCueType = preload(
-	"res://assets/data/feedback/enemy_damage_dealt.tres"
+	"res://assets/data/feedback/enemies/enemy_damage_dealt.tres"
 )
 ## Dźwięk śmierci przeciwnika.
 @export var death_feedback_cue: FeedbackCueType = preload(
-	"res://assets/data/feedback/enemy_death.tres"
+	"res://assets/data/feedback/enemies/enemy_death.tres"
 )
 
 @export_category("AI")

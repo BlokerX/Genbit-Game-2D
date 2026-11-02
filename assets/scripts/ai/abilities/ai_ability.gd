@@ -9,7 +9,7 @@ const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.
 @export var max_range: float = 200.0
 ## Oprawa odtwarzana przy wykonaniu zdolności specjalnej przeciwnika.
 @export var feedback_cue: FeedbackCueType = preload(
-	"res://assets/data/feedback/enemy_super_attack.tres"
+	"res://assets/data/feedback/enemies/enemy_super_attack.tres"
 )
 
 @export_category("Inteligencja i Wyjątki")
