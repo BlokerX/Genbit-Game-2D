@@ -39,7 +39,8 @@ func _clear_passives_by_source(source_name: String) -> void:
 				active_effect.end_effect()
 			else:
 				active_effect.queue_free()
-			_effects_collector.remove_child(active_effect)
+			if active_effect.get_parent() == _effects_collector:
+				_effects_collector.remove_child(active_effect)
 
 func _apply_passives(effects: Array[Effect], source_name: String) -> void:
 	if not is_instance_valid(_character):
@@ -48,7 +49,10 @@ func _apply_passives(effects: Array[Effect], source_name: String) -> void:
 	for effect in effects:
 		if effect == null:
 			continue
-
 		var effect_copy: Effect = effect.duplicate(true)
 		effect_copy.set_meta("passive_source", source_name)
+		# NAPRAWA KRYTYCZNA: Efekty pasywne z ekwipunku/plecaka muszą trwać w nieskończoność
+		# (dopóki gracz ma założony przedmiot), niezależnie od czasu 'duration' wpisanego w pliku .tres!
+		if "is_infinite" in effect_copy:
+			effect_copy.is_infinite = true
 		_character.receive_effect(effect_copy)

@@ -26,9 +26,13 @@
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="24_2r1pq"]
 [ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="25_rhj1y"]
 [ext_resource type="Script" uid="uid://kpufsc0m73vy" path="res://assets/scripts/ai/abilities/psychosis_ability.gd" id="26_lbnv4"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="26_srq7g"]
 [ext_resource type="Script" uid="uid://3obnyo3ee8cy" path="res://assets/scripts/ai/abilities/acid_throw_ability.gd" id="27_x7u7v"]
+[ext_resource type="Script" uid="uid://dco034rfy4hcw" path="res://assets/scripts/ai/components/ai_phase_controller.gd" id="29_7ofhs"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="29_84lec"]
+[ext_resource type="Script" uid="uid://ffu6f8kalkqa" path="res://assets/scripts/ai/core/ai_phase.gd" id="30_8suqv"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="30_j8le7"]
+[ext_resource type="Script" uid="uid://gmij6pfs44ua" path="res://assets/scripts/ai/abilities/acid_spit_ability.gd" id="31_rwv27"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{
@@ -69,6 +73,18 @@ metadata/_custom_type_script = "uid://3obnyo3ee8cy"
 [sub_resource type="Resource" id="Resource_x7u7v"]
 script = ExtResource("26_lbnv4")
 metadata/_custom_type_script = "uid://kpufsc0m73vy"
+
+[sub_resource type="Resource" id="Resource_pth21"]
+script = ExtResource("31_rwv27")
+metadata/_custom_type_script = "uid://gmij6pfs44ua"
+
+[sub_resource type="Resource" id="Resource_615r1"]
+script = ExtResource("30_8suqv")
+phase_name = "Faza 2 - Furia"
+health_threshold = 0.8
+new_abilities = Array[ExtResource("25_rhj1y")]([SubResource("Resource_pth21")])
+heal_percent_on_enter = 0.1
+metadata/_custom_type_script = "uid://ffu6f8kalkqa"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
@@ -116,13 +132,14 @@ collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
 
-[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat", "phase_controller")]
 script = ExtResource("16_askxk")
 behavior_profile = ExtResource("17_x7u7v")
 perception = NodePath("PerceptionComponent")
 state_machine = NodePath("AIStateMachine")
 navigation = NodePath("AINavigationController")
 combat = NodePath("AICombatController")
+phase_controller = NodePath("AIPhaseController")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"
 
 [node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
@@ -156,6 +173,11 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 script = ExtResource("24_2r1pq")
 abilities = Array[ExtResource("25_rhj1y")]([SubResource("Resource_dedn6"), SubResource("Resource_x7u7v")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
+
+[node name="AIPhaseController" type="Node" parent="AIController" unique_id=579983699]
+script = ExtResource("29_7ofhs")
+phases = Array[ExtResource("30_8suqv")]([SubResource("Resource_615r1")])
+metadata/_custom_type_script = "uid://dco034rfy4hcw"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
 shape = SubResource("CircleShape2D_r73tf")

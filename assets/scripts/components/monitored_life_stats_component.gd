@@ -1,13 +1,19 @@
 extends LifeStatsComponent
-
 class_name MonitoredLifeStatsComponent
 
 signal health_updated(current_health: int, maximum_health: int)
 signal max_health_changed(new_max_health: int)
 
-# D_E_B_U_G
+func _init() -> void:
+	# NAPRAWA KRYTYCZNA (Odblokowanie Faz Bossa w AIPhaseController):
+	# Każda zmiana zdrowia (take_damage, heal, kill) automatycznie zasila sygnał health_updated!
+	if not health_changed.is_connected(_on_internal_health_changed):
+		health_changed.connect(_on_internal_health_changed)
+
+func _on_internal_health_changed(_new_health: int, _max_health: int) -> void:
+	emit_health_update()
+
 func monitor() -> void :
-	#print("Monitor zdrowia gracza: ", health, " / ", max_health)
 	return
 
 #override

@@ -14,17 +14,18 @@ func _init(_duration: float = 30.0, _adder: float = 0.0, _mult: float = 1.0):
 	tick_interval = 0.0
 	cooldown_adder = _adder
 	cooldown_multiplier = _mult
+	effect_category = EffectCategory.STAT_DEBUFF if (_adder > 0.0 or _mult > 1.0) else EffectCategory.STAT_BUFF
 
 func on_effect_start(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.cooldown_adder += cooldown_adder
-		stats.cooldown_multiplier *= cooldown_multiplier
+		stats.cooldown_adder = snappedf(stats.cooldown_adder + cooldown_adder, 0.0001)
+		stats.cooldown_multiplier = snappedf(stats.cooldown_multiplier * cooldown_multiplier, 0.0001)
 		print("Efekt Cooldownu nałożony! (", duration, "s)")
 
 func on_effect_end(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.cooldown_adder -= cooldown_adder
-		if cooldown_multiplier != 0:
-			stats.cooldown_multiplier /= cooldown_multiplier
+		stats.cooldown_adder = snappedf(stats.cooldown_adder - cooldown_adder, 0.0001)
+		if cooldown_multiplier != 0.0:
+			stats.cooldown_multiplier = snappedf(stats.cooldown_multiplier / cooldown_multiplier, 0.0001)

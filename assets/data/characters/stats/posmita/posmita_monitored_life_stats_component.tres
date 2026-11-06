@@ -7,3 +7,4 @@ resource_local_to_scene = true
 script = ExtResource("1_1s8fx")
 health = 3500
 max_health = 3500
+immune_categories = Array[int]([2])

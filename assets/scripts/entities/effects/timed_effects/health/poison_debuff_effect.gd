@@ -6,3 +6,9 @@ func _init(_duration: float = 5.0, _tick_interval: float = 1.0, _hp_per_tick: in
 	super(_duration, _tick_interval, -abs(_hp_per_tick))
 	effect_name = "Poison"
 	effect_color = Color.DARK_MAGENTA
+	effect_category = EffectCategory.POISON_ACID
+
+func get_effective_category() -> EffectCategory:
+	if effect_category in [EffectCategory.NONE, EffectCategory.HEAL]:
+		return EffectCategory.POISON_ACID
+	return effect_category

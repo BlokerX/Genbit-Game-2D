@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="5_kmkls"]
 [ext_resource type="Texture2D" uid="uid://cma8rcaavbntu" path="res://assets/textures/samples_examples/standard_bullet.png" id="5_r1ltu"]
 [ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="6_r1ltu"]
-[ext_resource type="Resource" path="res://assets/data/feedback/player/player_ranged_fire.tres" id="7_feedback"]
+[ext_resource type="Resource" uid="uid://dedo2luucv84h" path="res://assets/data/feedback/player/player_ranged_fire.tres" id="7_feedback"]
 
 [sub_resource type="Resource" id="Resource_xto05"]
 script = ExtResource("2_h6b14")
@@ -20,13 +20,13 @@ stun_time = 0.5
 
 [sub_resource type="Resource" id="Resource_v7uqk"]
 script = ExtResource("4_sfuo2")
+use_feedback = ExtResource("7_feedback")
 use_cooldown = 1.2
 attack_data = SubResource("Resource_xto05")
 accepted_ammunition_type = 6
 magazine_capacity = 5
 projectile_texture = ExtResource("5_r1ltu")
 projectile_scene = ExtResource("4_kmkls")
-use_feedback = ExtResource("7_feedback")
 
 [sub_resource type="Resource" id="Resource_6akhw"]
 script = ExtResource("6_r1ltu")
