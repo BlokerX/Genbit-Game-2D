@@ -1,8 +1,11 @@
 extends AIAbility
 class_name JumpSmashAbility
 
-@export_category("Zdolność: Miażdżący Skok")
+const JUMP_SCALE_MULTIPLIER: float = 1.35
+const HALF_DURATION_FACTOR: float = 0.5
+const WALL_SAFETY_MARGIN_PX: float = 5.0
 
+@export_category("Zdolność: Miażdżący Skok")
 @export_group("Obrażenia i Efekty")
 @export var damage: int = 30
 @export var stun_duration: float = 1.5
@@ -37,106 +40,87 @@ func _init() -> void:
 	max_range = 250.0
 
 func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
-	if not is_instance_valid(attacker) or not is_instance_valid(target): return
-	var combat_ctrl = attacker.get_node_or_null("AIController/AICombatController")
-	if combat_ctrl:
-		combat_ctrl.is_casting_ability = true
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
+
+	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
 
 	# --- 1. PRZEWIDYWANIE RUCHU CELU ---
-	var predicted_pos = target.global_position
+	var predicted_pos: Vector2 = target.global_position
 	if "velocity" in target and target.velocity != Vector2.ZERO:
 		predicted_pos += target.velocity * prediction_factor
-		
-	# Zabezpieczenie: Boss nie może skoczyć w przewidziane miejsce, jeśli przekracza to jego maksymalny zasięg
-	var dist_to_prediction = attacker.global_position.distance_to(predicted_pos)
+
+	var dist_to_prediction: float = attacker.global_position.distance_to(predicted_pos)
 	if dist_to_prediction > max_range:
 		predicted_pos = attacker.global_position + attacker.global_position.direction_to(predicted_pos) * max_range
 
-	# --- 2. WYLICZANIE POZYCJI LĄDOWANIA ---
-	var dir_to_target = attacker.global_position.direction_to(predicted_pos)
-	var raw_target_pos = predicted_pos
-	var safe_target_pos = raw_target_pos
-	
-	# Zabezpieczenie przed skokiem w ścianę (w drodze do przewidzianego miejsca)
-	var space_state = attacker.get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(attacker.global_position, raw_target_pos)
-	query.collision_mask = obstacles_mask
-	query.exclude = [attacker.get_rid(), target.get_rid()] 
-	
-	var result = space_state.intersect_ray(query)
-	if result:
-		var attacker_rad = attacker.combat_radius if "combat_radius" in attacker else 40.0
-		# Jeśli ściana jest na drodze do celu, skracamy lot, aby w nią nie wpaść
-		safe_target_pos = result.position - (dir_to_target * (attacker_rad + 5.0))
+	# --- 2. WYLICZANIE BEZPIECZNEJ POZYCJI LĄDOWANIA ---
+	var attacker_rad: float = attacker.combat_radius
+	var safe_target_pos: Vector2 = ItemPickup.calculate_safe_spawn_position(
+		attacker.global_position,
+		predicted_pos,
+		attacker,
+		obstacles_mask,
+		attacker_rad + WALL_SAFETY_MARGIN_PX
+	)
 
-	# --- 3. SPAWNOWANIE PLAMY I ANIMACJA ---
-	var aoe = TelegraphedAOE.new()
-	var dmg_eff = DamageEffect.new(damage)
-	var stun_eff = StunEffect.new(stun_duration)
-	var knock_eff = KnockbackEffect.new(knockback_force)
-	
+	# --- 3. SPAWNOWANIE PLAMY OSTRZEGAWCZEJ ---
+	var aoe: TelegraphedAOE = TelegraphedAOE.new()
+	var dmg_eff: DamageEffect = DamageEffect.new(damage)
+	var stun_eff: StunEffect = StunEffect.new(stun_duration)
+	var knock_eff: KnockbackEffect = KnockbackEffect.new(knockback_force)
+
 	aoe.setup(safe_target_pos, aoe_radius, cast_time, [dmg_eff, stun_eff, knock_eff], attacker, target)
-	
 	aoe.z_index = aoe_z_index
 	aoe.z_as_relative = false
-	if "danger_color" in aoe:
-		aoe.danger_color = aoe_danger_color
-	
-	if attacker.has_signal("entity_spawn_requested"):
-		attacker.emit_signal("entity_spawn_requested", aoe, safe_target_pos)
-	else:
-		var parent_node = attacker.get_parent()
-		if parent_node:
-			parent_node.add_child(aoe)
-			aoe.global_position = safe_target_pos
-		else:
-			attacker.get_tree().current_scene.add_child(aoe)
-			aoe.global_position = safe_target_pos
+	aoe.danger_color = aoe_danger_color
 
-	var windup_time = max(0.0, cast_time - jump_duration)
+	spawn_ability_node(attacker, aoe, safe_target_pos)
+
+	var windup_time: float = maxf(0.0, cast_time - jump_duration)
 	if windup_time > 0.0:
-		# =========================================================
-		# AWAIT NR 1: Oczekiwanie na skok (Windup)
-		# =========================================================
-		if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+			return
 		await attacker.get_tree().create_timer(windup_time).timeout
 
-	# Tarcza po pierwszym await'cie / przed odpaleniem animacji skoku
-	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
-	var original_scale = attacker.scale
-	
-	var pos_tween = attacker.create_tracked_tween()
-	pos_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	pos_tween.tween_property(attacker, "global_position", safe_target_pos, jump_duration)
-	
-	var scale_tween = attacker.create_tracked_tween()
-	var scale_up_time = jump_duration * 0.5
-	var scale_down_time = jump_duration * 0.5
-	scale_tween.tween_property(attacker, "scale", original_scale * 1.35, scale_up_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	scale_tween.tween_property(attacker, "scale", original_scale, scale_down_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	
-	# =========================================================
-	# AWAIT NR 2: Lot i lądowanie (Tween)
-	# =========================================================
-	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
+
+	# --- 4. KINEMATYCZNY LOT I BEZPIECZNE SKALOWANIE WZGLĘDEM BASE_SCALE ---
+	var reference_scale: Vector2 = attacker.base_scale
+	var pos_tween: Tween = create_kinematic_dash_tween(
+		attacker,
+		safe_target_pos,
+		jump_duration,
+		Tween.TRANS_QUAD,
+		Tween.EASE_OUT
+	)
+
+	var scale_tween: Tween = attacker.create_tracked_tween()
+	var half_jump_time: float = jump_duration * HALF_DURATION_FACTOR
+	scale_tween.tween_property(attacker, "scale", reference_scale * JUMP_SCALE_MULTIPLIER, half_jump_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	scale_tween.tween_property(attacker, "scale", reference_scale, half_jump_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
 	await pos_tween.finished
-	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+
+	if not is_instance_valid(attacker):
+		return
+	# Gwarantujemy powrót do idealnej skali bazowej po wylądowaniu!
+	attacker.reset_visual_scale()
+
+	if not attacker.is_inside_tree():
+		return
+
+	# Wstrząs kamery przy uderzeniu o ziemię (naprawiony!)
+	trigger_camera_shake(attacker, camera_trauma_amount)
 
 	if recovery_time > 0.0:
-		# =========================================================
-		# AWAIT NR 3: Odpoczynek bossa i kamera
-		# =========================================================
-		# Zabezpieczamy to PRZED odpytaniem get_tree() do wstrząsu kamerą!
-		if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
-		
-		var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
-		if cam and cam.has_method("add_trauma"):
-			cam.add_trauma(camera_trauma_amount)
-			
 		await attacker.get_tree().create_timer(recovery_time).timeout
 
-	# Końcowa tarcza zabezpieczająca zdjęcie flagi w combat_ctrl
-	if not is_instance_valid(attacker) or not attacker.is_inside_tree(): return
+	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
+		return
 
-	if combat_ctrl:
+	if combat_ctrl != null:
 		combat_ctrl.is_casting_ability = false

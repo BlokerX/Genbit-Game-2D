@@ -17,12 +17,11 @@ func _init(_duration: float = 10.0, _adder: float = 0.0, _mult: float = 1.0):
 func on_effect_start(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.stun_adder = snappedf(stats.stun_adder + stun_adder, 0.0001)
-		stats.stun_multiplier = snappedf(stats.stun_multiplier * stun_multiplier, 0.0001)
+		stats.stun_adder = snap_stat_addition(stats.stun_adder, stun_adder)
+		stats.stun_multiplier = snap_stat_multiplication(stats.stun_multiplier, stun_multiplier)
 
 func on_effect_end(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.stun_adder = snappedf(stats.stun_adder - stun_adder, 0.0001)
-		if stun_multiplier != 0.0:
-			stats.stun_multiplier = snappedf(stats.stun_multiplier / stun_multiplier, 0.0001)
+		stats.stun_adder = snap_stat_addition(stats.stun_adder, -stun_adder)
+		stats.stun_multiplier = snap_stat_division(stats.stun_multiplier, stun_multiplier)

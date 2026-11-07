@@ -1,6 +1,9 @@
 extends AIAbility
 class_name LaserVisionAbility
 
+const CHARGE_PULSE_SPEED: float = 25.0
+const MAX_LASER_HITS: int = 64
+
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk narastającego ładowania promienia.
 @export var charge_feedback_cue: FeedbackCue = preload(
@@ -16,7 +19,7 @@ class_name LaserVisionAbility
 @export_group("Celowanie i Zasięg")
 @export_range(0.1, 3.0, 0.1) var cast_time: float = 1.5
 @export var laser_range: float = 2000.0
-## Jeśli zaznaczone, promień celownika będzie wędrował za graczem w trakcie ładowania ataku.
+## Jeśli zaznaczone, promień celownika będzie wędrować za graczem w trakcie ładowania ataku.
 @export var track_target_during_cast: bool = true
 ## Prędkość obrotu celownika za graczem w trakcie ładowania (0.01 - wolny, 1.0 - natychmiastowy).
 @export_range(0.01, 1.0, 0.05) var tracking_smoothness: float = 0.05
@@ -32,7 +35,7 @@ class_name LaserVisionAbility
 @export var laser_color: Color = Color(1.0, 0.0, 0.0, 1.0)
 ## Czas, przez jaki fizycznie widać grubą wiązkę strzału (ciągły atak).
 @export var laser_duration: float = 2.3
-## Z-Index (warstwa rysowania) dla promienia lasera. Domyślnie 10 (nad postaciami).
+## Z-Index (warstwa rysowania) dla promienia lasera. Domyślnie 20 (nad postaciami).
 @export var laser_z_index: int = GameLayers.HAZARD
 
 @export_group("Obrażenia i Efekty")
@@ -54,209 +57,174 @@ func _init() -> void:
 	max_range = 800.0
 
 func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
-	if not is_instance_valid(attacker): return
-	var ai_controller = attacker.get_node_or_null("AIController")
-	var combat_ctrl = ai_controller.get_node_or_null("AICombatController") if ai_controller else null
-	
-	var can_rotate = false
-	if ai_controller and ai_controller.get("behavior_profile") != null:
-		can_rotate = ai_controller.behavior_profile.can_rotate_to_target
+	if not is_instance_valid(attacker) or not is_instance_valid(target):
+		return
 
-	if combat_ctrl: combat_ctrl.is_casting_ability = true
+	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
+	var sprite: CanvasItem = attacker.get_visual_sprite()
+	var orig_modulate: Color = sprite.self_modulate if sprite != null else Color.WHITE
 
-	var sprite = attacker.get_node_or_null("Sprite2D")
-	if attacker.get("character_sprite"): sprite = attacker.character_sprite
-	var orig_modulate = Color.WHITE
-	if sprite: orig_modulate = sprite.self_modulate
-
-	var laser_node = LaserBeamVisual.new()
+	var laser_node: LaserBeamVisual = LaserBeamVisual.new()
 	laser_node.laser_width = laser_width
 	laser_node.laser_color = laser_color
-	
-	# Przypisanie warstwy i odcięcie relatywności
 	laser_node.z_index = laser_z_index
 	laser_node.z_as_relative = false
 	if charge_feedback_cue != null:
 		GameFeedback.play_cue(charge_feedback_cue, null, attacker.global_position, attacker)
-	
-	# BEZPIECZNE SPAWNOWANIE LASERA
-	if attacker.has_signal("entity_spawn_requested"):
-		attacker.emit_signal("entity_spawn_requested", laser_node, attacker.global_position)
-	else:
-		var parent_node = attacker.get_parent()
-		if parent_node:
-			parent_node.add_child(laser_node)
-			laser_node.global_position = attacker.global_position
-		else:
-			attacker.get_tree().current_scene.add_child(laser_node)
-			laser_node.global_position = attacker.global_position
+
+	spawn_ability_node(attacker, laser_node, attacker.global_position)
 
 	var elapsed: float = 0.0
-	var aim_dir = attacker.global_position.direction_to(target.global_position)
-	var space_state = attacker.get_world_2d().direct_space_state
+	var aim_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
+	var space_state: PhysicsDirectSpaceState2D = attacker.get_world_2d().direct_space_state
 
 	# =========================================================
 	# FAZA 1: CELOWANIE I KUMULOWANIE ENERGII (BŁYSK)
 	# =========================================================
 	while elapsed < cast_time:
-		# TARCZA 1: Dodane is_inside_tree() na początku pętli!
 		if not is_instance_valid(attacker) or not attacker.is_inside_tree() or not is_instance_valid(target):
-			if is_instance_valid(laser_node): laser_node.queue_free()
-			if is_instance_valid(combat_ctrl): combat_ctrl.is_casting_ability = false
-			if sprite and is_instance_valid(sprite): sprite.self_modulate = orig_modulate
+			if is_instance_valid(laser_node):
+				laser_node.queue_free()
+			if is_instance_valid(combat_ctrl):
+				combat_ctrl.is_casting_ability = false
+			if is_instance_valid(sprite):
+				sprite.self_modulate = orig_modulate
 			return
 
 		if track_target_during_cast:
-			var desired_dir = attacker.global_position.direction_to(target.global_position)
+			var desired_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
 			aim_dir = aim_dir.lerp(desired_dir, tracking_smoothness).normalized()
+			orient_towards(attacker, aim_dir)
 
-			if can_rotate:
-				attacker.rotation = aim_dir.angle()
-			elif attacker.has_method("_update_sprite_direction"):
-				attacker._update_sprite_direction(aim_dir)
-		
-		var start_pos = attacker.global_position
-		var max_end_pos = start_pos + (aim_dir * laser_range)
-		
-		var ray_query = PhysicsRayQueryParameters2D.create(start_pos, max_end_pos)
+		var start_pos: Vector2 = attacker.global_position
+		var max_end_pos: Vector2 = start_pos + (aim_dir * laser_range)
+
+		var ray_query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(start_pos, max_end_pos)
 		ray_query.collision_mask = obstacles_mask
 		ray_query.exclude = [attacker.get_rid()]
-		
-		var result = space_state.intersect_ray(ray_query)
-		var end_pos = result.position if result else max_end_pos
+		var result: Dictionary = space_state.intersect_ray(ray_query)
 
+		var end_pos: Vector2 = result["position"] if not result.is_empty() else max_end_pos
 		laser_node.start_pos = start_pos
 		laser_node.end_pos = end_pos
-		var charge_progress = clamp(elapsed / cast_time, 0.0, 1.0)
+
+		var charge_progress: float = clampf(elapsed / maxf(0.01, cast_time), 0.0, 1.0)
 		laser_node.charge_progress = charge_progress
-		
-		if sprite:
-			var pulse = (sin(elapsed * 25.0) + 1.0) / 2.0
+
+		if is_instance_valid(sprite):
+			var pulse: float = (sin(elapsed * CHARGE_PULSE_SPEED) + 1.0) / 2.0
 			sprite.self_modulate = orig_modulate.lerp(laser_color, pulse * charge_progress)
 
-		# TARCZA 2: Zabezpieczenie przed pierwszym await!
 		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
-			if is_instance_valid(laser_node): laser_node.queue_free()
-			if sprite and is_instance_valid(sprite): sprite.self_modulate = orig_modulate
+			if is_instance_valid(laser_node):
+				laser_node.queue_free()
+			if is_instance_valid(sprite):
+				sprite.self_modulate = orig_modulate
 			return
 
 		elapsed += attacker.get_physics_process_delta_time()
 		await attacker.get_tree().physics_frame
 
-	if sprite and is_instance_valid(sprite): sprite.self_modulate = orig_modulate
+	if is_instance_valid(sprite):
+		sprite.self_modulate = orig_modulate
 
 	# =========================================================
 	# FAZA 2: CIĄGŁY STRZAŁ Z ZADAWANIEM OBRAŻEŃ I KORYGOWANIEM
 	# =========================================================
-	
-	# TARCZA 3: Dodane is_inside_tree() przed Fazą 2
 	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
-		if is_instance_valid(laser_node): laser_node.queue_free()
+		if is_instance_valid(laser_node):
+			laser_node.queue_free()
 		return
 
 	laser_node.phase = 1 
 	if fire_feedback_cue != null:
 		GameFeedback.play_cue(fire_feedback_cue, null, attacker.global_position, attacker)
-	
+
 	var fire_elapsed: float = 0.0
 	var next_damage_tick: float = 0.0
 
 	while fire_elapsed < laser_duration:
-		# TARCZA 4: Dodane is_inside_tree() na górze pętli! Bez tego kamera crashuje po wybudzeniu!
 		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
-			if is_instance_valid(laser_node): laser_node.queue_free()
+			if is_instance_valid(laser_node):
+				laser_node.queue_free()
 			return
 
-		# Śledzenie gracza w trakcie strzału (powolne zamiatanie laserem)
 		if track_target_during_fire and is_instance_valid(target):
-			var desired_dir = attacker.global_position.direction_to(target.global_position)
+			var desired_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
 			aim_dir = aim_dir.lerp(desired_dir, firing_tracking_smoothness).normalized()
+			orient_towards(attacker, aim_dir)
 
-			if can_rotate:
-				attacker.rotation = aim_dir.angle()
-			elif attacker.has_method("_update_sprite_direction"):
-				attacker._update_sprite_direction(aim_dir)
+		var start_pos: Vector2 = attacker.global_position
+		var max_end_pos: Vector2 = start_pos + (aim_dir * laser_range)
 
-		var start_pos = attacker.global_position
-		var max_end_pos = start_pos + (aim_dir * laser_range)
-		
-		# Ciągłe sprawdzanie kolizji ze ścianą (żeby laser gładko zsuwał się po kątach)
-		var ray_query = PhysicsRayQueryParameters2D.create(start_pos, max_end_pos)
+		var ray_query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(start_pos, max_end_pos)
 		ray_query.collision_mask = obstacles_mask
 		ray_query.exclude = [attacker.get_rid()]
-		var ray_result = space_state.intersect_ray(ray_query)
-		var final_end_pos = ray_result.position if ray_result else max_end_pos
-		
+		var ray_result: Dictionary = space_state.intersect_ray(ray_query)
+
+		var final_end_pos: Vector2 = ray_result["position"] if not ray_result.is_empty() else max_end_pos
 		laser_node.start_pos = start_pos
 		laser_node.end_pos = final_end_pos
 
-		# Co ułamek sekundy (damage_tick_rate) zadajemy obrażenia wszystkiemu w świetle
 		if fire_elapsed >= next_damage_tick:
 			next_damage_tick += damage_tick_rate
 
-			var rect = RectangleShape2D.new()
-			var laser_length = start_pos.distance_to(final_end_pos)
+			var rect: RectangleShape2D = RectangleShape2D.new()
+			var laser_length: float = start_pos.distance_to(final_end_pos)
 			rect.size = Vector2(laser_length, laser_width)
 
-			var shape_query = PhysicsShapeQueryParameters2D.new()
+			var shape_query: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
 			shape_query.shape = rect
-			var center = start_pos + (final_end_pos - start_pos) / 2.0
+			var center: Vector2 = start_pos + (final_end_pos - start_pos) / 2.0
 			shape_query.transform = Transform2D(aim_dir.angle(), center)
 			shape_query.exclude = [attacker.get_rid()]
-			
-			var hits = space_state.intersect_shape(shape_query, 64)
-			
-			var effects: Array[Effect] = [DamageEffect.new(laser_damage_per_tick)]
+
+			var hits: Array[Dictionary] = space_state.intersect_shape(shape_query, MAX_LASER_HITS)
+
+			var dmg_eff: DamageEffect = DamageEffect.new(laser_damage_per_tick)
+			dmg_eff.effect_category = Effect.EffectCategory.FIRE_BURN
+			var effects: Array[Effect] = [dmg_eff]
+
 			if apply_burn_effect:
-				var burn = PoisonDebuffEffect.new()
+				var burn: PoisonDebuffEffect = PoisonDebuffEffect.new()
 				burn.effect_name = "Podpalenie Lasera"
-				burn.poison_damage_per_tick = burn_damage_per_tick
+				# NAPRAWA KRYTYCZNA: Używamy hp_per_tick oraz kategorii FIRE_BURN!
+				burn.hp_per_tick = -abs(burn_damage_per_tick)
 				burn.duration = burn_duration
+				burn.effect_category = Effect.EffectCategory.FIRE_BURN
 				effects.append(burn)
 
 			for hit in hits:
-				var col = hit.collider
-				if not is_instance_valid(col): continue
-				if not friendly_fire and _is_ally(attacker, col as Node2D): continue
-
+				var col: Node2D = hit["collider"] as Node2D
+				if not is_instance_valid(col):
+					continue
+				if not friendly_fire and is_ally_of(attacker, col):
+					continue
 				if col.has_method("receive_effect"):
 					for eff in effects:
-						var cloned_eff = eff.duplicate(true)
+						var cloned_eff: Effect = eff.duplicate(true)
 						cloned_eff.source_entity = attacker
 						cloned_eff.source_position = attacker.global_position
 						col.receive_effect(cloned_eff)
 
-			# Lekkie, cykliczne drżenie kamery potęgujące wagę trwającego ataku
-			if camera_trauma_amount > 0.0:
-				var cam = attacker.get_tree().current_scene.get_node_or_null("CameraComponent")
-				if cam and cam.has_method("add_trauma"):
-					cam.add_trauma(camera_trauma_amount)
+			trigger_camera_shake(attacker, camera_trauma_amount)
 
-		# 1. Zabezpieczenie przed usunięciem (śmiercią) lub uśpieniem (wyjęciem z drzewa)
 		if not is_instance_valid(attacker) or not attacker.is_inside_tree():
-			return # Anulujemy dalszy atak, wróg właśnie "zasnął" w chunku lub zginął
+			if is_instance_valid(laser_node):
+				laser_node.queue_free()
+			return
 
 		fire_elapsed += attacker.get_physics_process_delta_time()
-
-		# 2. Skoro przeszedł test wyżej, wiemy na 100%, że get_tree() nie zwróci null
 		await attacker.get_tree().physics_frame
 
 	if is_instance_valid(laser_node):
 		laser_node.queue_free()
 
-	if is_instance_valid(attacker) and combat_ctrl:
+	if is_instance_valid(attacker) and combat_ctrl != null:
 		combat_ctrl.is_casting_ability = false
 
-
-func _is_ally(attacker: Node2D, target: Node2D) -> bool:
-	if not is_instance_valid(attacker) or not is_instance_valid(target): return false
-	var attacker_faction = attacker.get_node_or_null("FactionComponent")
-	if attacker_faction and target is CharacterEntity:
-		return attacker_faction.get_disposition_toward(target) == FactionComponent.Disposition.FRIENDLY
-	return false
-
 # ==============================================================================
-# KLASA WEWNĘTRZNA: Zarządza dynamicznym rysowaniem
+# KLASA WEWNĘTRZNA: Zarządza dynamicznym rysowaniem wiązki
 # ==============================================================================
 class LaserBeamVisual extends Node2D:
 	var start_pos: Vector2 = Vector2.ZERO
@@ -270,26 +238,21 @@ class LaserBeamVisual extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
-		var local_start = to_local(start_pos)
-		var local_end = to_local(end_pos)
-		
+		var local_start: Vector2 = to_local(start_pos)
+		var local_end: Vector2 = to_local(end_pos)
+
 		if phase == 0:
 			draw_line(local_start, local_end, Color(laser_color.r, laser_color.g, laser_color.b, 0.4), 2.0)
-			
-			var orb_radius = lerp(2.0, laser_width * 2.5, charge_progress)
-			var pulse_alpha = (sin(Time.get_ticks_msec() * 0.02) + 1.0) / 2.0
-			var orb_color = laser_color
-			orb_color.a = lerp(0.3, 0.9, pulse_alpha)
-			
+			var orb_radius: float = lerpf(2.0, laser_width * 2.5, charge_progress)
+			var pulse_alpha: float = (sin(Time.get_ticks_msec() * 0.02) + 1.0) / 2.0
+			var orb_color: Color = laser_color
+			orb_color.a = lerpf(0.3, 0.9, pulse_alpha)
 			draw_circle(local_start, orb_radius, orb_color)
 			draw_circle(local_start, orb_radius * 0.5, Color.WHITE)
-			
 		elif phase == 1:
 			draw_line(local_start, local_end, laser_color, laser_width)
 			draw_line(local_start, local_end, Color.WHITE, laser_width * 0.4)
-			
 			draw_circle(local_start, laser_width * 1.8, laser_color)
 			draw_circle(local_start, laser_width * 0.8, Color.WHITE)
-			
 			draw_circle(local_end, laser_width * 1.5, laser_color)
 			draw_circle(local_end, laser_width * 0.6, Color.WHITE)

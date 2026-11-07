@@ -17,12 +17,11 @@ func _init(_duration: float = 10.0, _adder: float = 0.0, _mult: float = 1.0):
 func on_effect_start(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.damage_adder = snappedf(stats.damage_adder + damage_adder, 0.0001)
-		stats.damage_multiplier = snappedf(stats.damage_multiplier * damage_multiplier, 0.0001)
+		stats.damage_adder = snap_stat_addition(stats.damage_adder, damage_adder)
+		stats.damage_multiplier = snap_stat_multiplication(stats.damage_multiplier, damage_multiplier)
 
 func on_effect_end(target: Node2D) -> void:
 	if target.get("interaction_and_attack_stats_script") != null:
 		var stats = target.interaction_and_attack_stats_script
-		stats.damage_adder = snappedf(stats.damage_adder - damage_adder, 0.0001)
-		if damage_multiplier != 0.0:
-			stats.damage_multiplier = snappedf(stats.damage_multiplier / damage_multiplier, 0.0001)
+		stats.damage_adder = snap_stat_addition(stats.damage_adder, -damage_adder)
+		stats.damage_multiplier = snap_stat_division(stats.damage_multiplier, damage_multiplier)

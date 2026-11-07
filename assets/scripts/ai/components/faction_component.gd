@@ -37,6 +37,39 @@ enum RevengeTarget {
 var personal_relations: Dictionary = {}
 var active_grudges: Dictionary = {} # Pamięć urazów
 
+## Uniwersalna metoda statyczna (SOLID - SRP/DIP): Sprawdza, czy dwa obiekty są po tej samej stronie (FRIENDLY).
+## Obsługuje również sytuację, w której pierwotny strzelec/rzucający zginął lub został uśpiony w chunku,
+## wykorzystując zapamiętaną nazwę jego frakcji (fallback_faction_name).
+static func is_ally_of(attacker: Node2D, target: Node2D, fallback_faction_name: StringName = &"") -> bool:
+	if not is_instance_valid(target):
+		return false
+	# Każda postać jest sojusznikiem dla samej siebie (chroni przed samobójstwem od własnych plam i wybuchów)
+	if is_instance_valid(attacker) and attacker == target:
+		return true
+
+	var target_faction: FactionComponent = target.get_node_or_null("FactionComponent") as FactionComponent
+	if target_faction == null and "faction_component" in target:
+		target_faction = target.get("faction_component") as FactionComponent
+
+	# Sytuacja A: Strzelec nadal żyje na mapie
+	if is_instance_valid(attacker):
+		var attacker_faction: FactionComponent = attacker.get_node_or_null("FactionComponent") as FactionComponent
+		if attacker_faction == null and "faction_component" in attacker:
+			attacker_faction = attacker.get("faction_component") as FactionComponent
+		if attacker_faction != null:
+			return attacker_faction.get_disposition_toward(target) == Disposition.FRIENDLY
+
+	# Sytuacja B: Strzelec zniknął (zginął lub został zamrożony w chunku), sprawdzamy zapamiętaną nazwę frakcji
+	if fallback_faction_name != &"" and target_faction != null:
+		if target_faction.faction_name == fallback_faction_name and target_faction.friendly_to_same_faction:
+			return true
+		if target_faction.faction_relations.has(fallback_faction_name):
+			return target_faction.faction_relations[fallback_faction_name] == Disposition.FRIENDLY
+		if target_faction.faction_relations.has(String(fallback_faction_name)):
+			return target_faction.faction_relations[String(fallback_faction_name)] == Disposition.FRIENDLY
+
+	return false
+
 func _physics_process(delta: float) -> void:
 	if forgive_after_seconds <= 0.0 or active_grudges.is_empty():
 		return

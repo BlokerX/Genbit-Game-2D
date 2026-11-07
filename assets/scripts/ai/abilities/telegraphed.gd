@@ -1,13 +1,17 @@
 extends Area2D
 class_name TelegraphedAOE
 
+const BACKGROUND_ALPHA_MULTIPLIER: float = 0.4
+const DEFAULT_TARGET_RADIUS: float = 20.0
+const ALL_LAYERS_MASK: int = 0xFFFFFFFF
+
 var radius: float = 50.0
 var duration: float = 1.0
 var elapsed: float = 0.0
 var effects: Array[Effect] = []
 var source_entity: Node2D
+var _source_faction_name: StringName = &""
 var specific_target: Node2D = null # <--- Opcjonalny, pojedynczy cel
-
 @export var friendly_fire: bool = false
 @export var danger_color: Color = Color(1.0, 0.0, 0.0, 0.5) # <--- DODANA ZMIENNA KOLORU
 
@@ -18,14 +22,19 @@ func setup(pos: Vector2, rad: float, dur: float, effs: Array[Effect], source: No
 	effects = effs
 	source_entity = source
 	specific_target = target # Zapisujemy konkretną ofiarę
+	if is_instance_valid(source_entity):
+		var fac: FactionComponent = source_entity.get_node_or_null("FactionComponent") as FactionComponent
+		if fac != null:
+			_source_faction_name = fac.faction_name
 
 func _ready() -> void:
 	# Konfigurujemy kolizje tylko wtedy, gdy nie mamy konkretnego celu (prawdziwe AOE)
 	if specific_target == null:
 		collision_layer = 0
-		collision_mask = 0xFFFFFFFF
-		var col = CollisionShape2D.new()
-		var circle = CircleShape2D.new()
+		collision_mask = ALL_LAYERS_MASK
+
+		var col: CollisionShape2D = CollisionShape2D.new()
+		var circle: CircleShape2D = CircleShape2D.new()
 		circle.radius = radius
 		col.shape = circle
 		add_child(col)
@@ -35,7 +44,7 @@ func _process(delta: float) -> void:
 	if is_instance_valid(source_entity) and source_entity.get("is_casting_interrupted"):
 		queue_free()
 		return
-		
+
 	elapsed += delta
 	queue_redraw()
 	if elapsed >= duration:
@@ -43,45 +52,46 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	# Tło rysujemy z nałożoną przezroczystością (40% bazowej wartości alpha)
-	var bg_color = danger_color
-	bg_color.a = danger_color.a * 0.4
+	var bg_color: Color = danger_color
+	bg_color.a = danger_color.a * BACKGROUND_ALPHA_MULTIPLIER
 	draw_circle(Vector2.ZERO, radius, bg_color)
-	
+
 	# Rośnięcie wewnętrznego okręgu w pełnym kolorze
-	var progress = clamp(elapsed / duration, 0.0, 1.0)
+	var progress: float = clampf(elapsed / maxf(0.01, duration), 0.0, 1.0)
 	draw_circle(Vector2.ZERO, radius * progress, danger_color)
 
 func _explode() -> void:
 	set_process(false)
-	
+
 	if specific_target != null:
 		if is_instance_valid(specific_target):
-			# Zabezpieczamy pobranie grubości
-			var target_rad = specific_target.combat_radius if "combat_radius" in specific_target else 20.0
-			var edge_dist = max(0.0, global_position.distance_to(specific_target.global_position) - target_rad)
-			
+			# Zabezpieczamy pobranie grubości celu
+			var target_rad: float = float(specific_target.get("combat_radius")) if "combat_radius" in specific_target else DEFAULT_TARGET_RADIUS
+			var edge_dist: float = maxf(0.0, global_position.distance_to(specific_target.global_position) - target_rad)
 			if edge_dist <= radius:
 				_apply_effects_to(specific_target)
 	else:
 		for body in get_overlapping_bodies():
-			if body == source_entity: continue 
-			# Blokada AOE dla sojuszników:
-			if not friendly_fire and _is_ally(body): continue
+			if not is_instance_valid(body):
+				continue
+			if body == source_entity and not friendly_fire:
+				continue
+			# Blokada AOE dla sojuszników
+			if not friendly_fire and _is_ally(body):
+				continue
 			_apply_effects_to(body)
-			
+
 	queue_free()
 
 func _is_ally(body: Node2D) -> bool:
-	if not is_instance_valid(source_entity) or not body.has_method("get_node_or_null"): return false
-	var my_faction = source_entity.get_node_or_null("FactionComponent")
-	if my_faction and body is CharacterEntity:
-		return my_faction.get_disposition_toward(body) == FactionComponent.Disposition.FRIENDLY
-	return false
+	return FactionComponent.is_ally_of(source_entity, body, _source_faction_name)
 
 func _apply_effects_to(target_node: Node2D) -> void:
 	if target_node.has_method("receive_effect"):
 		for eff in effects:
-			var cloned_eff = eff.duplicate(true)
+			if eff == null:
+				continue
+			var cloned_eff: Effect = eff.duplicate(true)
 			# ZABEZPIECZENIE: Sprawdzamy czy sprawca ataku nadal żyje!
 			cloned_eff.source_entity = source_entity if is_instance_valid(source_entity) else null
 			cloned_eff.source_position = global_position
