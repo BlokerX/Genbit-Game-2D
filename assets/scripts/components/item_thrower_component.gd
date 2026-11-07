@@ -4,12 +4,16 @@ class_name ItemThrowerComponent
 ## Sygnał do powiadamiania menedżera poziomu o konieczności umieszczenia węzła na mapie
 signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vector2)
 
+const COLLISION_RESTORE_BUFFER_PX: float = 5.0
+const COLLISION_CHECK_INTERVAL_SEC: float = 0.1
+const MOUSE_SPREAD_RANGE: float = 0.05
+const PAD_SPREAD_RANGE: float = 0.2
+
 @export var item_pickup_scene: PackedScene = preload("res://assets/scenes/game_objects/item_pickup.tscn")
 
 @export_group("Throw Settings")
-## Dystans o jaki przedmiot zostanie przesunięty od środka gracza (Flandre ma koło 40px, więc 45px jest bezpieczne)
+## Dystans o jaki przedmiot musi oddalić się od środka gracza, by włączyć z powrotem kolizję
 @export var spawn_offset_radius: float = 45.0 
-
 @export var max_throw_range: float = 150.0
 @export var min_throw_force: float = 50.0
 @export var pad_throw_force_min: float = 200.0
@@ -17,109 +21,113 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var drop_push_force: float = 20.0
 @export var throw_force_multiplier: float = 3.0
 
-## Główna funkcja wywoływana, gdy ekwipunek potwierdzi wyrzucenie przedmiotu
-func handle_item_drop(thrower: Node2D, dropped_instance: ItemInstance, is_thrown: bool, is_using_mouse: bool, pad_aim_direction: Vector2) -> void:
+## Główna funkcja wywoływana, gdy ekwipunek potwierdzi wyrzucenie przedmiotu.
+## Opcjonalny parametr custom_origin pozwala przekazać zamrożoną pozycję śmierci gracza.
+func handle_item_drop(
+	thrower: Node2D,
+	dropped_instance: ItemInstance,
+	is_thrown: bool,
+	is_using_mouse: bool,
+	pad_aim_direction: Vector2,
+	custom_origin: Vector2 = Vector2.INF
+) -> void:
 	if item_pickup_scene == null:
 		push_error("Błąd: Brak przypisanej sceny item_pickup_scene w ItemThrowerComponent!")
 		return
-	
-	var drop = item_pickup_scene.instantiate()
-	
-	# Bezpieczne przypisanie paczki z przedmiotem do obiektu leżącego na ziemi
+	if not is_instance_valid(thrower):
+		return
+
+	var origin_position: Vector2 = custom_origin if custom_origin != Vector2.INF else thrower.global_position
+	var drop: Node2D = item_pickup_scene.instantiate() as Node2D
+
 	if "item" in drop:
 		drop.item = dropped_instance 
-	
-	var drop_direction = Vector2.ZERO
-	var drop_force = 0.0
-	
+
+	var drop_direction: Vector2 = Vector2.ZERO
+	var drop_force: float = 0.0
+
 	# 1. NAJPIERW OBLICZAMY KIERUNEK
 	if is_thrown:
 		if is_using_mouse:
 			# --- WYRZUT MYSZKĄ ---
-			var mouse_global_pos = thrower.get_global_mouse_position()
-			var dist_to_mouse = thrower.global_position.distance_to(mouse_global_pos)
-			
-			var aim_direction = thrower.global_position.direction_to(mouse_global_pos)
+			var mouse_global_pos: Vector2 = thrower.get_global_mouse_position()
+			var dist_to_mouse: float = origin_position.distance_to(mouse_global_pos)
+			var aim_direction: Vector2 = origin_position.direction_to(mouse_global_pos)
+
 			if aim_direction == Vector2.ZERO:
 				aim_direction = Vector2.DOWN
-			
-			var actual_throw_distance = min(dist_to_mouse, max_throw_range)
-			drop_force = actual_throw_distance * throw_force_multiplier
-			
-			if drop_force < min_throw_force:
-				drop_force = min_throw_force
-			
-			var spread = Vector2(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05))
+
+			var actual_throw_distance: float = minf(dist_to_mouse, max_throw_range)
+			drop_force = maxf(min_throw_force, actual_throw_distance * throw_force_multiplier)
+
+			var spread: Vector2 = Vector2(
+				randf_range(-MOUSE_SPREAD_RANGE, MOUSE_SPREAD_RANGE),
+				randf_range(-MOUSE_SPREAD_RANGE, MOUSE_SPREAD_RANGE)
+			)
 			drop_direction = (aim_direction + spread).normalized()
-			
 		else:
 			# --- WYRZUT PADEM / KLAWIATURĄ ---
-			var aim_direction = pad_aim_direction.normalized()
-			
+			var aim_direction: Vector2 = pad_aim_direction.normalized()
 			if aim_direction == Vector2.ZERO:
 				aim_direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-			
-			var spread = Vector2(randf_range(-0.2, 0.2), randf_range(-0.2, 0.2))
+
+			var spread: Vector2 = Vector2(
+				randf_range(-PAD_SPREAD_RANGE, PAD_SPREAD_RANGE),
+				randf_range(-PAD_SPREAD_RANGE, PAD_SPREAD_RANGE)
+			)
 			drop_direction = (aim_direction + spread).normalized()
 			drop_force = randf_range(pad_throw_force_min, pad_throw_force_max)
 	else:
-		# --- DELIKATNE UPUSZCZENIE (Zmodyfikowane) ---
-		# Korzystamy z kierunku celowania, żeby item pojawił się przed graczem
-		var base_dir = Vector2.ZERO
-		
+		# --- DELIKATNE UPUSZCZENIE (np. przy śmierci lub przepełnieniu plecaka) ---
+		var base_dir: Vector2 = Vector2.ZERO
 		if is_using_mouse:
-			base_dir = thrower.global_position.direction_to(thrower.get_global_mouse_position())
+			base_dir = origin_position.direction_to(thrower.get_global_mouse_position())
 		else:
 			base_dir = pad_aim_direction.normalized()
-			
-		if base_dir == Vector2.ZERO:
+
+		if base_dir == Vector2.ZERO or not is_thrown:
 			base_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		
+
 		drop_direction = base_dir
 		drop_force = drop_push_force
-	
-	# 2. OBLICZAMY POZYCJĘ SPAWNU
-	# Usuwamy skomplikowane Raycasty i offsety. Najbezpieczniejszym i najbardziej
-	# niezawodnym miejscem startu dla fizyki jest sam środek postaci!
-	var final_spawn_position = thrower.global_position
-	
-	# 3. ZGŁASZAMY SPAWN (przekazujemy obliczoną pozycję)
-	entity_spawn_requested.emit(drop, final_spawn_position)
-	
+
+	# 2. USTAWIAMY POZYCJĘ PRZED DODANIEM DO DRZEWA SCENY
+	drop.global_position = origin_position
+
+	# 3. ZGŁASZAMY SPAWN
+	entity_spawn_requested.emit(drop, origin_position)
+
 	# 4. APLIKUJEMY FIZYKĘ W ZGODZIE Z KOLEJKĄ SILNIKA
 	if drop is RigidBody2D:
-		# KULOODPORNA FIZYKA NR 1: Ciągła Detekcja Kolizji (CCD)
-		# Zapobiega "Tunnellingowi". Nawet rzucony z prędkością światła z samego rogu ściany,
-		# przedmiot fizycznie ODBIJE SIĘ od niej, zamiast przez nią przeniknąć.
-		drop.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-		
-		# KULOODPORNA FIZYKA NR 2: Wyjątek Kolizyjny
-		# Wyłączamy kolizję wyrzuconego przedmiotu z samym rzucającym.
-		# Dzięki temu przedmiot płynnie wylatuje z ciała gracza i nie blokuje się w nim na starcie.
+		var rigid_drop: RigidBody2D = drop as RigidBody2D
+		rigid_drop.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 		if thrower is CollisionObject2D:
-			drop.add_collision_exception_with(thrower)
-			
-			# --- NOWOŚĆ: Uruchamiamy obserwatora, który przywróci kolizję ---
-			_restore_collision_when_clear(drop, thrower)
-			
-		drop.call_deferred("apply_central_impulse", drop_direction * drop_force)
+			rigid_drop.add_collision_exception_with(thrower)
+			_restore_collision_when_clear(rigid_drop, thrower as CollisionObject2D)
 
+		call_deferred("_finalize_dropped_body_physics", rigid_drop, origin_position, drop_direction * drop_force)
+
+## Gwarantuje poprawną pozycję startową i impuls w bezpiecznym momencie poza blokadą PhysicsServer2D.
+func _finalize_dropped_body_physics(drop: RigidBody2D, exact_spawn_pos: Vector2, impulse: Vector2) -> void:
+	if not is_instance_valid(drop):
+		return
+	drop.global_position = exact_spawn_pos
+	PhysicsServer2D.body_set_state(
+		drop.get_rid(),
+		PhysicsServer2D.BODY_STATE_TRANSFORM,
+		Transform2D(drop.global_rotation, exact_spawn_pos)
+	)
+	drop.apply_central_impulse(impulse)
 
 # =========================================================================
-# NOWOŚĆ: SYSTEM DYNAMICZNEGO PRZYWRACANIA KOLIZJI (BRAK PRZENIKANIA)
+# SYSTEM DYNAMICZNEGO PRZYWRACANIA KOLIZJI (BRAK PRZENIKANIA)
 # =========================================================================
 func _restore_collision_when_clear(drop: RigidBody2D, thrower: CollisionObject2D) -> void:
-	# Będziemy sprawdzać w pętli asynchronicznej czy gracz i przedmiot są nadal żywi
 	while is_instance_valid(drop) and is_instance_valid(thrower):
-		# Sprawdzamy dystans między przedmiotem a graczem
-		var distance = drop.global_position.distance_to(thrower.global_position)
-		
-		# Jeśli dystans przekroczy nasz bezpieczny promień (plus mały bufor błędu, np. 5 pikseli)
-		# to znaczy, że fizycznie nie ma już szans na zablokowanie się w ciele gracza.
-		if distance > (spawn_offset_radius + 5.0):
-			# Przywracamy normalną kolizję między nimi!
+		if not drop.is_inside_tree() or not thrower.is_inside_tree():
+			break
+		var distance: float = drop.global_position.distance_to(thrower.global_position)
+		if distance > (spawn_offset_radius + COLLISION_RESTORE_BUFFER_PX):
 			drop.remove_collision_exception_with(thrower)
-			break # Kończymy działanie tej pętli, bo zrobiła swoje
-			
-		# Aby nie obciążać procesora, sprawdzamy to co 0.1 sekundy zamiast co klatkę
-		await get_tree().create_timer(0.1).timeout
+			break
+		await get_tree().create_timer(COLLISION_CHECK_INTERVAL_SEC).timeout

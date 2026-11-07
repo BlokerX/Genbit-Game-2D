@@ -2,6 +2,7 @@ class_name RangedWeaponComponent
 extends ItemComponent
 
 const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
+const PROJECTILE_VERTICAL_SPRITE_OFFSET_RAD: float = PI / 2.0
 
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
@@ -14,7 +15,6 @@ enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_
 @export var allow_auto_aim: bool = true
 
 @export_group("Statystyki Własne Broni")
-# --- CLEAN CODE: Zastępujemy luźną zmienną damage całym pakietem statystyk! ---
 @export var attack_data: AttackData
 ## Efekty nakładane przez samą broń (np. Zamrożenie z lasera).
 @export var weapon_effects: Array[Effect] = []
@@ -42,7 +42,7 @@ func initialize_state(item_instance: ItemInstance) -> void:
 func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void:
 	if projectile_scene == null: 
 		return
-		
+
 	# --- INTELIGENTNE CELOWANIE ---
 	var target_pos = Vector2.ZERO
 	if target != null:
@@ -52,59 +52,60 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		target_pos = actor.global_position + scanner.target_position
 	else:
 		return 
-		
+
 	var stats = actor.get("interaction_and_attack_stats_script")
 	var inv = actor.call("get_inventory") if actor.has_method("get_inventory") else null
-	
 	if stats == null:
 		return
 
 	# 1. SYSTEM AMUNICJI
 	var ammo_comp: AmmunitionComponent = null
+
 	if uses_ammunition:
 		var current_ammo = item_instance.state.get("ammo_count", 0)
+
 		if current_ammo <= 0:
-			# ZABEZPIECZENIE: Upewniamy się, że inwentarz istnieje (inv != null)
 			if auto_reload and inv != null and inv.has_method("reload_current_weapon"):
-				if inv.reload_current_weapon():
+				var reloaded: bool = inv.reload_current_weapon()
+				if reloaded:
 					stats.trigger_reload_cooldown(reload_time)
-					if actor.has_method("play_reload_feedback"):
-						actor.call("play_reload_feedback", true)
+				if actor.has_method("play_reload_feedback"):
+					actor.call("play_reload_feedback", reloaded)
 			return
-			
+
 		var stored_ammo_id = item_instance.state.get("ammo_id", &"")
-		var stored_ammo_data = ItemDatabase.get_item(stored_ammo_id) # ZMIANA: Szukamy globalnie!
-		# ...i szukamy w nim komponentu balistycznego!
+		var stored_ammo_data = ItemDatabase.get_item(stored_ammo_id)
+
 		if stored_ammo_data != null and stored_ammo_data.components != null:
 			for comp in stored_ammo_data.components:
 				if comp is AmmunitionComponent:
 					ammo_comp = comp
 					break
-					
+
 		item_instance.state["ammo_count"] = current_ammo - 1
 
 	# 2. OBLICZANIE OBRAŻEŃ
-	# Bierzemy bazową moc samej broni
 	var total_base_damage = 0
-	
+	var base_penetration = 0.0
 	if attack_data != null:
 		total_base_damage = attack_data.damage
-	
-	# Jeśli broń załadowała amunicję, dodajemy moc pocisku do mocy broni!
+		base_penetration = attack_data.armor_penetration
+
 	if ammo_comp != null:
 		total_base_damage += ammo_comp.damage
-	
+
 	var final_damage = int((total_base_damage + stats.damage_adder) * stats.damage_multiplier)
 	if randf() <= stats.get_total_critical_rate():
 		final_damage += int(stats.get_total_critical_damage())
-		
+
+	var final_penetration = clampf(base_penetration + stats.armor_penetration_adder, 0.0, 1.0)
+
 	var generated_effects: Array[Effect] = []
-	generated_effects.append(DamageEffect.new(final_damage))
-	
+	generated_effects.append(DamageEffect.new(final_damage, final_penetration))
+
 	if stats.get_total_stun() > 0.0:
 		generated_effects.append(StunEffect.new(stats.get_total_stun()))
-	
-	# Dodajemy unikalne efekty z samej broni (np. Laser nakładający Freeze)
+
 	for eff in weapon_effects:
 		if eff != null:
 			generated_effects.append(eff.duplicate(true))
@@ -112,7 +113,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	# 3. FUZJA BALISTYCZNA Z NABOJEM
 	var final_speed = projectile_speed
 	var final_tex = projectile_texture
-	
+
 	if ammo_comp != null:
 		final_speed *= ammo_comp.speed_multiplier
 		if ammo_comp.override_projectile_texture != null:
@@ -126,17 +127,16 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	var proj = projectile_scene.instantiate()
 	proj.shooter = actor
 	proj.global_position = actor.global_position
-	
 	proj.direction = actor.global_position.direction_to(target_pos)
-	proj.rotation = proj.direction.angle() + (PI / 2.0)
-	
+	proj.rotation = proj.direction.angle() + PROJECTILE_VERTICAL_SPRITE_OFFSET_RAD
+
 	if "effects_to_apply" in proj:
 		proj.effects_to_apply = generated_effects
 	if "speed" in proj:
 		proj.speed = final_speed
 	if "lifetime" in proj:
 		proj.lifetime = projectile_lifetime
-		
+
 	var sprite = proj.get_node_or_null("Sprite2D")
 	if sprite != null and final_tex != null:
 		sprite.texture = final_tex
@@ -147,15 +147,16 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 
 	# 5. ZUŻYCIE BRONI I ZEGAR
 	item_instance.consume_durability(1)
-	
 	if inv != null:
 		inv.clean_dead_items()
 		inv.inventory_updated.emit()
-		
+
 	if uses_ammunition and auto_reload and item_instance.state.get("ammo_count", 0) <= 0:
 		if inv != null and inv.has_method("reload_current_weapon"):
 			if inv.reload_current_weapon():
 				stats.trigger_reload_cooldown(reload_time)
+				if actor.has_method("play_reload_feedback"):
+					actor.call("play_reload_feedback", true)
 				return
-		
+
 	stats.reset_cooldown()
