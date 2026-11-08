@@ -11,25 +11,31 @@ class_name LevelEntrance
 ## Moje ID (np. "dungeon_stairs_up", "surface_portal"). Musi być unikalne na mapie!
 @export var my_entrance_id: String = "start_point"
 
-## Ścieżka tekstowa do pliku mapy (Bezpieczna, bez cykliczności)
+## Ścieżka tekstowa do pliku mapy (Bezpieczna, bez cykliczności!)
 @export_file("*.tscn") var target_level_path: String
 
 ## ID wejścia w docelowej mapie, z którego ma wyjść gracz
 @export var target_entrance_id: String = "start_point"
 
+## Czy podczas przechodzenia przez ten portal wyświetlić ekran z paskiem postępu ładowania?
+## Domyślnie włączone (true). Odznacz w Inspektorze dla małych, błyskawicznych portali, jeśli wolisz samo ściemnienie.
+@export var show_loading_screen: bool = true
+
 ## Punkt, w którym pojawi się gracz wychodząc z tego przejścia (Marker2D)
 @onready var spawn_point: Marker2D = $Spawnpoint
 
-## Domyślnie false – portal jest w pełni dostępny, gdy podchodzisz do niego z zewnątrz
+## Domyślnie false — portal jest w pełni dostępny, gdy podchodzisz do niego z zewnątrz.
 var has_triggered: bool = false
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
-	
+	if not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if not body_exited.is_connected(_on_body_exited):
+		body_exited.connect(_on_body_exited)
+
 	# INTELIGENTNY START:
 	# Jeśli GlobalLevelManager ma zapisane ID, które pasuje do mojego ID,
-	# oznacza to, że gracz pojawił się WŁAŚNIE TUTAJ po teleportacji.
+	# oznacza to, że gracz pojawi się WŁAŚNIE TUTAJ po teleportacji.
 	# Blokujemy wtedy portal na start, żeby uniknąć pętli!
 	if GlobalLevelManager.target_entrance_id == my_entrance_id:
 		has_triggered = true
@@ -51,22 +57,22 @@ func _on_body_entered(body: Node2D) -> void:
 		and GlobalLevelManager.arrival_entrance != self
 	):
 		return
-		
+
 	if body.is_in_group("Player"):
-		# --- NAPRAWA: Zabezpieczenie przed teleportacją tuż po odrodzeniu ---
+		# --- NAPRAWA: Zabezpieczenie przed teleportacją po odrodzeniu ---
 		if body.get("is_respawning") == true:
 			# Gracz właśnie się zrespawnował W ŚRODKU tego portalu.
 			# Blokujemy portal! Zostanie odblokowany, gdy gracz z niego wyjdzie (_on_body_exited).
 			has_triggered = true
 			return
 		# ------------------------------------------------------------------
-		
+
 		if target_level_path != "":
 			has_triggered = true # Zamykamy bramkę na czas zmiany poziomu
 			print("Wchodzę do nowego poziomu ze ścieżki: ", target_level_path)
 			if enter_feedback != null:
 				GameFeedback.play_cue(enter_feedback, null, global_position, self)
-			GlobalLevelManager.change_level_by_path(target_level_path, target_entrance_id)
+			GlobalLevelManager.change_level_by_path(target_level_path, target_entrance_id, show_loading_screen)
 		else:
 			push_warning("Brak przypisanej ścieżki target_level_path w przejściu!")
 

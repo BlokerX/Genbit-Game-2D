@@ -2,7 +2,6 @@ extends Node2D
 ## Klasa poziomu, przechowująca pokoje (MapRegion) na poziomie i zarządzająca przejściami między nimi.
 class_name Map
 
-# --- STAŁE DOMENOWE (Wyeliminowanie magicznych liczb i stringów) ---
 const PLAYER_GROUP: String = "Player"
 const SLIDE_ANIMATION_DURATION_SEC: float = 0.45
 
@@ -22,9 +21,7 @@ signal map_region_changed(new_map_region: MapRegion)
 signal map_updated()
 
 @export_group("Ustawienia zapisu (Czy level jest zapamiętywany po wyjściu)")
-## Jeśli TRUE: Pokoje wewnątrz tego poziomu będą zarządzane w pamięci RAM podczas sesji gry.
-## Zabite potwory, zniszczone skrzynie i upuszczony loot ZOSTANĄ zachowane po wyjściu i powrocie na mapę.
-## Jeśli FALSE: To jest nietrwały "Dungeon". Wszystko wraca do normy po wyjściu z mapy.
+## Jeśli TRUE: Pokoje wewnątrz tego poziomu będą trwale pamiętane w RAM-ie przez całą sesję gry.
 @export var is_persistent_level: bool = true
 
 @export_group("Główne Obiekty")
@@ -66,13 +63,52 @@ var _pre_initialized: bool = false
 ## Domyślna tekstura drzwi dla CAŁEJ MAPY. 
 @export var default_map_door_texture: Texture2D
 
-## Wykonywane ZANIM dzieci (MapRegion i tysiące botów) wejdą do drzewa sceny!
 func _enter_tree() -> void:
 	if not _pre_initialized:
 		prepare_map_before_tree(GlobalLevelManager.target_entrance_id)
 
-## Przygotowuje strukturę pokoi i dzieli otwarty świat na chunki ZANIM mapa wejdzie do SceneTree.
-## Dzięki temu nieaktywne pokoje oraz odległe chunki (np. Soldier1..1000) nigdy nie obciążają startu poziomu!
+## Asynchronicznie przygotowuje strukturę pokoi i porcjuje chunki otwartego świata przed wejściem do SceneTree!
+func prepare_map_before_tree_async(tree: SceneTree, entrance_id: String = "") -> void:
+	if _pre_initialized:
+		return
+	_pre_initialized = true
+
+	_door_generator = MapDoorGeneratorType.new()
+	_door_generator.configure(auto_door_scene, default_map_door_texture)
+
+	var region_children: Array[MapRegion] = []
+	for child in get_children():
+		if child is MapRegion:
+			var region: MapRegion = child as MapRegion
+			region_children.append(region)
+			register_map_region(region, false)
+			region.prepare_region_before_tree(false)
+
+	_auto_spawn_missing_doors()
+	_auto_link_doors()
+
+	var active_region: MapRegion = starting_map_region
+	var focus_pos: Vector2 = Vector2.ZERO
+	if entrance_id != "":
+		var match_data: Dictionary = _find_entrance_and_region_by_id(entrance_id)
+		var entrance: LevelEntrance = match_data.get("entrance") as LevelEntrance
+		if entrance != null:
+			active_region = match_data.get("region") as MapRegion
+			focus_pos = entrance.position + (active_region.position if active_region != null else Vector2.ZERO)
+
+	if active_region != null and focus_pos == Vector2.ZERO:
+		if active_region.spawn_points.size() > 0:
+			focus_pos = active_region.position + active_region.spawn_points[0].position
+		else:
+			focus_pos = active_region.position + (active_region.size_px / 2.0)
+
+	for region in region_children:
+		if region != active_region:
+			if region.get_parent() == self:
+				remove_child(region)
+		else:
+			await region.prepare_region_before_tree_async(true, tree, focus_pos)
+
 func prepare_map_before_tree(entrance_id: String = "") -> void:
 	if _pre_initialized:
 		return
@@ -89,17 +125,16 @@ func prepare_map_before_tree(entrance_id: String = "") -> void:
 			register_map_region(region, false)
 			region.prepare_region_before_tree(false)
 
-	# 1. Spawnujemy brakujące drzwi i zszywamy siatkę pokoi w pamięci RAM
 	_auto_spawn_missing_doors()
 	_auto_link_doors()
 
-	# 2. Ustalamy, w którym pokoju i w jakim punkcie pojawi się gracz
 	var active_region: MapRegion = starting_map_region
 	var focus_pos: Vector2 = Vector2.ZERO
 	if entrance_id != "":
-		var entrance: LevelEntrance = _find_entrance_by_id(entrance_id)
+		var match_data: Dictionary = _find_entrance_and_region_by_id(entrance_id)
+		var entrance: LevelEntrance = match_data.get("entrance") as LevelEntrance
 		if entrance != null:
-			active_region = _get_map_region_of_node(entrance)
+			active_region = match_data.get("region") as MapRegion
 			focus_pos = entrance.position + (active_region.position if active_region != null else Vector2.ZERO)
 
 	if active_region != null and focus_pos == Vector2.ZERO:
@@ -108,8 +143,6 @@ func prepare_map_before_tree(entrance_id: String = "") -> void:
 		else:
 			focus_pos = active_region.position + (active_region.size_px / 2.0)
 
-	# 3. Odpinamy wszystkie inne pokoje PRZED wejściem do SceneTree,
-	# a dla pokoju aktywnego dzielimy encje na chunki wokół punktu startowego!
 	for region in region_children:
 		if region != active_region:
 			if region.get_parent() == self:
@@ -120,7 +153,6 @@ func prepare_map_before_tree(entrance_id: String = "") -> void:
 func _ready() -> void:
 	add_to_group("Map")
 
-	# --- GLOBALNY MROK ---
 	global_darkness = CanvasModulate.new()
 	global_darkness.name = "GlobalDarkness"
 	global_darkness.color = Color.WHITE
@@ -136,9 +168,10 @@ func _ready() -> void:
 		prepare_map_before_tree(GlobalLevelManager.target_entrance_id)
 
 	map_updated.emit()
-	initialize_level()
+	# Jeśli mapa została załadowana ręcznie na starcie gry (nie przez GlobalLevelManager), inicjalizujemy ją od razu
+	if not GlobalLevelManager.is_changing_level:
+		initialize_level()
 
-## Wprowadza mapę w stan hibernacji przed schowaniem jej do _cached_persistent_levels w RAM-ie.
 func hibernate_for_cache() -> void:
 	for region in all_map_regions:
 		if is_instance_valid(region):
@@ -146,14 +179,16 @@ func hibernate_for_cache() -> void:
 			if streamer != null:
 				streamer.hibernate_all_chunks()
 
-func initialize_level() -> void:
+## Asynchroniczna wersja inicjalizacji poziomu (wywoływana przez GlobalLevelManager z kontrolą budżetu klatki).
+func initialize_level_async() -> void:
 	var map_region_to_load: MapRegion = starting_map_region
 	var spawn_node: Node2D = null
 
 	if GlobalLevelManager.target_entrance_id != "":
-		var entrance: LevelEntrance = _find_entrance_by_id(GlobalLevelManager.target_entrance_id)
+		var match_data: Dictionary = _find_entrance_and_region_by_id(GlobalLevelManager.target_entrance_id)
+		var entrance: LevelEntrance = match_data.get("entrance") as LevelEntrance
 		if entrance != null:
-			map_region_to_load = _get_map_region_of_node(entrance)
+			map_region_to_load = match_data.get("region") as MapRegion
 			spawn_node = entrance
 			entrance.has_triggered = true
 			GlobalLevelManager.register_arrival_entrance(entrance)
@@ -164,18 +199,10 @@ func initialize_level() -> void:
 	else:
 		TransitionManager.color_rect.color = Color.BLACK
 
+	if map_region_to_load == null:
+		map_region_to_load = starting_map_region
+
 	if map_region_to_load != null:
-		var target_focus_pos: Vector2 = Vector2.ZERO
-		if spawn_node != null:
-			target_focus_pos = spawn_node.global_position if spawn_node.is_inside_tree() else (map_region_to_load.position + spawn_node.position)
-		elif map_region_to_load.spawn_points.size() > 0:
-			target_focus_pos = map_region_to_load.position + map_region_to_load.spawn_points[0].position
-
-		map_region_to_load.ensure_runtime_initialized(target_focus_pos)
-		var streamer: WorldStreamer = map_region_to_load.get_node_or_null("WorldStreamer") as WorldStreamer
-		if streamer != null:
-			streamer.restore_active_chunks(target_focus_pos)
-
 		if not map_region_to_load.is_inside_tree():
 			add_child(map_region_to_load)
 		_lighting_controller.apply_region(map_region_to_load)
@@ -187,26 +214,34 @@ func initialize_level() -> void:
 			elif map_region_to_load.spawn_points.size() > 0:
 				player.global_position = map_region_to_load.spawn_points[0].global_position
 
-		call_deferred("change_map_region", map_region_to_load, spawn_node, true)
+		await change_map_region(map_region_to_load, spawn_node, true)
 
-## Funkcja pomocnicza: Szuka po ID wejścia na całej mapie
-func _find_entrance_by_id(id: String) -> LevelEntrance:
+func initialize_level() -> void:
+	call_deferred("initialize_level_async")
+
+## Niezawodnie zwraca słownik {"entrance": LevelEntrance, "region": MapRegion} w czasie O(1).
+func _find_entrance_and_region_by_id(id: String) -> Dictionary:
+	for map_region in all_map_regions:
+		for entrance in map_region.level_entrances:
+			if is_instance_valid(entrance) and entrance.my_entrance_id == id:
+				return {"entrance": entrance, "region": map_region}
 	for map_region in all_map_regions:
 		for child in map_region.find_children("*", "LevelEntrance", true, false):
 			if child.my_entrance_id == id:
-				return child as LevelEntrance
-	return null
+				return {"entrance": child as LevelEntrance, "region": map_region}
+	return {}
 
-## Funkcja pomocnicza: Zwraca pokój, do którego należy dany węzeł
+func _find_entrance_by_id(id: String) -> LevelEntrance:
+	var match_data: Dictionary = _find_entrance_and_region_by_id(id)
+	return match_data.get("entrance") as LevelEntrance
+
 func _get_map_region_of_node(node: Node) -> MapRegion:
 	var current: Node = node
 	while current != null:
 		if current is MapRegion:
 			return current as MapRegion
 		current = current.get_parent()
-	return null
-
-# --- FUNKCJE DYNAMIKI MAPY ---
+	return starting_map_region
 
 func register_map_region(map_region: MapRegion, notify_ui: bool = true) -> void:
 	if not all_map_regions.has(map_region):
@@ -248,12 +283,12 @@ func _discover_neighboring_map_regions(map_region: MapRegion) -> void:
 func is_transition_active() -> bool:
 	return _is_transitioning or TransitionManager.is_transition_active()
 
-## Główna funkcja zmiany pokoju
+## Główna funkcja zmiany pokoju (nie włącza paska ładowania dla przejść między pokojami!).
 func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, force_teleport: bool = false) -> void:
 	if new_map_region == null:
 		push_error("Map: Nie można przejść do pustego pokoju.")
 		return
-	if is_transition_active():
+	if is_transition_active() and not force_teleport:
 		return
 	_is_transitioning = true
 
@@ -272,7 +307,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if player != null:
 		player.set_physics_process(false)
 
-	if do_fade:
+	if do_fade and not TransitionManager.is_screen_black():
 		TransitionManager.fade_to_black()
 		await TransitionManager.on_fade_out_finished
 		if not is_inside_tree():
@@ -300,10 +335,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 			var dir_offset: Vector2i = (target_door as Door).get_direction_offset()
 			slide_vector = Vector2(-dir_offset.x * current_map_region.size_px.x, -dir_offset.y * current_map_region.size_px.y)
 
-	# Przygotowujemy chunki nowego pokoju ZANIM wejdzie do drzewa sceny!
-	var entry_focus_pos: Vector2 = target_door.position + current_map_region.position if target_door != null else current_map_region.position
-	current_map_region.ensure_runtime_initialized(entry_focus_pos)
-
 	current_map_region.position = slide_vector
 	current_map_region.visible = true
 	if not current_map_region.is_inside_tree():
@@ -325,9 +356,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if not visited_map_regions.has(current_map_region):
 		visited_map_regions.append(current_map_region)
 
-	map_updated.emit()
-	map_region_changed.emit(current_map_region)
-
 	if player != null:
 		_region_entry_controller.place_player_in_region(
 			player,
@@ -337,10 +365,20 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 			_on_entity_spawn_requested
 		)
 
-	current_map_region.check_and_lock_map_region()
+	var focus_pos: Vector2 = player.global_position if player != null else current_map_region.global_position
+	await current_map_region.check_and_lock_map_region_async(get_tree(), focus_pos)
+	if not is_inside_tree():
+		_finish_transition(player)
+		return
+
+	map_updated.emit()
+	map_region_changed.emit(current_map_region)
 
 	if player != null and "is_in_pacifist_zone" in player:
 		player.is_in_pacifist_zone = current_map_region.pacifist_zone
+
+	# Zawsze upewniamy się, że ewentualny pasek ładowania poziomu zostaje ukryty przed pokazaniem gry!
+	TransitionManager.hide_loading_screen()
 
 	if do_fade and do_slide:
 		TransitionManager.fade_to_normal()
@@ -383,6 +421,7 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 
 func _finish_transition(player: PlayerCharacter) -> void:
 	_is_transitioning = false
+	TransitionManager.hide_loading_screen()
 	if is_instance_valid(player):
 		player.process_mode = Node.PROCESS_MODE_INHERIT
 		player.set_physics_process(true)

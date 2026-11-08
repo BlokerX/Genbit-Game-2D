@@ -19,7 +19,7 @@ func _init(
 	_item_name : String = "Item",
 	_item_description : String = "",
 	_item_icon : Texture2D = null
-):
+) -> void:
 	item_id = _item_id
 	item_name = _item_name
 	item_description = _item_description
@@ -27,3 +27,17 @@ func _init(
 
 func has_tag(tag: StringName) -> bool:
 	return tags.has(tag)
+
+## Tworzy unikalną, niezależną kopię danych przedmiotu oraz jego komponentów i statystyk (AttackData),
+## pozwalając na bezpieczne ulepszanie/modyfikowanie pojedynczego egzemplarza broni w locie (np. zwiększenie DMG lub zasięgu)
+## BEZ klonowania w pamięci RAM ciężkich tekstur (Texture2D), dźwięków (FeedbackCue) ani scen (PackedScene)!
+func create_unique_copy() -> ItemData:
+	var copy: ItemData = duplicate(false) as ItemData
+	copy.tags = tags.duplicate()
+	if components != null:
+		var cloned_components: Array[ItemComponent] = []
+		for comp in components:
+			if comp != null:
+				cloned_components.append(comp.create_unique_copy())
+		copy.components = cloned_components
+	return copy

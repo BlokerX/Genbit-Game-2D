@@ -6,6 +6,7 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 
 const COLLISION_RESTORE_BUFFER_PX: float = 5.0
 const COLLISION_CHECK_INTERVAL_SEC: float = 0.1
+const MAX_WAIT_FOR_TREE_FRAMES: int = 10
 const MOUSE_SPREAD_RANGE: float = 0.05
 const PAD_SPREAD_RANGE: float = 0.2
 
@@ -120,14 +121,33 @@ func _finalize_dropped_body_physics(drop: RigidBody2D, exact_spawn_pos: Vector2,
 	drop.apply_central_impulse(impulse)
 
 # =========================================================================
-# SYSTEM DYNAMICZNEGO PRZYWRACANIA KOLIZJI (BRAK PRZENIKANIA)
+# SYSTEM DYNAMICZNEGO PRZYWRACANIA KOLIZJI (UMOŻLIWIA POPYCHANIE PO ODEJŚCIU)
 # =========================================================================
 func _restore_collision_when_clear(drop: RigidBody2D, thrower: CollisionObject2D) -> void:
+	# 1. Czekamy, aż odroczone add_child() faktycznie umieści przedmiot w drzewie sceny!
+	var wait_frames: int = 0
+	while is_instance_valid(drop) and not drop.is_inside_tree() and wait_frames < MAX_WAIT_FOR_TREE_FRAMES:
+		if not is_inside_tree():
+			return
+		wait_frames += 1
+		await get_tree().process_frame
+
+	# 2. Sprawdzamy dystans między przedmiotem a rzucającym co 0.1s
 	while is_instance_valid(drop) and is_instance_valid(thrower):
-		if not drop.is_inside_tree() or not thrower.is_inside_tree():
+		if not is_inside_tree():
+			return
+		if not drop.is_inside_tree():
+			# Jeśli przedmiot jest chwilowo w uśpionym chunku, czekamy spokojnie dalej
+			await get_tree().create_timer(COLLISION_CHECK_INTERVAL_SEC).timeout
+			continue
+		if not thrower.is_inside_tree():
 			break
+
 		var distance: float = drop.global_position.distance_to(thrower.global_position)
 		if distance > (spawn_offset_radius + COLLISION_RESTORE_BUFFER_PX):
+			# Przywracamy normalną kolizję fizyczną i budzimy ciało, by gracz mógł je popychać!
 			drop.remove_collision_exception_with(thrower)
+			drop.sleeping = false
 			break
+
 		await get_tree().create_timer(COLLISION_CHECK_INTERVAL_SEC).timeout

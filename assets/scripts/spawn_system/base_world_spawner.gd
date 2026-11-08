@@ -13,6 +13,11 @@ const EDITOR_GIZMO_LINE_WIDTH: float = 2.0
 const EDITOR_PROXIMITY_CIRCLE_SEGMENTS: int = 32
 const EDITOR_PROXIMITY_LINE_WIDTH: float = 1.0
 const EDITOR_PROXIMITY_ALPHA: float = 0.2
+## Maksymalny budżet czasu (w ms) na masowe wybudzanie spawnerów w jednej klatce.
+const SPAWN_BATCH_FRAME_BUDGET_MSEC: int = 6
+
+static var _last_spawn_batch_frame: int = -1
+static var _Batch_frame_start_msec: int = 0
 
 ## Określa, co jest wyzwalaczem (zapalnikiem) do spawnowania obiektów.
 enum TriggerMode {
@@ -91,7 +96,7 @@ func _enter_tree() -> void:
 		var time_passed_offline: float = maxf(0.0, current_time - _last_sleep_timestamp)
 
 		if respawn_condition == RespawnCondition.ON_CHUNK_REENTER:
-			_respawn_timer = respawn_cooldown # Od razu gotowe do spawnu po powrocie na chunk
+			_respawn_timer = respawn_cooldown
 		elif respawn_condition in [
 			RespawnCondition.ON_CHUNK_REENTER_AND_TIME,
 			RespawnCondition.AFTER_DEATH_AND_TIME,
@@ -104,15 +109,13 @@ func _enter_tree() -> void:
 	# --- INTELIGENTNE WZNAWIANIE (Gdy chunk wraca z pamięci RAM) ---
 	if _initial_setup_done:
 		if trigger_mode == TriggerMode.EVENT_BUS_SIGNAL and not _is_unlocked:
-			# Nadrabianie historii z EventBus, jeśli chunk był uśpiony, gdy wydarzył się event fabularny
 			if EventBus.has_method("has_story_event_occurred") and EventBus.has_story_event_occurred(expected_event_name):
-				print("[%s] Wybudzono z uśpienia. Nadrabiam zaległy event: %s" % [name, expected_event_name])
-				call_deferred("attempt_spawn")
+				call_deferred("_deferred_budgeted_spawn")
 		elif _is_unlocked and (
 			trigger_mode == TriggerMode.ON_CHUNK_ACTIVE
 			or respawn_condition in [RespawnCondition.ON_CHUNK_REENTER, RespawnCondition.ON_CHUNK_REENTER_AND_TIME]
 		):
-			call_deferred("attempt_spawn")
+			call_deferred("_deferred_budgeted_spawn")
 
 ## Wywoływane automatycznie, gdy węzeł opuszcza drzewo sceny (np. chunk zostaje uśpiony w RAM-ie).
 func _exit_tree() -> void:
@@ -120,12 +123,10 @@ func _exit_tree() -> void:
 		return
 
 	_cleanup_invalid_alive_entities()
-	# Zapisujemy dokładny czas (w sekundach) wylogowania chunka z pamięci
 	if respawn_cooldown > 0.0 and _alive_entities.size() < max_alive_entities:
 		_last_sleep_timestamp = Time.get_unix_time_from_system()
 		_was_on_cooldown_when_sleeping = true
 	elif respawn_condition == RespawnCondition.ON_CHUNK_REENTER and _alive_entities.size() < max_alive_entities:
-		# Wymuszamy flagę dla ON_CHUNK_REENTER nawet jeśli nie było cooldownu na liczniku
 		_was_on_cooldown_when_sleeping = true
 
 ## Wywoływane przy pierwszym zainicjowaniu węzła na scenie.
@@ -140,31 +141,38 @@ func _ready() -> void:
 		if not EventBus.story_event_triggered.is_connected(_on_story_event):
 			EventBus.story_event_triggered.connect(_on_story_event)
 
-	# --- TARCZA CLEAN CODE (False Start Prevention) ---
-	# Czekamy na przetworzenie pierwszej klatki gry.
-	# Daje to czas WorldStreamerowi na przeniesienie spawnera do odpowiedniego chunka i ukrycie go.
 	await get_tree().process_frame
 	_initial_setup_done = true
 
-	# Jeśli po segregacji chunków znajdujemy się w chunku, na którym WŁAŚNIE ZRESPAWNIŁ SIĘ GRACZ (jesteśmy w drzewie),
-	# spawnujemy natychmiast bez czekania na ponowne zdarzenie wchodzenia do drzewa.
 	if trigger_mode == TriggerMode.ON_CHUNK_ACTIVE:
 		_is_unlocked = true
 		if is_inside_tree():
-			attempt_spawn()
+			await _deferred_budgeted_spawn()
 
-	# Nadrabianie historii zaraz po pierwszym wczytaniu mapy
 	if trigger_mode == TriggerMode.EVENT_BUS_SIGNAL and expected_event_name != "":
 		if EventBus.has_method("has_story_event_occurred") and EventBus.has_story_event_occurred(expected_event_name):
 			if not _is_unlocked and is_inside_tree():
-				attempt_spawn()
+				await _deferred_budgeted_spawn()
+
+## Rozkłada w czasie jednoczesne przebudzenie setek spawnerów na chunku (max 6 ms na klatkę).
+func _deferred_budgeted_spawn() -> void:
+	while is_inside_tree():
+		var current_frame: int = Engine.get_process_frames()
+		if current_frame != _last_spawn_batch_frame:
+			_last_spawn_batch_frame = current_frame
+			_Batch_frame_start_msec = Time.get_ticks_msec()
+			break
+		if Time.get_ticks_msec() - _Batch_frame_start_msec < SPAWN_BATCH_FRAME_BUDGET_MSEC:
+			break
+		await get_tree().process_frame
+	if is_inside_tree():
+		attempt_spawn()
 
 ## Główna pętla logiczna spawnera. Odlicza cooldowny i sprawdza dystans do gracza.
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or not is_active:
 		return
 
-	# 1. Jeśli spawner czeka na pierwsze odbezpieczenie i działa w trybie dystansu do gracza (PROXIMITY_PLAYER)
 	if not _is_unlocked:
 		if trigger_mode == TriggerMode.PROXIMITY_PLAYER:
 			var player_ref: Node2D = get_tree().get_first_node_in_group("Player") as Node2D
@@ -174,40 +182,32 @@ func _process(delta: float) -> void:
 					attempt_spawn()
 		return
 
-	# 2. Odliczanie do odrodzenia (tylko po odbezpieczeniu _is_unlocked)
 	if respawn_condition != RespawnCondition.NEVER and respawn_condition != RespawnCondition.ON_CHUNK_REENTER:
 		_cleanup_invalid_alive_entities()
 		var should_count: bool = _alive_entities.size() < max_alive_entities
 
 		if should_count and respawn_cooldown > 0.0:
 			_respawn_timer += delta
-			# Odpalamy tylko te tryby, które nie wymagają opuszczenia chunka by się pojawić
 			if _respawn_timer >= respawn_cooldown and respawn_condition != RespawnCondition.ON_CHUNK_REENTER_AND_TIME:
 				attempt_spawn()
 
 ## Główna metoda szablonowa (Template Method) tworząca byt.
-## Weryfikuje limity, szanse i warunki, a następnie deleguje utworzenie instancji do klasy pochodnej.
 func attempt_spawn() -> void:
 	if not is_active or not _has_valid_spawn_configuration():
 		return
 
-	# Ściągamy zabezpieczenie przy pierwszej udanej próbie spawnu
 	_is_unlocked = true
 
-	# Odrzucenie spawnu na podstawie losowej szansy procentowej (Tylko za PIERWSZYM razem)
 	if _total_spawned_count == 0 and randf() > spawn_chance:
 		is_active = false
 		return
 
-	# Sprawdzanie globalnego limitu ilości wszystkich spawnów w historii
 	if max_total_spawns > 0 and _total_spawned_count >= max_total_spawns:
 		return
 
-	# Pełna blokada respawnu dla trybu NEVER
 	if respawn_condition == RespawnCondition.NEVER and _total_spawned_count >= max_alive_entities:
 		return
 
-	# Zabezpieczenie przed spawnem, jeśli powrót na chunk i odczekanie czasu są wymagane
 	if respawn_condition == RespawnCondition.ON_CHUNK_REENTER_AND_TIME and _respawn_timer < respawn_cooldown:
 		if _total_spawned_count > 0:
 			return
@@ -224,7 +224,6 @@ func attempt_spawn() -> void:
 		_respawn_timer = 0.0
 		_total_spawned_count += 1
 
-		# Jeśli po zespawnowaniu osiągnęliśmy całkowity limit, wyłączamy spawner by oszczędzać zasoby
 		if max_total_spawns > 0 and _total_spawned_count >= max_total_spawns:
 			is_active = false
 
@@ -247,13 +246,11 @@ func _finalize_spawn(entity: Node2D) -> void:
 
 	_alive_entities.append(entity)
 
-	# Rejestrujemy w WorldStreamerze w czasie O(1) (przez grupę lub bezpośrednie dziecko MapRegionu)
 	var streamer: Node = _find_world_streamer(map_region)
 	if streamer != null and streamer.has_method("register_entity"):
 		streamer.call_deferred("register_entity", entity)
 
 ## Usuwa z listy żywych obiektów te, które zostały już zniszczone lub zebrane przez gracza.
-## Używa pętli od końca (remove_at) zamiast .filter(), co zachowuje ścisły typ Array[Node] i nie alokuje pamięci!
 func _cleanup_invalid_alive_entities() -> void:
 	for i in range(_alive_entities.size() - 1, -1, -1):
 		var entity: Node = _alive_entities[i]
@@ -270,12 +267,10 @@ func _find_world_streamer(map_region: MapRegion) -> Node:
 		return get_tree().get_first_node_in_group("WorldStreamer")
 	return null
 
-## Reakcja na globalny sygnał fabularny z EventBusa.
 func _on_story_event(event_name: String) -> void:
 	if event_name == expected_event_name:
 		attempt_spawn()
 
-## Pomocnicze szukanie nadrzędnego pokoju (MapRegion).
 func _get_map_region() -> MapRegion:
 	var curr: Node = get_parent()
 	while curr != null:
@@ -284,7 +279,6 @@ func _get_map_region() -> MapRegion:
 		curr = curr.get_parent()
 	return null
 
-## Rysowanie znaczników pomocniczych w Edytorze Godota (niewidoczne podczas właściwej gry).
 func _draw() -> void:
 	if not Engine.is_editor_hint():
 		return
@@ -306,22 +300,17 @@ func _draw() -> void:
 # METODY WIRTUALNE DO NADPISANIA W KLASACH POCHODNYCH (SOLID - OCP / LSP)
 # =========================================================================
 
-## Sprawdza, czy spawner ma przypisane wymagane zasoby w Inspektorze.
 func _has_valid_spawn_configuration() -> bool:
 	return false
 
-## Tworzy i zwraca tablicę nowych instancji węzłów gotowych do umieszczenia na mapie.
 func _create_spawn_nodes() -> Array[Node]:
 	return []
 
-## Oblicza docelową pozycję spawnu dla pojedynczej instancji (domyślnie pozycja markera).
 func _calculate_entity_spawn_position(_entity: Node2D) -> Vector2:
 	return global_position
 
-## Rysuje unikalny kształt ikony spawnera w edytorze.
 func _draw_spawner_icon() -> void:
 	pass
 
-## Zwraca główny kolor ikony spawnera w edytorze.
 func _get_gizmo_color() -> Color:
 	return Color.WHITE

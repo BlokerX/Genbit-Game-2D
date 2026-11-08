@@ -44,7 +44,8 @@ func roll_slots_count() -> int:
 	var high: int = maxi(low, maxi(min_slots, max_slots))
 	return randi_range(low, high)
 
-## Tworzy gotową instancję przedmiotu (ItemInstance) z wylosowaną ilością i wytrzymałością (DRY / Flyweight).
+## Tworzy gotową instancję przedmiotu (ItemInstance) z wylosowaną ilością i wytrzymałością (DRY).
+## Używa create_unique_copy(), aby każdy wylosowany miecz mógł mieć indywidualnie ulepszane statystyki bez zjadania RAM-u!
 func create_item_instance(forced_amount: int = -1) -> ItemInstance:
 	if item_data == null:
 		return null
@@ -55,12 +56,12 @@ func create_item_instance(forced_amount: int = -1) -> ItemInstance:
 		var high_amt: int = maxi(low_amt, maxi(min_amount, max_amount))
 		final_amount = randi_range(low_amt, high_amt)
 
-	# Współdzielimy referencję do szablonu item_data (brak zbędnego duplicate(true) obciążającego RAM!)
-	var instance: ItemInstance = ItemInstance.new(item_data, final_amount)
+	var unique_data: ItemData = item_data.create_unique_copy()
+	var instance: ItemInstance = ItemInstance.new(unique_data, final_amount)
 
 	var max_durability: int = 0
-	if item_data.components != null:
-		for comp in item_data.components:
+	if unique_data.components != null:
+		for comp in unique_data.components:
 			if comp is DurabilityComponent:
 				max_durability = comp.max_durability
 				break
