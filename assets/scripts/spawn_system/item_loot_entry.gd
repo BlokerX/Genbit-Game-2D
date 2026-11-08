@@ -44,24 +44,23 @@ func roll_slots_count() -> int:
 	var high: int = maxi(low, maxi(min_slots, max_slots))
 	return randi_range(low, high)
 
-## Tworzy gotową instancję przedmiotu (ItemInstance) z wylosowaną ilością i wytrzymałością (DRY / Information Expert).
+## Tworzy gotową instancję przedmiotu (ItemInstance) z wylosowaną ilością i wytrzymałością (DRY / Flyweight).
 func create_item_instance(forced_amount: int = -1) -> ItemInstance:
 	if item_data == null:
 		return null
 
-	var unique_data: ItemData = item_data.duplicate(true)
 	var final_amount: int = forced_amount
 	if final_amount < 0:
 		var low_amt: int = maxi(1, mini(min_amount, max_amount))
 		var high_amt: int = maxi(low_amt, maxi(min_amount, max_amount))
 		final_amount = randi_range(low_amt, high_amt)
 
-	var instance: ItemInstance = ItemInstance.new(unique_data, final_amount)
+	# Współdzielimy referencję do szablonu item_data (brak zbędnego duplicate(true) obciążającego RAM!)
+	var instance: ItemInstance = ItemInstance.new(item_data, final_amount)
 
-	# Sprawdzenie maksymalnej wytrzymałości z komponentu DurabilityComponent
 	var max_durability: int = 0
-	if unique_data.components != null:
-		for comp in unique_data.components:
+	if item_data.components != null:
+		for comp in item_data.components:
 			if comp is DurabilityComponent:
 				max_durability = comp.max_durability
 				break

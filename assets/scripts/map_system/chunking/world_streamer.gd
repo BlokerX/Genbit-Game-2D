@@ -24,6 +24,7 @@ var entities_container: Node
 # Wewnętrzna zmienna trzymająca poziom renderowania zaczytany z ustawień gry
 var _current_render_level: int = 1  
 var _last_grid_state: bool = false
+var _is_initialized: bool = false
 
 # --- BAZA KSZTAŁTÓW RENDEROWANIA ---
 # Typy: "SQUARE" (Kwadrat), "DIAMOND" (Romb / Krzyż), "CIRCLE" (Koło)
@@ -46,21 +47,34 @@ func _ready() -> void:
 	# Rejestracja w grupie pozwala spawnerom znaleźć WorldStreamer w czasie O(1) bez find_child()!
 	add_to_group("WorldStreamer")
 
-func initialize(container: Node) -> void:
+## Inicjalizuje streamer i natychmiast segreguje obiekty na chunki.
+## Może zostać wywołana ZANIM mapa wejdzie do drzewa sceny (initial_focus_pos),
+## dzięki czemu tysiące botów w dalekich chunkach w ogóle nie uruchomią swojego _ready() na starcie!
+func initialize(container: Node, initial_focus_pos: Vector2 = Vector2.INF) -> void:
+	if _is_initialized and entities_container == container:
+		if initial_focus_pos != Vector2.INF:
+			refresh_focus_position(initial_focus_pos)
+		return
+
 	entities_container = container
 	if chunk_size <= 0:
 		chunk_size = GlobalSettings.chunk_base_size
 
-	# Zaczytujemy poziom renderowania od razu na starcie
 	_current_render_level = GlobalSettings.chunk_render_distance
 	_last_grid_state = GlobalSettings.show_chunk_grid
 
-	# 1. NATYCHMIASTOWE USTALENIE POZYCJI GRACZA (Przed dodaniem czegokolwiek!)
-	player = get_tree().get_first_node_in_group("Player") as Node2D
-	if is_instance_valid(player):
-		current_chunk = _calculate_chunk(player.global_position)
+	# 1. USTALENIE PUNKTU CENTRALNEGO (z przekazanego spawnu lub z pozycji gracza)
+	var focus_pos: Vector2 = initial_focus_pos
+	if focus_pos == Vector2.INF and is_inside_tree():
+		player = get_tree().get_first_node_in_group("Player") as Node2D
+		if is_instance_valid(player):
+			focus_pos = player.global_position
+	if focus_pos == Vector2.INF:
+		focus_pos = Vector2.ZERO
 
-	# 2. GŁĘBOKIE SKANOWANIE MAPY (Spłaszczanie struktury folderów)
+	current_chunk = _calculate_chunk(focus_pos)
+
+	# 2. GŁĘBOKIE SKANOWANIE MAPY (Spłaszczanie struktury folderów przed wejściem do drzewa!)
 	var entities_to_register: Array[Node] = []
 	_gather_streamables(entities_container, entities_to_register)
 
@@ -68,20 +82,49 @@ func initialize(container: Node) -> void:
 		register_entity(entity)
 
 	# 3. NATYCHMIASTOWE WYMUSZENIE AKTUALIZACJI CHUNKÓW
-	# Zanim silnik narysuje pierwszą klatkę, chowamy wszystko, czego gracz nie widzi!
+	# Zanim silnik narysuje pierwszą klatkę (i zanim dalekie boty wejdą do SceneTree!),
+	# w drzewie zostają wyłącznie chunki wokół punktu startowego gracza.
 	_update_active_chunks()
 
+	_is_initialized = true
 	set_process(true)
-	if GlobalSettings.show_chunk_grid:
+	if is_inside_tree() and GlobalSettings.show_chunk_grid:
 		queue_redraw()
 	print("[WorldStreamer] Zbudowano fizyczną siatkę chunków. Aktywna hibernacja obiektów.")
+
+## Wymusza przeliczenie aktywnych chunków dla nowej pozycji gracza (np. po teleportacji na portal).
+func refresh_focus_position(focus_pos: Vector2) -> void:
+	var new_chunk: Vector2i = _calculate_chunk(focus_pos)
+	if new_chunk != current_chunk or active_chunks.is_empty():
+		current_chunk = new_chunk
+		_update_active_chunks()
+
+## Zamraża i odpina z drzewa absolutnie wszystkie chunki (używane, gdy mapa trafia do schowka RAM).
+## Odciąża serwer fizyki, nawigacji i renderowania z nieaktywnych poziomów.
+func hibernate_all_chunks() -> void:
+	if not is_instance_valid(entities_container):
+		return
+	for coords in active_chunks:
+		var chunk_node: Node2D = chunk_nodes.get(coords)
+		if is_instance_valid(chunk_node) and chunk_node.is_inside_tree():
+			for child in chunk_node.get_children():
+				if child is RigidBody2D:
+					(child as RigidBody2D).freeze = true
+			entities_container.remove_child(chunk_node)
+	active_chunks.clear()
+	set_process(false)
+
+## Przywraca aktywne chunki po wyciągnięciu mapy ze schowka RAM.
+func restore_active_chunks(focus_pos: Vector2) -> void:
+	set_process(true)
+	current_chunk = _calculate_chunk(focus_pos)
+	_update_active_chunks()
 
 ## Funkcja głęboko skanująca drzewo. Wyciąga obiekty z pustych folderów Node2D.
 func _gather_streamables(node: Node, result: Array[Node]) -> void:
 	if node == null:
 		return
 	for child in node.get_children():
-		# Ignorujemy systemowe węzły
 		if child.name.begins_with("Chunk_") or child.name == "WorldStreamer":
 			continue
 		if child is TileMapLayer or child is NavigationRegion2D or child is CanvasModulate or child is Camera2D:
@@ -131,57 +174,78 @@ func _process(_delta: float) -> void:
 		_current_render_level = target_level
 		level_changed = true
 
-	# Aktualizacja następuje jeśli ruszył się gracz LUB ktoś zmienił zasięg suwakiem w opcjach
 	var new_chunk: Vector2i = _calculate_chunk(player.global_position)
 	if new_chunk != current_chunk or level_changed:
 		current_chunk = new_chunk
 		_update_active_chunks()
 
-	# Odświeżenie rysowania jeśli wartość zmieniona w Menu Ustawień lub skrótem klawiszowym
 	if GlobalSettings.show_chunk_grid != _last_grid_state:
 		_last_grid_state = GlobalSettings.show_chunk_grid
 		queue_redraw()
 
 func register_entity(node: Node) -> void:
-	# TARCZA 1: Odsiewamy błędne lub wykluczone obiekty
 	if not is_instance_valid(node) or not node is Node2D:
 		return
 	if node.is_in_group("Player") or node.is_in_group("AlwaysActive"):
 		return
 
-	# NAPRAWA KRYTYCZNA:
 	# Streamer ignoruje zwykłe pomocnicze Marker2D (np. RespawnPoint),
 	# ALE wpuszcza wszystkie zaawansowane spawnery (EntitySpawner, LootSpawner, ObjectSpawner)!
 	if node is Marker2D and not (node is BaseWorldSpawner or node.is_in_group("AdvancedSpawner")):
 		return
 
-	# TARCZA 2: KRYTYCZNE ZABEZPIECZENIE STRUKTURY MAPY
 	if node is TileMapLayer or node is NavigationRegion2D or node is CanvasModulate or node is Camera2D:
 		return
 	if node.name.begins_with("Chunk_") or node.name == "WorldStreamer":
 		return
 
 	var node_2d: Node2D = node as Node2D
-	var chunk_coords: Vector2i = _calculate_chunk(node_2d.global_position)
+	var world_pos: Vector2 = _get_node_world_position(node_2d)
+	var chunk_coords: Vector2i = _calculate_chunk(world_pos)
 	var chunk_node: Node2D = _get_or_create_chunk(chunk_coords)
 
 	_transfer_node_to_chunk(node_2d, chunk_node)
 
-## Bezpiecznie przenosi węzeł 2D do docelowego chunka, zachowując jego globalną transformację
-## i zamrażając fizykę RigidBody2D, jeśli docelowy chunk jest aktualnie uśpiony poza drzewem sceny.
+## Oblicza pozycję węzła 2D w świecie – działa poprawnie zarówno gdy węzeł jest w drzewie sceny,
+## jak i wtedy, gdy mapa jest dopiero przygotowywana w pamięci RAM przed add_child()!
+func _get_node_world_position(node_2d: Node2D) -> Vector2:
+	if node_2d.is_inside_tree():
+		return node_2d.global_position
+	var accum_transform: Transform2D = _get_transform_relative_to_root(node_2d)
+	return accum_transform.origin
+
+func _get_transform_relative_to_root(node_2d: Node2D) -> Transform2D:
+	var xform: Transform2D = node_2d.transform
+	var curr: Node = node_2d.get_parent()
+	while curr != null and curr != entities_container:
+		if curr is Node2D:
+			xform = (curr as Node2D).transform * xform
+		curr = curr.get_parent()
+	return xform
+
+## Bezpiecznie przenosi węzeł 2D do docelowego chunka, zachowując jego transformację (w drzewie i poza nim).
 func _transfer_node_to_chunk(node_2d: Node2D, target_chunk_node: Node2D) -> void:
 	if not is_instance_valid(node_2d) or not is_instance_valid(target_chunk_node):
 		return
 	if node_2d.get_parent() == target_chunk_node:
 		return
 
-	var global_trans: Transform2D = node_2d.global_transform
+	var preserved_transform: Transform2D = (
+		node_2d.global_transform
+		if node_2d.is_inside_tree()
+		else _get_transform_relative_to_root(node_2d)
+	)
+	var was_in_tree: bool = node_2d.is_inside_tree()
+
 	var current_parent: Node = node_2d.get_parent()
 	if current_parent != null:
 		current_parent.remove_child(node_2d)
 
 	target_chunk_node.add_child(node_2d)
-	node_2d.global_transform = global_trans
+	if was_in_tree and target_chunk_node.is_inside_tree():
+		node_2d.global_transform = preserved_transform
+	else:
+		node_2d.transform = preserved_transform
 
 	# Jeśli docelowy chunk jest uśpiony poza drzewem, zamrażamy fizykę RigidBody2D
 	if not target_chunk_node.is_inside_tree() and node_2d is RigidBody2D:
@@ -190,7 +254,6 @@ func _transfer_node_to_chunk(node_2d: Node2D, target_chunk_node: Node2D) -> void
 		(node_2d as RigidBody2D).freeze = false
 
 func _track_moving_entities() -> void:
-	# Skanujemy TYLKO pudełka załadowane do drzewa
 	for coords in active_chunks:
 		if not chunk_nodes.has(coords):
 			continue
@@ -198,20 +261,16 @@ func _track_moving_entities() -> void:
 		if not is_instance_valid(chunk_node):
 			continue
 
-		# Iterujemy po kopii tablicy dzieci, aby przeniesienie obiektu do innego chunka
-		# nie modyfikowało kolekcji w trakcie pętli (naprawia pomijanie obiektów i błędy reparent)!
 		var children_snapshot: Array[Node] = chunk_node.get_children()
 		for entity in children_snapshot:
 			if not is_instance_valid(entity) or entity.is_queued_for_deletion() or not entity is Node2D:
 				continue
-			# Spawnery są stacjonarne – nie musimy przeliczać ich pozycji co klatkę
 			if entity is BaseWorldSpawner:
 				continue
 
 			var entity_2d: Node2D = entity as Node2D
 			var actual_coords: Vector2i = _calculate_chunk(entity_2d.global_position)
 
-			# Jeśli potwór, pocisk lub pchnięty przedmiot zmienił chunk w locie:
 			if actual_coords != coords:
 				var new_chunk_node: Node2D = _get_or_create_chunk(actual_coords)
 				_transfer_node_to_chunk(entity_2d, new_chunk_node)
@@ -243,11 +302,9 @@ func _get_offsets_for_current_level() -> Array[Vector2i]:
 			if shape == "SQUARE":
 				offsets.append(Vector2i(x, y))
 			elif shape == "DIAMOND":
-				# Dystans Manhattan: ścina narożniki tworząc kształt "diamentu / krzyża"
 				if abs(x) + abs(y) <= r:
 					offsets.append(Vector2i(x, y))
 			elif shape == "CIRCLE":
-				# Dystans Euklidesowy: płynnie wygładza krawędzie tworząc koła na siatce 2D
 				if (x * x + y * y) <= (r * r) + r:
 					offsets.append(Vector2i(x, y))
 
@@ -267,24 +324,24 @@ func _update_active_chunks() -> void:
 	for coords in active_chunks:
 		if not new_active_chunks.has(coords):
 			var chunk_node: Node2D = chunk_nodes.get(coords)
-			if is_instance_valid(chunk_node) and chunk_node.is_inside_tree():
+			if is_instance_valid(chunk_node) and chunk_node.get_parent() == entities_container:
 				for child in chunk_node.get_children():
 					if child is RigidBody2D:
 						(child as RigidBody2D).freeze = true
 				entities_container.remove_child(chunk_node)
 
-	# 2. OŻYWIANIE (Podpinanie pobliskich chunków do drzewa sceny)
+	# 2. OŻYWIANIE (Podpinanie pobliskich chunków do kontenera Entities)
 	for coords in new_active_chunks:
 		if not active_chunks.has(coords):
 			var chunk_node: Node2D = _get_or_create_chunk(coords)
-			if not chunk_node.is_inside_tree():
+			if chunk_node.get_parent() != entities_container:
 				entities_container.add_child(chunk_node)
 				for child in chunk_node.get_children():
 					if child is RigidBody2D:
 						(child as RigidBody2D).freeze = false
 
 	active_chunks = new_active_chunks
-	if GlobalSettings.show_chunk_grid:
+	if is_inside_tree() and GlobalSettings.show_chunk_grid:
 		queue_redraw()
 
 func _draw() -> void:
@@ -296,18 +353,14 @@ func _draw() -> void:
 		var chunk_pos: Vector2 = Vector2(chunk.x * chunk_size, chunk.y * chunk_size)
 		var rect: Rect2 = Rect2(chunk_pos, Vector2(chunk_size, chunk_size))
 
-		# 1. Rysowanie obwódki
 		draw_rect(rect, DEBUG_BORDER_COLOR, false, DEBUG_BORDER_WIDTH)
-		# 2. Rysowanie półprzezroczystego tła chunka
 		draw_rect(rect, DEBUG_FILL_COLOR, true)
 
-		# 3. Wypisywanie napisu z koordynatami chunka
 		if font != null:
 			var text: String = "CHUNK [" + str(chunk.x) + ", " + str(chunk.y) + "]"
 			draw_string(font, chunk_pos + DEBUG_TEXT_SHADOW_OFFSET, text, HORIZONTAL_ALIGNMENT_LEFT, -1, DEBUG_FONT_SIZE, DEBUG_SHADOW_COLOR)
 			draw_string(font, chunk_pos + DEBUG_TEXT_MAIN_OFFSET, text, HORIZONTAL_ALIGNMENT_LEFT, -1, DEBUG_FONT_SIZE, Color.WHITE)
 
-# Zamrożone chunki są poza drzewem, więc zwalniamy je ręcznie przy niszczeniu WorldStreamera (brak wycieków RAM).
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		for chunk_node in chunk_nodes.values():

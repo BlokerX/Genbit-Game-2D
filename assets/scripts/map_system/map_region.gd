@@ -122,8 +122,9 @@ var has_spawned_entities: bool = false
 		value.x = maxi(MIN_ROOM_TILES_DIMENSION, value.x)
 		value.y = maxi(MIN_ROOM_TILES_DIMENSION, value.y)
 		map_region_size_tiles = value
-		generate_map_region()
-		queue_redraw()
+		if Engine.is_editor_hint() or is_inside_tree():
+			generate_map_region()
+			queue_redraw()
 
 @export_group("Ustawienia Generowania")
 ## Jeśli włączone, skrypt NIE wyczyści i NIE nadpisze Twojej TileMapy. 
@@ -131,8 +132,9 @@ var has_spawned_entities: bool = false
 @export var manual_tilemap_override: bool = false:
 	set(value):
 		manual_tilemap_override = value
-		generate_map_region()
-		queue_redraw()
+		if Engine.is_editor_hint() or is_inside_tree():
+			generate_map_region()
+			queue_redraw()
 
 @export var tile_source_id : int = 0
 
@@ -141,14 +143,16 @@ var has_spawned_entities: bool = false
 @export var floor_alt_id : int = 0:
 	set(value):
 		floor_alt_id = maxi(0, value)
-		generate_map_region()
+		if Engine.is_editor_hint() or is_inside_tree():
+			generate_map_region()
 
 @export_subgroup("Ściana")
 @export var wall_atlas_pos : Vector2i = Vector2i(1, 0)
 @export var wall_alt_id : int = 0:
 	set(value):
 		wall_alt_id = maxi(0, value)
-		generate_map_region()
+		if Engine.is_editor_hint() or is_inside_tree():
+			generate_map_region()
 
 @export_group("Drzwi")
 ## Jeśli wrzucisz tu teksturę, drzwi PROWADZĄCE DO TEGO POKOJU oraz DRZWI W TYM POKOJU
@@ -175,46 +179,74 @@ var active_enemies_count : int = 0
 
 var size_px : Vector2
 
+## KLUCZOWA OPTYMALIZACJA (Top-Down Lifecycle):
+## _enter_tree() w Godocie wykonuje się na rodzicu (MapRegion) ZANIM jakiekolwiek dziecko (Soldier1..1000)
+## wejdzie do drzewa sceny! Segregując chunki tutaj, dalekie boty nigdy nie wchodzą do drzewa na starcie mapy!
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	if map_region_type == MapRegionType.OPEN_WORLD and not _runtime_streamer_initialized:
+		ensure_runtime_initialized()
+
 func _ready() -> void:
+	if floor_tile_map == null:
+		floor_tile_map = get_node_or_null("FloorTileMap") as TileMapLayer
+	if navigation_region_2d == null:
+		navigation_region_2d = get_node_or_null("NavigationRegion2D") as NavigationRegion2D
+
 	if floor_tile_map != null:
 		floor_tile_map.z_index = GameLayers.FLOOR
 
-	# Wymuszamy domyślne, poprawne zachowania dla otwartego świata
 	if map_region_type == MapRegionType.OPEN_WORLD:
 		camera_follows_player = true
 		ignore_combat_lock = true
 
-	# Budujemy pokój i obliczamy jego wymiary (size_px potrzebne dla kamery i minimapy)
+	# Budujemy pokój (w grze pomija powtórne rysowanie kafelków, jeśli są już zapisane w scenie!)
 	generate_map_region()
 	_update_lighting()
 
 	if not Engine.is_editor_hint():
-		# Pobieramy drzwi i punkty spawnu potrzebne dla Auto-Linkera w Map._ready()
 		_auto_fetch_doors()
 		_auto_fetch_spawn_points()
 
-## Leniwa inicjalizacja zasobożernych systemów pokoju (np. WorldStreamer).
-## Wywoływana przez Map dopiero wtedy, gdy gracz faktycznie wchodzi do tego pokoju!
-func ensure_runtime_initialized() -> void:
+## Przygotowuje dane pokoju (drzwi, spawny, wymiary) i WorldStreamer jeszcze przed dodaniem mapy do SceneTree.
+func prepare_region_before_tree(is_active_start_region: bool, initial_focus_pos: Vector2 = Vector2.INF) -> void:
+	if floor_tile_map == null:
+		floor_tile_map = get_node_or_null("FloorTileMap") as TileMapLayer
+	if navigation_region_2d == null:
+		navigation_region_2d = get_node_or_null("NavigationRegion2D") as NavigationRegion2D
+	calculate_map_region_bounds()
+	_auto_fetch_doors()
+	_auto_fetch_spawn_points()
+	if is_active_start_region and map_region_type == MapRegionType.OPEN_WORLD:
+		ensure_runtime_initialized(initial_focus_pos)
+
+## Inicjalizuje WorldStreamer dla otwartego świata, chowając odległe chunki zanim obciążą silnik.
+func ensure_runtime_initialized(initial_focus_pos: Vector2 = Vector2.INF) -> void:
 	if Engine.is_editor_hint():
 		return
-	if map_region_type == MapRegionType.OPEN_WORLD and not _runtime_streamer_initialized:
-		_runtime_streamer_initialized = true
-		_setup_world_streamer()
+	if map_region_type == MapRegionType.OPEN_WORLD:
+		if not _runtime_streamer_initialized:
+			_runtime_streamer_initialized = true
+			_setup_world_streamer(initial_focus_pos)
+		elif initial_focus_pos != Vector2.INF:
+			var existing_streamer: WorldStreamer = get_node_or_null("WorldStreamer") as WorldStreamer
+			if existing_streamer != null:
+				existing_streamer.refresh_focus_position(initial_focus_pos)
 
-func _setup_world_streamer() -> void:
-	if get_node_or_null("WorldStreamer") != null:
-		return
-	var streamer: WorldStreamer = WorldStreamer.new()
-	streamer.name = "WorldStreamer"
-	streamer.chunk_size = GlobalSettings.chunk_base_size 
-	add_child(streamer)
+func _setup_world_streamer(initial_focus_pos: Vector2 = Vector2.INF) -> void:
+	var streamer: WorldStreamer = get_node_or_null("WorldStreamer") as WorldStreamer
+	if streamer == null:
+		streamer = WorldStreamer.new()
+		streamer.name = "WorldStreamer"
+		streamer.chunk_size = GlobalSettings.chunk_base_size
+		add_child(streamer)
 
 	var entities_node: Node = find_child("Entities")
 	if entities_node != null:
-		streamer.initialize(entities_node)
+		streamer.initialize(entities_node, initial_focus_pos)
 	else:
-		streamer.initialize(self) 
+		streamer.initialize(self, initial_focus_pos)
 
 	print("WorldStreamer zainicjowany w pokoju otwartym: ", name)
 
@@ -223,7 +255,6 @@ func _auto_fetch_doors() -> void:
 	doors.clear()
 	_find_doors_recursive(self)
 
-## Rekurencyjne szukanie (znajdzie drzwi nawet jeśli są zgrupowane w innym Node2D)
 func _find_doors_recursive(node: Node) -> void:
 	for child in node.get_children():
 		if child is Door:
@@ -239,7 +270,6 @@ func _auto_fetch_spawn_points() -> void:
 	item_spawns.clear()
 	_find_spawn_points_recursive(self)
 
-## Rekurencyjne przeszukiwanie drzewa węzłów pokoju
 func _find_spawn_points_recursive(node: Node) -> void:
 	for child in node.get_children():
 		if child is Marker2D:
@@ -258,11 +288,17 @@ func _find_spawn_points_recursive(node: Node) -> void:
 
 ## Generowanie pokoju (Proceduralne LUB Ręczne)
 func generate_map_region() -> void:
+	if floor_tile_map == null:
+		floor_tile_map = get_node_or_null("FloorTileMap") as TileMapLayer
 	if not floor_tile_map:
 		return
 
-	# 1. Rysowanie kafelków (tylko jeśli nie używamy ręcznie narysowanej TileMapy)
-	if not manual_tilemap_override:
+	# OPTYMALIZACJA: W trakcie gry (runtime) nie czyścimy i nie generujemy od nowa dziesiątek tysięcy kafelków,
+	# jeśli zostały już wygenerowane przez @tool w Edytorze i zapisane w pliku .tscn!
+	var should_rebuild_cells: bool = not manual_tilemap_override and (
+		Engine.is_editor_hint() or floor_tile_map.get_used_cells().is_empty()
+	)
+	if should_rebuild_cells:
 		floor_tile_map.clear()
 		for x in range(map_region_size_tiles.x):
 			for y in range(map_region_size_tiles.y):
@@ -273,7 +309,8 @@ func generate_map_region() -> void:
 					floor_tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
 
 	calculate_map_region_bounds()
-	update_navigation_region()
+	if Engine.is_editor_hint() or navigation_region_2d == null or navigation_region_2d.navigation_polygon == null:
+		update_navigation_region()
 	_update_lighting()
 
 ## Pozwala sprawdzić, czy na tej ścianie postawiłeś drzwi ręcznie w edytorze
@@ -327,6 +364,8 @@ func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: T
 
 ## Aktualizacja regionu nawigacji
 func update_navigation_region() -> void:
+	if navigation_region_2d == null:
+		navigation_region_2d = get_node_or_null("NavigationRegion2D") as NavigationRegion2D
 	if not navigation_region_2d or not floor_tile_map or not floor_tile_map.tile_set:
 		return
 
@@ -345,6 +384,8 @@ func update_navigation_region() -> void:
 
 ## Wyliczanie granic pokoju dla kamery
 func calculate_map_region_bounds() -> void:
+	if floor_tile_map == null:
+		floor_tile_map = get_node_or_null("FloorTileMap") as TileMapLayer
 	if floor_tile_map and floor_tile_map.tile_set:
 		var tile_size: Vector2i = floor_tile_map.tile_set.tile_size
 		size_px = Vector2(float(map_region_size_tiles.x * tile_size.x), float(map_region_size_tiles.y * tile_size.y))
@@ -368,7 +409,6 @@ func _update_lighting() -> void:
 	var mod_name: String = "MapRegionDarkness"
 	var darkness: CanvasModulate = find_child(mod_name, false, false) as CanvasModulate
 
-	# Lokalny mrok istnieje TYLKO w edytorze dla podglądu! W grze globalnym mrokiem steruje Map.gd.
 	if Engine.is_editor_hint() and is_dark_map_region:
 		if not darkness:
 			darkness = CanvasModulate.new()
@@ -412,7 +452,6 @@ func _update_lighting() -> void:
 #region Logika stanu walki
 ## Sprawdza, czy w pokoju są wrogowie, odpala Reżysera i zarządza drzwiami
 func check_and_lock_map_region() -> void:
-	# Upewniamy się, że WorldStreamer (dla OPEN_WORLD) jest zainicjowany
 	ensure_runtime_initialized()
 
 	# --- 1. NAJPIERW ODPALAMY REŻYSERA SPAWNU ---

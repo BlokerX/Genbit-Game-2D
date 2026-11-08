@@ -58,12 +58,64 @@ var _lighting_controller: MapLightingControllerType
 var _door_generator: MapDoorGeneratorType
 var _region_entry_controller: MapRegionEntryControllerType
 var _is_transitioning: bool = false
+var _pre_initialized: bool = false
 
 @export_group("Generacja Drzwi")
 ## Scena drzwi, która ma być automatycznie wstawiana do pokoi
 @export var auto_door_scene: PackedScene
 ## Domyślna tekstura drzwi dla CAŁEJ MAPY. 
 @export var default_map_door_texture: Texture2D
+
+## Wykonywane ZANIM dzieci (MapRegion i tysiące botów) wejdą do drzewa sceny!
+func _enter_tree() -> void:
+	if not _pre_initialized:
+		prepare_map_before_tree(GlobalLevelManager.target_entrance_id)
+
+## Przygotowuje strukturę pokoi i dzieli otwarty świat na chunki ZANIM mapa wejdzie do SceneTree.
+## Dzięki temu nieaktywne pokoje oraz odległe chunki (np. Soldier1..1000) nigdy nie obciążają startu poziomu!
+func prepare_map_before_tree(entrance_id: String = "") -> void:
+	if _pre_initialized:
+		return
+	_pre_initialized = true
+
+	_door_generator = MapDoorGeneratorType.new()
+	_door_generator.configure(auto_door_scene, default_map_door_texture)
+
+	var region_children: Array[MapRegion] = []
+	for child in get_children():
+		if child is MapRegion:
+			var region: MapRegion = child as MapRegion
+			region_children.append(region)
+			register_map_region(region, false)
+			region.prepare_region_before_tree(false)
+
+	# 1. Spawnujemy brakujące drzwi i zszywamy siatkę pokoi w pamięci RAM
+	_auto_spawn_missing_doors()
+	_auto_link_doors()
+
+	# 2. Ustalamy, w którym pokoju i w jakim punkcie pojawi się gracz
+	var active_region: MapRegion = starting_map_region
+	var focus_pos: Vector2 = Vector2.ZERO
+	if entrance_id != "":
+		var entrance: LevelEntrance = _find_entrance_by_id(entrance_id)
+		if entrance != null:
+			active_region = _get_map_region_of_node(entrance)
+			focus_pos = entrance.position + (active_region.position if active_region != null else Vector2.ZERO)
+
+	if active_region != null and focus_pos == Vector2.ZERO:
+		if active_region.spawn_points.size() > 0:
+			focus_pos = active_region.position + active_region.spawn_points[0].position
+		else:
+			focus_pos = active_region.position + (active_region.size_px / 2.0)
+
+	# 3. Odpinamy wszystkie inne pokoje PRZED wejściem do SceneTree,
+	# a dla pokoju aktywnego dzielimy encje na chunki wokół punktu startowego!
+	for region in region_children:
+		if region != active_region:
+			if region.get_parent() == self:
+				remove_child(region)
+		else:
+			region.prepare_region_before_tree(true, focus_pos)
 
 func _ready() -> void:
 	add_to_group("Map")
@@ -75,30 +127,26 @@ func _ready() -> void:
 	add_child(global_darkness)
 	_lighting_controller = MapLightingControllerType.new()
 	_lighting_controller.initialize(global_darkness)
-	_door_generator = MapDoorGeneratorType.new()
-	_door_generator.configure(auto_door_scene, default_map_door_texture)
+	if _door_generator == null:
+		_door_generator = MapDoorGeneratorType.new()
+		_door_generator.configure(auto_door_scene, default_map_door_texture)
 	_region_entry_controller = MapRegionEntryControllerType.new()
 
-	# Rejestracja i ustawianie pokoi (bez emitowania sygnału map_updated w pętli -> brak lagów!)
-	for child in get_children():
-		if child is MapRegion:
-			register_map_region(child as MapRegion, false)
-			# Ukrywamy wszystko oprócz pokoju startowego, by nie obciążać silnika
-			if child != starting_map_region:
-				remove_child(child)
+	if not _pre_initialized:
+		prepare_map_before_tree(GlobalLevelManager.target_entrance_id)
 
-	# 1. NAJPIERW z centralnego poziomu spawnujemy fizyczne drzwi tam, gdzie oba pokoje się zgadzają
-	_auto_spawn_missing_doors()
-	# 2. POTEM Auto-Linker zszywa wszystkie drzwi (te wstawione ręcznie i te wstawione przez automat)
-	_auto_link_doors()
-
-	# Emitujemy map_updated tylko JEDEN raz po zarejestrowaniu całej siatki pokoi
 	map_updated.emit()
-
 	initialize_level()
 
+## Wprowadza mapę w stan hibernacji przed schowaniem jej do _cached_persistent_levels w RAM-ie.
+func hibernate_for_cache() -> void:
+	for region in all_map_regions:
+		if is_instance_valid(region):
+			var streamer: WorldStreamer = region.get_node_or_null("WorldStreamer") as WorldStreamer
+			if streamer != null:
+				streamer.hibernate_all_chunks()
+
 func initialize_level() -> void:
-	# --- SYSTEM ODBIERANIA GRACZA Z INNEGO POZIOMU ---
 	var map_region_to_load: MapRegion = starting_map_region
 	var spawn_node: Node2D = null
 
@@ -107,7 +155,6 @@ func initialize_level() -> void:
 		if entrance != null:
 			map_region_to_load = _get_map_region_of_node(entrance)
 			spawn_node = entrance
-			# Blokujemy portal docelowy, aby gracz po pojawieniu się na nim nie został odesłany z powrotem
 			entrance.has_triggered = true
 			GlobalLevelManager.register_arrival_entrance(entrance)
 		else:
@@ -118,12 +165,21 @@ func initialize_level() -> void:
 		TransitionManager.color_rect.color = Color.BLACK
 
 	if map_region_to_load != null:
+		var target_focus_pos: Vector2 = Vector2.ZERO
+		if spawn_node != null:
+			target_focus_pos = spawn_node.global_position if spawn_node.is_inside_tree() else (map_region_to_load.position + spawn_node.position)
+		elif map_region_to_load.spawn_points.size() > 0:
+			target_focus_pos = map_region_to_load.position + map_region_to_load.spawn_points[0].position
+
+		map_region_to_load.ensure_runtime_initialized(target_focus_pos)
+		var streamer: WorldStreamer = map_region_to_load.get_node_or_null("WorldStreamer") as WorldStreamer
+		if streamer != null:
+			streamer.restore_active_chunks(target_focus_pos)
+
 		if not map_region_to_load.is_inside_tree():
 			add_child(map_region_to_load)
-		map_region_to_load.ensure_runtime_initialized()
 		_lighting_controller.apply_region(map_region_to_load)
 
-		# Pre-pozycjonowanie gracza dla kamery
 		var player: PlayerCharacter = get_player()
 		if player != null:
 			if spawn_node != null:
@@ -152,7 +208,6 @@ func _get_map_region_of_node(node: Node) -> MapRegion:
 
 # --- FUNKCJE DYNAMIKI MAPY ---
 
-## Rejestracja pokoju, przypisuje go do list pokoi i opcjonalnie powiadamia UI mapy.
 func register_map_region(map_region: MapRegion, notify_ui: bool = true) -> void:
 	if not all_map_regions.has(map_region):
 		all_map_regions.append(map_region)
@@ -160,7 +215,6 @@ func register_map_region(map_region: MapRegion, notify_ui: bool = true) -> void:
 		if notify_ui:
 			map_updated.emit()
 
-## Funkcja do dynamicznego usuwania pokoju
 func unregister_map_region(map_region: MapRegion) -> void:
 	if all_map_regions.has(map_region):
 		all_map_regions.erase(map_region)
@@ -172,21 +226,18 @@ func unregister_map_region(map_region: MapRegion) -> void:
 		map_region_grid.erase(map_region.map_position)
 	map_updated.emit()
 
-## Odkrycie pokoju (dodaje do listy odkrytych na minimapie)
 func discover_map_region(map_region: MapRegion, notify_ui: bool = true) -> void:
 	if not discovered_map_regions.has(map_region):
 		discovered_map_regions.append(map_region)
 		if notify_ui:
 			map_updated.emit()
 
-## Zwraca pokój w którym znajdują się dane drzwi
 func find_map_region_by_door(target_door: Door) -> MapRegion:
 	for map_region in all_map_regions:
 		if map_region.is_ancestor_of(target_door):
 			return map_region
 	return null
 
-## Odkrywa wszystkie pokoje sąsiadujące z podanym pokojem (poprzez połączone drzwi)
 func _discover_neighboring_map_regions(map_region: MapRegion) -> void:
 	for door in map_region.doors:
 		if door.destination_door != null:
@@ -211,8 +262,8 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	var is_same_map_region: bool = (old_map_region == new_map_region)
 
 	var mode: int = new_map_region.transition_mode if "transition_mode" in new_map_region else 0
-	var do_fade: bool = (mode == 0 or mode == 2) # FADE lub BOTH
-	var do_slide: bool = (mode == 1 or mode == 2) # SLIDE lub BOTH
+	var do_fade: bool = (mode == 0 or mode == 2)
+	var do_slide: bool = (mode == 1 or mode == 2)
 
 	if old_map_region == null or is_same_map_region or force_teleport:
 		do_slide = false
@@ -221,7 +272,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if player != null:
 		player.set_physics_process(false)
 
-	# ŚCIEMNIENIE EKRANU
 	if do_fade:
 		TransitionManager.fade_to_black()
 		await TransitionManager.on_fade_out_finished
@@ -236,7 +286,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if old_map_region != null and not is_same_map_region:
 		old_map_region.process_mode = Node.PROCESS_MODE_DISABLED
 
-	# Ściągamy efekty środowiskowe starego pokoju z gracza (TYLKO AURY!)
 	if old_map_region != null and player != null:
 		for effect in old_map_region.ambient_aura_effects:
 			if effect != null:
@@ -245,19 +294,20 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	if player != null and player.get_parent() != null:
 		player.get_parent().remove_child(player)
 
-	# 2. OBLICZANIE WEKTORA PRZESUNIĘCIA (Jeśli to tryb SLIDE/BOTH)
 	var slide_vector: Vector2 = Vector2.ZERO
 	if do_slide and target_door != null and old_map_region != null and not is_same_map_region:
 		if target_door is Door:
 			var dir_offset: Vector2i = (target_door as Door).get_direction_offset()
 			slide_vector = Vector2(-dir_offset.x * current_map_region.size_px.x, -dir_offset.y * current_map_region.size_px.y)
 
-	# 3. Dodajemy nowy pokój do sceny i inicjalizujemy jego systemy (np. WorldStreamer)
+	# Przygotowujemy chunki nowego pokoju ZANIM wejdzie do drzewa sceny!
+	var entry_focus_pos: Vector2 = target_door.position + current_map_region.position if target_door != null else current_map_region.position
+	current_map_region.ensure_runtime_initialized(entry_focus_pos)
+
 	current_map_region.position = slide_vector
 	current_map_region.visible = true
 	if not current_map_region.is_inside_tree():
 		add_child(current_map_region)
-	current_map_region.ensure_runtime_initialized()
 	if not do_slide:
 		_lighting_controller.apply_region(current_map_region)
 
@@ -278,7 +328,6 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 	map_updated.emit()
 	map_region_changed.emit(current_map_region)
 
-	# 4. UMIESZCZAMY GRACZA W NOWYM POKOJU
 	if player != null:
 		_region_entry_controller.place_player_in_region(
 			player,
@@ -288,14 +337,11 @@ func change_map_region(new_map_region: MapRegion, target_door: Node2D = null, fo
 			_on_entity_spawn_requested
 		)
 
-	# 5. Odpalamy logikę walki / blokady pokoju
 	current_map_region.check_and_lock_map_region()
 
-	# 6. Informujemy gracza o strefie pacyfizmu
 	if player != null and "is_in_pacifist_zone" in player:
 		player.is_in_pacifist_zone = current_map_region.pacifist_zone
 
-	# --- 7. FAZA ANIMACJI, ROZJAŚNIANIA I ŚWIATEŁ ---
 	if do_fade and do_slide:
 		TransitionManager.fade_to_normal()
 		await TransitionManager.on_fade_in_finished
@@ -341,7 +387,6 @@ func _finish_transition(player: PlayerCharacter) -> void:
 		player.process_mode = Node.PROCESS_MODE_INHERIT
 		player.set_physics_process(true)
 
-## Obsługa spawnowania obiektów i przedmiotów zgłaszanych przez encje (w tym podczas śmierci gracza!)
 func _on_entity_spawn_requested(spawned_node: Node2D, spawn_pos: Vector2) -> void:
 	if not is_inside_tree() or not is_instance_valid(spawned_node):
 		return
@@ -401,7 +446,6 @@ func handle_player_respawn(_player: PlayerCharacter) -> void:
 		push_error("Menedżer Mapy: Brak 'starting_map_region'. Twardy reset sceny.")
 		get_tree().reload_current_scene()
 
-## Zwrócenie gracza ze sceny lub ze schowka (między-poziomowego)
 func get_player() -> PlayerCharacter:
 	var tree: SceneTree = get_tree()
 	var player: Node = null

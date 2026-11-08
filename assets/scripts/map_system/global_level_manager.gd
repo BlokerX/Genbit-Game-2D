@@ -3,6 +3,11 @@ extends Node
 
 const LEVEL_FADE_OUT_DURATION_SEC: float = 0.3
 const LEVEL_ARRIVAL_UNLOCK_DELAY_SEC: float = 0.5
+const DEFAULT_MAX_CACHED_LEVELS: int = 2
+
+## Maksymalna liczba dużych poziomów trzymanych jednocześnie w pamięci RAM.
+## Chroni grę przed przekroczeniem kilku GB RAM-u podczas długiej sesji.
+@export var max_cached_persistent_levels: int = DEFAULT_MAX_CACHED_LEVELS
 
 ## Schowek na gracza, gdy jest wycięty z drzewa podczas ładowania nowego poziomu.
 var stored_player: Node2D = null
@@ -16,9 +21,8 @@ var is_changing_level: bool = false
 var _level_change_generation: int = 0
 
 # --- SŁOWNIK POZIOMÓW ---
-## Trzyma wygenerowane instancje map (Node2D), które mają zachowywać swój stan w RAM-ie 
-## podczas jednej sesji gry (np. między wypadami do lochów). Kluczem jest znormalizowana ścieżka (.tscn).
 var _cached_persistent_levels: Dictionary = {}
+var _cached_level_order: Array[String] = []
 
 ## Tłumacz ścieżek (Translacja UID na czytelne res://)
 func get_normalized_path(path: String) -> String:
@@ -27,6 +31,13 @@ func get_normalized_path(path: String) -> String:
 		if ResourceUID.has_id(id):
 			return ResourceUID.get_id_path(id)
 	return path
+
+## Przechwytuje spamowanie klawiszami/myszką podczas ekranu ładowania poziomu,
+## aby żadne kliknięcie nie wywołało akcji w połowie budowania sceny.
+func _input(event: InputEvent) -> void:
+	if is_changing_level:
+		if event is InputEventMouseButton or event is InputEventKey or event is InputEventJoypadButton:
+			get_viewport().set_input_as_handled()
 
 func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	if is_changing_level:
@@ -42,7 +53,7 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 	var tree: SceneTree = get_tree()
 	var player: Node2D = tree.get_first_node_in_group("Player") as Node2D
 
-	# 1. ZAMRAŻAMY RUCH GRACZA, ALE NIE ODPINAMY GO JESZCZE OD DRZEWA
+	# 1. ZAMRAŻAMY RUCH GRACZA
 	if player != null:
 		player.set_physics_process(false)
 		if player.has_method("clear_all_environment_effects"):
@@ -85,20 +96,28 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 					push_error("BŁĄD: Próba zapisu mapy do RAM, która nie ma przypisanego source_level_path!")
 					map_node.queue_free()
 				else:
-					_cached_persistent_levels[save_key] = map_node
+					# Hibernujemy wszystkie chunki starej mapy, by nie zajmowały pamięci w tle!
+					map_node.hibernate_for_cache()
+					_store_map_in_cache(save_key, map_node)
 					print("GlobalLevelManager: Zamrożono poziom w RAM pod kluczem: ", save_key)
 	else:
 		push_error("GlobalLevelManager: Nie znaleziono węzła 'LevelContainer'!")
 		is_changing_level = false
 		return
 
-	# 4. ŁADOWANIE NOWEJ MAPY (z RAM-u lub asynchronicznie z dysku - bez zacinania wątku głównego!)
+	# Oddajemy 1 klatkę systemowi operacyjnemu Windows (opróżnia kolejkę zdarzeń myszy/klawiatury!)
+	await tree.process_frame
+	if change_generation != _level_change_generation:
+		return
+
+	# 4. ŁADOWANIE NOWEJ MAPY
 	var new_map_instance: Node = null
 	var was_loaded_from_cache: bool = false
 
 	if _cached_persistent_levels.has(resolved_path):
 		print("GlobalLevelManager: Przywracam mapę z pamięci podręcznej RAM: ", resolved_path)
 		new_map_instance = _cached_persistent_levels[resolved_path]
+		_touch_cached_key(resolved_path)
 		was_loaded_from_cache = true
 	else:
 		if not ResourceLoader.exists(resolved_path):
@@ -113,7 +132,23 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			print("GlobalLevelManager: Generuję całkowicie nową mapę z dysku: ", resolved_path)
 			new_map_instance = scene_to_load.instantiate()
 			if new_map_instance is Map:
-				(new_map_instance as Map).source_level_path = resolved_path
+				var typed_map: Map = new_map_instance as Map
+				typed_map.source_level_path = resolved_path
+
+				# Oddajemy 1 klatkę dla OS przed wstępną segregacją chunków
+				await tree.process_frame
+				if change_generation != _level_change_generation:
+					typed_map.queue_free()
+					return
+
+				# KLUCZOWE: Segregujemy chunki i odpinamy dalekie boty ZANIM mapa wejdzie do SceneTree!
+				typed_map.prepare_map_before_tree(target_entrance_id)
+
+				# Oddajemy 1 klatkę dla OS przed podpięciem gotowej, odchudzonej mapy do drzewa
+				await tree.process_frame
+				if change_generation != _level_change_generation:
+					typed_map.queue_free()
+					return
 
 	# 5. AKTYWACJA I WZNOWIENIE
 	if new_map_instance != null:
@@ -128,7 +163,24 @@ func change_level_by_path(level_path: String, entrance_id: String) -> void:
 			is_changing_level = false
 	)
 
-## Ładuje zasób PackedScene wielowątkowo w tle (ResourceLoader.load_threaded_request), eliminując zamrożenie okna gry.
+func _store_map_in_cache(save_key: String, map_node: Map) -> void:
+	_cached_persistent_levels[save_key] = map_node
+	_touch_cached_key(save_key)
+
+	# Pilnujemy limitu pamięci RAM (LRU): jeśli przekroczono limit, zwalniamy najstarszą mapę
+	while _cached_level_order.size() > maxi(1, max_cached_persistent_levels):
+		var oldest_key: String = _cached_level_order.pop_front()
+		if _cached_persistent_levels.has(oldest_key):
+			var old_map: Node = _cached_persistent_levels[oldest_key]
+			_cached_persistent_levels.erase(oldest_key)
+			if is_instance_valid(old_map) and old_map.get_parent() == null:
+				old_map.queue_free()
+
+func _touch_cached_key(key: String) -> void:
+	_cached_level_order.erase(key)
+	_cached_level_order.append(key)
+
+## Ładuje zasób PackedScene wielowątkowo w tle (ResourceLoader.load_threaded_request).
 func _load_packed_scene_async(path: String) -> PackedScene:
 	var err: Error = ResourceLoader.load_threaded_request(path)
 	if err != OK:
@@ -146,19 +198,16 @@ func _load_packed_scene_async(path: String) -> PackedScene:
 			return load(path) as PackedScene
 	return null
 
-## Rejestruje portal, do którego właśnie przenoszony jest gracz.
 func register_arrival_entrance(entrance: LevelEntrance) -> void:
 	if entrance == null:
 		push_error("GlobalLevelManager: Nie można zarejestrować pustego portalu docelowego.")
 		return
 	arrival_entrance = entrance
 
-## Zwalnia blokadę portali wyłącznie dla portalu docelowego po opuszczeniu jego strefy.
 func complete_level_arrival(entrance: LevelEntrance) -> void:
 	if entrance == arrival_entrance:
 		arrival_entrance = null
 
-## Czyści mapy i gracza przechowywane między poziomami na koniec sesji.
 func reset_game_session() -> void:
 	_level_change_generation += 1
 	clear_level_cache()
@@ -182,3 +231,4 @@ func clear_level_cache() -> void:
 		if is_instance_valid(map_node):
 			map_node.queue_free()
 	_cached_persistent_levels.clear()
+	_cached_level_order.clear()

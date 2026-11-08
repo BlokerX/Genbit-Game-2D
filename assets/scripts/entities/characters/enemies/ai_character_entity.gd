@@ -25,11 +25,13 @@ const VISUAL_ORIGIN_TARGET := 1
 @export_category("AI")
 @export var ai_controller: AIController
 var navigation_agent: NavigationAgent2D
+## Flaga informująca, czy wróg był wcześniej uśpiony przez WorldStreamer.
+## Zapobiega wykonywaniu kosztownego resetu fizyki i RayCastów przy pierwszym wejściu na scenę!
+var _was_hibernated_in_chunk: bool = false
 
 func _ready() -> void:
 	super()
 
-	# Automatyczne szukanie agenta nawigacji
 	navigation_agent = get_node_or_null("NavigationAgent2D")
 
 	if not entity_spawn_requested.is_connected(_on_spawn_requested):
@@ -43,7 +45,6 @@ func _ready() -> void:
 		return
 
 	ai_controller.initialize(self)
-	# Podłączenie ItemThrowerComponent do wroga
 	var thrower = get_node_or_null("ItemThrowerComponent")
 	if thrower and not thrower.entity_spawn_requested.is_connected(_on_spawn_requested):
 		thrower.entity_spawn_requested.connect(_on_spawn_requested)
@@ -94,7 +95,6 @@ func receive_effect(effect: Effect) -> bool:
 	if success and effect is DamageEffect and effect.source_entity != null:
 		var attacker = effect.source_entity
 		if attacker is CharacterEntity and attacker != self and faction_component:
-			# Uruchamiamy złożoną procedurę z Frakcji (Zemsta + Wołanie o pomoc)
 			faction_component.process_revenge(attacker)
 
 	return success
@@ -110,29 +110,33 @@ func _on_character_died() -> void:
 	super()
 
 # --- SYSTEM PRZEBUDZENIA Z CHUNKA (Naprawa "Choroby Hibernacyjnej") ---
+func _exit_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	# Oznaczamy, że postać opuściła drzewo (została uśpiona w chunku)
+	_was_hibernated_in_chunk = true
+
 func _enter_tree() -> void:
 	if Engine.is_editor_hint():
 		return
-	call_deferred("_wake_up_from_hibernation")
+	# Wybudzamy TYLKO wtedy, gdy postać faktycznie wraca z hibernacji (nie przy pierwszym starcie!)
+	if _was_hibernated_in_chunk:
+		_was_hibernated_in_chunk = false
+		call_deferred("_wake_up_from_hibernation")
 
 func _wake_up_from_hibernation() -> void:
-	# TARCZA 1: Jeśli Streamer zdążył nas usunąć przed odpaleniem tej funkcji - przerywamy!
 	if not is_inside_tree():
 		return
 
 	is_frozen = false
 
 	# --- 1. NAPRAWA STANU WALKI (Odblokowanie Softlocka Zdolności) ---
-	# Jeśli przeciwnik został wycięty z mapy w trakcie rzucania skilla,
-	# flaga 'is_casting_ability' zacięła się na stałe. Wymuszamy jej reset.
 	if ai_controller:
 		var combat_ctrl = ai_controller.get_node_or_null("AICombatController")
 		if combat_ctrl:
 			combat_ctrl.is_casting_ability = false
 
 	# --- 2. ZABICIE ZAWIESZONYCH LOTÓW/ANIMACJI I PRZYWRÓCENIE SKALI ---
-	# Zabijamy stare Tweeny, by przeciwnik (np. boss z JumpSmashAbility)
-	# nie kontynuował starego lotu po wybudzeniu z hibernacji i nie został trwale powiększony!
 	cancel_current_attack()
 
 	if interaction_and_attack_stats_script:
