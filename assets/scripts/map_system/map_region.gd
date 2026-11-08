@@ -1,19 +1,28 @@
 @tool
 extends Node2D
-## Pokój
+## Pokój / Region na mapie poziomu.
 class_name MapRegion
 
-const ENEMY_GROUP = "Enemy"
+const ENEMY_GROUP: String = "Enemy"
 const MapRegionSpawnControllerType = preload(
 	"res://assets/scripts/map_system/map_region_spawn_controller.gd"
 )
+## Domyślna scena oświetlenia pokoju załadowana raz do pamięci podręcznej (brak lagów przy load()).
+const DEFAULT_LIGHT_SCENE: PackedScene = preload(
+	"res://assets/scenes/map_system/map_regions/map_region_light.tscn"
+)
+
+const MIN_ROOM_TILES_DIMENSION: int = 3
+const DEBUG_RECT_COLOR := Color(0.0, 1.0, 0.0, 0.2)
+const DEBUG_RECT_WIDTH: float = 2.0
+
 var _spawn_controller: MapRegionSpawnControllerType = MapRegionSpawnControllerType.new()
+var _runtime_streamer_initialized: bool = false
 
 @export_group("Mapa")
 ## Pozycja pokoju na siatce minimapy (np. 0,0 to start, 1,0 to pokój po prawej)
 @export var map_position : Vector2i = Vector2i.ZERO
-
-## NOWOŚĆ: Czy ten pokój ma zostać narysowany na minimapie?
+## Czy ten pokój ma zostać narysowany na minimapie?
 @export var is_mappable : bool = false
 
 enum TransitionMode { FADE, SLIDE, BOTH }
@@ -23,7 +32,6 @@ enum TransitionMode { FADE, SLIDE, BOTH }
 @export var transition_mode: TransitionMode = TransitionMode.FADE
 
 @export_group("Typ i Znaczenie Pokoju")
-
 enum MapRegionType { NORMAL, START, TREASURE, SHOP, BOSS, OPEN_WORLD, DEV_ROOM, ARENA }
 
 ## Określa typ pokoju. Przydatne dla Minimapy (ikony), Menedżera Muzyki oraz logiki gry.
@@ -80,7 +88,6 @@ enum MapRegionType { NORMAL, START, TREASURE, SHOP, BOSS, OPEN_WORLD, DEV_ROOM, 
 		_update_lighting()
 
 @export_group("Efekty Środowiskowe (Hazards)")
-
 ## AURA (Znika po wyjściu): Efekty aktywne TYLKO w tym pokoju (np. Spowolnienie od błota). Trwają w nieskończoność, dopóki gracz tu jest.
 @export var ambient_aura_effects: Array[Effect] = []
 
@@ -109,12 +116,11 @@ var object_spawns: Array[Marker2D] = []
 var item_spawns: Array[Marker2D] = []
 var has_spawned_entities: bool = false
 
-
 @export_group("Wymiary Pokoju")
 @export var map_region_size_tiles : Vector2i = Vector2i(30, 17):
 	set(value):
-		value.x = max(3, value.x)
-		value.y = max(3, value.y)
+		value.x = maxi(MIN_ROOM_TILES_DIMENSION, value.x)
+		value.y = maxi(MIN_ROOM_TILES_DIMENSION, value.y)
 		map_region_size_tiles = value
 		generate_map_region()
 		queue_redraw()
@@ -127,19 +133,21 @@ var has_spawned_entities: bool = false
 		manual_tilemap_override = value
 		generate_map_region()
 		queue_redraw()
+
 @export var tile_source_id : int = 0
+
 @export_subgroup("Podłoga")
 @export var floor_atlas_pos : Vector2i = Vector2i(0, 0)
 @export var floor_alt_id : int = 0:
 	set(value):
-		floor_alt_id = max(0, value)
+		floor_alt_id = maxi(0, value)
 		generate_map_region()
 
 @export_subgroup("Ściana")
 @export var wall_atlas_pos : Vector2i = Vector2i(1, 0)
 @export var wall_alt_id : int = 0:
 	set(value):
-		wall_alt_id = max(0, value)
+		wall_alt_id = maxi(0, value)
 		generate_map_region()
 
 @export_group("Drzwi")
@@ -154,7 +162,7 @@ var active_enemies_count : int = 0
 
 @export_group("Auto-Drzwi (Przejścia)")
 ## Decyduje, czy ten pokój zezwala na wygenerowanie drzwi na danej ścianie.
-## Aby przejście powstało, OBA sąsiadujące pokoje muszą mieć tę flagę włączoną na styku.
+## Aby przejście powstało, OBA sąsiadujące pokoje muszą mieć flagę włączoną na styku.
 @export var allow_door_up: bool = true
 @export var allow_door_down: bool = true
 @export var allow_door_left: bool = true
@@ -168,110 +176,107 @@ var active_enemies_count : int = 0
 var size_px : Vector2
 
 func _ready() -> void:
-	# Automatyczne ustawienie warstwy
-	floor_tile_map.z_index = GameLayers.FLOOR
-	
+	if floor_tile_map != null:
+		floor_tile_map.z_index = GameLayers.FLOOR
+
 	# Wymuszamy domyślne, poprawne zachowania dla otwartego świata
 	if map_region_type == MapRegionType.OPEN_WORLD:
 		camera_follows_player = true
 		ignore_combat_lock = true
-	
-	# Budujemy pokój
+
+	# Budujemy pokój i obliczamy jego wymiary (size_px potrzebne dla kamery i minimapy)
 	generate_map_region()
-	
-	# Inicjalizujemy światło i mrok 
 	_update_lighting()
-	
-	if map_region_type == MapRegionType.OPEN_WORLD:
-		_setup_world_streamer()
-	
+
 	if not Engine.is_editor_hint():
-		# GRA (RUNTIME) - Pobieramy dane potrzebne do rozgrywki
+		# Pobieramy drzwi i punkty spawnu potrzebne dla Auto-Linkera w Map._ready()
 		_auto_fetch_doors()
 		_auto_fetch_spawn_points()
 
+## Leniwa inicjalizacja zasobożernych systemów pokoju (np. WorldStreamer).
+## Wywoływana przez Map dopiero wtedy, gdy gracz faktycznie wchodzi do tego pokoju!
+func ensure_runtime_initialized() -> void:
+	if Engine.is_editor_hint():
+		return
+	if map_region_type == MapRegionType.OPEN_WORLD and not _runtime_streamer_initialized:
+		_runtime_streamer_initialized = true
+		_setup_world_streamer()
+
 func _setup_world_streamer() -> void:
-	var streamer = WorldStreamer.new()
+	if get_node_or_null("WorldStreamer") != null:
+		return
+	var streamer: WorldStreamer = WorldStreamer.new()
 	streamer.name = "WorldStreamer"
-	
-	# Bierzemy jednolity rozmiar chunka dla CAŁEJ gry z GlobalSettings
 	streamer.chunk_size = GlobalSettings.chunk_base_size 
-	
 	add_child(streamer)
-	
-	var entities_node = find_child("Entities")
-	if entities_node:
+
+	var entities_node: Node = find_child("Entities")
+	if entities_node != null:
 		streamer.initialize(entities_node)
 	else:
 		streamer.initialize(self) 
-		
+
 	print("WorldStreamer zainicjowany w pokoju otwartym: ", name)
 
 ## Główna funkcja wywoływana do zebrania drzwi
 func _auto_fetch_doors() -> void:
-	doors.clear() # Czyścimy listę dla pewności
-	_find_doors_recursive(self) # Zaczynamy szukać od samego pokoju (self)
-	print("Pokój " + name + " znalazł automatycznie " + str(doors.size()) + " drzwi.")
+	doors.clear()
+	_find_doors_recursive(self)
 
 ## Rekurencyjne szukanie (znajdzie drzwi nawet jeśli są zgrupowane w innym Node2D)
 func _find_doors_recursive(node: Node) -> void:
 	for child in node.get_children():
 		if child is Door:
-			# Zaleźliśmy obiekt klasy Door! Dodajemy do listy.
-			doors.append(child)
-		
-		# Niezależnie od tego, czy to drzwi czy nie, szukamy też w dzieciach tego węzła.
-		# Pozwala to trzymać drzwi w "folderach" np. Node2D o nazwie "Doors".
+			doors.append(child as Door)
 		if child.get_child_count() > 0:
 			_find_doors_recursive(child)
 
 ## Automatycznie szuka węzłów Marker2D i dzieli je na kategorie
 func _auto_fetch_spawn_points() -> void:
-	spawn_points.clear() # Główna lista (dla gracza, jeśli jeszcze z niej korzysta)
+	spawn_points.clear()
 	enemy_spawns.clear()
 	object_spawns.clear()
 	item_spawns.clear()
-	
 	_find_spawn_points_recursive(self)
 
 ## Rekurencyjne przeszukiwanie drzewa węzłów pokoju
 func _find_spawn_points_recursive(node: Node) -> void:
 	for child in node.get_children():
 		if child is Marker2D:
-			# Segregowanie markerów do Reżysera
-			if child.is_in_group("EnemySpawn"):
-				enemy_spawns.append(child)
-			elif child.is_in_group("ObjectSpawn"):
-				object_spawns.append(child)
-			elif child.is_in_group("ItemSpawn"):
-				item_spawns.append(child)
-			# Fallback dla starego systemu respawnu gracza (żeby nic nie popsuć)
-			elif child.is_in_group("RespawnPoint"):
-				spawn_points.append(child)
-				
+			var marker: Marker2D = child as Marker2D
+			if marker.is_in_group("EnemySpawn"):
+				enemy_spawns.append(marker)
+			elif marker.is_in_group("ObjectSpawn"):
+				object_spawns.append(marker)
+			elif marker.is_in_group("ItemSpawn"):
+				item_spawns.append(marker)
+			elif marker.is_in_group("RespawnPoint"):
+				spawn_points.append(marker)
+
 		if child.get_child_count() > 0:
 			_find_spawn_points_recursive(child)
 
 ## Generowanie pokoju (Proceduralne LUB Ręczne)
 func generate_map_region() -> void:
-	if not floor_tile_map: return
-	
-	# 1. Rysowanie kafelków
+	if not floor_tile_map:
+		return
+
+	# 1. Rysowanie kafelków (tylko jeśli nie używamy ręcznie narysowanej TileMapy)
 	if not manual_tilemap_override:
-		floor_tile_map.clear() # Czyścimy kafelki TYLKO wtedy, gdy generujemy pokój automatycznie!
+		floor_tile_map.clear()
 		for x in range(map_region_size_tiles.x):
 			for y in range(map_region_size_tiles.y):
-				var current_pos = Vector2i(x, y)
+				var current_pos: Vector2i = Vector2i(x, y)
 				if x == 0 or x == map_region_size_tiles.x - 1 or y == 0 or y == map_region_size_tiles.y - 1:
 					floor_tile_map.set_cell(current_pos, tile_source_id, wall_atlas_pos, wall_alt_id)
 				else:
 					floor_tile_map.set_cell(current_pos, tile_source_id, floor_atlas_pos, floor_alt_id)
-	
+
 	calculate_map_region_bounds()
 	update_navigation_region()
 	_update_lighting()
 
-## Pozwala sprawdzić, czy na tej ścianie postawiłeś już drzwi ręcznie w edytorze
+## Pozwala sprawdzić, czy na tej ścianie postawiłeś drzwi ręcznie w edytorze
 func get_door(dir: Door.Direction) -> Door:
 	for d in doors:
 		if d.door_direction == dir:
@@ -280,23 +285,18 @@ func get_door(dir: Door.Direction) -> Door:
 
 ## Wstawia obiekt drzwi w idealnym fizycznym środku ściany (ZWRACA TEN OBIEKT!)
 func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: Texture2D = null) -> Door:
-	# Zabezpieczenie: Jeśli drzwi już tu są, po prostu je zwracamy
-	var existing_door = get_door(dir)
+	var existing_door: Door = get_door(dir)
 	if existing_door != null:
 		return existing_door
 
 	if not floor_tile_map or not floor_tile_map.tile_set:
 		return null
 
-	var tile_size = floor_tile_map.tile_set.tile_size
-	
-	# Liczymy całkowity rozmiar pokoju w PIKSELACH
-	var map_region_width_px = float(map_region_size_tiles.x * tile_size.x)
-	var map_region_height_px = float(map_region_size_tiles.y * tile_size.y)
-	
-	var exact_pos = Vector2.ZERO
+	var tile_size: Vector2i = floor_tile_map.tile_set.tile_size
+	var map_region_width_px: float = float(map_region_size_tiles.x * tile_size.x)
+	var map_region_height_px: float = float(map_region_size_tiles.y * tile_size.y)
 
-	# Wyliczamy pikselowy środek dla każdej krawędzi (z uwzględnieniem połowy kafelka na grubość ściany)
+	var exact_pos: Vector2 = Vector2.ZERO
 	match dir:
 		Door.Direction.UP:
 			exact_pos = Vector2(map_region_width_px / 2.0, float(tile_size.y) / 2.0)
@@ -307,46 +307,38 @@ func spawn_auto_door(dir: Door.Direction, door_scene: PackedScene, custom_tex: T
 		Door.Direction.RIGHT:
 			exact_pos = Vector2(map_region_width_px - (float(tile_size.x) / 2.0), map_region_height_px / 2.0)
 
-	var new_door = door_scene.instantiate() as Door
+	var new_door: Door = door_scene.instantiate() as Door
 	new_door.door_direction = dir
-	
-	# Automatyczny obrót drzwi względem ściany
+
 	match dir:
-		Door.Direction.UP:
-			new_door.rotation_degrees = 0
-		Door.Direction.DOWN:
-			new_door.rotation_degrees = 180
-		Door.Direction.LEFT:
-			new_door.rotation_degrees = -90
-		Door.Direction.RIGHT:
-			new_door.rotation_degrees = 90
-	
-	# Bezpośrednie przypisanie dokładnej fizycznej pozycji
+		Door.Direction.UP: new_door.rotation_degrees = 0.0
+		Door.Direction.DOWN: new_door.rotation_degrees = 180.0
+		Door.Direction.LEFT: new_door.rotation_degrees = -90.0
+		Door.Direction.RIGHT: new_door.rotation_degrees = 90.0
+
 	new_door.position = exact_pos
-	
-	# Nadajemy teksturę przed wejściem do gry!
+
 	if custom_tex != null:
 		new_door.door_texture = custom_tex
-	
+
 	add_child(new_door)
 	doors.append(new_door)
-	
 	return new_door
 
-## Akutalizacja regionu nawigacji
+## Aktualizacja regionu nawigacji
 func update_navigation_region() -> void:
-	if not navigation_region_2d or not floor_tile_map or not floor_tile_map.tile_set: return
-	var tile_size = floor_tile_map.tile_set.tile_size
-	var nav_poly = NavigationPolygon.new()
-	
-	# ZAWSZE używamy wymiarów z Inspektora, gwarantując stałą siatkę!
-	var points = PackedVector2Array([
-		Vector2(0, 0),
-		Vector2(map_region_size_tiles.x * tile_size.x, 0),
-		Vector2(map_region_size_tiles.x * tile_size.x, map_region_size_tiles.y * tile_size.y),
-		Vector2(0, map_region_size_tiles.y * tile_size.y)
+	if not navigation_region_2d or not floor_tile_map or not floor_tile_map.tile_set:
+		return
+
+	var tile_size: Vector2i = floor_tile_map.tile_set.tile_size
+	var nav_poly: NavigationPolygon = NavigationPolygon.new()
+	var points: PackedVector2Array = PackedVector2Array([
+		Vector2(0.0, 0.0),
+		Vector2(float(map_region_size_tiles.x * tile_size.x), 0.0),
+		Vector2(float(map_region_size_tiles.x * tile_size.x), float(map_region_size_tiles.y * tile_size.y)),
+		Vector2(0.0, float(map_region_size_tiles.y * tile_size.y))
 	])
-	
+
 	nav_poly.vertices = points
 	nav_poly.add_polygon(PackedInt32Array([0, 1, 2, 3]))
 	navigation_region_2d.navigation_polygon = nav_poly
@@ -354,30 +346,29 @@ func update_navigation_region() -> void:
 ## Wyliczanie granic pokoju dla kamery
 func calculate_map_region_bounds() -> void:
 	if floor_tile_map and floor_tile_map.tile_set:
-		var tile_size = floor_tile_map.tile_set.tile_size
-		# Kamera sztywno opiera się na wytyczonej przez Ciebie wielkości pokoju
-		size_px = Vector2(map_region_size_tiles.x * tile_size.x, map_region_size_tiles.y * tile_size.y)
+		var tile_size: Vector2i = floor_tile_map.tile_set.tile_size
+		size_px = Vector2(float(map_region_size_tiles.x * tile_size.x), float(map_region_size_tiles.y * tile_size.y))
 
 func _draw() -> void:
 	if Engine.is_editor_hint() or OS.is_debug_build():
-		# Sprawdzamy czy instancja jest nadal poprawna
 		if is_instance_valid(floor_tile_map) and floor_tile_map.tile_set:
-			var tile_size = floor_tile_map.tile_set.tile_size
-			var rect = Rect2(Vector2.ZERO, Vector2(map_region_size_tiles.x * tile_size.x, map_region_size_tiles.y * tile_size.y))
-			draw_rect(rect, Color(0, 1, 0, 0.2), false, 2.0)
+			var tile_size: Vector2i = floor_tile_map.tile_set.tile_size
+			var rect: Rect2 = Rect2(
+				Vector2.ZERO,
+				Vector2(float(map_region_size_tiles.x * tile_size.x), float(map_region_size_tiles.y * tile_size.y))
+			)
+			draw_rect(rect, DEBUG_RECT_COLOR, false, DEBUG_RECT_WIDTH)
 
 ## Funkcja zarządzająca dynamicznym oświetleniem w edytorze i grze
 func _update_lighting() -> void:
-	# Zabezpieczenie przed działaniem, zanim węzeł wejdzie do drzewa
 	if not is_inside_tree():
 		return
 
 	# --- 1. MROK (CanvasModulate) ---
-	var mod_name = "MapRegionDarkness"
-	var darkness = find_child(mod_name, false, false)
+	var mod_name: String = "MapRegionDarkness"
+	var darkness: CanvasModulate = find_child(mod_name, false, false) as CanvasModulate
 
-	# WZORZEC AAA: Lokalny mrok istnieje TYLKO w edytorze dla podglądu.
-	# W samej grze lokalny mrok jest usuwany, bo globalnym steruje map.gd!
+	# Lokalny mrok istnieje TYLKO w edytorze dla podglądu! W grze globalnym mrokiem steruje Map.gd.
 	if Engine.is_editor_hint() and is_dark_map_region:
 		if not darkness:
 			darkness = CanvasModulate.new()
@@ -389,69 +380,61 @@ func _update_lighting() -> void:
 			darkness.queue_free()
 
 	# --- 2. ŚWIATŁO (PointLight2D) ---
-	var light_name = "CenterMapRegionLight"
-	var light = find_child(light_name, false, false)
+	var light_name: String = "CenterMapRegionLight"
+	var light: Node = find_child(light_name, false, false)
 
 	if has_center_light:
 		if not light:
-			# BEZPIECZNE ŁADOWANIE: Jeśli w Inspektorze jest pusto, bierzemy domyślny plik!
-			var scene_to_load = light_scene
-			if not scene_to_load:
-				scene_to_load = load("res://assets/scenes/map_system/map_regions/map_region_light.tscn")
-				
-			if scene_to_load:
+			var scene_to_load: PackedScene = light_scene if light_scene != null else DEFAULT_LIGHT_SCENE
+			if scene_to_load != null:
 				light = scene_to_load.instantiate()
 				light.name = light_name
 				add_child(light)
-		
-		# Upewniamy się, że wymiary pokoju są aktualne i centrujemy światło
+
 		calculate_map_region_bounds()
-		light.position = size_px / 2.0
-		
-		# Aktualizacja parametrów światła na żywo
+		if light is Node2D:
+			(light as Node2D).position = size_px / 2.0
+
 		if light is PointLight2D:
-			light.energy = center_light_energy
-			if light.texture != null:
-				var tex_size = light.texture.get_size()
-				var scale_x = size_px.x / tex_size.x
-				var scale_y = size_px.y / tex_size.y
-				# Ustawiamy skalę światła tak, by pokrywała cały pokój, dodatkowo uwzględniając zmienną center_light_scale z Inspektora
-				light.texture_scale = max(scale_x, scale_y) * center_light_scale
+			var point_light: PointLight2D = light as PointLight2D
+			point_light.energy = center_light_energy
+			if point_light.texture != null:
+				var tex_size: Vector2 = point_light.texture.get_size()
+				var scale_x: float = size_px.x / maxf(1.0, tex_size.x)
+				var scale_y: float = size_px.y / maxf(1.0, tex_size.y)
+				point_light.texture_scale = maxf(scale_x, scale_y) * center_light_scale
 			else:
-				light.texture_scale = center_light_scale
+				point_light.texture_scale = center_light_scale
 	else:
 		if light:
 			light.queue_free()
 
 #region Logika stanu walki
-
 ## Sprawdza, czy w pokoju są wrogowie, odpala Reżysera i zarządza drzwiami
 func check_and_lock_map_region() -> void:
+	# Upewniamy się, że WorldStreamer (dla OPEN_WORLD) jest zainicjowany
+	ensure_runtime_initialized()
+
 	# --- 1. NAJPIERW ODPALAMY REŻYSERA SPAWNU ---
-	# Robimy to zawsze (jeśli nie ma strefy pacyfizmu), niezależnie od tego, czy pokój to Arena czy Open World
 	if not has_spawned_entities and not pacifist_zone:
 		_spawn_controller.spawn_region(self)
 		has_spawned_entities = true
 
 	# --- 2. ZARZĄDZANIE DRZWIAMI (Blokady) ---
-	# Strefa Bezpieczna (Sklep, Dev MapRegion, Open World) - Ignoruje zamykanie drzwi
 	if ignore_combat_lock:
 		for door in doors:
 			door.unlock_combat_door()
 		return
-		
-	# Klatka / Arena - Zamyka się natychmiast, ignoruje liczenie wrogów
+
 	if lock_permanently_after_entry:
 		print("Pułapka! Zamykam drzwi na stałe w pokoju: " + name)
 		for door in doors:
 			door.combat_lock_door()
 		return
 
-	# Standardowa walka - Zamyka tylko, jeśli wykryje wrogów
-	# Zlicza wrogów (ręcznych + tych właśnie zespawnowanych wyżej)
 	active_enemies_count = 0
 	_find_enemies_recursive(self)
-	
+
 	if active_enemies_count > 0:
 		for door in doors:
 			door.combat_lock_door()
@@ -462,44 +445,32 @@ func check_and_lock_map_region() -> void:
 ## Szuka rekurencyjnie przeciwników pośród wszystkich dzieci pokoju
 func _find_enemies_recursive(node: Node) -> void:
 	for child in node.get_children():
-		# Zakładamy, że przeciwnicy znajdują się w grupie "Enemy"
 		if child.is_in_group(ENEMY_GROUP):
 			active_enemies_count += 1
-			
-			# --- NAPRAWA: ZABEZPIECZENIE PRZED WORLDSTREAMEREM (Architektura Event-Driven) ---
-			# Zamiast nasłuchiwać usunięcia z drzewa, nasłuchujemy faktycznej śmierci ze statystyk!
-			var has_health_script = child.get("health_stats_script") != null
-			
+
+			var has_health_script: bool = child.get("health_stats_script") != null
 			if has_health_script:
 				if not child.health_stats_script.died.is_connected(_on_enemy_died):
 					child.health_stats_script.died.connect(_on_enemy_died)
 			else:
-				# Fallback dla prymitywnych przeciwników bez health_stats_script (np. beczki)
 				if not child.tree_exited.is_connected(_on_enemy_died):
 					child.tree_exited.connect(_on_enemy_died.bind(child))
-				
+
 		if child.get_child_count() > 0:
 			_find_enemies_recursive(child)
 
 ## Reaguje na śmierć (usunięcie) przeciwnika
 func _on_enemy_died(enemy: Node = null) -> void:
-	# --- TARCZA OCHRONNA (Rozwiązanie Błędu Chunkowania) ---
-	# Jeśli używamy fallbacku (tree_exited), sprawdzamy czy to nie jest zamrożenie.
-	# Jeśli sygnał pochodzi z 'died', enemy będzie nullem i warunek zignoruje blokadę (co jest poprawne).
 	if enemy != null and not enemy.is_queued_for_deletion():
 		return
-	# ---------------------------------------------------------
-	
+
 	active_enemies_count -= 1
 	if active_enemies_count <= 0:
 		map_region_cleared.emit()
-		
-		# Klatka nie otwiera drzwi po czyszczeniu!
 		if lock_permanently_after_entry:
 			print("Pokój oczyszczony, ale to pułapka! Drzwi pozostają zamknięte.")
 		else:
 			print("Pokój oczyszczony! Odblokowuję drzwi.")
 			for door in doors:
 				door.unlock_combat_door()
-
 #endregion
