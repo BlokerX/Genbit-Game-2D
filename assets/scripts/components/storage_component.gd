@@ -1,5 +1,6 @@
 class_name StorageComponent
 extends Node
+## Komponent magazynu / skrzyni przechowujący przedmioty w slotach (SlotData).
 
 @export_group("Oprawa dźwiękowa")
 ## Dźwięk odtwarzany przy otwarciu interfejsu skrzyni.
@@ -8,27 +9,22 @@ extends Node
 )
 
 #region Storage stats
-## Rozmiar skrzyni
+## Rozmiar skrzyni (liczba slotów).
 @export var slots_amount: int = 16
-
-## Używamy tej samej klasy SlotData co w inventory.gd
+## Tablica slotów współdzieląca strukturę SlotData z ekwipunkiem gracza.
 @export var slots: Array[SlotData] = []
-
+## Opcjonalna bezpośrednia referencja do komponentu interakcji (jeśli puste, zostanie wyszukana automatycznie u rodzica).
+@export var interactable_comp: InteractableComponent
 #endregion
 
 #region Signals
-
-## Sygnał do powiadomienia UI o zmianie zawartości
+## Sygnał do powiadomienia UI o zmianie zawartości skrzyni.
 signal storage_updated
-
-## Sygnał wysyłany do UI po wejściu w interakcję ze skrzynią
+## Sygnał wysyłany do UI po wejściu w interakcję ze skrzynią.
 signal storage_opened(storage_reference: StorageComponent)
-
+## Sygnał emitowany tuż przed zniszczeniem skrzyni, aby UI bezpiecznie zamknęło okno.
 signal storage_destroyed
-
 #endregion
-
-@onready var interactable_comp: Node = $"../InteractableComponent" # todo rozwiązać to lepiej
 
 ## Inicjalizacja pustych slotów wzorowana na inventory.gd
 func _init() -> void:
@@ -40,124 +36,106 @@ func _ready() -> void:
 	# Naprawa rozmiaru tablicy po nadpisaniu przez Inspektor
 	if slots.size() < slots_amount:
 		slots.resize(slots_amount)
-		
-	# Upewniamy się, że żaden slot nie jest "null" i ODKLEJAMY referencje
+
+	# Upewniamy się, że żaden slot nie jest "null" i odklejamy referencje startowych przedmiotów z Edytora
 	for i in range(slots_amount):
 		if slots[i] == null:
 			slots[i] = SlotData.new()
 		else:
-			# ZABEZPIECZENIE: Odróżniamy od siebie sloty sklonowane w edytorze
 			slots[i] = slots[i].duplicate(true)
-			
-			# Jeśli w slocie startowym jest przedmiot, upewniamy się, 
-			# że jego instancja i dane również są unikalne
 			if not slots[i].is_empty():
 				slots[i].item = slots[i].item.duplicate(true)
-				slots[i].item.data = slots[i].item.data.duplicate(true)
+				slots[i].item.data = slots[i].item.data.create_unique_copy()
 
-	# Podpinamy się pod komponent interakcji (ten kod już tu miałeś)
-	if interactable_comp and interactable_comp.has_signal("interacted"):
-		interactable_comp.interacted.connect(_on_interacted)
+	# AUTO-RESOLVE: Jeśli nie przypisano InteractableComponent w Inspektorze, szukamy go u rodzica
+	if interactable_comp == null and get_parent() != null:
+		interactable_comp = get_parent().get_node_or_null("InteractableComponent") as InteractableComponent
+
+	if interactable_comp != null and interactable_comp.has_signal("interacted"):
+		if not interactable_comp.interacted.is_connected(_on_interacted):
+			interactable_comp.interacted.connect(_on_interacted)
 
 func _on_interacted(_interactor: Node) -> void:
-	# Wysyłamy w świat informację: "Otwórzcie interfejs dla tego magazynu!"
-	var storage_owner := get_parent() as Node2D
+	var storage_owner: Node2D = get_parent() as Node2D
 	if open_feedback != null and is_instance_valid(storage_owner):
 		GameFeedback.play_cue(open_feedback, null, storage_owner.global_position, storage_owner)
+	storage_opened.emit(self)
 	EventBus.open_storage_ui.emit(self)
-
 
 # ----------------------------------------------------
 # --- ZARZĄDZANIE INSTANCJAMI (Kompatybilne z ECS) ---
 # ----------------------------------------------------
 
-## Przyjmuje instancję do skrzyni (automatyczne szukanie miejsca)
+## Przyjmuje instancję do skrzyni (automatyczne szukanie miejsca).
 ## Zwraca null jeśli wszystko weszło, lub resztę instancji, jeśli zabrakło miejsca.
 func insert_instance(instance_to_add: ItemInstance) -> ItemInstance:
-	# ZMIANA: Czytamy ilość ze słownika 'state'
-	var add_amount = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
+	var add_amount: int = instance_to_add.state.get("amount", 1) if instance_to_add != null else 0
 	if instance_to_add == null or add_amount <= 0:
 		return null
-		
-	# ZMIANA: Szukamy komponentu StackComponent zamiast czytać zmienną z ItemData
-	var is_stackable = false
-	var max_stack = 1
-	if instance_to_add.data.components != null:
-		for comp in instance_to_add.data.components:
-			if comp is StackComponent:
-				is_stackable = true
-				max_stack = comp.max_stack
-				break
+
+	var max_stack: int = instance_to_add.get_max_stack()
+	var is_stackable: bool = max_stack > 1
 
 	# 1. Próbujemy uzupełnić istniejące stosy
 	if is_stackable:
 		for slot in slots:
 			if not slot.is_empty() and slot.item.can_stack_with(instance_to_add):
-				var slot_amount = slot.item.state.get("amount", 1)
-				var available_space = max_stack - slot_amount
-				
+				var slot_amount: int = slot.item.state.get("amount", 1)
+				var available_space: int = max_stack - slot_amount
+
 				if available_space > 0:
-					# ZMIANA: Modyfikujemy słownik state zamiast zmiennej amount
-					var adding = min(instance_to_add.state.get("amount", 1), available_space)
+					var adding: int = mini(instance_to_add.state.get("amount", 1), available_space)
 					slot.item.state["amount"] = slot_amount + adding
 					instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
-					
+
 					if instance_to_add.state["amount"] <= 0:
 						storage_updated.emit()
-						return null # Całość się zmieściła w stosie
-						
+						return null # Całość zmieściła się w stosie!
+
 	# 2. Szukamy dowolnego pustego slota od lewej
 	for slot in slots:
 		if slot.is_empty():
 			slot.item = instance_to_add
 			storage_updated.emit()
-			return null # Przedmiot zajął pusty slot
-			
+			return null
+
 	# Brak miejsca - zwracamy instancję z powrotem do gracza/na ziemię
 	return instance_to_add
 
-## Wkłada instancję do KONKRETNEGO slotu (przydatne przy Drag & Drop w UI)
+## Wkłada instancję do KONKRETNEGO slotu (przydatne przy Drag & Drop w UI).
 ## Zwraca stary item (jeśli slot był zajęty) lub null, jeśli się udało.
 func insert_instance_at(instance_to_add: ItemInstance, slot_index: int) -> ItemInstance:
 	if slot_index < 0 or slot_index >= slots_amount:
 		return instance_to_add
-		
-	var slot = slots[slot_index]
-	
+
+	var slot: SlotData = slots[slot_index]
+
 	# Jeśli slot jest pusty
 	if slot.is_empty():
 		slot.item = instance_to_add
 		storage_updated.emit()
 		return null
-		
+
 	# Jeśli w slocie jest ten sam przedmiot - sprawdzamy czy można go stackować
 	if slot.item.can_stack_with(instance_to_add):
-		# ZMIANA: Znowu musimy znaleźć StackComponent dla przedmiotu w slocie
-		var max_stack = 1
-		if slot.item.data.components != null:
-			for comp in slot.item.data.components:
-				if comp is StackComponent:
-					max_stack = comp.max_stack
-					break
-					
-		var slot_amount = slot.item.state.get("amount", 1)
-		var available_space = max_stack - slot_amount
-		
+		var max_stack: int = slot.item.get_max_stack()
+		var slot_amount: int = slot.item.state.get("amount", 1)
+		var available_space: int = max_stack - slot_amount
+
 		if available_space > 0:
-			var adding = min(instance_to_add.state.get("amount", 1), available_space)
-			# ZMIANA: Modyfikujemy słownik state
+			var adding: int = mini(instance_to_add.state.get("amount", 1), available_space)
 			slot.item.state["amount"] = slot_amount + adding
 			instance_to_add.state["amount"] = instance_to_add.state.get("amount", 1) - adding
-			
+
 			if instance_to_add.state["amount"] <= 0:
 				storage_updated.emit()
 				return null
-		else:
-			storage_updated.emit()
-			return instance_to_add # Zwraca resztę, która nie weszła do stacka
-			
+			else:
+				storage_updated.emit()
+				return instance_to_add # Zwraca resztę, która nie weszła do stacka
+
 	# Jeśli w slocie jest inny przedmiot (lub brak miejsca) - Zamieniamy je miejscami!
-	var old_instance = slot.item
+	var old_instance: ItemInstance = slot.item
 	slot.item = instance_to_add
 	storage_updated.emit()
 	return old_instance
@@ -166,31 +144,22 @@ func insert_instance_at(instance_to_add: ItemInstance, slot_index: int) -> ItemI
 func remove_instance(slot_index: int, amount_to_remove: int = -1) -> ItemInstance:
 	if slot_index < 0 or slot_index >= slots_amount:
 		return null
-		
-	var slot = slots[slot_index]
+
+	var slot: SlotData = slots[slot_index]
 	if slot.is_empty():
 		return null
-		
-	var extracted_instance
-	var current_slot_amount = slot.item.state.get("amount", 1)
-	
+
+	var current_slot_amount: int = slot.item.state.get("amount", 1)
+
 	# Scenariusz 1: Zabieramy cały stack (lub wpisano wartość -1)
 	if amount_to_remove == -1 or amount_to_remove >= current_slot_amount:
-		extracted_instance = slot.item
+		var extracted_all: ItemInstance = slot.item
 		slot.clear_slot()
 		storage_updated.emit()
-		return extracted_instance
-		
-	# Scenariusz 2: Zabieramy tylko część sztuk (np. Shift+Click lub prawy przycisk myszy)
-	var unique_data = slot.item.data.duplicate(true)
-	extracted_instance = ItemInstance.new(unique_data, amount_to_remove)
-	
-	# --- OSTATECZNA ZMIANA ECS: Klonowanie całego stanu ---
-	extracted_instance.state = slot.item.state.duplicate(true)
-	extracted_instance.state["amount"] = amount_to_remove
-		
-	# Zdejmujemy zabraną ilość z oryginalnego slotu
+		return extracted_all
+
+	# Scenariusz 2: Zabieramy tylko część sztuk (np. prawy przycisk myszy)
+	var extracted_split: ItemInstance = slot.item.create_split_copy(amount_to_remove)
 	slot.item.state["amount"] = current_slot_amount - amount_to_remove
-	
 	storage_updated.emit()
-	return extracted_instance
+	return extracted_split

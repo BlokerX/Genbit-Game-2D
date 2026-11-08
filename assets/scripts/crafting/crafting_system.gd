@@ -1,16 +1,17 @@
 class_name CraftingSystem 
 extends RefCounted
+## Statyczny serwis rzemiosła obsługujący weryfikację składników, ulepszanie założonego pancerza oraz tworzenie wyników.
 
 static func can_craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 	if inventory == null:
 		return false
 
-	var requirements = _get_recipe_requirements(recipe)
+	var requirements: Dictionary = _get_recipe_requirements(recipe)
 	if requirements.is_empty():
 		return false
 
 	if recipe.equipment_upgrade_slot != EquippableComponent.EquipSlot.NONE:
-		var upgrade_context = _get_equipment_upgrade_context(inventory, recipe, requirements)
+		var upgrade_context: Dictionary = _get_equipment_upgrade_context(inventory, recipe, requirements)
 		if not upgrade_context.get("valid", false):
 			return false
 		return inventory.has_requirements(
@@ -20,7 +21,7 @@ static func can_craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 
 	return inventory.has_requirements(requirements["items"], requirements["tags"])
 
-## Zwraca liczbę składnika dostępną dla receptury, uwzględniając jego plecakowy składnik ulepszenia.
+## Zwraca liczbę składnika dostępną dla receptury, uwzględniając założony element wyposażenia przy ulepszeniu.
 static func get_ingredient_available_amount(
 	inventory: Inventory,
 	recipe: CraftingRecipe,
@@ -29,7 +30,7 @@ static func get_ingredient_available_amount(
 	if inventory == null or recipe == null or ingredient == null:
 		return 0
 
-	var available_amount := 0
+	var available_amount: int = 0
 	if ingredient.required_tag != &"":
 		available_amount = inventory.get_tag_amount(ingredient.required_tag)
 	elif ingredient.item_data != null:
@@ -38,10 +39,11 @@ static func get_ingredient_available_amount(
 	if recipe.equipment_upgrade_slot == EquippableComponent.EquipSlot.NONE:
 		return available_amount
 
-	var requirements = _get_recipe_requirements(recipe)
-	var upgrade_context = _get_equipment_upgrade_context(inventory, recipe, requirements)
+	var requirements: Dictionary = _get_recipe_requirements(recipe)
+	var upgrade_context: Dictionary = _get_equipment_upgrade_context(inventory, recipe, requirements)
 	if upgrade_context.get("valid", false) and upgrade_context["ingredient"] == ingredient:
 		available_amount += 1
+
 	return available_amount
 
 static func _get_recipe_requirements(recipe: CraftingRecipe) -> Dictionary:
@@ -76,7 +78,7 @@ static func _get_equipment_upgrade_context(
 	if inventory == null or recipe == null or requirements.is_empty():
 		return {"valid": false}
 
-	var slot_type := recipe.equipment_upgrade_slot
+	var slot_type: EquippableComponent.EquipSlot = recipe.equipment_upgrade_slot
 	if slot_type == EquippableComponent.EquipSlot.NONE or not inventory.equipment_slots.has(slot_type):
 		return {"valid": false}
 
@@ -150,7 +152,7 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 	if inventory == null:
 		return false
 
-	var requirements = _get_recipe_requirements(recipe)
+	var requirements: Dictionary = _get_recipe_requirements(recipe)
 	if requirements.is_empty():
 		return false
 
@@ -166,8 +168,8 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 
 	if not upgrade_context.is_empty():
 		var replacement_result: RecipeResult = upgrade_context["replacement_result"]
-		var replacement_data: ItemData = replacement_result.item_data.duplicate(true)
-		var replacement_item := ItemInstance.new(replacement_data, 1)
+		var replacement_data: ItemData = replacement_result.item_data.create_unique_copy()
+		var replacement_item: ItemInstance = ItemInstance.new(replacement_data, 1)
 		if not inventory.try_replace_equipped_item_and_consume_requirements(
 			recipe.equipment_upgrade_slot,
 			upgrade_context["equipped_item"],
@@ -185,13 +187,14 @@ static func craft(inventory: Inventory, recipe: CraftingRecipe) -> bool:
 		var amount_to_give: int = result_amounts[result]
 		if not upgrade_context.is_empty() and result == upgrade_context["replacement_result"]:
 			amount_to_give -= 1
+
 		if amount_to_give <= 0:
 			continue
 
-		var unique_result_data = result.item_data.duplicate(true)
-		var leftovers = inventory.add_item(unique_result_data, amount_to_give)
+		var unique_result_data: ItemData = result.item_data.create_unique_copy()
+		var leftovers: int = inventory.add_item(unique_result_data, amount_to_give)
 		if leftovers > 0:
-			var leftover_instance = ItemInstance.new(unique_result_data, leftovers)
+			var leftover_instance: ItemInstance = ItemInstance.new(unique_result_data, leftovers)
 			inventory.item_dropped.emit(leftover_instance, false)
 
 	print("Crafting: Przetworzono przepis: ", recipe.recipe_name)

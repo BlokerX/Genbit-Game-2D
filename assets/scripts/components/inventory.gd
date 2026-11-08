@@ -19,34 +19,24 @@ const InventoryItemTransferControllerType = preload(
 #region Inventory stats
 ## Rozmiar ekwipunku
 @export var slots_amount: int = 4
-
 ## Maksymalna liczba slotów w pasku szybkiego dostępu (Hotbar)
 @export var hotbar_limit: int = 9
-
 ## Używamy typowanej tablicy dla bezpieczeństwa i podpowiedzi w edytorze
 @export var slots: Array[SlotData] = []
-
 ## Aktualnie wybrany indeks slotu
 @export var current_slot_index : int = 0
-
 #endregion
 
-
 #region Signals
-
 ## Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
-
 signal item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
-
-# W sekcji sygnałów dodaj:
 signal equipment_updated
 
 # --- SYGNAŁY SRP DLA PASYWEK ---
 signal held_passives_changed
 signal equipment_passives_changed
 signal inventory_passives_changed
-
 #endregion
 
 ## PAMIĘĆ PODRĘCZNA DO CRAFTINGU (Format: { ID : Ilość })
@@ -62,13 +52,11 @@ var _item_transfer_controller: InventoryItemTransferControllerType
 
 ## Constructor
 func _init() -> void :
-	# Wszystkie miejsca będą na start miały wartość 'null' (pusty slot).
 	slots.resize(slots_amount)
 	for i in range(slots_amount):
-		slots[i] = SlotData.new() # Przygotowanie pustych pojemników
-	
+		slots[i] = SlotData.new()
+
 	# --- Inicjalizacja pustych slotów zbroi ---
-	# Generujemy szufladkę dla każdego typu pancerza zdefiniowanego w komponencie
 	for slot_type in EquippableComponent.EquipSlot.values():
 		if slot_type != EquippableComponent.EquipSlot.NONE:
 			equipment_slots[slot_type] = SlotData.new()
@@ -85,44 +73,45 @@ func _ready() -> void:
 	if slots.size() < slots_amount:
 		slots.resize(slots_amount)
 
-	# ZABEZPIECZENIE: Odklejamy referencje startowych przedmiotów dodanych w Edytorze
+	# ZABEZPIECZENIE: Odklejamy referencje startowych przedmiotów dodanych w Edytorze (przez create_unique_copy)
 	for i in range(slots.size()):
 		if slots[i] != null:
 			slots[i] = slots[i].duplicate(true)
 			if not slots[i].is_empty():
 				slots[i].item = slots[i].item.duplicate(true)
-				slots[i].item.data = slots[i].item.data.duplicate(true)
+				slots[i].item.data = slots[i].item.data.create_unique_copy()
 		else:
 			slots[i] = SlotData.new()
-			
+
 	if slots.is_empty():
 		current_slot_index = 0
 	else:
 		current_slot_index = clampi(current_slot_index, 0, slots.size() - 1)
 
 	_rebuild_cache()
-	# Zmuszamy pamięć podręczną do odświeżania się za każdym razem, 
-	# gdy w ekwipunku nastąpi jakakolwiek zmiana (np. przełożenie przedmiotu kursorem)!
+
+	# Odświeżamy pamięć podręczną za każdym razem, gdy w ekwipunku nastąpi zmiana
 	inventory_updated.connect(_rebuild_cache)
 
 # ----------------------------------------------------
 # --- SPRZĄTANIE PUSTYCH SLOTÓW ---
 # ----------------------------------------------------
+
 ## Sprawdza ekwipunek i czyści sloty, w których skończyły się przedmioty
 func clean_dead_items() -> void:
-	var inventory_changed = false
-	
+	var inventory_changed: bool = false
+
 	# Sprzątanie głównych slotów
 	for slot in slots:
 		if slot.item != null and slot.item.state.has("amount"):
-			if slot.item.state["amount"] <= 0:
+			if int(slot.item.state["amount"]) == 0 or int(slot.item.state["amount"]) < -1:
 				slot.clear_slot()
 				inventory_changed = true
-				
+
 	# Sprzątanie CAŁEJ ZBROI (w tym plecaka)
 	for slot in equipment_slots.values():
 		if slot.item != null and slot.item.state.has("amount"):
-			if slot.item.state["amount"] <= 0:
+			if int(slot.item.state["amount"]) == 0 or int(slot.item.state["amount"]) < -1:
 				slot.clear_slot()
 				inventory_changed = true
 
@@ -133,29 +122,25 @@ func clean_dead_items() -> void:
 func consume_from_slot(slot_index: int, amount: int) -> int:
 	if amount <= 0 or slot_index < 0 or slot_index >= slots.size():
 		return 0
-
 	var slot: SlotData = slots[slot_index]
 	if slot == null or slot.is_empty():
 		return 0
-
 	var item: ItemInstance = slot.item
 	var available_amount: int = item.state.get("amount", 1)
-	var consumed_amount := mini(available_amount, amount)
+	var consumed_amount: int = mini(available_amount, amount)
 	if consumed_amount <= 0:
 		return 0
-
-	var remaining_amount := available_amount - consumed_amount
+	var remaining_amount: int = available_amount - consumed_amount
 	_update_cache(item.data.item_id, -consumed_amount)
 	if remaining_amount == 0:
 		slot.clear_slot()
 	else:
 		item.state["amount"] = remaining_amount
-
 	return consumed_amount
 
 ## Wyrzuca wszystkie przedmioty gracza po śmierci.
 func drop_all_items(_owner_entity: Node2D) -> void:
-	var dropped_any = false
+	var dropped_any: bool = false
 
 	for slot in slots:
 		if not slot.is_empty():
@@ -188,33 +173,23 @@ func reload_current_weapon() -> bool:
 
 ## Wyrzuca przedmiot z ekwipunku wywołując zdarzenie item_dropped z przesłaniem danych wyrzuconego przedmiotu
 func drop_current_item(drop_all: bool = false) -> void:
-	var slot = get_current_slot()
+	var slot: SlotData = get_current_slot()
 	if slot == null or slot.is_empty():
 		return
-		
+
 	var instance_to_drop: ItemInstance
-	
+
 	if drop_all:
 		# Wyrzucamy całą instancję, wyciągniętą prosto ze slota!
 		instance_to_drop = slot.item
 		slot.clear_slot()
 	else:
-		# Wyrzucamy 1 sztukę: Klonujemy szablon (ItemData)
-		var unique_data = slot.item.data.duplicate(true)
-		instance_to_drop = ItemInstance.new(unique_data, 1)
-		
-		# --- OSTATECZNA ZMIANA ECS: Kopiujemy CAŁĄ DUSZĘ (słownik state) ---
-		# Dzięki temu wyrzucona sztuka pamięta nie tylko "durability", ale też 
-		# załadowaną amunicję, baterię, klątwy i wszystko inne, co kiedyś dodasz.
-		instance_to_drop.state = slot.item.state.duplicate(true)
-		instance_to_drop.state["amount"] = 1 # Wymuszamy, by wyrzucona paczka miała tylko 1 sztukę
-			
-		# UŻYWAMY NOWEJ FUNKCJI z ItemInstance, żeby zjeść 1 sztukę z ekwipunku
+		# Wyrzucamy 1 sztukę z zachowaniem pełnego stanu (state) i unikalnych danych (create_split_copy)
+		instance_to_drop = slot.item.create_split_copy(1)
 		slot.item.consume_amount(1)
-		clean_dead_items() # Wywołujemy naszego nowego śmieciarza!
-		
+		clean_dead_items()
+
 	inventory_updated.emit()
-	# Informujemy świat, wysyłając CAŁĄ INSTANCJĘ do wyrzucenia na ziemię
 	item_dropped.emit(instance_to_drop, true)
 
 ## Przyjmuje istniejącą instancję z mapy (np. zużyty miecz lub połączone stosy łupu)
@@ -227,10 +202,10 @@ func add_item(item: ItemData, amount_to_add: int = 1) -> int:
 
 ## Próba założenia przedmiotu do dedykowanego slotu zbroi. Zwraca stary przedmiot (lub null)
 func equip_item(new_equipment: ItemInstance, slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
-	var old_equipment = equipment_slots[slot_type].item
+	var old_equipment: ItemInstance = equipment_slots[slot_type].item
 	equipment_slots[slot_type].item = new_equipment
-	
-	_recalculate_slots_size() # <--- Przeliczamy rozmiar ekwipunku, bo mógł to być plecak!
+
+	_recalculate_slots_size() # Przeliczamy rozmiar ekwipunku, bo mógł to być plecak!
 	equipment_updated.emit()
 	inventory_updated.emit()
 	return old_equipment
@@ -252,7 +227,7 @@ func try_replace_equipped_item_and_consume_requirements(
 	):
 		return false
 
-	var plan_result = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
+	var plan_result: Dictionary = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
 	if not plan_result.get("valid", false):
 		return false
 
@@ -274,10 +249,10 @@ func _get_equippable_slot(item_data: ItemData) -> int:
 
 ## Zdejmuje zbroję i zwraca ją (żeby wróciła do kursora lub ekwipunku)
 func unequip_item(slot_type: EquippableComponent.EquipSlot) -> ItemInstance:
-	var equipment = equipment_slots[slot_type].item
+	var equipment: ItemInstance = equipment_slots[slot_type].item
 	equipment_slots[slot_type].clear_slot()
-	
-	_recalculate_slots_size() # <--- Przeliczamy, wyrzucając nadmiar z plecaka na ziemię!
+
+	_recalculate_slots_size() # Przeliczamy, wyrzucając nadmiar z plecaka na ziemię!
 	equipment_updated.emit()
 	inventory_updated.emit()
 	return equipment
@@ -317,40 +292,33 @@ func _recalculate_slots_size() -> void:
 # ----------------------------------------------------
 # --- NAWIGACJA ---
 # ----------------------------------------------------
-
 func get_current_slot() -> SlotData :
 	if slots != null and current_slot_index >= 0 and current_slot_index < slots.size():
 		return slots[current_slot_index]
-	else: return null
+	return null
 
 func get_current_item() -> ItemInstance :
-	var slot = get_current_slot()
+	var slot: SlotData = get_current_slot()
 	if slot != null and not slot.is_empty():
 		return slot.item
 	return null
 
-## Zmienia aktualnie wybrany indeks aktualnego itemu (zmiana wybranego itemu)
+## Zmienia aktualnie wybrany indeks aktualnego itemu
 func select_item(index: int) -> void:
-	# Ignoruje wciśnięcie klawisza przypisanego do slotu, którego fizycznie nie ma
 	if index >= 0 and index < slots.size():
 		current_slot_index = index
 		inventory_updated.emit()
 
 ## Obsługa wybierania poprzedniego i następnego indeksu
 func scroll_inventory(direction: int) -> void:
-	# Scrollujemy tylko po widocznym hotbarze (bierzemy mniejszą wartość)
-	var scrollable_amount = min(slots.size(), hotbar_limit)
-	
-	# Zabezpieczenie przed błędem dzielenia przez zero, jeśli slotów nie ma
+	var scrollable_amount: int = mini(slots.size(), hotbar_limit)
 	if scrollable_amount > 0:
-		var new_index = wrapi(current_slot_index - direction, 0, scrollable_amount)
+		var new_index: int = wrapi(current_slot_index - direction, 0, scrollable_amount)
 		select_item(new_index)
 
 # ----------------------------------------------------
 # --- BEZPĘTLOWY SYSTEM CRAFTINGU O(1) ---
 # ----------------------------------------------------
-
-# ZMIANA: item_id to teraz StringName (np. &"wood"), a nie int!
 func get_item_amount(item_id: StringName) -> int:
 	return _item_count_cache.get(item_id, 0)
 
@@ -358,22 +326,23 @@ func has_items(item_id: StringName, required_amount: int) -> bool:
 	return get_item_amount(item_id) >= required_amount
 
 func consume_ingredients(item_id: StringName, required_amount: int) -> void:
-	var remaining = required_amount
+	var remaining: int = required_amount
+
 	for slot in slots:
 		if not slot.is_empty() and slot.item.data.item_id == item_id:
-			# ZMIANA: Pobieramy ze słownika zamiast ze zmiennej
-			var slot_amount = slot.item.state.get("amount", 1)
-			var taking = min(slot_amount, remaining)
-			
+			var slot_amount: int = slot.item.state.get("amount", 1)
+			var taking: int = mini(slot_amount, remaining)
+
 			slot.item.state["amount"] = slot_amount - taking
 			remaining -= taking
 			_update_cache(item_id, -taking)
-			
+
 			if slot.item.state["amount"] <= 0:
 				slot.clear_slot()
-				
-			if remaining <= 0: break
-			
+
+			if remaining <= 0:
+				break
+
 	inventory_updated.emit()
 
 ## Sprawdza jednocześnie wymagania przedmiotów i tagów bez zmiany ekwipunku.
@@ -382,7 +351,7 @@ func has_requirements(item_requirements: Dictionary, tag_requirements: Dictionar
 
 ## Zużywa wymagania atomowo: nie zmienia ekwipunku, jeśli brakuje choć jednego składnika.
 func try_consume_requirements(item_requirements: Dictionary, tag_requirements: Dictionary) -> bool:
-	var plan_result = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
+	var plan_result: Dictionary = RequirementPlanner.build_plan(slots, item_requirements, tag_requirements)
 	if not plan_result.get("valid", false):
 		return false
 
@@ -390,7 +359,7 @@ func try_consume_requirements(item_requirements: Dictionary, tag_requirements: D
 	inventory_updated.emit()
 	return true
 
-## Stosuje wcześniej zwalidowany plan zużycia i aktualizuje cache bez emitowania sygnału.
+## Stosuje wcześniej zwalidowany plan zużycia i aktualizuje cache bez emitowania sygnałów.
 func _apply_requirement_plan(plan_result: Dictionary) -> void:
 	var slot_consumption: Dictionary = plan_result["slot_consumption"]
 	for slot_index: int in slot_consumption:
@@ -409,30 +378,24 @@ func _update_cache(item_id: StringName, diff: int) -> void:
 		_item_count_cache[item_id] = 0
 	_item_count_cache[item_id] += diff
 
-## Funkcja odbudowująca cache po ręcznym załadowaniu przedmiotów
+## Funkcja odbudowująca cache po załadowaniu lub zmianie przedmiotów
 func _rebuild_cache() -> void:
 	_item_count_cache.clear()
 	_tag_count_cache.clear()
-	
+
 	for slot in slots:
 		if not slot.is_empty():
-			var amt = slot.item.state.get("amount", 1)
-			var data = slot.item.data
-			
-			# Liczymy po ID
+			var amt: int = slot.item.state.get("amount", 1)
+			var data: ItemData = slot.item.data
+
 			_update_cache(data.item_id, amt)
-			
-			# Liczymy po Tagach (Jeśli przedmiot ma tag "wood" i "flammable", doda je oba)
+
 			for tag in data.tags:
 				if not _tag_count_cache.has(tag):
 					_tag_count_cache[tag] = 0
 				_tag_count_cache[tag] += amt
-	
-	# --- JEDNA LINIJKA, KTÓRA ZASILA WSZYSTKIE QUESTY ZBIERACKIE ---
-	# Podajemy cały ekwipunek, niech Questy same sobie w nim pogrzebią i sprawdzą co masz!
+
 	EventBus.game_event_occurred.emit("inventory_changed", {"inventory": self})
-	
-	# --- SPRAWDZENIE ZMIAN W PASYWKACH ---
 	_check_passive_deltas()
 
 # --- NARZĘDZIA DLA TAGÓW ---
@@ -443,18 +406,20 @@ func has_items_by_tag(tag: StringName, required_amount: int) -> bool:
 	return get_tag_amount(tag) >= required_amount
 
 func consume_by_tag(tag: StringName, required_amount: int) -> void:
-	var remaining = required_amount
+	var remaining: int = required_amount
+
 	for slot in slots:
 		if not slot.is_empty() and slot.item.data.has_tag(tag):
-			var slot_amount = slot.item.state.get("amount", 1)
-			var taking = min(slot_amount, remaining)
-			
+			var slot_amount: int = slot.item.state.get("amount", 1)
+			var taking: int = mini(slot_amount, remaining)
+
 			slot.item.state["amount"] = slot_amount - taking
 			remaining -= taking
-			
+
 			if slot.item.state["amount"] <= 0:
 				slot.clear_slot()
-				
-			if remaining <= 0: break
-			
-	inventory_updated.emit() # Automatycznie odpali _rebuild_cache() i zaktualizuje UI!
+
+			if remaining <= 0:
+				break
+
+	inventory_updated.emit()

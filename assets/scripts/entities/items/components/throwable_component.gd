@@ -1,8 +1,10 @@
 extends ItemComponent
 class_name ThrowableComponent
+## Komponent przedmiotów miotanych (noże do rzucania, granaty, bomby).
 
 const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
 const DEFAULT_THROW_SPAWN_OFFSET_PX: float = 35.0
+const CONSUMED_AMOUNT_PER_THROW: int = 1
 
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego rzutu.
@@ -67,7 +69,7 @@ func execute(actor: Node2D, _target: Node2D, item_instance: ItemInstance) -> voi
 			has_infinite_ammo = true
 
 	if not has_infinite_ammo:
-		item_instance.consume_amount(1)
+		item_instance.consume_amount(CONSUMED_AMOUNT_PER_THROW)
 		if actor.has_method("get_inventory"):
 			var inv = actor.get_inventory()
 			if inv:
@@ -75,3 +77,27 @@ func execute(actor: Node2D, _target: Node2D, item_instance: ItemInstance) -> voi
 					inv.clean_dead_items()
 				if inv.has_signal("inventory_updated"):
 					inv.inventory_updated.emit()
+
+func get_tooltip_info(_item_instance: ItemInstance) -> String:
+	var text: String = "Przedmiot miotany (Siła: " + str(int(throw_force)) + ")\n"
+	if not effects.is_empty():
+		text += "Efekty trafienia: " + str(effects.size()) + "\n"
+		for eff in effects:
+			if eff != null:
+				text += "- " + eff.effect_name + "\n"
+	return text
+
+func get_hud_info(_item_instance: ItemInstance, is_advanced: bool) -> String:
+	var text: String = ""
+	if is_advanced:
+		text += "Siła Rzutu: " + str(throw_force) + "\n"
+		text += "Szybkość Rzutu (Cooldown): " + str(use_cooldown) + "s\n"
+		if not effects.is_empty():
+			text += "Efekty Rzutu (" + str(effects.size()) + "):\n"
+			for eff in effects:
+				if eff != null:
+					text += "  - " + eff.effect_name + "\n"
+	else:
+		text += "Broń Miotana\n"
+	text += format_conditions_hud_info()
+	return text

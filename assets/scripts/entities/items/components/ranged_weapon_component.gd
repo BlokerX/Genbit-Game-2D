@@ -1,8 +1,12 @@
 class_name RangedWeaponComponent
 extends ItemComponent
+## Komponent broni dystansowej (strzeleckiej / energetycznej).
 
 const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
 const PROJECTILE_VERTICAL_SPRITE_OFFSET_RAD: float = PI / 2.0
+const PERCENT_MULTIPLIER: float = 100.0
+const DURABILITY_CONSUMPTION_PER_SHOT: int = 1
+const NO_PREFERRED_AMMO_ID: int = -1
 
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
@@ -32,19 +36,19 @@ enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_
 @export var projectile_lifetime: float = 2.0
 @export var projectile_scene: PackedScene
 
-## Ustawiamy domyślny stan amunicji przy stworzeniu broni
+## Ustawiamy domyślny stan amunicji przy stworzeniu broni.
 func initialize_state(item_instance: ItemInstance) -> void:
 	if uses_ammunition and not item_instance.state.has("ammo_count"):
 		item_instance.state["ammo_count"] = 0
 		item_instance.state["ammo_data"] = null
-		item_instance.state["preferred_ammo_id"] = -1
+		item_instance.state["preferred_ammo_id"] = NO_PREFERRED_AMMO_ID
 
 func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void:
 	if projectile_scene == null: 
 		return
 
 	# --- INTELIGENTNE CELOWANIE ---
-	var target_pos = Vector2.ZERO
+	var target_pos: Vector2 = Vector2.ZERO
 	if target != null:
 		target_pos = target.global_position
 	elif actor.has_node("AimController") and actor.get_node("AimController").aim_scanner:
@@ -62,7 +66,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	var ammo_comp: AmmunitionComponent = null
 
 	if uses_ammunition:
-		var current_ammo = item_instance.state.get("ammo_count", 0)
+		var current_ammo: int = item_instance.state.get("ammo_count", 0)
 
 		if current_ammo <= 0:
 			if auto_reload and inv != null and inv.has_method("reload_current_weapon"):
@@ -73,8 +77,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 					actor.call("play_reload_feedback", reloaded)
 			return
 
-		var stored_ammo_id = item_instance.state.get("ammo_id", &"")
-		var stored_ammo_data = ItemDatabase.get_item(stored_ammo_id)
+		var stored_ammo_id: StringName = item_instance.state.get("ammo_id", &"")
+		var stored_ammo_data: ItemData = ItemDatabase.get_item(stored_ammo_id)
 
 		if stored_ammo_data != null and stored_ammo_data.components != null:
 			for comp in stored_ammo_data.components:
@@ -85,8 +89,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		item_instance.state["ammo_count"] = current_ammo - 1
 
 	# 2. OBLICZANIE OBRAŻEŃ
-	var total_base_damage = 0
-	var base_penetration = 0.0
+	var total_base_damage: int = 0
+	var base_penetration: float = 0.0
 	if attack_data != null:
 		total_base_damage = attack_data.damage
 		base_penetration = attack_data.armor_penetration
@@ -94,11 +98,11 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	if ammo_comp != null:
 		total_base_damage += ammo_comp.damage
 
-	var final_damage = int((total_base_damage + stats.damage_adder) * stats.damage_multiplier)
+	var final_damage: int = int((total_base_damage + stats.damage_adder) * stats.damage_multiplier)
 	if randf() <= stats.get_total_critical_rate():
 		final_damage += int(stats.get_total_critical_damage())
 
-	var final_penetration = clampf(base_penetration + stats.armor_penetration_adder, 0.0, 1.0)
+	var final_penetration: float = clampf(base_penetration + stats.armor_penetration_adder, 0.0, 1.0)
 
 	var generated_effects: Array[Effect] = []
 	generated_effects.append(DamageEffect.new(final_damage, final_penetration))
@@ -111,8 +115,8 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 			generated_effects.append(eff.duplicate(true))
 
 	# 3. FUZJA BALISTYCZNA Z NABOJEM
-	var final_speed = projectile_speed
-	var final_tex = projectile_texture
+	var final_speed: float = projectile_speed
+	var final_tex: Texture2D = projectile_texture
 
 	if ammo_comp != null:
 		final_speed *= ammo_comp.speed_multiplier
@@ -146,7 +150,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	FeedbackDispatcherType.play_for_actor(use_feedback, actor, target)
 
 	# 5. ZUŻYCIE BRONI I ZEGAR
-	item_instance.consume_durability(1)
+	item_instance.consume_durability(DURABILITY_CONSUMPTION_PER_SHOT)
 	if inv != null:
 		inv.clean_dead_items()
 		inv.inventory_updated.emit()
@@ -160,3 +164,59 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 				return
 
 	stats.reset_cooldown()
+
+func get_tooltip_info(item_instance: ItemInstance) -> String:
+	var text: String = ""
+	if attack_data != null:
+		text += "Obrażenia Bazowe: " + str(attack_data.damage) + "\n"
+		text += "Zasięg Celowania: " + str(attack_data.max_range) + "\n"
+		if attack_data.critical_rate > 0.0:
+			text += "Szansa na Kryta: " + str(attack_data.critical_rate * PERCENT_MULTIPLIER) + "%\n"
+
+	if weapon_effects.size() > 0:
+		text += "Efekty Broni: " + str(weapon_effects.size()) + "\n"
+		for effect in weapon_effects:
+			if effect != null:
+				text += "- " + effect.effect_name + "\n"
+
+	if uses_ammunition:
+		var cur_ammo: int = item_instance.state.get("ammo_count", 0) if item_instance != null else 0
+		text += "Typ Amunicji: " + str(AmmoType.keys()[accepted_ammunition_type]) + "\n"
+		text += "Magazynek: " + str(cur_ammo) + " / " + str(magazine_capacity) + "\n"
+	else:
+		text += "Zasilanie: Nieskończone (Brak amunicji)\n"
+	return text
+
+func get_hud_info(item_instance: ItemInstance, is_advanced: bool) -> String:
+	var text: String = ""
+	if attack_data != null:
+		if is_advanced:
+			text += "Obrażenia (Baza): " + str(attack_data.damage) + "\n"
+			text += "Zasięg Celowania: " + str(attack_data.max_range) + "\n"
+			text += "Szybkość (Cooldown): " + str(use_cooldown) + "s\n"
+			text += "Przeładowanie: " + str(reload_time) + "s\n"
+			text += "Szybkość Pocisku: " + str(projectile_speed) + "\n"
+			if attack_data.critical_rate > 0.0:
+				text += "Szansa na Kryta: " + str(attack_data.critical_rate * PERCENT_MULTIPLIER) + "%\n"
+		else:
+			if attack_data.damage > 0:
+				text += "Obrażenia (Baza): " + str(attack_data.damage) + "\n"
+			text += "Zasięg Strzału: " + str(attack_data.max_range) + "\n"
+
+	if weapon_effects.size() > 0:
+		if is_advanced:
+			text += "Efekty Nakładane (" + str(weapon_effects.size()) + "):\n"
+			for effect in weapon_effects:
+				if effect != null:
+					var dur_str: String = " (" + str(effect.get("duration")) + "s)" if "duration" in effect else ""
+					text += "  - " + effect.effect_name + dur_str + "\n"
+		else:
+			text += "Statusy Specjalne: Tak\n"
+
+	if uses_ammunition:
+		var cur_ammo: int = item_instance.state.get("ammo_count", 0) if item_instance != null else 0
+		text += "Amunicja: " + str(AmmoType.keys()[accepted_ammunition_type]) + "\n"
+		text += "Magazynek: " + str(cur_ammo) + " / " + str(magazine_capacity) + "\n"
+	else:
+		text += "Zasilanie: Nieskończone\n"
+	return text
