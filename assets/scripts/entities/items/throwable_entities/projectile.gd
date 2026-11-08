@@ -1,7 +1,7 @@
 extends Area2D
 
 const MAX_ALLY_PENETRATIONS: int = 5
-const SPRITE_ROTATION_OFFSET_RAD: float = PI / 2.0
+const SPRITE_ROTATION_OFFSET_RAD: float = 0
 
 @export var speed: float = 600.0
 @export var lifetime: float = 4.0

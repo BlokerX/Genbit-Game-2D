@@ -3,16 +3,7 @@ class_name EnemySpawnPool
 
 @export var entries: Array[EnemySpawnEntry] = []
 
+## Zwraca losową scenę przeciwnika na podstawie wag przypisanych we wpisach EnemySpawnEntry.
 func get_random_enemy_scene() -> PackedScene:
-	if entries.is_empty(): return null
-	var total_weight: float = 0.0
-	for e in entries: if e and e.enemy_scene: total_weight += e.weight
-	if total_weight <= 0.0: return null
-	
-	var roll = randf() * total_weight
-	var current_weight: float = 0.0
-	for e in entries:
-		if e and e.enemy_scene:
-			current_weight += e.weight
-			if roll <= current_weight: return e.enemy_scene
-	return null
+	var chosen_entry: EnemySpawnEntry = ItemLootPool.pick_weighted_entry(entries, &"enemy_scene") as EnemySpawnEntry
+	return chosen_entry.enemy_scene if chosen_entry != null else null
