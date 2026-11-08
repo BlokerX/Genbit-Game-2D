@@ -1,4 +1,5 @@
 extends Control
+## Główne okno menu ustawień zarządzające zakładkami (Audio, Grafika, GUI, Sterowanie) oraz oknem potwierdzeń.
 
 const SETTINGS_BUTTON_FEEDBACK: FeedbackCue = preload(
 	"res://assets/data/feedback/ui/settings_button.tres"
@@ -23,56 +24,67 @@ const SETTINGS_BUTTON_FEEDBACK: FeedbackCue = preload(
 @export var confirm_dialog: ConfirmationDialog
 
 var _current_confirm_action: Callable
+var _all_tabs: Array[Control] = []
 
 func _ready() -> void:
+	_all_tabs = [panel_audio, panel_graphics, panel_gui, panel_controls]
 	_bind_button_feedback(self)
-	if btn_audio: btn_audio.pressed.connect(func(): _switch_tab(panel_audio))
-	if btn_graphics: btn_graphics.pressed.connect(func(): _switch_tab(panel_graphics))
-	if btn_gui: btn_gui.pressed.connect(func(): _switch_tab(panel_gui))
-	if btn_controls: btn_controls.pressed.connect(func(): _switch_tab(panel_controls))
-	
-	if btn_back: btn_back.pressed.connect(_on_back_pressed)
-	if btn_global_reset: btn_global_reset.pressed.connect(_request_global_reset)
-	
+
+	if btn_audio:
+		btn_audio.pressed.connect(func(): _switch_tab(panel_audio))
+	if btn_graphics:
+		btn_graphics.pressed.connect(func(): _switch_tab(panel_graphics))
+	if btn_gui:
+		btn_gui.pressed.connect(func(): _switch_tab(panel_gui))
+	if btn_controls:
+		btn_controls.pressed.connect(func(): _switch_tab(panel_controls))
+
+	if btn_back:
+		btn_back.pressed.connect(_on_back_pressed)
+	if btn_global_reset:
+		btn_global_reset.pressed.connect(_request_global_reset)
+
 	if confirm_dialog:
-		# Podpinamy sygnał zamknięcia tylko RAZ na starcie
 		confirm_dialog.confirmed.connect(_on_confirm_dialog_confirmed)
-	
+
 	set_hover_description("Wybierz zakładkę z lewej strony, aby dostosować grę.")
 	_switch_tab(panel_audio)
 
 func _bind_button_feedback(node: Node) -> void:
 	for child in node.get_children():
-		if child is BaseButton and not child.button_down.is_connected(_play_button_feedback):
-			child.button_down.connect(_play_button_feedback)
+		if child is BaseButton and not (child as BaseButton).button_down.is_connected(_play_button_feedback):
+			(child as BaseButton).button_down.connect(_play_button_feedback)
 		_bind_button_feedback(child)
 
 func _play_button_feedback() -> void:
 	GameFeedback.play_cue(SETTINGS_BUTTON_FEEDBACK)
 
 func _switch_tab(active_panel: Control) -> void:
-	if panel_audio: panel_audio.hide()
-	if panel_graphics: panel_graphics.hide()
-	if panel_gui: panel_gui.hide()
-	if panel_controls: panel_controls.hide()
-	
-	if active_panel:
+	for tab in _all_tabs:
+		if tab != null:
+			tab.hide()
+
+	if active_panel != null:
 		active_panel.show()
 		if active_panel.has_method("update_ui"):
-			active_panel.update_ui()
+			active_panel.call("update_ui")
 
 func set_hover_description(text: String) -> void:
 	if description_label:
 		description_label.text = "[center]" + text + "[/center]"
 
 func _request_global_reset() -> void:
-	request_confirmation("Pełny Reset", "Czy na pewno chcesz przywrócić WSZYSTKIE ustawienia do wartości domyślnych?", _on_global_reset_confirmed)
+	request_confirmation(
+		"Pełny Reset",
+		"Czy na pewno chcesz przywrócić WSZYSTKIE ustawienia do wartości domyślnych?",
+		_on_global_reset_confirmed
+	)
 
 func request_confirmation(title: String, text: String, confirm_action: Callable) -> void:
-	if not confirm_dialog: return
+	if not confirm_dialog:
+		return
 	confirm_dialog.title = title
 	confirm_dialog.dialog_text = text
-	# Zapisujemy akcję do wykonania w pamięci, zamiast psuć natywne sygnały okna
 	_current_confirm_action = confirm_action
 	confirm_dialog.popup_centered()
 
@@ -82,23 +94,15 @@ func _on_confirm_dialog_confirmed() -> void:
 
 func _on_global_reset_confirmed() -> void:
 	GlobalSettings.reset_all_to_default(true)
-	
-	# --- AWARYJNY RESET DEWELOPERSKI (Wymuszony) ---
-	if "show_chunk_grid" in GlobalSettings:
-		GlobalSettings.show_chunk_grid = GlobalSettings.default_show_chunk_grid
-	if "use_developer_camera" in GlobalSettings:
-		GlobalSettings.use_developer_camera = GlobalSettings.default_use_developer_camera
-	GlobalSettings.save_settings()
-	# -----------------------------------------------
-	
-	if panel_audio and panel_audio.has_method("update_ui"): panel_audio.update_ui()
-	if panel_graphics and panel_graphics.has_method("update_ui"): panel_graphics.update_ui()
-	if panel_gui and panel_gui.has_method("update_ui"): panel_gui.update_ui()
-	if panel_controls and panel_controls.has_method("_on_reset_all_pressed"): panel_controls._on_reset_all_pressed()
+
+	for tab in _all_tabs:
+		if tab != null and tab.has_method("update_ui"):
+			tab.call("update_ui")
+
 	set_hover_description("[color=green]Pomyślnie zresetowano wszystkie ustawienia gry.[/color]")
 
 func _on_back_pressed() -> void:
-	var main_node = get_tree().get_first_node_in_group("Main")
+	var main_node: Node = get_tree().get_first_node_in_group("Main")
 	if main_node and main_node.has_method("back_from_settings"):
-		main_node.back_from_settings()
+		main_node.call("back_from_settings")
 	queue_free()

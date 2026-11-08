@@ -1,14 +1,15 @@
 class_name UIController
 extends CanvasLayer
 
-const INPUT_TOGGLE_INVENTORY = "ToggleInventory"
-const INPUT_TOGGLE_CRAFTING = "ToggleCrafting"
-const INPUT_TOGGLE_MAP = "ToggleMap"
-const INPUT_GAME_PAUSE = "Game_Pause"
+const INPUT_TOGGLE_INVENTORY: String = "ToggleInventory"
+const INPUT_TOGGLE_CRAFTING: String = "ToggleCrafting"
+const INPUT_TOGGLE_MAP: String = "ToggleMap"
+const INPUT_GAME_PAUSE: String = "Game_Pause"
 
 const CHEST_AUTO_CLOSE_DISTANCE_PX: float = 150.0
 const DROP_HOLD_INITIAL_DELAY_SEC: float = 0.4
 const DROP_HOLD_TICK_INTERVAL_SEC: float = 0.1
+const MIN_CURSOR_MOVE_DELTA_PX: float = 1.0
 
 const EquipmentInventoryUIType = preload("res://assets/scripts/ui/equipment_inventory_ui.gd")
 const InventorySlotInteractorType = preload("res://assets/scripts/ui/inventory_slot_interactor.gd")
@@ -37,6 +38,7 @@ const InventoryCursorControllerType = preload("res://assets/scripts/ui/inventory
 @export_category("Gamepad UI")
 @export var gamepad_cursor_speed: float = 700.0
 
+# --- REFAKTORYZACJA SOLID (Zamiast dziesiątek flag is_open) ---
 var _active_menu_name: String = ""
 var _ui_panels: Dictionary = {}
 
@@ -72,8 +74,15 @@ func _ready() -> void:
 	EventBus.player_died.connect(_close_all_ui)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
 
+	# NAPRAWA KRYTYCZNA: Nasłuchujemy zamknięcia QuestLogUI (np. przyciskiem X lub klawiszem J),
+	# aby wyczyścić _active_menu_name i nie blokować kursora/klawiszy podczas walki!
+	if quest_log_ui != null and quest_log_ui.has_signal("log_closed"):
+		if not quest_log_ui.log_closed.is_connected(_on_quest_log_closed_internally):
+			quest_log_ui.log_closed.connect(_on_quest_log_closed_internally)
+
 	_cursor_controller.update_cursor_visuals()
 
+	# Rejestracja paneli do generycznego systemu (OCP)
 	_ui_panels = {
 		"Inventory": main_inventory_window,
 		"Crafting": crafting_ui,
@@ -82,6 +91,12 @@ func _ready() -> void:
 	}
 
 	_close_all_ui()
+
+func _on_quest_log_closed_internally() -> void:
+	if _active_menu_name == "QuestLog":
+		_active_menu_name = ""
+		if hotbar_panel:
+			hotbar_panel.show()
 
 func _validate_player_refs() -> bool:
 	if is_instance_valid(_player_ref) and is_instance_valid(player_inventory):
@@ -116,7 +131,7 @@ func _process(delta: float) -> void:
 			if _player_ref.global_position.distance_to((physical_chest as Node2D).global_position) > CHEST_AUTO_CLOSE_DISTANCE_PX:
 				_close_all_ui()
 
-	# 2. Zarządzanie padem
+	# 2. Zarządzanie padem (ZOPTYMALIZOWANE)
 	if is_any_ui_open():
 		_handle_gamepad_cursor(delta)
 		_handle_item_dropping(delta)
@@ -124,6 +139,7 @@ func _process(delta: float) -> void:
 	if item_in_hand != null:
 		_cursor_controller.update_cursor_position()
 
+# --- WYDZIELONE FUNKCJE (Zasada SRP) ---
 func _handle_gamepad_cursor(delta: float) -> void:
 	var move_dir: Vector2 = Input.get_vector("Left", "Right", "Up", "Down")
 	if move_dir != Vector2.ZERO:
@@ -137,7 +153,8 @@ func _handle_gamepad_cursor(delta: float) -> void:
 		new_pos.x = clampf(new_pos.x, 0.0, screen_size.x)
 		new_pos.y = clampf(new_pos.y, 0.0, screen_size.y)
 
-		if new_pos.distance_to(_last_mouse_pos) >= 1.0:
+		# Optymalizacja: Generujemy event TYLKO jeśli kursor faktycznie zmienił pozycję o pełen piksel
+		if new_pos.distance_to(_last_mouse_pos) >= MIN_CURSOR_MOVE_DELTA_PX:
 			get_viewport().warp_mouse(new_pos)
 			var motion_event: InputEventMouseMotion = InputEventMouseMotion.new()
 			motion_event.global_position = new_pos
@@ -157,6 +174,7 @@ func _handle_item_dropping(delta: float) -> void:
 		_drop_hold_time = 0.0
 		_drop_tick_time = 0.0
 
+# --- GENERYCZNY SYSTEM MENU (Zasada OCP) ---
 func toggle_menu(menu_name: String) -> void:
 	if not _validate_player_refs():
 		return
@@ -186,8 +204,6 @@ func toggle_menu(menu_name: String) -> void:
 					hotbar_panel.show()
 
 			"Map":
-				# WAŻNE: Najpierw ustawiamy stan menu w EventBusie (by HUDVisibilityController schował inne panele),
-				# a dopiero potem włączamy dużą mapę (MOUSE_FILTER_STOP)!
 				EventBus.set_menu_state(EventBus.MENU_MAP, true)
 				if minimap_ui:
 					minimap_ui.toggle_large_map(true)
@@ -232,14 +248,18 @@ func _close_all_ui() -> void:
 	_slot_interactor.open_storage = null
 	_active_menu_name = ""
 
-	if main_inventory_window:
-		main_inventory_window.hide()
-	if minimap_ui:
-		minimap_ui.toggle_large_map(false)
-	if crafting_ui:
-		crafting_ui.hide()
-	if quest_log_ui and quest_log_ui.visible:
-		quest_log_ui.close_log()
+	# Generyczne zamykanie zarejestrowanych paneli ze słownika _ui_panels (OCP)
+	for panel_key in _ui_panels:
+		var panel_node: Node = _ui_panels[panel_key]
+		if not is_instance_valid(panel_node):
+			continue
+		if panel_node is Minimap:
+			(panel_node as Minimap).toggle_large_map(false)
+		elif panel_node.has_method("close_log"):
+			if panel_node.get("visible") == true:
+				panel_node.call("close_log")
+		elif panel_node.has_method("hide"):
+			panel_node.call("hide")
 
 	player_panel.close_panel()
 	chest_panel.close_panel()
@@ -257,6 +277,7 @@ func _close_all_ui() -> void:
 func is_any_ui_open() -> bool:
 	return _active_menu_name != "" or DialogueManager.is_active
 
+# --- INPUT ---
 func _input(event: InputEvent) -> void:
 	if DialogueManager.is_active:
 		return

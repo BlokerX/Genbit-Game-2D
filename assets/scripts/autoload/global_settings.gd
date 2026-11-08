@@ -1,5 +1,8 @@
 extends Node
-# global_settings.gd - Podpięty w Autoload
+## Globalny menedżer ustawień gry (Audio, Grafika, GUI, Streaming Świata oraz Klawiszologia).
+## Automatycznie zapisuje i wczytuje konfigurację gracza z pliku user://settings.cfg.
+
+const BCS_SHADER_LAYER: int = 128
 
 @export_category("Konfiguracja Zapisu")
 ## Ścieżka do pliku z ustawieniami. "user://" to folder %APPDATA% gracza.
@@ -38,11 +41,11 @@ extends Node
 @export var default_show_quest_log: bool = true
 
 @export_category("World Streaming")
-## Zasięg renderowania
+## Zasięg renderowania chunków (1 - 12)
 var chunk_render_distance: int = 1
 var default_chunk_render_distance: int = 3
 
-## Globalny rozmiar chunka w pikselach dla CAŁEJ GRY (zamiast wyliczać go z kafelków)
+## Globalny rozmiar chunka w pikselach dla CAŁEJ GRY
 var chunk_base_size: int = 2048
 
 var default_show_chunk_grid: bool = false
@@ -52,39 +55,57 @@ var default_use_developer_camera: bool = false
 var use_developer_camera: bool = false
 
 ## Czas w sekundach po jakim porzucone przedmioty znikają. 0.0 oznacza, że leżą na zawsze.
-var loot_despawn_time: float = 0#600.0
+var loot_despawn_time: float = 0.0
 
 # --- BIEŻĄCE WARTOŚCI ---
-var vol_master: float; var vol_music: float; var vol_sfx: float; var vol_ambient: float
+var vol_master: float
+var vol_music: float
+var vol_sfx: float
+var vol_ambient: float
 var vol_entities: float
 var vol_ui: float
-var surround_sound: bool; var mute_in_background: bool
+var surround_sound: bool
+var mute_in_background: bool
 
-var display_mode: int; var vsync_enabled: bool
-var brightness: float; var contrast: float; var saturation: float
+var display_mode: int
+var vsync_enabled: bool
+var brightness: float
+var contrast: float
+var saturation: float
 
-var ui_scale_global: float; var ui_scale_game: float; var ui_scale_menu: float
+var ui_scale_global: float
+var ui_scale_game: float
+var ui_scale_menu: float
+var show_main_stats: bool
+var show_extra_stats: bool
+var show_active_effects: bool
+var show_hotbar: bool
+var show_item_info: bool
+var show_playtime: bool
+var show_minimap: bool
+var show_quest_log: bool
 
-var show_main_stats: bool; var show_extra_stats: bool; var show_active_effects: bool
-var show_hotbar: bool; var show_item_info: bool; var show_playtime: bool
-var show_minimap: bool; var show_quest_log: bool
-
-var config = ConfigFile.new()
+var config: ConfigFile = ConfigFile.new()
+## Kopia zapasowa domyślnych zdarzeń InputMap z momentu uruchomienia silnika (do bezpiecznego resetowania klawiszy).
+var _default_input_events: Dictionary = {}
 
 # --- Węzły do globalnego renderowania grafiki ---
 var _bcs_canvas: CanvasLayer
 var _bcs_rect: ColorRect
 
 func _ready() -> void:
-	# --- SHADER JASNOŚCI, KONTRASTU I NASYCENIA ---
+	# 1. Zapisujemy fabryczną mapę klawiszy ZANIM wczytamy plik konfiguracyjny gracza!
+	_capture_default_input_map()
+
+	# 2. SHADER JASNOŚCI, KONTRASTU I NASYCENIA
 	_bcs_canvas = CanvasLayer.new()
-	_bcs_canvas.layer = 128 # Warstwa powyżej interfejsu, pod menu pauzy
+	_bcs_canvas.layer = BCS_SHADER_LAYER
 	_bcs_rect = ColorRect.new()
 	_bcs_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_bcs_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	var mat = ShaderMaterial.new()
-	var shader = Shader.new()
+
+	var mat: ShaderMaterial = ShaderMaterial.new()
+	var shader: Shader = Shader.new()
 	shader.code = """
 	shader_type canvas_item;
 	uniform sampler2D screen_texture : hint_screen_texture, filter_nearest;
@@ -104,23 +125,30 @@ func _ready() -> void:
 	_bcs_canvas.add_child(_bcs_rect)
 	add_child(_bcs_canvas)
 
-	# Na starcie wczytujemy domyślne, a potem nadpisujemy plikiem gracza (jeśli istnieje)
+	# 3. Na starcie wczytujemy domyślne, a potem nadpisujemy plikiem gracza (jeśli istnieje)
 	reset_all_to_default(false)
 	load_settings()
 
-# WYDAJNA PĘTLA O(1) - BEZ WYSZUKIWANIA GRACZA
+func _capture_default_input_map() -> void:
+	_default_input_events.clear()
+	for action in InputMap.get_actions():
+		var action_str: String = String(action)
+		if action_str.begins_with("ui_") or action_str.begins_with("spatial_"):
+			continue
+		var cloned_events: Array[InputEvent] = []
+		for ev in InputMap.action_get_events(action):
+			if ev != null:
+				cloned_events.append(ev.duplicate() as InputEvent)
+		_default_input_events[action_str] = cloned_events
+
 func _process(_delta: float) -> void:
 	if is_instance_valid(_bcs_canvas):
-		var in_game = false
-		var main_node = get_tree().get_first_node_in_group("Main")
+		var in_game: bool = false
+		var main_node: Node = get_tree().get_first_node_in_group("Main")
 		if main_node and "current_scene" in main_node:
-			# Sprawdzamy błyskawicznie, czy wczytana scena to GameScene
 			in_game = (main_node.current_scene is GameScene)
-			
-		# Shader graficzny działa tylko i wyłącznie w GameScene
 		_bcs_canvas.visible = in_game
 
-# Nasłuchiwanie wyjścia z gry do Windowsa (Alt-Tab)
 func _notification(what: int) -> void:
 	if mute_in_background:
 		if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -132,7 +160,7 @@ func load_settings() -> void:
 	if config.load(save_path) != OK:
 		save_settings()
 		return
-	
+
 	vol_master = config.get_value("Audio", "Master", default_vol_master)
 	vol_music = config.get_value("Audio", "Music", default_vol_music)
 	vol_sfx = config.get_value("Audio", "SFX", default_vol_sfx)
@@ -141,18 +169,17 @@ func load_settings() -> void:
 	vol_ui = config.get_value("Audio", "UI", default_vol_ui)
 	surround_sound = config.get_value("Audio", "Surround", default_surround_sound)
 	mute_in_background = config.get_value("Audio", "MuteBG", default_mute_in_background)
-	
+
 	display_mode = config.get_value("Graphics", "DisplayMode", default_display_mode)
 	vsync_enabled = config.get_value("Graphics", "VSync", default_vsync_enabled)
 	brightness = config.get_value("Graphics", "Brightness", default_brightness)
 	contrast = config.get_value("Graphics", "Contrast", default_contrast)
 	saturation = config.get_value("Graphics", "Saturation", default_saturation)
 	chunk_render_distance = config.get_value("Graphics", "RenderDistance", default_chunk_render_distance)
-	
+
 	ui_scale_global = config.get_value("GUI", "ScaleGlobal", default_ui_scale_global)
 	ui_scale_game = config.get_value("GUI", "ScaleGame", default_ui_scale_game)
 	ui_scale_menu = config.get_value("GUI", "ScaleMenu", default_ui_scale_menu)
-	
 	show_main_stats = config.get_value("GUI", "ShowMainStats", default_show_main_stats)
 	show_extra_stats = config.get_value("GUI", "ShowExtraStats", default_show_extra_stats)
 	show_active_effects = config.get_value("GUI", "ShowActiveEffects", default_show_active_effects)
@@ -161,34 +188,71 @@ func load_settings() -> void:
 	show_playtime = config.get_value("GUI", "ShowPlaytime", default_show_playtime)
 	show_minimap = config.get_value("GUI", "ShowMinimap", default_show_minimap)
 	show_quest_log = config.get_value("GUI", "ShowQuestLog", default_show_quest_log)
+
 	show_chunk_grid = config.get_value("GUI", "ShowChunkGrid", default_show_chunk_grid)
 	use_developer_camera = config.get_value("GUI", "UseDevCamera", default_use_developer_camera)
-	
+
+	# Wczytywanie zapisanych przez gracza klawiszy i przycisków pada
+	_load_controls_from_config()
+
 	apply_all_settings()
 
 func save_settings() -> void:
-	config.set_value("Audio", "Master", vol_master); config.set_value("Audio", "Music", vol_music)
-	config.set_value("Audio", "SFX", vol_sfx); config.set_value("Audio", "Ambient", vol_ambient)
+	config.set_value("Audio", "Master", vol_master)
+	config.set_value("Audio", "Music", vol_music)
+	config.set_value("Audio", "SFX", vol_sfx)
+	config.set_value("Audio", "Ambient", vol_ambient)
 	config.set_value("Audio", "Entities", vol_entities)
 	config.set_value("Audio", "UI", vol_ui)
-	config.set_value("Audio", "Surround", surround_sound); config.set_value("Audio", "MuteBG", mute_in_background)
-	
-	config.set_value("Graphics", "DisplayMode", display_mode); config.set_value("Graphics", "VSync", vsync_enabled)
-	config.set_value("Graphics", "Brightness", brightness); config.set_value("Graphics", "Contrast", contrast)
+	config.set_value("Audio", "Surround", surround_sound)
+	config.set_value("Audio", "MuteBG", mute_in_background)
+
+	config.set_value("Graphics", "DisplayMode", display_mode)
+	config.set_value("Graphics", "VSync", vsync_enabled)
+	config.set_value("Graphics", "Brightness", brightness)
+	config.set_value("Graphics", "Contrast", contrast)
 	config.set_value("Graphics", "Saturation", saturation)
 	config.set_value("Graphics", "RenderDistance", chunk_render_distance)
-	
-	config.set_value("GUI", "ScaleGlobal", ui_scale_global); config.set_value("GUI", "ScaleGame", ui_scale_game)
+
+	config.set_value("GUI", "ScaleGlobal", ui_scale_global)
+	config.set_value("GUI", "ScaleGame", ui_scale_game)
 	config.set_value("GUI", "ScaleMenu", ui_scale_menu)
-	
-	config.set_value("GUI", "ShowMainStats", show_main_stats); config.set_value("GUI", "ShowExtraStats", show_extra_stats)
-	config.set_value("GUI", "ShowActiveEffects", show_active_effects); config.set_value("GUI", "ShowHotbar", show_hotbar)
-	config.set_value("GUI", "ShowItemInfo", show_item_info); config.set_value("GUI", "ShowPlaytime", show_playtime)
-	config.set_value("GUI", "ShowMinimap", show_minimap); config.set_value("GUI", "ShowQuestLog", show_quest_log)
-	config.set_value("GUI", "ShowChunkGrid", show_chunk_grid); config.set_value("GUI", "UseDevCamera", use_developer_camera)
-	
+	config.set_value("GUI", "ShowMainStats", show_main_stats)
+	config.set_value("GUI", "ShowExtraStats", show_extra_stats)
+	config.set_value("GUI", "ShowActiveEffects", show_active_effects)
+	config.set_value("GUI", "ShowHotbar", show_hotbar)
+	config.set_value("GUI", "ShowItemInfo", show_item_info)
+	config.set_value("GUI", "ShowPlaytime", show_playtime)
+	config.set_value("GUI", "ShowMinimap", show_minimap)
+	config.set_value("GUI", "ShowQuestLog", show_quest_log)
+
+	config.set_value("GUI", "ShowChunkGrid", show_chunk_grid)
+	config.set_value("GUI", "UseDevCamera", use_developer_camera)
+
+	# Zapis bieżącej mapy klawiszy do sekcji [Controls]
+	_save_controls_to_config()
+
 	config.save(save_path)
 	apply_all_settings()
+
+func _save_controls_to_config() -> void:
+	for action_str in _default_input_events.keys():
+		if InputMap.has_action(action_str):
+			var current_events: Array[InputEvent] = InputMap.action_get_events(action_str)
+			config.set_value("Controls", action_str, current_events)
+
+func _load_controls_from_config() -> void:
+	if not config.has_section("Controls"):
+		return
+	for action_str in config.get_section_keys("Controls"):
+		if not InputMap.has_action(action_str):
+			continue
+		var saved_events: Variant = config.get_value("Controls", action_str, null)
+		if saved_events is Array:
+			InputMap.action_erase_events(action_str)
+			for ev in saved_events:
+				if ev is InputEvent:
+					InputMap.action_add_event(action_str, ev)
 
 func apply_all_settings() -> void:
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(vol_master))
@@ -197,93 +261,139 @@ func apply_all_settings() -> void:
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambient"), linear_to_db(vol_ambient))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Entities"), linear_to_db(vol_entities))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("UI"), linear_to_db(vol_ui))
-	
+
 	DisplayServer.window_set_mode(display_mode)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED)
-	
-	# Aktualizacja Shadera na żywo
+
 	if is_instance_valid(_bcs_rect):
-		var mat = _bcs_rect.material as ShaderMaterial
+		var mat: ShaderMaterial = _bcs_rect.material as ShaderMaterial
 		mat.set_shader_parameter("brightness", brightness)
 		mat.set_shader_parameter("contrast", contrast)
 		mat.set_shader_parameter("saturation", saturation)
-	
+
 	get_tree().root.content_scale_factor = ui_scale_global
-	
-	# Wymuszamy przegląd drzewa i zastosowanie modyfikacji HUD
+
 	_apply_gui_visibility_to_tree()
-	
 	if EventBus.has_signal("hud_visibility_requested"):
 		EventBus.hud_visibility_requested.emit()
 
-# --- OPTYMALNE APLIKOWANIE WIDOCZNOŚCI I SKALI (Sprytne ukrywanie) ---
 func _apply_gui_visibility_to_tree() -> void:
-	var ui_canvas = get_tree().root.find_child("UI_Canvas", true, false)
-	if not ui_canvas: return
-	
-	# Skalowanie w Grze
+	var ui_canvas: Node = get_tree().root.find_child("UI_Canvas", true, false)
+	if not ui_canvas:
+		return
+
 	if "scale" in ui_canvas:
-		ui_canvas.scale = Vector2(ui_scale_game, ui_scale_game)
-		
-	# Odczytywanie i aplikowanie widoczności konkretnych stref w UI_Canvas
-	var node_main_stats = ui_canvas.find_child("PlayerUIGroup", true, false)
-	if node_main_stats: node_main_stats.visible = show_main_stats
-		
-	var node_extra_stats = ui_canvas.find_child("StatsPanel", true, false)
-	if node_extra_stats: node_extra_stats.visible = show_extra_stats
-		
-	var node_effects = ui_canvas.find_child("AcriveEffectsPanel", true, false)
-	if node_effects: node_effects.visible = show_active_effects
-		
-	var node_hotbar = ui_canvas.find_child("HotbarPanel", true, false)
-	if node_hotbar: node_hotbar.visible = show_hotbar
-		
-	var node_item_info = ui_canvas.find_child("ItemInfoPanelContainer", true, false)
-	if node_item_info: node_item_info.visible = show_item_info
-		
-	var node_playtime = ui_canvas.find_child("PlaytimeLabel", true, false)
-	if node_playtime: node_playtime.visible = show_playtime
-		
-	# TARCZA NA MINIMAPĘ: Ukrywamy całego kontenera (rodzica), by skrypt minimapy 
-	# nie nadpisywał naszej widoczności swoimi lokalnymi funkcjami show()/hide()
-	var node_minimap_zone = ui_canvas.find_child("BottomRight_Zone", true, false)
-	if node_minimap_zone: node_minimap_zone.visible = show_minimap
-		
-	var node_quest = ui_canvas.find_child("QuestTrackerUI", true, false)
-	if node_quest: node_quest.visible = show_quest_log
+		ui_canvas.set("scale", Vector2(ui_scale_game, ui_scale_game))
 
-	# Skalowanie Menu Inwentarza, Skrzyń, Craftingu
-	var menus = ["PauseMenu", "InventoryWindows", "CraftingUI", "QuestLogUI"]
+	var node_main_stats: CanvasItem = ui_canvas.find_child("PlayerUIGroup", true, false) as CanvasItem
+	if node_main_stats:
+		node_main_stats.visible = show_main_stats
+
+	var node_extra_stats: CanvasItem = ui_canvas.find_child("StatsPanel", true, false) as CanvasItem
+	if node_extra_stats:
+		node_extra_stats.visible = show_extra_stats
+
+	var node_effects: CanvasItem = ui_canvas.find_child("AcriveEffectsPanel", true, false) as CanvasItem
+	if node_effects:
+		node_effects.visible = show_active_effects
+
+	var node_hotbar: CanvasItem = ui_canvas.find_child("HotbarPanel", true, false) as CanvasItem
+	if node_hotbar:
+		node_hotbar.visible = show_hotbar
+
+	var node_item_info: CanvasItem = ui_canvas.find_child("ItemInfoPanelContainer", true, false) as CanvasItem
+	if node_item_info:
+		node_item_info.visible = show_item_info
+
+	var node_playtime: CanvasItem = ui_canvas.find_child("PlaytimeLabel", true, false) as CanvasItem
+	if node_playtime:
+		node_playtime.visible = show_playtime
+
+	var node_minimap_zone: CanvasItem = ui_canvas.find_child("BottomRight_Zone", true, false) as CanvasItem
+	if node_minimap_zone:
+		node_minimap_zone.visible = show_minimap
+
+	var node_quest: CanvasItem = ui_canvas.find_child("QuestTrackerUI", true, false) as CanvasItem
+	if node_quest:
+		node_quest.visible = show_quest_log
+
+	var menus: Array[String] = ["PauseMenu", "InventoryWindows", "CraftingUI", "QuestLogUI"]
 	for m in menus:
-		var menu_node = get_tree().root.find_child(m, true, false)
+		var menu_node: Node = get_tree().root.find_child(m, true, false)
 		if menu_node and "scale" in menu_node:
-			menu_node.scale = Vector2(ui_scale_menu, ui_scale_menu)
+			menu_node.set("scale", Vector2(ui_scale_menu, ui_scale_menu))
 
 # =========================================================================
-# LOGIKA RESETOWANIA
+# LOGIKA RESETOWANIA (Audio, Grafika, GUI, Sterowanie)
 # =========================================================================
-
 func reset_all_to_default(auto_save: bool = true) -> void:
-	reset_category_audio(false); reset_category_graphics(false); reset_category_gui(false)
-	if auto_save: save_settings()
+	reset_category_audio(false)
+	reset_category_graphics(false)
+	reset_category_gui(false)
+	reset_category_controls(false)
+	if auto_save:
+		save_settings()
 
 func reset_category_audio(auto_save: bool = true) -> void:
-	vol_master = default_vol_master; vol_music = default_vol_music; vol_sfx = default_vol_sfx
-	vol_ambient = default_vol_ambient; surround_sound = default_surround_sound; mute_in_background = default_mute_in_background
+	vol_master = default_vol_master
+	vol_music = default_vol_music
+	vol_sfx = default_vol_sfx
+	vol_ambient = default_vol_ambient
+	surround_sound = default_surround_sound
+	mute_in_background = default_mute_in_background
 	vol_entities = default_vol_entities
 	vol_ui = default_vol_ui
-	if auto_save: save_settings()
+	if auto_save:
+		save_settings()
 
 func reset_category_graphics(auto_save: bool = true) -> void:
-	display_mode = default_display_mode; vsync_enabled = default_vsync_enabled
-	brightness = default_brightness; contrast = default_contrast; saturation = default_saturation
+	display_mode = default_display_mode
+	vsync_enabled = default_vsync_enabled
+	brightness = default_brightness
+	contrast = default_contrast
+	saturation = default_saturation
 	chunk_render_distance = default_chunk_render_distance
-	if auto_save: save_settings()
+	if auto_save:
+		save_settings()
 
 func reset_category_gui(auto_save: bool = true) -> void:
-	ui_scale_global = default_ui_scale_global; ui_scale_game = default_ui_scale_game; ui_scale_menu = default_ui_scale_menu
-	show_main_stats = default_show_main_stats; show_extra_stats = default_show_extra_stats
-	show_active_effects = default_show_active_effects; show_hotbar = default_show_hotbar; show_item_info = default_show_item_info
-	show_playtime = default_show_playtime; show_minimap = default_show_minimap; show_quest_log = default_show_quest_log
-	show_chunk_grid = default_show_chunk_grid; use_developer_camera = default_use_developer_camera
-	if auto_save: save_settings()
+	ui_scale_global = default_ui_scale_global
+	ui_scale_game = default_ui_scale_game
+	ui_scale_menu = default_ui_scale_menu
+	show_main_stats = default_show_main_stats
+	show_extra_stats = default_show_extra_stats
+	show_active_effects = default_show_active_effects
+	show_hotbar = default_show_hotbar
+	show_item_info = default_show_item_info
+	show_playtime = default_show_playtime
+	show_minimap = default_show_minimap
+	show_quest_log = default_show_quest_log
+	show_chunk_grid = default_show_chunk_grid
+	use_developer_camera = default_use_developer_camera
+	if auto_save:
+		save_settings()
+
+## Przywraca domyślne przypisanie klawiszy dla pojedynczej akcji.
+func reset_single_action_to_default(action_name: String, auto_save: bool = true) -> void:
+	if not InputMap.has_action(action_name):
+		return
+	InputMap.action_erase_events(action_name)
+	if _default_input_events.has(action_name):
+		for ev in _default_input_events[action_name]:
+			if ev is InputEvent:
+				InputMap.action_add_event(action_name, (ev as InputEvent).duplicate())
+	elif ProjectSettings.has_setting("input/" + action_name):
+		var default_dict: Variant = ProjectSettings.get_setting("input/" + action_name)
+		if default_dict is Dictionary and default_dict.has("events"):
+			for event in default_dict["events"]:
+				if event is InputEvent:
+					InputMap.action_add_event(action_name, event)
+	if auto_save:
+		save_settings()
+
+## Przywraca domyślne przypisania klawiszy i pada dla wszystkich akcji w grze.
+func reset_category_controls(auto_save: bool = true) -> void:
+	for action_str in _default_input_events.keys():
+		reset_single_action_to_default(action_str, false)
+	if auto_save:
+		save_settings()
