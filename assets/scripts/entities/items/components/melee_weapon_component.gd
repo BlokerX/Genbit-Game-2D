@@ -6,6 +6,10 @@ const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedba
 const PERCENT_MULTIPLIER: float = 100.0
 const DURABILITY_CONSUMPTION_PER_HIT: int = 1
 
+# Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
+const AI_THREAT_DAMAGE_WEIGHT: float = 0.45
+const AI_THREAT_EFFECT_BONUS: float = 6.0
+
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego ataku wręcz.
 @export var use_feedback: FeedbackCue
@@ -26,9 +30,7 @@ func execute(actor: Node2D, target: Node2D, _item_instance: ItemInstance) -> voi
 		return
 
 	# 1. Wgrywamy statystyki tego komponentu do aktora
-	stats.change_item_cooldown(use_cooldown)
-	stats.actual_attack_data = attack_data
-	stats.actual_extra_effects = effects
+	apply_held_stats_to(stats)
 
 	# 2. Wykonujemy cios
 	stats.execute_attack_on_target(actor, target)
@@ -43,6 +45,35 @@ func execute(actor: Node2D, target: Node2D, _item_instance: ItemInstance) -> voi
 		if inv != null:
 			inv.clean_dead_items()
 			inv.inventory_updated.emit()
+
+# --- IMPLEMENTACJA KONTRAKTU BOJOWEGO (SOLID - OCP) ---
+
+func is_weapon_component() -> bool:
+	return true
+
+func requires_melee_range_check() -> bool:
+	return true
+
+func get_use_feedback() -> FeedbackCue:
+	return use_feedback
+
+func apply_held_stats_to(attack_stats: Node) -> bool:
+	if attack_stats == null:
+		return false
+	if attack_stats.has_method("change_item_cooldown"):
+		attack_stats.call("change_item_cooldown", use_cooldown)
+	if "actual_attack_data" in attack_stats:
+		attack_stats.set("actual_attack_data", attack_data)
+	if "actual_extra_effects" in attack_stats:
+		attack_stats.set("actual_extra_effects", effects)
+	return true
+
+func get_ai_threat_score() -> float:
+	var dmg: float = float(attack_data.damage) if attack_data != null else 0.0
+	var effects_bonus: float = float(effects.size()) * AI_THREAT_EFFECT_BONUS if effects != null else 0.0
+	return (dmg * AI_THREAT_DAMAGE_WEIGHT) + effects_bonus
+
+# --- OPISY UI (OCP) ---
 
 func get_tooltip_info(_item_instance: ItemInstance) -> String:
 	if attack_data == null:

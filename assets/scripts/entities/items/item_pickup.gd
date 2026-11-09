@@ -1,10 +1,12 @@
 extends RigidBody2D 
 class_name ItemPickup
+## Fizyczna reprezentacja przedmiotu leżącego na ziemi (obsługuje podnoszenie, łączenie stosów i ochronę przed ścianami).
 
 ## Domyślny margines bezpieczeństwa (w pikselach) zatrzymujący przedmiot przed ścianą.
 const DEFAULT_WALL_SAFE_MARGIN: float = 8.0
 ## Domyślna maska fizyki dla ścian i twardych przeszkód terenowych.
 const DEFAULT_OBSTACLES_COLLISION_MASK: int = 1
+const MIN_DISPLAYED_STACK_AMOUNT: int = 1
 
 ## Nasza klasa przechowująca cały stan przedmiotu (ilość, wytrzymałość, amunicję).
 @export var item: ItemInstance
@@ -31,14 +33,14 @@ func _ready() -> void:
 
 	# Optymalizacja: Pobieramy ustawienie tylko raz na starcie
 	if "loot_despawn_time" in GlobalSettings:
-		_despawn_limit = GlobalSettings.get("loot_despawn_time")
+		_despawn_limit = float(GlobalSettings.get("loot_despawn_time"))
 
 	if prompt_label != null:
 		_original_prompt_suffix = prompt_label.text
 
 	# FALLBACK: Jeśli postawiliśmy obiekt ręcznie w edytorze bez gotowej instancji
 	if (item == null or item.data == null) and test_item_data != null:
-		var unique_data = test_item_data.duplicate(true)
+		var unique_data: ItemData = test_item_data.create_unique_copy()
 		item = ItemInstance.new(unique_data, test_amount)
 
 	# Odwołujemy się do grafiki poprzez item.data
@@ -57,7 +59,8 @@ func _ready() -> void:
 
 	can_pick_up = true
 	_update_prompt()
-	prompt_label.hide() # Na starcie ukrywamy napis
+	if prompt_label != null:
+		prompt_label.hide() # Na starcie ukrywamy napis
 
 func _physics_process(delta: float) -> void:
 	if _despawn_limit > 0.0:
@@ -102,11 +105,11 @@ static func calculate_safe_spawn_position(
 ## Aktualizuje etykietę, uwzględniając obecną ilość w stosie
 func _update_prompt() -> void:
 	if item != null and item.data != null and prompt_label != null:
-		var current_amount = item.state.get("amount", 1)
-		var text = item.data.item_name
+		var current_amount: int = item.state.get("amount", MIN_DISPLAYED_STACK_AMOUNT)
+		var text: String = item.data.item_name
 
 		# Dodajemy licznik tylko jeśli przedmiotów jest więcej niż 1
-		if current_amount > 1:
+		if current_amount > MIN_DISPLAYED_STACK_AMOUNT:
 			text += " (x" + str(current_amount) + ")"
 
 		if _original_prompt_suffix != "":
@@ -126,40 +129,36 @@ func _on_untargeted() -> void:
 
 ## Funkcja obsługująca wchłanianie innych przedmiotów z ziemi
 func _on_area_entered(area: Area2D) -> void:
-	var other_pickup = area.get_parent()
+	var other_pickup: Node = area.get_parent()
 
 	if other_pickup is ItemPickup and other_pickup != self:
+		var other_item_pickup: ItemPickup = other_pickup as ItemPickup
 		# Deterministyczne decydowanie, kto przetwarza fuzję (zapobiega pętli)
-		if get_instance_id() < other_pickup.get_instance_id():
+		if get_instance_id() < other_item_pickup.get_instance_id():
 			return
 
 		# Zabezpieczenie przed usuwanymi oraz zablokowanymi elementami (Race Condition)
-		if self.is_queued_for_deletion() or other_pickup.is_queued_for_deletion():
+		if self.is_queued_for_deletion() or other_item_pickup.is_queued_for_deletion():
 			return
-		if self._is_locked or other_pickup.get("_is_locked") == true:
-			return
-
-		if item == null or item.data == null or other_pickup.item == null or other_pickup.item.data == null:
+		if self._is_locked or other_item_pickup.get("_is_locked") == true:
 			return
 
-		if item.can_stack_with(other_pickup.item):
-			var max_stack = 1
-			if item.data.components != null:
-				for comp in item.data.components:
-					if comp is StackComponent:
-						max_stack = comp.max_stack
-						break
+		if item == null or item.data == null or other_item_pickup.item == null or other_item_pickup.item.data == null:
+			return
 
-			var my_amount = item.state.get("amount", 1)
-			var other_amount = other_pickup.item.state.get("amount", 1)
-			var available_space = max_stack - my_amount
+		if item.can_stack_with(other_item_pickup.item):
+			# Korzystamy bezpośrednio z metody eksperckiej ItemInstance.get_max_stack() (DRY / Information Expert)
+			var max_stack: int = item.get_max_stack()
+			var my_amount: int = item.state.get("amount", 1)
+			var other_amount: int = other_item_pickup.item.state.get("amount", 1)
+			var available_space: int = max_stack - my_amount
 
 			# WYKONUJEMY BLOKADĘ TYLKO GDY JEST WOLNE MIEJSCE
 			if available_space > 0:
 				self._is_locked = true
-				other_pickup.set("_is_locked", true)
+				other_item_pickup.set("_is_locked", true)
 
-				var amount_to_take = min(available_space, other_amount)
+				var amount_to_take: int = mini(available_space, other_amount)
 
 				# Aktualizujemy główny pickup
 				item.state["amount"] = my_amount + amount_to_take
@@ -168,15 +167,15 @@ func _on_area_entered(area: Area2D) -> void:
 				_update_prompt()
 
 				# Aktualizujemy wysysany pickup
-				other_pickup.item.state["amount"] = other_amount - amount_to_take
-				if other_pickup.item.has_signal("state_changed"):
-					other_pickup.item.state_changed.emit()
+				other_item_pickup.item.state["amount"] = other_amount - amount_to_take
+				if other_item_pickup.item.has_signal("state_changed"):
+					other_item_pickup.item.state_changed.emit()
 
-				if other_pickup.item.state["amount"] <= 0:
-					other_pickup.queue_free()
+				if other_item_pickup.item.state["amount"] <= 0:
+					other_item_pickup.queue_free()
 				else:
-					other_pickup.call("_update_prompt")
-					other_pickup.set("_is_locked", false)
+					other_item_pickup.call("_update_prompt")
+					other_item_pickup.set("_is_locked", false)
 
 				self._is_locked = false
 

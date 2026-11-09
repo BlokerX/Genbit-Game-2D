@@ -36,7 +36,7 @@ func can_execute(actor: Node2D, item_instance: ItemInstance) -> bool:
 				return false
 	return true
 
-## CZYSTA FASADA: Wrapper, który Gracz wywołuje tylko raz, bez martwienia się o warunki.
+## CZYSTA FASADA: Wrapper, który Gracz i AI wywołują bez martwienia się o ręczne sprawdzanie warunków.
 func try_execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> bool:
 	if not can_execute(actor, item_instance):
 		return false
@@ -46,6 +46,33 @@ func try_execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> 
 ## Główna funkcja wykonawcza nadpisywana w konkretnych komponentach.
 func execute(_actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> void:
 	pass
+
+# =========================================================================
+# INTERFEJS BOJOWY I PERCEPCJI AI (Zasada Open/Closed - OCP)
+# =========================================================================
+
+## Zwraca true, jeśli ten komponent reprezentuje broń (wręcz, dystansową lub miotaną).
+func is_weapon_component() -> bool:
+	return false
+
+## Zwraca true, jeśli wykonanie ataku tym komponentem wymaga weryfikacji zasięgu walki wręcz.
+func requires_melee_range_check() -> bool:
+	return false
+
+## Zwraca zasób FeedbackCue przypisany do użycia tego komponentu (lub null, jeśli brak).
+func get_use_feedback() -> FeedbackCue:
+	if "use_feedback" in self:
+		return get("use_feedback") as FeedbackCue
+	return null
+
+## Wgrywa statystyki trzymanego przedmiotu (attack_data, cooldown, efekty) do komponentu statystyk ataku postaci.
+## Zwraca true, jeśli komponent zmodyfikował statystyki bojowe.
+func apply_held_stats_to(_attack_stats: Node) -> bool:
+	return false
+
+## Zwraca punktową ocenę siły bojowej / zagrożenia tego komponentu dla systemów decyzyjnych AI.
+func get_ai_threat_score() -> float:
+	return 0.0
 
 # =========================================================================
 # INTERFEJS OPISÓW DLA UI (Zasada Open/Closed - OCP oraz Information Expert)

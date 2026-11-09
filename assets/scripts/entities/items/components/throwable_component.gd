@@ -6,6 +6,10 @@ const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedba
 const DEFAULT_THROW_SPAWN_OFFSET_PX: float = 35.0
 const CONSUMED_AMOUNT_PER_THROW: int = 1
 
+# Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
+const AI_THROWABLE_BASE_THREAT: float = 15.0
+const AI_THROWABLE_EFFECT_WEIGHT: float = 7.0
+
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego rzutu.
 @export var use_feedback: FeedbackCue
@@ -77,6 +81,32 @@ func execute(actor: Node2D, _target: Node2D, item_instance: ItemInstance) -> voi
 					inv.clean_dead_items()
 				if inv.has_signal("inventory_updated"):
 					inv.inventory_updated.emit()
+
+# --- IMPLEMENTACJA KONTRAKTU BOJOWEGO (SOLID - OCP) ---
+
+func is_weapon_component() -> bool:
+	return true
+
+func requires_melee_range_check() -> bool:
+	return false
+
+func get_use_feedback() -> FeedbackCue:
+	return use_feedback
+
+func apply_held_stats_to(attack_stats: Node) -> bool:
+	if attack_stats == null:
+		return false
+	if attack_stats.has_method("change_item_cooldown"):
+		attack_stats.call("change_item_cooldown", use_cooldown)
+	if "actual_extra_effects" in attack_stats:
+		attack_stats.set("actual_extra_effects", effects)
+	return true
+
+func get_ai_threat_score() -> float:
+	var effects_score: float = float(effects.size()) * AI_THROWABLE_EFFECT_WEIGHT if effects != null else 0.0
+	return AI_THROWABLE_BASE_THREAT + effects_score
+
+# --- OPISY UI (OCP) ---
 
 func get_tooltip_info(_item_instance: ItemInstance) -> String:
 	var text: String = "Przedmiot miotany (Siła: " + str(int(throw_force)) + ")\n"

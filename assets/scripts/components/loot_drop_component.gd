@@ -1,14 +1,15 @@
 extends Resource
 class_name LootDropComponent
+## Komponent odpowiedzialny za wyrzucanie przedmiotów z tabeli łupów (loot_table) po śmierci postaci.
 
 const MAX_LOOT_SCATTER_OFFSET_PX: float = 25.0
 
 # Konfiguracja dropu w Inspektorze
 @export var item_pickup_scene: PackedScene
-## Lista WSZYSTKICH przedmiotów, które mają wypaść po śmierci
-@export var loot_table: Array[LootItem]
+## Lista WSZYSTKICH przedmiotów, które mają szansę wypaść po śmierci.
+@export var loot_table: Array[LootItem] = []
 
-# Funkcja wywoływana przez entity, kiedy ten umiera.
+## Funkcja wywoływana przez encję w momencie jej śmierci.
 func perform_drop(spawner: Node2D) -> void:
 	if not is_instance_valid(spawner):
 		push_error("LootDropComponent: Nie można wyrzucić łupu bez poprawnego obiektu spawnera!")
@@ -39,7 +40,9 @@ func perform_drop(spawner: Node2D) -> void:
 			push_error("LootDropComponent: Zła scena! Przypisana scena nie posiada skryptu ItemPickup!")
 			continue
 
-		var unique_loot_data: ItemData = loot_item.item_data.duplicate(true)
+		# Wzorzec Prototyp + Pyłek (SOLID): Tworzymy unikalną kopię statystyk przedmiotu
+		# bez klonowania ciężkich tekstur i strumieni audio w pamięci RAM!
+		var unique_loot_data: ItemData = loot_item.item_data.create_unique_copy()
 		var dropped_amount: int = randi_range(loot_item.min_amount, loot_item.max_amount)
 		var new_instance: ItemInstance = ItemInstance.new(unique_loot_data, dropped_amount)
 		pickup_instance.item = new_instance

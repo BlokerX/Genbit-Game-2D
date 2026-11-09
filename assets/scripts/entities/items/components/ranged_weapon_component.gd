@@ -8,6 +8,11 @@ const PERCENT_MULTIPLIER: float = 100.0
 const DURABILITY_CONSUMPTION_PER_SHOT: int = 1
 const NO_PREFERRED_AMMO_ID: int = -1
 
+# Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
+const AI_RANGED_BASE_THREAT_BONUS: float = 20.0
+const AI_THREAT_DAMAGE_WEIGHT: float = 0.85
+const AI_THREAT_EFFECT_BONUS: float = 8.0
+
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
 @export var use_feedback: FeedbackCue
@@ -164,6 +169,35 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 				return
 
 	stats.reset_cooldown()
+
+# --- IMPLEMENTACJA KONTRAKTU BOJOWEGO (SOLID - OCP) ---
+
+func is_weapon_component() -> bool:
+	return true
+
+func requires_melee_range_check() -> bool:
+	return false
+
+func get_use_feedback() -> FeedbackCue:
+	return use_feedback
+
+func apply_held_stats_to(attack_stats: Node) -> bool:
+	if attack_stats == null:
+		return false
+	if attack_stats.has_method("change_item_cooldown"):
+		attack_stats.call("change_item_cooldown", use_cooldown)
+	if "actual_attack_data" in attack_stats:
+		attack_stats.set("actual_attack_data", attack_data)
+	if "actual_extra_effects" in attack_stats:
+		attack_stats.set("actual_extra_effects", weapon_effects)
+	return true
+
+func get_ai_threat_score() -> float:
+	var dmg: float = float(attack_data.damage) if attack_data != null else 0.0
+	var effects_bonus: float = float(weapon_effects.size()) * AI_THREAT_EFFECT_BONUS if weapon_effects != null else 0.0
+	return AI_RANGED_BASE_THREAT_BONUS + (dmg * AI_THREAT_DAMAGE_WEIGHT) + effects_bonus
+
+# --- OPISY UI (OCP) ---
 
 func get_tooltip_info(item_instance: ItemInstance) -> String:
 	var text: String = ""
