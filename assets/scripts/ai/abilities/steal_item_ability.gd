@@ -31,6 +31,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		if debug_mode:
 			print("[StealItem] Przerwano: Atakujący lub Cel przestał istnieć na starcie.")
 		return
+	if target.is_dead or target.is_respawning:
+		return
 
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
 	if debug_mode: 
@@ -66,7 +68,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		return
 
 	# --- SPRAWDZENIE TRAFIENIA I KRADZIEŻ W SZCZYCIE DOSKOKU ---
-	if is_instance_valid(attacker) and is_instance_valid(target):
+	# Blokujemy trafienie i kradzież, jeśli cel zginął lub rozpoczął respawn w trakcie naszego lotu!
+	if is_instance_valid(attacker) and is_instance_valid(target) and not target.is_dead and not target.is_respawning:
 		var post_dash_edge_dist: float = get_edge_distance(attacker, target)
 		var hit_threshold: float = max_range + hit_distance_leeway
 		var is_hit: bool = post_dash_edge_dist <= hit_threshold
@@ -90,7 +93,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			if target.has_method("receive_effect"):
 				target.receive_effect(dmg)
 
-			if target.has_method("get_inventory"):
+			# Wytrącamy pojedynczy przedmiot z dłoni TYLKO wtedy, gdy cios powyżej nie zabił celu
+			# (bo jeśli cel zginął od dmg, _on_character_died już wyrzuciło cały ekwipunek w miejscu śmierci!).
+			if not target.is_dead and not target.is_respawning and target.has_method("get_inventory"):
 				var inv = target.get_inventory()
 				if inv is Inventory:
 					var slot: SlotData = inv.get_current_slot()

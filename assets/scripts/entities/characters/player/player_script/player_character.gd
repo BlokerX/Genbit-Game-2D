@@ -146,10 +146,20 @@ func _ready() -> void:
 func _on_spawn_requested(node: Node2D, spawn_position: Vector2) -> void:
 	entity_spawn_requested.emit(node, spawn_position)
 
-## Zachowuje bazową logikę śmierci, zamraża pozycję zgonu dla dropu i odtwarza oprawę gracza.
+## Zamraża pozycję zgonu dla dropu, zamyka otwarte okna UI (by przedmiot z kursora też wypadł przy krzyżu!)
+## i uruchamia bazową logikę śmierci.
 func _on_character_died() -> void:
 	if not is_dead and not (has_meta("is_immortal") and get_meta("is_immortal") == true):
 		_last_death_position = global_position
+		if _input_controller != null:
+			_input_controller.reset_transient_input()
+		if current_state == PlayerState.BUILDING:
+			_cancel_building()
+		if held_item_visual != null:
+			held_item_visual.hide()
+		# Zamykamy otwarte okna UI PRZED drop_all_items() w super(),
+		# aby ewentualny przedmiot trzymany na kursorze wrócił do plecaka i wypadł w miejscu śmierci!
+		EventBus.player_died.emit()
 		if is_instance_valid(_feedback_controller):
 			_feedback_controller.play_death()
 	super()
@@ -217,9 +227,12 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	super(delta)
-	if is_respawning:
+	# TWARDA BLOKADA ŚMIERCI I RESPAWNU:
+	# Gwarantuje, że martwy gracz nigdy się nie poruszy, nie zmieni klatki krzyża (frame = 8) i nie wyrzuci nic po czasie!
+	if is_dead or is_respawning:
 		velocity = Vector2.ZERO
-		move_and_slide()
+		if is_dead:
+			_apply_death_visuals()
 		return
 
 	if is_input_locked:
@@ -272,6 +285,8 @@ func _handle_pushing() -> void:
 			(collider as AICharacterEntity).move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER))
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_dead or is_respawning:
+		return
 	_input_controller.handle_unhandled_input(
 		self,
 		event,
@@ -302,6 +317,8 @@ func _cancel_building() -> void:
 func on_inventory_update() -> void:
 	var current_item: ItemInstance = inventory.get_current_item()
 	_held_item_controller.refresh(current_item)
+	if is_dead and held_item_visual != null:
+		held_item_visual.hide()
 
 	if current_state == PlayerState.BUILDING:
 		var is_placeable: bool = false
@@ -347,15 +364,20 @@ func respawn_sequence() -> void:
 	if is_respawning:
 		return
 	is_respawning = true
-	_input_controller.reset_transient_input()
+	if _input_controller != null:
+		_input_controller.reset_transient_input()
 	var scene_tree: SceneTree = get_tree()
 
-	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE ---
+	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE (Na widocznym ekranie) ---
 	velocity = Vector2.ZERO
-	set_physics_process(false)
 	purge_absolutely_everything()
+	# Wymuszamy wyłączenie procesów i klatkę krzyża PO wyczyszczeniu efektów (np. FreezeEffect)!
+	set_physics_process(false)
+	set_process_input(false)
+	set_process_unhandled_input(false)
 
 	if is_dead:
+		_apply_death_visuals()
 		EventBus.player_died.emit()
 		await scene_tree.create_timer(DEATH_SCREEN_DELAY_SEC).timeout
 	else:
@@ -376,9 +398,12 @@ func respawn_sequence() -> void:
 	if not is_inside_tree():
 		return
 
-	# --- FAZA 3: KONIEC ODRADZANIA ---
+	# --- FAZA 3: KONIEC ODRADZANIA (Przywrócenie pełnej kontroli po ewentualnym FreezeEffect) ---
 	process_mode = Node.PROCESS_MODE_INHERIT
+	set_process(true)
 	set_physics_process(true)
+	set_process_input(true)
+	set_process_unhandled_input(true)
 
 	await scene_tree.physics_frame
 	if not is_inside_tree():
@@ -391,10 +416,13 @@ func respawn_sequence() -> void:
 	_last_death_position = Vector2.INF
 	if inventory:
 		inventory.refresh_passives()
+		on_inventory_update()
 #endregion
 
 #region System ataku
 func perform_attack() -> void:
+	if is_dead or is_respawning:
+		return
 	var current_item: ItemInstance = inventory.get_current_item()
 	var target_enemy: Node2D = aim_controller.get_target_node()
 	if target_enemy == null:

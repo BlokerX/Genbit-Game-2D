@@ -1,11 +1,12 @@
 extends TimedEffect
 class_name FreezeEffect
+## Efekt czasowego zamrożenia zatrzymujący ruch, wejście, procesy AI oraz aktywne Tweeny celu.
 
 # Domyślnie nałożona, ale możesz to odznaczyć w edytorze.
 @export var apply_blue_tint: bool = true
 @export var freeze_modulate: Color = Color(0.337, 0.341, 1.0, 0.502)
 
-func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
+func _init(_duration: float = 2.0, _apply_blue_tint: bool = true) -> void:
 	effect_name = "Freeze"
 	effect_color = Color.CYAN
 	effect_category = EffectCategory.FROST_FREEZE
@@ -13,7 +14,7 @@ func _init(_duration: float = 2.0, _apply_blue_tint: bool = true):
 	apply_blue_tint = _apply_blue_tint
 	tick_interval = 0.0 # 0, ponieważ nie potrzebujemy "tików", działa to jako twardy stan
 
-func on_effect_start(target : Node2D) -> void:
+func on_effect_start(target: Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")
 
 	# TWARDE PRZERWANIE ATAKÓW (wraz z bezpiecznym przywróceniem skali bazowej!)
@@ -27,7 +28,7 @@ func on_effect_start(target : Node2D) -> void:
 	target.set_process_unhandled_input(false)
 
 	# 2. ODCINAMY MÓZG AI (Przestaje wymyślać nowe ataki i nawigować)
-	var ai_controller = target.get_node_or_null("AIController")
+	var ai_controller: Node = target.get_node_or_null("AIController")
 	if ai_controller:
 		ai_controller.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -45,45 +46,54 @@ func on_effect_start(target : Node2D) -> void:
 
 	# 5. Kolorowanie lodu (Zabezpieczone przed nadpisaniem przy podwójnym zamrożeniu!)
 	if apply_blue_tint:
-		var sprite = _get_sprite_from_target(target)
+		var sprite: Node = _get_sprite_from_target(target)
 		if sprite != null:
 			if not target.has_meta("original_self_modulate"):
-				target.set_meta("original_self_modulate", sprite.self_modulate)
-			sprite.self_modulate = freeze_modulate
+				target.set_meta("original_self_modulate", sprite.get("self_modulate"))
+			sprite.set("self_modulate", freeze_modulate)
 
 	if target.has_method("set_freeze_feedback_active"):
 		target.call("set_freeze_feedback_active", true)
 
-func on_effect_end(target : Node2D) -> void:
+func on_effect_end(target: Node2D) -> void:
+	if not is_instance_valid(target):
+		return
 	print("Odmrażam obiekt: ", target.name)
 
-	# 1. Przywracamy standardowy ruch
-	target.set_physics_process(true)
-	target.set_process(true)
-	target.set_process_input(true)
-	target.set_process_unhandled_input(true)
+	var is_dead_or_respawning: bool = (
+		bool(target.get("is_dead")) or bool(target.get("is_respawning"))
+	)
 
-	# 2. BUDZIMY MÓZG AI 
-	var ai_controller = target.get_node_or_null("AIController")
-	if ai_controller:
-		ai_controller.process_mode = Node.PROCESS_MODE_INHERIT
+	# 1. Przywracamy ruch i wejście TYLKO wtedy, gdy postać żyje i nie jest w trakcie respawnu!
+	# Chroni to martwego gracza przed wybudzeniem fizyki i nadpisaniem klatki krzyża podczas śmierci.
+	if not is_dead_or_respawning:
+		target.set_physics_process(true)
+		target.set_process(true)
+		target.set_process_input(true)
+		target.set_process_unhandled_input(true)
 
-	# 3. Wznawiamy animacje
-	if target.has_node("AnimationPlayer"):
-		target.get_node("AnimationPlayer").play()
+		# 2. BUDZIMY MÓZG AI
+		var ai_controller: Node = target.get_node_or_null("AIController")
+		if ai_controller:
+			ai_controller.process_mode = Node.PROCESS_MODE_INHERIT
 
-	# 4. WZNAWIAMY TWEENY (Atak z przed zamrożenia leci dalej)
+		# 3. Wznawiamy animacje
+		if target.has_node("AnimationPlayer"):
+			target.get_node("AnimationPlayer").play()
+
+		# 4. WZNAWIAMY TWEENY
+		if "active_tweens" in target:
+			for t in target.active_tweens:
+				if t and t.is_valid():
+					t.play()
+
 	if "is_frozen" in target:
 		target.is_frozen = false
-	if "active_tweens" in target:
-		for t in target.active_tweens:
-			if t and t.is_valid():
-				t.play()
 
-	# 5. Przywracamy oryginalny kolor ofiary
-	var sprite = _get_sprite_from_target(target)
+	# 5. Zawsze przywracamy oryginalny kolor ofiary i zdejmujemy nakładkę lodu z ekranu
+	var sprite: Node = _get_sprite_from_target(target)
 	if sprite != null and target.has_meta("original_self_modulate"):
-		sprite.self_modulate = target.get_meta("original_self_modulate")
+		sprite.set("self_modulate", target.get_meta("original_self_modulate"))
 		target.remove_meta("original_self_modulate")
 
 	if target.has_method("set_freeze_feedback_active"):
@@ -92,7 +102,7 @@ func on_effect_end(target : Node2D) -> void:
 func is_offensive() -> bool:
 	return true
 
-# Funkcja pomocnicza do znajdowania obrazka ofiary
+## Funkcja pomocnicza do znajdowania obrazka ofiary.
 func _get_sprite_from_target(target: Node2D) -> Node:
 	if "character_sprite" in target and target.character_sprite != null:
 		return target.character_sprite

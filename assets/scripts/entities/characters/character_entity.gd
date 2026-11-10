@@ -65,7 +65,7 @@ var base_scale: Vector2 = Vector2.ONE
 var _effects_controller: CharacterEffectsControllerType
 
 #region Główne funkcje silnikowe
-func _ready():
+func _ready() -> void:
 	_effects_controller = CharacterEffectsControllerType.new()
 	base_scale = scale
 	set_meta("base_scale", base_scale)
@@ -83,10 +83,10 @@ func _ready():
 		if not health_stats_script.died.is_connected(_on_character_died):
 			health_stats_script.died.connect(_on_character_died)
 
-func _process(_delta):
+func _process(_delta: float) -> void:
 	pass
 
-func _physics_process(_delta):
+func _physics_process(_delta: float) -> void:
 	pass
 
 ## Zwraca główny węzeł graficzny postaci (wspólny punkt dla wszystkich efektów wizualnych - DRY).
@@ -102,16 +102,16 @@ func get_visual_sprite() -> CanvasItem:
 ## Centralnie przelicza kolor i przezroczystość postaci na podstawie aktywnych efektów w effects_collector oraz metadanych.
 ## Eliminuje konflikty, gdy jednocześnie działają np. pasywne spodnie Ghost Mode oraz potka Immortality.
 func refresh_visual_appearance() -> void:
-	var sprite := get_visual_sprite()
+	var sprite: CanvasItem = get_visual_sprite()
 	if sprite == null:
 		return
 
 	var base_color: Color = get_meta("pre_immortal_color") if has_meta("pre_immortal_color") else Color.WHITE
 	var target_alpha: float = DEFAULT_OPAQUE_ALPHA
 
-	var active_immortal := has_meta("is_immortal")
-	var active_invisible := has_meta("is_invisible")
-	var active_ghost := has_meta("is_ghost")
+	var active_immortal: bool = has_meta("is_immortal")
+	var active_invisible: bool = has_meta("is_invisible")
+	var active_ghost: bool = has_meta("is_ghost")
 
 	# Skanujemy również bezpośrednio kontener aktywnych efektów (Single Source of Truth),
 	# aby wygaśnięcie jednego efektu nigdy nie nadpisało trwającego efektu pasywnego!
@@ -147,11 +147,11 @@ func _set_character_sprite_frame(frame_index: int) -> void:
 	if character_sprite == null or character_sprite.sprite_frames == null:
 		return
 
-	var animation_name = character_sprite.animation
+	var animation_name: StringName = character_sprite.animation
 	if not character_sprite.sprite_frames.has_animation(animation_name):
 		return
 
-	var frame_count := character_sprite.sprite_frames.get_frame_count(animation_name)
+	var frame_count: int = character_sprite.sprite_frames.get_frame_count(animation_name)
 	if frame_index < 0 or frame_index >= frame_count:
 		return
 
@@ -162,12 +162,12 @@ func _apply_death_visuals() -> void:
 	if character_sprite == null or character_sprite.sprite_frames == null:
 		return
 	character_sprite.stop()
-	var anim_name := character_sprite.animation
+	var anim_name: StringName = character_sprite.animation
 	if character_sprite.sprite_frames.has_animation(&"death"):
 		character_sprite.play(&"death")
 		return
 	if character_sprite.sprite_frames.has_animation(anim_name):
-		var frame_count := character_sprite.sprite_frames.get_frame_count(anim_name)
+		var frame_count: int = character_sprite.sprite_frames.get_frame_count(anim_name)
 		if death_frame_index >= 0 and death_frame_index < frame_count:
 			character_sprite.frame = death_frame_index
 		elif frame_count > 0:
@@ -175,10 +175,10 @@ func _apply_death_visuals() -> void:
 
 ## Przywraca prawidłową skalę postaci (uwzględniając aktywne efekty zmiany rozmiaru, jeśli istnieją).
 func reset_visual_scale() -> void:
-	var target_scale := base_scale
+	var target_scale: Vector2 = base_scale
 	if has_meta("active_scale_modifiers"):
 		var modifiers: Array = get_meta("active_scale_modifiers")
-		var total_mult := 1.0
+		var total_mult: float = 1.0
 		for mod in modifiers:
 			total_mult *= float(mod)
 		target_scale = base_scale * total_mult
@@ -195,7 +195,7 @@ func cancel_current_attack() -> void:
 
 #region Obsługa sygnałów
 # Funkcja wywoływana TYLKO gdy postać zginie
-func _on_character_died():
+func _on_character_died() -> void:
 	# --- TARCZA NIEŚMIERTELNOŚCI (Immortality) ---
 	if has_meta("is_immortal") and get_meta("is_immortal") == true:
 		print("Zadziałała NIEŚMIERTELNOŚĆ! Postać odmawia śmierci i zatrzymuje się na 1 HP.")
@@ -210,6 +210,13 @@ func _on_character_died():
 	if is_dead:
 		return
 	is_dead = true
+
+	# Natychmiastowe zamrożenie fizyki i wyczyszczenie efektów (np. FreezeEffect z ciastka)
+	# ZANIM ustawimy klatkę krzyża (_apply_death_visuals)!
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+	cancel_current_attack()
+	purge_absolutely_everything()
 
 	# Zmiana wizualna: "Kładziemy" postać na ziemi (bez błędów dla postaci o mniejszej liczbie klatek)
 	_apply_death_visuals()
@@ -235,11 +242,11 @@ func _on_character_died():
 		call_deferred("respawn_sequence")
 
 # Sekwencja respawnu, uruchomi się, gdy wszystkie efekty (w tym zamrożenie) skończą się nakładać
-func respawn_sequence():
+func respawn_sequence() -> void:
 	health_stats_script.heal_completely(true)
 	position = respawnVector
-	velocity.x = 0
-	velocity.y = 0
+	velocity.x = 0.0
+	velocity.y = 0.0
 	# przywrócenie domyślnej orientacji i skali
 	reset_visual_scale()
 	_set_character_sprite_frame(STANDING_DEFAULT_FRAME_INDEX)
@@ -251,7 +258,7 @@ func reset_state_for_respawn() -> void:
 	reset_visual_scale()
 
 	if character_sprite:
-		character_sprite.rotation_degrees = 0
+		character_sprite.rotation_degrees = 0.0
 		_set_character_sprite_frame(STANDING_DEFAULT_FRAME_INDEX)
 
 	# --- WSKRZESZENIE ---
@@ -299,21 +306,23 @@ func purge_absolutely_everything() -> void:
 #endregion
 
 #region Silnik animacji
-## Zmienia klatkę animacji w zależności od 8-kierunkowego wektora ruchu
+## Zmienia klatkę animacji w zależności od 8-kierunkowego wektora ruchu.
+## Posiada twardą blokadę is_dead / is_respawning, aby ruch nigdy nie nadpisał klatki krzyża (frame = 8)!
 func _update_sprite_direction(move_dir: Vector2) -> void:
+	if is_dead or is_respawning:
+		return
 	if not character_sprite or character_sprite.sprite_frames == null:
 		return
-
 	if move_dir == Vector2.ZERO:
 		return
 
-	var anim_name := character_sprite.animation
+	var anim_name: StringName = character_sprite.animation
 	if not character_sprite.sprite_frames.has_animation(anim_name):
 		return
 	if character_sprite.sprite_frames.get_frame_count(anim_name) < MIN_DIRECTIONAL_FRAMES_COUNT:
 		return
 
-	var snapped_dir = move_dir.normalized().round()
+	var snapped_dir: Vector2 = move_dir.normalized().round()
 
 	match snapped_dir:
 		Vector2(0, 1):   # Dół
@@ -334,7 +343,7 @@ func _update_sprite_direction(move_dir: Vector2) -> void:
 			character_sprite.frame = FRAME_DOWN_LEFT
 
 func create_tracked_tween() -> Tween:
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	active_tweens.append(tween)
 
 	tween.finished.connect(func(): active_tweens.erase(tween))
