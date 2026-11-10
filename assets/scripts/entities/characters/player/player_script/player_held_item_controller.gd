@@ -1,5 +1,6 @@
 class_name PlayerHeldItemController
 extends RefCounted
+## Kontroler synchronizujący wygląd trzymanego w dłoni przedmiotu, jego światło oraz statystyki bojowe gracza.
 
 var _held_item_visual: Sprite2D
 var _player_light: PointLight2D
@@ -24,29 +25,18 @@ func _update_visual(item: ItemInstance) -> void:
 		_held_item_visual.texture = null
 		_held_item_visual.hide()
 		return
-
 	_held_item_visual.texture = item.data.item_icon
 	_held_item_visual.show()
 
+## Polimorficznie wgrywa statystyki bojowe z komponentu broni (SOLID - OCP, brak drabin if/elif!).
 func _update_attack_stats(item: ItemInstance) -> void:
 	_attack_stats.actual_extra_effects = []
 	_attack_stats.actual_attack_data = _attack_stats.hand_attack_data
 
-	var has_custom_cooldown := false
+	var has_custom_cooldown: bool = false
 	if item != null and item.data != null and item.data.components != null:
 		for component in item.data.components:
-			if component is MeleeWeaponComponent:
-				_attack_stats.change_item_cooldown(component.use_cooldown)
-				if component.attack_data != null:
-					_attack_stats.actual_attack_data = component.attack_data
-				_attack_stats.actual_extra_effects = component.effects
-				has_custom_cooldown = true
-				break
-			elif component is RangedWeaponComponent:
-				_attack_stats.change_item_cooldown(component.use_cooldown)
-				if component.attack_data != null:
-					_attack_stats.actual_attack_data = component.attack_data
-				_attack_stats.actual_extra_effects = component.weapon_effects
+			if component != null and component.apply_held_stats_to(_attack_stats):
 				has_custom_cooldown = true
 				break
 
@@ -54,14 +44,15 @@ func _update_attack_stats(item: ItemInstance) -> void:
 		_attack_stats.change_item_cooldown(_attack_stats.hand_attack_cooldown)
 
 func _update_light(item: ItemInstance) -> void:
-	var light_applied := false
+	var light_applied: bool = false
 	if item != null and item.data != null and item.data.components != null:
 		for component in item.data.components:
 			if component is LightSourceComponent:
+				var light_comp: LightSourceComponent = component as LightSourceComponent
 				_player_light.enabled = true
-				_player_light.energy = component.light_energy
-				_player_light.texture_scale = component.light_scale
-				_player_light.color = component.light_color
+				_player_light.energy = light_comp.light_energy
+				_player_light.texture_scale = light_comp.light_scale
+				_player_light.color = light_comp.light_color
 				light_applied = true
 				break
 

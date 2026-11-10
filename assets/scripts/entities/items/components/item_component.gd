@@ -2,6 +2,8 @@ class_name ItemComponent
 extends Resource
 ## Bazowa klasa dla wszystkich komponentów zachowań przedmiotów (Architektura Komponentowa / SOLID).
 
+const DEFAULT_AI_THREAT_RATIO: float = 0.10
+
 @export_group("Warunki (Conditions)")
 ## Lista warunków, które muszą zostać spełnione jednocześnie, aby komponent mógł zadziałać.
 @export var conditions: Array[ItemCondition] = []
@@ -51,9 +53,13 @@ func execute(_actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> v
 # INTERFEJS BOJOWY I PERCEPCJI AI (Zasada Open/Closed - OCP)
 # =========================================================================
 
-## Zwraca true, jeśli ten komponent reprezentuje broń (wręcz, dystansową lub miotaną).
+## Zwraca true, jeśli ten komponent reprezentuje broń bojową (wręcz, dystansową lub miotaną).
 func is_weapon_component() -> bool:
 	return false
+
+## Zwraca true, jeśli komponent może zostać wykonany przez AttackComponent (broń lub stawiany obiekt/mina).
+func is_executable_attack_component() -> bool:
+	return is_weapon_component()
 
 ## Zwraca true, jeśli wykonanie ataku tym komponentem wymaga weryfikacji zasięgu walki wręcz.
 func requires_melee_range_check() -> bool:
@@ -65,14 +71,18 @@ func get_use_feedback() -> FeedbackCue:
 		return get("use_feedback") as FeedbackCue
 	return null
 
-## Wgrywa statystyki trzymanego przedmiotu (attack_data, cooldown, efekty) do komponentu statystyk ataku postaci.
+## Wgrywa statystyki trzymanego przedmiotu (attack_data, cooldown, efekty) do zasobu statystyk ataku postaci (Resource).
 ## Zwraca true, jeśli komponent zmodyfikował statystyki bojowe.
-func apply_held_stats_to(_attack_stats: Node) -> bool:
+func apply_held_stats_to(_attack_stats: Resource) -> bool:
 	return false
 
-## Zwraca punktową ocenę siły bojowej / zagrożenia tego komponentu dla systemów decyzyjnych AI.
+## Sprawdza, czy dany komponent przedmiotu pasuje do profilu zachowania AI na podanym dystansie do celu.
+func is_suitable_for_ai(_profile: Resource, _distance: float, _switch_dist: float) -> bool:
+	return false
+
+## Zwraca znormalizowaną ocenę zagrożenia (0.0 - 1.0) dla systemu ThreatAssessmentComponent w AI.
 func get_ai_threat_score() -> float:
-	return 0.0
+	return DEFAULT_AI_THREAT_RATIO
 
 # =========================================================================
 # INTERFEJS OPISÓW DLA UI (Zasada Open/Closed - OCP oraz Information Expert)

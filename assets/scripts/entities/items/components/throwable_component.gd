@@ -5,10 +5,7 @@ class_name ThrowableComponent
 const FeedbackDispatcherType = preload("res://assets/scripts/audio_system/feedback_dispatcher.gd")
 const DEFAULT_THROW_SPAWN_OFFSET_PX: float = 35.0
 const CONSUMED_AMOUNT_PER_THROW: int = 1
-
-# Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
-const AI_THROWABLE_BASE_THREAT: float = 15.0
-const AI_THROWABLE_EFFECT_WEIGHT: float = 7.0
+const THROWABLE_AI_THREAT_RATIO: float = 0.45
 
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego rzutu.
@@ -93,18 +90,24 @@ func requires_melee_range_check() -> bool:
 func get_use_feedback() -> FeedbackCue:
 	return use_feedback
 
-func apply_held_stats_to(attack_stats: Node) -> bool:
+func apply_held_stats_to(attack_stats: Resource) -> bool:
 	if attack_stats == null:
 		return false
 	if attack_stats.has_method("change_item_cooldown"):
 		attack_stats.call("change_item_cooldown", use_cooldown)
+	if "hand_attack_data" in attack_stats and "actual_attack_data" in attack_stats:
+		attack_stats.set("actual_attack_data", attack_stats.get("hand_attack_data"))
 	if "actual_extra_effects" in attack_stats:
 		attack_stats.set("actual_extra_effects", effects)
 	return true
 
+func is_suitable_for_ai(profile: Resource, distance: float, switch_dist: float) -> bool:
+	if profile == null or not bool(profile.get("can_throw_items")):
+		return false
+	return distance >= switch_dist
+
 func get_ai_threat_score() -> float:
-	var effects_score: float = float(effects.size()) * AI_THROWABLE_EFFECT_WEIGHT if effects != null else 0.0
-	return AI_THROWABLE_BASE_THREAT + effects_score
+	return THROWABLE_AI_THREAT_RATIO
 
 # --- OPISY UI (OCP) ---
 

@@ -50,7 +50,6 @@ func get_inventory() -> Inventory:
 
 #region Obsługa przedmiotów w inventory
 @onready var held_item_visual: Sprite2D = $HeldItemHandler/HeldItemVisual
-
 var _passive_effect_controller: PlayerPassiveEffectControllerType
 var _held_item_controller: PlayerHeldItemControllerType
 var _input_controller: PlayerInputControllerType
@@ -79,7 +78,7 @@ var _last_death_position: Vector2 = Vector2.INF
 #endregion
 
 #region Główne funkcje silnikowe
-func _ready():
+func _ready() -> void:
 	if (
 		movement_universal_script == null
 		or health_stats_script == null
@@ -91,7 +90,7 @@ func _ready():
 	):
 		push_error(
 			"PlayerCharacter: Brakuje wymaganego komponentu ruchu, zdrowia, statystyk, "
-			+ "ekwipunku, celownika, wizualizacji przedmiotu lub światła!"
+			+ "ekwipunku, celownika, wizualizacji przedmiotu lub światła."
 		)
 		set_process(false)
 		set_physics_process(false)
@@ -112,7 +111,10 @@ func _ready():
 	)
 	_input_controller = PlayerInputControllerType.new()
 	_input_controller.initialize(
-		inventory, aim_controller, builder_component, interaction_and_attack_stats_script
+		inventory,
+		aim_controller,
+		builder_component,
+		interaction_and_attack_stats_script
 	)
 
 	if attack_component and not attack_component.spawn_projectile_requested.is_connected(
@@ -134,6 +136,7 @@ func _ready():
 		inventory.held_passives_changed.connect(_sync_held_passives)
 		inventory.equipment_passives_changed.connect(_sync_equip_passives)
 		inventory.inventory_passives_changed.connect(_sync_inventory_passives)
+
 		inventory.inventory_updated.emit()
 	#endregion
 
@@ -153,7 +156,7 @@ func _on_character_died() -> void:
 
 ## Zachowuje obsługę efektu bazowego i uruchamia reakcję na jego faktyczne przyjęcie.
 func receive_effect(effect: Effect) -> bool:
-	var effect_applied := super.receive_effect(effect)
+	var effect_applied: bool = super.receive_effect(effect)
 	if effect_applied and is_instance_valid(_feedback_controller):
 		_feedback_controller.play_received_effect(effect)
 	return effect_applied
@@ -183,47 +186,50 @@ func play_item_drop_feedback() -> void:
 	if is_instance_valid(_feedback_controller):
 		_feedback_controller.play_item_drop()
 
-## Punkt wejścia dla komponentów przedmiotów z własną oprawą w Inspectorze.
+## Punkt wejścia dla komponentów przedmiotów z własną oprawą w Inspektorze (SOLID - OCP).
 func play_item_feedback(cue: FeedbackCueType, target: Node2D) -> void:
 	if not is_instance_valid(_feedback_controller):
 		return
 	if cue != null:
 		_feedback_controller.play_item_use(cue, target)
 		return
-	var current_item := inventory.get_current_item() if inventory != null else null
-	if current_item != null and current_item.data != null and current_item.data.components != null:
-		for component in current_item.data.components:
-			if (
-				component is MeleeWeaponComponent
-				or component is RangedWeaponComponent
-				or component is ThrowableComponent
-			):
-				_feedback_controller.play_combat(target)
-				return
+	var current_item: ItemInstance = inventory.get_current_item() if inventory != null else null
+	if _item_has_weapon_component(current_item):
+		_feedback_controller.play_combat(target)
+		return
 	_feedback_controller.play_item_use(null, target)
+
+func _item_has_weapon_component(item_inst: ItemInstance) -> bool:
+	if item_inst == null or item_inst.data == null or item_inst.data.components == null:
+		return false
+	for component in item_inst.data.components:
+		if component != null and component.is_weapon_component():
+			return true
+	return false
 
 func _on_ui_state_changed(is_open: bool) -> void:
 	is_input_locked = is_open
 	if is_open and _input_controller != null:
 		_input_controller.reset_transient_input()
 
-func _process(delta):
+func _process(delta: float) -> void:
 	super(delta)
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	super(delta)
 	if is_respawning:
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
+
 	if is_input_locked:
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
 
 	#region Move Procedure
-	var horizontal := Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
-	var vertical := Input.get_axis(INPUT_UP, INPUT_DOWN)
+	var horizontal: float = Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
+	var vertical: float = Input.get_axis(INPUT_UP, INPUT_DOWN)
 
 	if movement_universal_script != null:
 		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
@@ -236,11 +242,10 @@ func _physics_process(delta):
 		_feedback_controller.process_movement_feedback(delta, get_real_velocity())
 	#endregion
 
-	var is_building = (current_state == PlayerState.BUILDING)
-	var current_range = builder_component.build_range if is_building else get_current_attack_range()
+	var is_building: bool = (current_state == PlayerState.BUILDING)
+	var current_range: float = builder_component.build_range if is_building else get_current_attack_range()
 
 	aim_controller.process_aiming(_input_controller.is_using_mouse, current_range, is_building)
-
 	_handle_pushing()
 	_input_controller.process_item_dropping(delta)
 
@@ -248,24 +253,23 @@ func _physics_process(delta):
 		if is_in_pacifist_zone:
 			_input_controller.is_holding_attack = false
 		interaction_and_attack_stats_script.interaction_cooldown_process(delta)
-
 		if _input_controller.is_holding_attack and interaction_and_attack_stats_script.can_attack():
 			perform_attack()
 
 func _handle_pushing() -> void:
 	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
-		var collider = collision.get_collider()
+		var collision: KinematicCollision2D = get_slide_collision(i)
+		var collider: Object = collision.get_collider()
 
 		# 1. Popychanie zwykłych obiektów fizycznych (z bezpiecznym limitem prędkości!)
-		# Chroni przed katapultowaniem przedmiotów przez ściany przy dociskaniu ich ciałem gracza.
 		if collider is RigidBody2D:
-			if collider.linear_velocity.length() < MAX_PUSHED_RIGIDBODY_SPEED:
-				collider.apply_central_impulse(-collision.get_normal() * push_force)
+			var rigid: RigidBody2D = collider as RigidBody2D
+			if rigid.linear_velocity.length() < MAX_PUSHED_RIGIDBODY_SPEED:
+				rigid.apply_central_impulse(-collision.get_normal() * push_force)
 
-		# 2. Popychanie Wrogów (np. pająków) - NATURALNE PRZEPYCHANIE
+		# 2. Popychanie Wrogów - NATURALNE PRZEPYCHANIE
 		elif collider is AICharacterEntity:
-			collider.move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER))
+			(collider as AICharacterEntity).move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER))
 
 func _unhandled_input(event: InputEvent) -> void:
 	_input_controller.handle_unhandled_input(
@@ -282,7 +286,6 @@ func _start_building(placeable_comp: PlaceableComponent) -> void:
 	if not builder_component:
 		push_error("BŁĄD KRYTYCZNY: Nie znaleziono węzła BuilderComponent w Graczu!")
 		return
-
 	if builder_component.start_building(placeable_comp):
 		current_state = PlayerState.BUILDING
 		_input_controller.is_holding_attack = false
@@ -301,7 +304,7 @@ func on_inventory_update() -> void:
 	_held_item_controller.refresh(current_item)
 
 	if current_state == PlayerState.BUILDING:
-		var is_placeable = false
+		var is_placeable: bool = false
 		if current_item != null and current_item.data.components != null:
 			for comp in current_item.data.components:
 				if comp is PlaceableComponent:
@@ -311,16 +314,18 @@ func on_inventory_update() -> void:
 			_cancel_building()
 
 ## Wywołuje się podczas wyrzucania przedmiotu. Gwarantuje użycie pozycji śmierci, jeśli gracz zginął.
-func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool):
+func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool) -> void:
 	if item_thrower_component:
-		var throw_direction := Vector2.ZERO
-
+		var throw_direction: Vector2 = Vector2.ZERO
 		if aim_controller and aim_controller.aim_scanner:
-			var target_pos = aim_controller.aim_scanner.global_position
+			var target_pos: Vector2 = aim_controller.aim_scanner.global_position
 			throw_direction = global_position.direction_to(target_pos).normalized()
 
-		# Jeśli gracz nie żyje lub odradza się, używamy zamrożonej pozycji zgonu (tam gdzie stoi krzyż!)
-		var drop_origin: Vector2 = _last_death_position if (is_dead or is_respawning) and _last_death_position != Vector2.INF else global_position
+		var drop_origin: Vector2 = (
+			_last_death_position
+			if (is_dead or is_respawning) and _last_death_position != Vector2.INF
+			else global_position
+		)
 
 		item_thrower_component.handle_item_drop(
 			self,
@@ -338,19 +343,16 @@ func _on_inventory_item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 	else:
 		push_error("BŁĄD: Ekwipunek wyrzucił przedmiot, ale Gracz nie ma przypisanego ItemThrowerComponent!")
 
-# Nadpisanie bazowej funkcji z CharacterEntity
 func respawn_sequence() -> void:
 	if is_respawning:
 		return
-
 	is_respawning = true
 	_input_controller.reset_transient_input()
-	var scene_tree := get_tree()
+	var scene_tree: SceneTree = get_tree()
 
-	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE (Na widocznym ekranie) ---
+	# --- FAZA 1: RATOWANIE ŻYCIA I ZAMROŻENIE ---
 	velocity = Vector2.ZERO
 	set_physics_process(false)
-
 	purge_absolutely_everything()
 
 	if is_dead:
@@ -365,7 +367,7 @@ func respawn_sequence() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
 	print("Gracz: Inicjalizuję respawn powiązany z mapą...")
 
-	var level_manager := scene_tree.get_first_node_in_group("Map")
+	var level_manager: Node = scene_tree.get_first_node_in_group("Map")
 	if is_instance_valid(level_manager):
 		if level_manager.has_method("handle_player_respawn"):
 			await level_manager.handle_player_respawn(self)
@@ -374,7 +376,7 @@ func respawn_sequence() -> void:
 	if not is_inside_tree():
 		return
 
-	# --- FAZA 3: KONIEC ODRADZANIA (Ekran już jest jasny) ---
+	# --- FAZA 3: KONIEC ODRADZANIA ---
 	process_mode = Node.PROCESS_MODE_INHERIT
 	set_physics_process(true)
 
@@ -393,16 +395,15 @@ func respawn_sequence() -> void:
 
 #region System ataku
 func perform_attack() -> void:
-	var current_item = inventory.get_current_item()
-	var target_enemy = aim_controller.get_target_node()
-
+	var current_item: ItemInstance = inventory.get_current_item()
+	var target_enemy: Node2D = aim_controller.get_target_node()
 	if target_enemy == null:
 		return
 
-	var has_los = aim_controller.has_line_of_sight(target_enemy)
+	var has_los: bool = aim_controller.has_line_of_sight(target_enemy)
 
 	if attack_component:
-		var attack_succeeded := attack_component.execute_attack(
+		var attack_succeeded: bool = attack_component.execute_attack(
 			self, 
 			target_enemy, 
 			current_item, 
@@ -410,16 +411,7 @@ func perform_attack() -> void:
 			interaction_and_attack_stats_script,
 			has_los
 		)
-		var is_using_combat_item := false
-		if current_item != null and current_item.data != null and current_item.data.components != null:
-			for component in current_item.data.components:
-				if (
-					component is MeleeWeaponComponent
-					or component is RangedWeaponComponent
-					or component is ThrowableComponent
-				):
-					is_using_combat_item = true
-					break
+		var is_using_combat_item: bool = _item_has_weapon_component(current_item)
 		if (
 			attack_succeeded
 			and not is_using_combat_item

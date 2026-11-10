@@ -3,6 +3,7 @@ extends ItemComponent
 ## Komponent pozwalający postawić obiekt fizyczny na mapie (np. skrzynia, barykada, mina).
 
 const AI_PLACE_SPAWN_OFFSET_PX: float = 35.0
+const AI_MINE_PLACEMENT_EXTRA_RANGE_PX: float = 150.0
 const CONSUMED_AMOUNT_PER_PLACE: int = 1
 
 @export_group("Oprawa użycia")
@@ -33,11 +34,7 @@ func execute(actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> vo
 
 		# Zapisanie DUSZY przedmiotu (by dało się go potem podnieść, jeśli ma HP)
 		if final_instance is PlacedObject:
-			var unique_data: ItemData = _item_instance.data.create_unique_copy()
-			var placed_item_instance: ItemInstance = ItemInstance.new(unique_data, 1)
-			placed_item_instance.state = _item_instance.state.duplicate(true)
-			placed_item_instance.state["amount"] = 1
-			(final_instance as PlacedObject).saved_item_instance = placed_item_instance
+			(final_instance as PlacedObject).saved_item_instance = _item_instance.create_split_copy(1)
 
 		# Kładziemy obiekt delikatnie przed AI, sprawdzając czy przed nim nie ma ściany!
 		var spawn_pos: Vector2 = actor.global_position
@@ -67,6 +64,22 @@ func execute(actor: Node2D, _target: Node2D, _item_instance: ItemInstance) -> vo
 						inv.clean_dead_items()
 					if inv.has_signal("inventory_updated"):
 						inv.inventory_updated.emit()
+
+# --- IMPLEMENTACJA KONTRAKTU BOJOWEGO I AI (SOLID - OCP) ---
+
+func is_executable_attack_component() -> bool:
+	return true
+
+func get_use_feedback() -> FeedbackCue:
+	return use_feedback
+
+func is_suitable_for_ai(profile: Resource, distance: float, switch_dist: float) -> bool:
+	if profile == null or not bool(profile.get("can_throw_items")):
+		return false
+	# AI decyduje się położyć minę, jeśli gracz się do niego zbliża
+	return distance < (switch_dist + AI_MINE_PLACEMENT_EXTRA_RANGE_PX)
+
+# --- OPISY UI (OCP) ---
 
 func get_tooltip_info(_item_instance: ItemInstance) -> String:
 	return "Obiekt Konstrukcyjny (Do postawienia)\n"

@@ -9,9 +9,9 @@ const DURABILITY_CONSUMPTION_PER_SHOT: int = 1
 const NO_PREFERRED_AMMO_ID: int = -1
 
 # Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
-const AI_RANGED_BASE_THREAT_BONUS: float = 20.0
-const AI_THREAT_DAMAGE_WEIGHT: float = 0.85
-const AI_THREAT_EFFECT_BONUS: float = 8.0
+const HIGH_DAMAGE_THRESHOLD: int = 20
+const HIGH_DAMAGE_RANGED_THREAT_RATIO: float = 0.85
+const NORMAL_RANGED_THREAT_RATIO: float = 0.45
 
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
@@ -181,21 +181,26 @@ func requires_melee_range_check() -> bool:
 func get_use_feedback() -> FeedbackCue:
 	return use_feedback
 
-func apply_held_stats_to(attack_stats: Node) -> bool:
+func apply_held_stats_to(attack_stats: Resource) -> bool:
 	if attack_stats == null:
 		return false
 	if attack_stats.has_method("change_item_cooldown"):
 		attack_stats.call("change_item_cooldown", use_cooldown)
-	if "actual_attack_data" in attack_stats:
+	if attack_data != null and "actual_attack_data" in attack_stats:
 		attack_stats.set("actual_attack_data", attack_data)
 	if "actual_extra_effects" in attack_stats:
 		attack_stats.set("actual_extra_effects", weapon_effects)
 	return true
 
+func is_suitable_for_ai(profile: Resource, distance: float, switch_dist: float) -> bool:
+	if profile == null or not bool(profile.get("can_use_ranged_weapons")):
+		return false
+	return distance >= switch_dist
+
 func get_ai_threat_score() -> float:
-	var dmg: float = float(attack_data.damage) if attack_data != null else 0.0
-	var effects_bonus: float = float(weapon_effects.size()) * AI_THREAT_EFFECT_BONUS if weapon_effects != null else 0.0
-	return AI_RANGED_BASE_THREAT_BONUS + (dmg * AI_THREAT_DAMAGE_WEIGHT) + effects_bonus
+	if attack_data != null and attack_data.damage >= HIGH_DAMAGE_THRESHOLD:
+		return HIGH_DAMAGE_RANGED_THREAT_RATIO
+	return NORMAL_RANGED_THREAT_RATIO
 
 # --- OPISY UI (OCP) ---
 
