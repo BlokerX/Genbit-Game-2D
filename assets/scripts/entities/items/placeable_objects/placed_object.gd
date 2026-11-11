@@ -17,11 +17,23 @@ var saved_item_instance: ItemInstance = null
 var current_health: int
 var is_broken: bool = false
 
+@export_category("Reakcja na Pociski (Osłona)")
+## Jeśli true, obiekt jest "niewidzialny" dla pocisków (pociski przelatują przez niego bez kolizji).
+## Jeśli false (domyślnie), obiekt zatrzymuje pociski i może służyć jako osłona.
+@export var invisible_to_projectiles: bool = false
+## Czy pociski zatrzymujące się na tym obiekcie mają zadawać mu obrażenia i zmniejszać jego HP?
+## (Wyłącz, jeśli obiekt ma być niezniszczalną osłoną przed ostrzałem).
+@export var take_damage_from_projectiles: bool = true
+
 func _ready() -> void:
 	z_index = GameLayers.ENTITIES
 	current_health = max_health
 	if interactable_component:
 		interactable_component.collected.connect(_on_collected)
+
+## Określa, czy nadlatujący pocisk powinien zatrzymać się na tym obiekcie (SOLID - Information Expert).
+func should_block_projectile(_projectile: Node2D = null) -> bool:
+	return not invisible_to_projectiles and not is_broken
 
 # --- 1. ZBIERANIE (KLAWISZ F) ---
 func _on_collected(_player: Node) -> void:
@@ -31,9 +43,13 @@ func _on_collected(_player: Node) -> void:
 	print("Gracz bezpiecznie zebrał obiekt!")
 	_break_and_drop(true) # true oznacza: oddaj przedmiot z powrotem
 
-# --- 2. NISZCZENIE PRZEZ ATAK (LEWY KLIK) ---
+# --- 2. NISZCZENIE PRZEZ ATAK (LEWY KLIK / POCISK) ---
 func receive_effect(effect: Effect) -> bool:
 	if effect is DamageEffect and not is_broken:
+		# Jeśli obrażenia pochodzą od pocisku, sprawdzamy flagę take_damage_from_projectiles
+		if effect.has_meta("from_projectile") and bool(effect.get_meta("from_projectile")) and not take_damage_from_projectiles:
+			return false
+
 		current_health -= effect.damage_amount
 		print("Obiekt dostał: ", effect.damage_amount, " obrażeń! Zostało HP: ", current_health)
 

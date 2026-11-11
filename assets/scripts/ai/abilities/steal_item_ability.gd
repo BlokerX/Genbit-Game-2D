@@ -1,12 +1,20 @@
 extends AIAbility
 class_name StealItemAbility
+## Zdolność specjalna AI: Doskok z próbą wytrącenia/kradzieży trzymanego przedmiotu opartą na prawdopodobieństwie.
 
 const HALF_CAST_TIME_FACTOR: float = 0.5
 const DEBUG_VISUAL_Z_INDEX: int = 100
+const FULL_RESISTANCE_THRESHOLD: float = 1.0
 
 @export_category("Zdolność: Kradzież Ekwipunku")
-@export_group("Obrażenia i Kradzież")
+@export_group("Obrażenia i Szansa Kradzieży")
 @export var damage: int = 12
+## Bazowa szansa powodzenia kradzieży/wytrącenia przedmiotu po trafieniu (0.0 = 0%, 1.0 = 100%).
+@export_range(0.0, 1.0, 0.01) var steal_success_chance: float = 0.35
+## Czy odporność na kontrolę tłumu celu (cc_resistance) zmniejsza szansę na kradzież?
+@export var affected_by_target_cc_resistance: bool = true
+## Jeśli true, wytrąca cały stos z dłoni. Jeśli false, wytrąca tylko 1 sztukę przedmiotu.
+@export var steal_entire_stack: bool = true
 
 @export_group("Parametry Doskoku")
 ## Czas trwania pełnej animacji (doskok i powrót).
@@ -30,8 +38,6 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_instance_valid(attacker) or not is_instance_valid(target):
 		if debug_mode:
 			print("[StealItem] Przerwano: Atakujący lub Cel przestał istnieć na starcie.")
-		return
-	if target.is_dead or target.is_respawning:
 		return
 
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
@@ -67,8 +73,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_instance_valid(attacker) or not attacker.is_inside_tree():
 		return
 
-	# --- SPRAWDZENIE TRAFIENIA I KRADZIEŻ W SZCZYCIE DOSKOKU ---
-	# Blokujemy trafienie i kradzież, jeśli cel zginął lub rozpoczął respawn w trakcie naszego lotu!
+	# --- SPRAWDZENIE TRAFIENIA I LOSOWANIE SZANSY KRADZIEŻY W SZCZYCIE DOSKOKU ---
 	if is_instance_valid(attacker) and is_instance_valid(target) and not target.is_dead and not target.is_respawning:
 		var post_dash_edge_dist: float = get_edge_distance(attacker, target)
 		var hit_threshold: float = max_range + hit_distance_leeway
@@ -85,7 +90,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 		if is_hit:
 			if debug_mode:
-				print("[StealItem] Cel w zasięgu! Atak ląduje.")
+				print("[StealItem] Cel w zasięgu! Atak fizyczny ląduje.")
 
 			var dmg: DamageEffect = DamageEffect.new(damage)
 			dmg.source_entity = attacker
@@ -93,16 +98,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 			if target.has_method("receive_effect"):
 				target.receive_effect(dmg)
 
-			# Wytrącamy pojedynczy przedmiot z dłoni TYLKO wtedy, gdy cios powyżej nie zabił celu
-			# (bo jeśli cel zginął od dmg, _on_character_died już wyrzuciło cały ekwipunek w miejscu śmierci!).
-			if not target.is_dead and not target.is_respawning and target.has_method("get_inventory"):
-				var inv = target.get_inventory()
-				if inv is Inventory:
-					var slot: SlotData = inv.get_current_slot()
-					if slot != null and not slot.is_empty():
-						var stolen_item_name: String = slot.item.data.item_name if (slot.item and slot.item.data) else "Nieznany Przedmiot"
-						print(attacker.name + " wytrąca przedmiot graczowi! (" + stolen_item_name + ")")
-						inv.drop_current_item(true)
+			# Jeśli cel przeżył uderzenie, wykonujemy rzut na szansę wytrącenia przedmiotu!
+			if is_instance_valid(target) and not target.is_dead and not target.is_respawning:
+				_try_steal_held_item(attacker, target)
 
 	# Powrót na pozycję startową
 	var dash_back_tween: Tween = create_kinematic_dash_tween(attacker, original_pos, half_cast, Tween.TRANS_SINE, Tween.EASE_IN)
@@ -111,6 +109,59 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 	if is_instance_valid(attacker) and combat_ctrl != null:
 		combat_ctrl.is_casting_ability = false
+
+## Wykonuje test prawdopodobieństwa i (w razie sukcesu) wytrąca przedmiot z dłoni celu.
+func _try_steal_held_item(attacker: CharacterEntity, target: CharacterEntity) -> void:
+	if not target.has_method("get_inventory"):
+		return
+	var inv = target.get_inventory()
+	if not (inv is Inventory):
+		return
+
+	var slot: SlotData = (inv as Inventory).get_current_slot()
+	if slot == null or slot.is_empty() or slot.item == null:
+		return
+
+	var effective_chance: float = _calculate_effective_steal_chance(attacker, target, slot.item)
+	if effective_chance <= 0.0:
+		if debug_mode:
+			print("[StealItem] Cel lub przedmiot jest całkowicie odporny na kradzież!")
+		return
+
+	var roll: float = randf()
+	if roll <= effective_chance:
+		var stolen_item_name: String = slot.item.data.item_name if slot.item.data != null else "Nieznany Przedmiot"
+		print("%s wytrąca przedmiot graczowi! (%s | Szansa: %d%%)" % [attacker.name, stolen_item_name, int(effective_chance * 100.0)])
+		(inv as Inventory).drop_current_item(steal_entire_stack)
+	elif debug_mode:
+		print("[StealItem] Próba kradzieży nieudana (Wylosowano: %.2f > Wymagane: %.2f)." % [roll, effective_chance])
+
+## Oblicza ostateczną szansę powodzenia kradzieży z uwzględnieniem odporności celu oraz właściwości przedmiotu.
+func _calculate_effective_steal_chance(_attacker: CharacterEntity, target: CharacterEntity, item_instance: ItemInstance) -> float:
+	if steal_success_chance <= 0.0 or item_instance == null:
+		return 0.0
+
+	# 1. Sprawdzenie, czy sam przedmiot lub stan postaci blokuje kradzież (wsparcie dla unikalnych itemów i buffów)
+	if item_instance.state.get("cannot_be_stolen", false) == true:
+		return 0.0
+	if target.has_meta("immune_to_steal") and bool(target.get_meta("immune_to_steal")) == true:
+		return 0.0
+	if target.has_method("is_action_blocked") and bool(target.call("is_action_blocked", &"steal")):
+		return 0.0
+
+	var chance: float = steal_success_chance
+
+	# 2. Uwzględnienie odporności na kontrolę tłumu (cc_resistance) lub dedykowanej odporności na kradzież
+	var resistance: float = 0.0
+	if affected_by_target_cc_resistance and target.get("health_stats_script") != null:
+		resistance = maxf(resistance, float(target.health_stats_script.cc_resistance))
+	if target.has_meta("steal_resistance"):
+		resistance = clampf(resistance + float(target.get_meta("steal_resistance")), 0.0, FULL_RESISTANCE_THRESHOLD)
+
+	if resistance >= FULL_RESISTANCE_THRESHOLD:
+		return 0.0
+
+	return clampf(chance * (1.0 - resistance), 0.0, 1.0)
 
 # ==============================================================================
 # KLASA WEWNĘTRZNA: Graficzny Debugger
