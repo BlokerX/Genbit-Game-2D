@@ -1,5 +1,6 @@
 extends CanvasLayer
 class_name QuestLogUI
+## Kontroler interfejsu Dziennika Zadań (Quest Journal) obsługujący zakładki, śledzenie i porzucanie misji.
 
 ## Sygnał powiadamiający UIController o zamknięciu dziennika (np. przyciskiem X lub klawiszem skrótu).
 signal log_closed
@@ -34,6 +35,8 @@ const CONTRACT_QUEST_COLOR := Color(0.9, 0.4, 0.4)
 
 @export_group("Opcjonalne Elementy")
 @export var close_button: Button
+## Czy otwarcie Dziennika Zadań ma zatrzymywać czas gry? (Synchronizowane z UIController.pause_on_quest_log).
+@export var pause_game_when_open: bool = false
 
 enum QuestTab { ACTIVE, COMPLETED, FAILED }
 var current_tab: QuestTab = QuestTab.ACTIVE
@@ -74,8 +77,13 @@ func _input(event: InputEvent) -> void:
 		elif not DialogueManager.is_active:
 			open_log()
 		get_viewport().set_input_as_handled()
+		return
 
-	if visible and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("ToggleInventory")):
+	if visible and (
+		event.is_action_pressed("ui_cancel")
+		or event.is_action_pressed("Game_Pause")
+		or event.is_action_pressed("ToggleInventory")
+	):
 		close_log()
 		get_viewport().set_input_as_handled()
 
@@ -133,7 +141,8 @@ func open_from_menu_request() -> void:
 
 func _show_log() -> void:
 	show()
-	get_tree().paused = true
+	if pause_game_when_open:
+		get_tree().paused = true
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, true)
 	switch_tab(current_tab, true)
 
@@ -143,7 +152,7 @@ func close_log() -> void:
 	hide()
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, false)
 	log_closed.emit()
-	if not EventBus.is_any_menu_open():
+	if not EventBus.active_menus.get(EventBus.MENU_PAUSE, false) and not EventBus.is_any_menu_open():
 		get_tree().paused = false
 
 ## Funkcja do wymuszania otwarcia konkretnego zadania z zewnątrz (np. po kliknięciu powiadomienia QuestNotificationUI).

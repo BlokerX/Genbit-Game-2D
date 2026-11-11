@@ -1,6 +1,7 @@
 extends Node
 ## Globalny menedżer ustawień gry (Audio, Grafika, GUI, Streaming Świata oraz Klawiszologia).
-## Automatycznie zapisuje i wczytuje konfigurację gracza z pliku user://settings.cfg.
+## Automatycznie zapisuje i wczytuje konfigurację gracza z pliku user://settings.cfg
+## oraz synchronizuje widoczność elementów HUD po każdym załadowaniu sceny rozgrywki.
 
 const BCS_SHADER_LAYER: int = 128
 
@@ -88,6 +89,8 @@ var show_quest_log: bool
 var config: ConfigFile = ConfigFile.new()
 ## Kopia zapasowa domyślnych zdarzeń InputMap z momentu uruchomienia silnika (do bezpiecznego resetowania klawiszy).
 var _default_input_events: Dictionary = {}
+## Flaga zapobiegająca wielokrotnemu planowaniu synchronizacji GUI w tej samej klatce.
+var _gui_sync_scheduled: bool = false
 
 # --- Węzły do globalnego renderowania grafiki ---
 var _bcs_canvas: CanvasLayer
@@ -125,9 +128,47 @@ func _ready() -> void:
 	_bcs_canvas.add_child(_bcs_rect)
 	add_child(_bcs_canvas)
 
-	# 3. Na starcie wczytujemy domyślne, a potem nadpisujemy plikiem gracza (jeśli istnieje)
+	# 3. Nasłuchujemy dodawania nowych węzłów UI (np. po powrocie z Menu Głównego i ponownym uruchomieniu gry)
+	if not get_tree().node_added.is_connected(_on_scene_tree_node_added):
+		get_tree().node_added.connect(_on_scene_tree_node_added)
+
+	# 4. Na starcie wczytujemy domyślne, a potem nadpisujemy plikiem gracza (jeśli istnieje)
 	reset_all_to_default(false)
 	load_settings()
+
+## Automatycznie wykrywa pojawienie się interfejsu rozgrywki (UI_Canvas) w drzewie i aplikuje zapisane ustawienia widoczności.
+func _on_scene_tree_node_added(node: Node) -> void:
+	if node == null:
+		return
+	if (
+		node.name == "UI_Canvas"
+		or node is UIController
+		or node.name in [
+			"PlayerUIGroup",
+			"StatsPanel",
+			"AcriveEffectsPanel",
+			"HotbarPanel",
+			"ItemInfoPanelContainer",
+			"PlaytimeLabel",
+			"BottomRight_Zone",
+			"QuestTrackerUI",
+			"PauseMenu",
+			"InventoryWindows",
+			"CraftingUI",
+			"QuestLogUI"
+		]
+	):
+		_schedule_gui_visibility_sync()
+
+func _schedule_gui_visibility_sync() -> void:
+	if _gui_sync_scheduled:
+		return
+	_gui_sync_scheduled = true
+	call_deferred("_flush_gui_visibility_sync")
+
+func _flush_gui_visibility_sync() -> void:
+	_gui_sync_scheduled = false
+	apply_gui_visibility_to_tree()
 
 func _capture_default_input_map() -> void:
 	_default_input_events.clear()
@@ -273,9 +314,13 @@ func apply_all_settings() -> void:
 
 	get_tree().root.content_scale_factor = ui_scale_global
 
-	_apply_gui_visibility_to_tree()
+	apply_gui_visibility_to_tree()
 	if EventBus.has_signal("hud_visibility_requested"):
 		EventBus.hud_visibility_requested.emit()
+
+## Aplikuje zapisaną widoczność oraz skalę elementów HUD do aktualnego drzewa sceny rozgrywki.
+func apply_gui_visibility_to_tree() -> void:
+	_apply_gui_visibility_to_tree()
 
 func _apply_gui_visibility_to_tree() -> void:
 	var ui_canvas: Node = get_tree().root.find_child("UI_Canvas", true, false)
@@ -299,11 +344,28 @@ func _apply_gui_visibility_to_tree() -> void:
 
 	var node_hotbar: CanvasItem = ui_canvas.find_child("HotbarPanel", true, false) as CanvasItem
 	if node_hotbar:
-		node_hotbar.visible = show_hotbar
+		# Jeśli otwarte jest pełnoekranowe okno ukrywające hotbar (np. Inventory, Map, Storage),
+		# nie wymuszamy jego pokazania, dopóki okno nie zostanie zamknięte.
+		var hotbar_blocked_by_menu: bool = (
+			EventBus.active_menus.get(EventBus.MENU_INVENTORY, false)
+			or EventBus.active_menus.get(EventBus.MENU_STORAGE, false)
+			or EventBus.active_menus.get(EventBus.MENU_MAP, false)
+		)
+		node_hotbar.visible = show_hotbar and not hotbar_blocked_by_menu
 
 	var node_item_info: CanvasItem = ui_canvas.find_child("ItemInfoPanelContainer", true, false) as CanvasItem
 	if node_item_info:
-		node_item_info.visible = show_item_info
+		if not show_item_info:
+			node_item_info.visible = false
+		else:
+			# Pozwalamy InventoryUI ocenić, czy gracz trzyma przedmiot i czy tryb != NONE
+			var inv_ui: Node = ui_canvas.find_child("InventoryUI", true, false)
+			if inv_ui == null and node_hotbar != null:
+				inv_ui = node_hotbar.get_parent()
+			if inv_ui != null and inv_ui.has_method("update_info_panel"):
+				inv_ui.call("update_info_panel")
+			else:
+				node_item_info.visible = show_item_info
 
 	var node_playtime: CanvasItem = ui_canvas.find_child("PlaytimeLabel", true, false) as CanvasItem
 	if node_playtime:

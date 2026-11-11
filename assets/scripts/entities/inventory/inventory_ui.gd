@@ -1,4 +1,5 @@
 extends Node
+## Kontroler widoku paska szybkiego dostępu (Hotbar) oraz panelu informacji o trzymanym przedmiocie.
 
 enum InfoMode { NONE, BASIC, ADVANCED }
 
@@ -70,9 +71,15 @@ func update_info_panel() -> void:
 
 	var slot: SlotData = player.inventory.get_current_slot()
 
-	# TARCZA OPTYMALIZACYJNA: 
-	# Jeśli tryb to NONE (brak wyświetlania) LUB slot jest pusty - od razu chowamy UI i przerywamy skrypt.
-	if current_info_mode == InfoMode.NONE or slot == null or slot.is_empty():
+	# TARCZA OPTYMALIZACYJNA I USTAWIEŃ GUI:
+	# Jeśli gracz wyłączył panel informacji w ustawieniach (GlobalSettings.show_item_info == false),
+	# lub tryb to NONE, lub slot jest pusty - chowamy kontener i przerywamy funkcję.
+	if (
+		not GlobalSettings.show_item_info
+		or current_info_mode == InfoMode.NONE
+		or slot == null
+		or slot.is_empty()
+	):
 		info_label.get_parent().hide()
 		return
 

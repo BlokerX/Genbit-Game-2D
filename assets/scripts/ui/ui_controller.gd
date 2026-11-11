@@ -1,5 +1,7 @@
 class_name UIController
 extends CanvasLayer
+## Główny kontroler interfejsu rozgrywki zarządzający otwieraniem okien, kursorem pada,
+## konfigurowalnym zatrzymywaniem czasu gry (pauzą) oraz synchronizacją widoczności HUD-u.
 
 const INPUT_TOGGLE_INVENTORY: String = "ToggleInventory"
 const INPUT_TOGGLE_CRAFTING: String = "ToggleCrafting"
@@ -32,6 +34,20 @@ const InventoryCursorControllerType = preload("res://assets/scripts/ui/inventory
 @export var quest_log_ui: QuestLogUI
 @export var equipment_inventory_ui: EquipmentInventoryUIType
 
+@export_category("Zatrzymywanie Czasu (Pauza Okien)")
+## Czy otwarcie Ekwipunku (I) ma zatrzymywać czas gry?
+@export var pause_on_inventory: bool = false
+## Czy otwarcie Skrzyni / Magazynu ma zatrzymywać czas gry?
+@export var pause_on_storage: bool = false
+## Czy otwarcie okna Craftingu (C) ma zatrzymywać czas gry? (Domyślnie: false - crafting w czasie rzeczywistym).
+@export var pause_on_crafting: bool = false
+## Czy otwarcie dużej Mapy (M) ma zatrzymywać czas gry?
+@export var pause_on_map: bool = false
+## Czy otwarcie Dziennika Zadań (J) ma zatrzymywać czas gry?
+@export var pause_on_quest_log: bool = false
+## Czy rozpoczęcie Konwersacji (Dialogu z NPC) ma zatrzymywać czas gry?
+@export var pause_on_dialogue: bool = false
+
 @export_group("Oprawa dźwiękowa")
 @export var map_open_feedback: FeedbackCue = preload("res://assets/data/feedback/ui/map_open.tres")
 
@@ -41,6 +57,8 @@ const InventoryCursorControllerType = preload("res://assets/scripts/ui/inventory
 # --- REFAKTORYZACJA SOLID (Zamiast dziesiątek flag is_open) ---
 var _active_menu_name: String = ""
 var _ui_panels: Dictionary = {}
+## Mapa reguł określająca, które klucze menu (EventBus.MENU_*) zatrzymują czas gry (OCP).
+var _menu_pause_rules: Dictionary = {}
 
 var player_inventory: Inventory = null
 var _player_ref: Node2D = null
@@ -64,6 +82,7 @@ func _ready() -> void:
 	_slot_interactor = InventorySlotInteractorType.new()
 	_cursor_controller = InventoryCursorControllerType.new()
 
+	_rebuild_pause_rules()
 	_validate_player_refs()
 
 	_slot_interactor.held_item_changed.connect(_cursor_controller.update_cursor_visuals)
@@ -72,12 +91,14 @@ func _ready() -> void:
 	EventBus.slot_clicked.connect(_slot_interactor.handle_slot_clicked)
 	EventBus.open_fullscreen_menu.connect(_on_open_fullscreen_menu)
 	EventBus.player_died.connect(_close_all_ui)
+	EventBus.hud_visibility_requested.connect(_on_hud_visibility_requested)
 	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
 
-	# NAPRAWA KRYTYCZNA: Nasłuchujemy zamknięcia QuestLogUI (np. przyciskiem X lub klawiszem J),
-	# aby wyczyścić _active_menu_name i nie blokować kursora/klawiszy podczas walki!
-	if quest_log_ui != null and quest_log_ui.has_signal("log_closed"):
-		if not quest_log_ui.log_closed.is_connected(_on_quest_log_closed_internally):
+	# Synchronizacja z QuestLogUI (zamknięcie przyciskiem X lub skrótem klawiszowym oraz reguła pauzy)
+	if quest_log_ui != null:
+		if "pause_game_when_open" in quest_log_ui:
+			quest_log_ui.pause_game_when_open = pause_on_quest_log
+		if quest_log_ui.has_signal("log_closed") and not quest_log_ui.log_closed.is_connected(_on_quest_log_closed_internally):
 			quest_log_ui.log_closed.connect(_on_quest_log_closed_internally)
 
 	_cursor_controller.update_cursor_visuals()
@@ -92,11 +113,62 @@ func _ready() -> void:
 
 	_close_all_ui()
 
+	# Gwarantujemy odtworzenie zapisanych ustawień widoczności i skali GUI po każdym załadowaniu sceny gry
+	if GlobalSettings.has_method("apply_gui_visibility_to_tree"):
+		GlobalSettings.apply_gui_visibility_to_tree()
+		GlobalSettings.call_deferred("apply_gui_visibility_to_tree")
+
+## Inicjalizuje słownik reguł pauzowania czasu na podstawie właściwości @export z Inspektora.
+func _rebuild_pause_rules() -> void:
+	_menu_pause_rules = {
+		EventBus.MENU_INVENTORY: pause_on_inventory,
+		EventBus.MENU_STORAGE: pause_on_storage,
+		EventBus.MENU_CRAFTING: pause_on_crafting,
+		EventBus.MENU_MAP: pause_on_map,
+		EventBus.MENU_QUEST_LOG: pause_on_quest_log,
+		EventBus.MENU_DIALOGUE: pause_on_dialogue,
+		EventBus.MENU_PAUSE: true
+	}
+
+## Pozwala dynamicznie zarejestrować lub zmienić regułę zatrzymywania czasu dla dowolnego okna (SOLID - OCP).
+func set_menu_pause_rule(menu_key: String, should_pause: bool) -> void:
+	_menu_pause_rules[menu_key] = should_pause
+	_sync_tree_pause_state()
+
+## Sprawdza, czy którekolwiek z aktualnie aktywnych okien wymaga zatrzymania czasu gry.
+func should_pause_tree() -> bool:
+	if EventBus.active_menus.get(EventBus.MENU_PAUSE, false):
+		return true
+	for menu_key in _menu_pause_rules.keys():
+		if EventBus.active_menus.get(menu_key, false) and bool(_menu_pause_rules[menu_key]):
+			return true
+	if DialogueManager.is_active and pause_on_dialogue:
+		return true
+	return false
+
+## Synchronizuje stan get_tree().paused z aktualnie otwartymi oknami i ich konfiguracją pauzy.
+func _sync_tree_pause_state() -> void:
+	if not is_inside_tree():
+		return
+	_rebuild_pause_rules()
+	if quest_log_ui != null and "pause_game_when_open" in quest_log_ui:
+		quest_log_ui.pause_game_when_open = pause_on_quest_log
+	get_tree().paused = should_pause_tree()
+
+func _on_hud_visibility_requested() -> void:
+	_sync_tree_pause_state()
+	call_deferred("_sync_tree_pause_state")
+
+## Przywraca widoczność paska Hotbar wyłącznie wtedy, gdy pozwala na to opcja GlobalSettings.show_hotbar.
+func _restore_hotbar_visibility() -> void:
+	if hotbar_panel:
+		hotbar_panel.visible = GlobalSettings.show_hotbar
+
 func _on_quest_log_closed_internally() -> void:
 	if _active_menu_name == "QuestLog":
 		_active_menu_name = ""
-		if hotbar_panel:
-			hotbar_panel.show()
+		_restore_hotbar_visibility()
+	_sync_tree_pause_state()
 
 func _validate_player_refs() -> bool:
 	if is_instance_valid(_player_ref) and is_instance_valid(player_inventory):
@@ -196,12 +268,10 @@ func toggle_menu(menu_name: String) -> void:
 					hotbar_panel.hide()
 
 			"Crafting":
-				get_tree().paused = true
 				EventBus.set_menu_state(EventBus.MENU_CRAFTING, true)
 				if crafting_ui:
 					crafting_ui.show()
-				if hotbar_panel:
-					hotbar_panel.show()
+				_restore_hotbar_visibility()
 
 			"Map":
 				EventBus.set_menu_state(EventBus.MENU_MAP, true)
@@ -213,9 +283,12 @@ func toggle_menu(menu_name: String) -> void:
 					GameFeedback.play_cue(map_open_feedback, null, _player_ref.global_position, _player_ref)
 
 			"QuestLog":
-				get_tree().paused = true
 				if quest_log_ui:
+					if "pause_game_when_open" in quest_log_ui:
+						quest_log_ui.pause_game_when_open = pause_on_quest_log
 					quest_log_ui.open_from_menu_request()
+
+		_sync_tree_pause_state()
 
 func _on_storage_opened(storage_ref: Node) -> void:
 	if not _validate_player_refs():
@@ -237,10 +310,9 @@ func _on_storage_opened(storage_ref: Node) -> void:
 	_set_equipment_ui_visible(true)
 	if hotbar_panel:
 		hotbar_panel.hide()
+	_sync_tree_pause_state()
 
 func _close_all_ui() -> void:
-	get_tree().paused = false
-
 	if item_in_hand != null and is_instance_valid(player_inventory):
 		_cursor_controller.return_held_item_to_inventory()
 
@@ -265,14 +337,14 @@ func _close_all_ui() -> void:
 	chest_panel.close_panel()
 	_set_equipment_ui_visible(false)
 
-	if hotbar_panel:
-		hotbar_panel.show()
+	_restore_hotbar_visibility()
 
 	EventBus.set_menu_state(EventBus.MENU_INVENTORY, false, false)
 	EventBus.set_menu_state(EventBus.MENU_CRAFTING, false, false)
 	EventBus.set_menu_state(EventBus.MENU_MAP, false, false)
 	EventBus.set_menu_state(EventBus.MENU_QUEST_LOG, false, false)
 	EventBus.set_menu_state(EventBus.MENU_STORAGE, false, true)
+	_sync_tree_pause_state()
 
 func is_any_ui_open() -> bool:
 	return _active_menu_name != "" or DialogueManager.is_active
