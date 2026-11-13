@@ -4,6 +4,8 @@ class_name AINavigationController
 
 const AVOIDANCE_THREAT_WEIGHT_MULTIPLIER: float = 2.0
 const DEFAULT_FALLBACK_MOVE_SPEED: float = 150.0
+const EVADE_WHILE_STOPPED_THREAT_THRESHOLD: float = 0.75
+const MIN_AVOIDANCE_VECTOR_LEN_SQ: float = 0.05
 
 var controller: AIController
 var nav_agent: NavigationAgent2D
@@ -16,13 +18,35 @@ func process_navigation(delta: float) -> void:
 	var entity: CharacterEntity = controller.entity
 	var blackboard: AIBlackboard = controller.blackboard
 	var profile: AIBehaviorProfile = controller.behavior_profile
+	var is_casting: bool = controller.combat != null and controller.combat.is_casting_ability
 
 	if not blackboard.want_to_move:
-		if entity.movement_universal_script:
-			entity.velocity = entity.movement_universal_script.movement_procedure(delta, entity.velocity, Vector2.ZERO)
+		# Jeśli jednostka stoi w miejscu (np. strzelec na dystansie ataku lub w stanie Idle),
+		# ale nadlatuje w jej stronę pocisk/zagrożenie (wysoki threat_level), wykonuje uskok!
+		var should_evade_in_place: bool = (
+			not is_casting
+			and profile != null
+			and profile.intelligent_movement
+			and blackboard.threat_level >= EVADE_WHILE_STOPPED_THREAT_THRESHOLD
+			and blackboard.avoidance_vector.length_squared() >= MIN_AVOIDANCE_VECTOR_LEN_SQ
+		)
+
+		if should_evade_in_place:
+			var evade_dir: Vector2 = blackboard.avoidance_vector.normalized()
+			if entity.movement_universal_script:
+				entity.velocity = entity.movement_universal_script.movement_procedure(delta, entity.velocity, evade_dir)
+			else:
+				entity.velocity = evade_dir * DEFAULT_FALLBACK_MOVE_SPEED
+
+			if not profile.can_rotate_to_target:
+				entity._update_sprite_direction(evade_dir)
+			entity.move_and_slide()
 		else:
-			# NAPRAWA: Jednostka bez MovementComponent musi również wyzerować prędkość po zatrzymaniu!
-			entity.velocity = Vector2.ZERO
+			if entity.movement_universal_script:
+				entity.velocity = entity.movement_universal_script.movement_procedure(delta, entity.velocity, Vector2.ZERO)
+			else:
+				# Jednostka bez MovementComponent musi również wyzerować prędkość po zatrzymaniu!
+				entity.velocity = Vector2.ZERO
 	else:
 		if nav_agent:
 			var next_pos: Vector2 = nav_agent.get_next_path_position()
