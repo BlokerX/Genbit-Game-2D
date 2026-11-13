@@ -6,9 +6,13 @@ const DEFAULT_COMBAT_RADIUS_PX: float = 20.0
 const DEFAULT_MELEE_SWITCH_DISTANCE_PX: float = 60.0
 const HESITATION_MIN_DELAY_SEC: float = 0.3
 const HESITATION_MAX_DELAY_SEC: float = 1.2
+const WEAPON_EVAL_INTERVAL_SEC: float = 0.15
 
 var controller: AIController
 var _last_weapon_index: int = -1 
+var _weapon_eval_timer: float = 0.0
+var _ai_inventory: AIInventoryController = null
+var _attack_component: AttackComponent = null
 
 @export_category("Zdolności Specjalne")
 @export var abilities: Array[AIAbility] = []
@@ -20,11 +24,20 @@ var time_in_combat: float = 0.0
 
 func initialize(ai_controller: AIController) -> void:
 	controller = ai_controller
+	_weapon_eval_timer = randf_range(0.0, WEAPON_EVAL_INTERVAL_SEC)
+	if controller != null:
+		_ai_inventory = controller.get_node_or_null("AIInventoryController") as AIInventoryController
+		if is_instance_valid(controller.entity):
+			_attack_component = controller.entity.get_node_or_null("AttackComponent") as AttackComponent
+
 	for ability in abilities:
 		if ability != null:
 			_ability_cooldowns[ability] = 0.0
 
 func process_combat(delta: float) -> void:
+	if controller == null or not is_instance_valid(controller.entity):
+		return
+
 	var entity: CharacterEntity = controller.entity
 	var blackboard: AIBlackboard = controller.blackboard
 	var stats: InteractionAndAttackStatsComponent = entity.interaction_and_attack_stats_script
@@ -60,7 +73,7 @@ func process_combat(delta: float) -> void:
 		if is_casting_ability and not ability.ignore_global_cast_lock:
 			continue
 
-		if _ability_cooldowns[ability] <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
+		if _ability_cooldowns.get(ability, 0.0) <= 0.0 and ability.check_conditions(entity, blackboard.target, edge_dist):
 			if randf() <= ability.cast_chance:
 				if ability.feedback_cue != null:
 					GameFeedback.play_cue(
@@ -86,28 +99,32 @@ func process_combat(delta: float) -> void:
 	if ability_casted_this_frame:
 		return
 
-	# 2. ZWYKŁY ATAK BRONIĄ LUB PIĘŚCIĄ
-	var ai_inventory: AIInventoryController = controller.get_node_or_null("AIInventoryController") as AIInventoryController
+	# 2. ZWYKŁY ATAK BRONIĄ LUB PIĘŚCIĄ (Z CACHE'OWANIEM WĘZŁÓW I INTERWAŁEM DOBORU BRONI)
+	if not is_instance_valid(_ai_inventory):
+		_ai_inventory = controller.get_node_or_null("AIInventoryController") as AIInventoryController
+	if not is_instance_valid(_attack_component):
+		_attack_component = entity.get_node_or_null("AttackComponent") as AttackComponent
+
 	var switch_dist: float = DEFAULT_MELEE_SWITCH_DISTANCE_PX
 	if controller.behavior_profile and "melee_switch_distance" in controller.behavior_profile:
 		switch_dist = controller.behavior_profile.melee_switch_distance
 
-	if ai_inventory and not ai_inventory.items.is_empty():
-		_select_best_weapon(ai_inventory, edge_dist, switch_dist)
+	if _ai_inventory and not _ai_inventory.items.is_empty():
+		_weapon_eval_timer -= delta
+		if _weapon_eval_timer <= 0.0 or _last_weapon_index == -1:
+			_weapon_eval_timer = WEAPON_EVAL_INTERVAL_SEC
+			_select_best_weapon(_ai_inventory, edge_dist, switch_dist)
 
-	var weapon: ItemInstance = ai_inventory.get_current_item() if ai_inventory else null
+	var weapon: ItemInstance = _ai_inventory.get_current_item() if _ai_inventory else null
 
 	if weapon != null:
-		var attack_comp: AttackComponent = entity.get_node_or_null("AttackComponent") as AttackComponent
 		if edge_dist <= stats.get_total_range() and stats.can_attack():
 			var has_los: bool = controller.perception.can_see_target(blackboard.target)
-			if attack_comp and has_los:
-				attack_comp.execute_attack(entity, blackboard.target, weapon, ai_inventory, stats, has_los)
+			if _attack_component and has_los:
+				_attack_component.execute_attack(entity, blackboard.target, weapon, _ai_inventory, stats, has_los)
 	else:
 		if edge_dist <= stats.get_total_range() and stats.can_attack():
 			stats.execute_attack_on_target(entity, blackboard.target)
-			if entity.has_method("play_item_feedback"):
-				entity.call("play_item_feedback", null, blackboard.target)
 
 func _process_ability_cooldowns(delta: float) -> void:
 	for ability in _ability_cooldowns.keys():

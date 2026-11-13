@@ -1,5 +1,7 @@
 extends Node2D
 class_name WorldStreamer
+## System dynamicznego streamingu i hibernacji obiektów świata (Open World) oparty na siatce chunków.
+## Zarządza pamięcią podręczną nieaktywnych sektorów oraz budżetowanym czasowo (4 ms) wybudzaniem jednostek.
 
 # --- STAŁE DOMENOWE I DEBUGOWANIA (Brak magicznych liczb) ---
 const UNINITIALIZED_CHUNK_COORD: int = 999999
@@ -147,8 +149,8 @@ func activate_chunks_async(tree: SceneTree, focus_pos: Vector2 = Vector2.INF) ->
 		if _hibernated_entities_by_chunk.has(coords):
 			var bucket: Array = _hibernated_entities_by_chunk[coords]
 			while not bucket.is_empty():
-				var entity_2d: Node2D = bucket.pop_back() as Node2D
-				if is_instance_valid(entity_2d):
+				var entity_2d: Node2D = _pop_next_valid_hibernated_entity(bucket)
+				if entity_2d != null:
 					_attach_staged_entity_to_active_chunk(entity_2d, chunk_node)
 
 				if tree != null and Time.get_ticks_msec() - frame_start_msec >= MAX_FRAME_BUDGET_MSEC:
@@ -194,7 +196,7 @@ func initialize(container: Node, initial_focus_pos: Vector2 = Vector2.INF) -> vo
 		_stage_entity_into_hibernation(entities_to_register[i])
 
 	_update_active_chunks()
-	_Flush_all_active_chunk_buckets_immediately()
+	_flush_all_active_chunk_buckets_immediately()
 	_is_initialized = true
 	set_process(true)
 	if is_inside_tree() and GlobalSettings.show_chunk_grid:
@@ -232,7 +234,7 @@ func restore_active_chunks(focus_pos: Vector2) -> void:
 	current_chunk = _calculate_chunk(focus_pos)
 	_update_active_chunks()
 
-## Dezaktywuje pojedynczy chunk: wypina jego dzieci do bufora _hibernated_entities_by_chunk i odpina chunk z drzewa.
+## Dezaktywuje pojedynczy chunk: wypina jego żywe dzieci do bufora _hibernated_entities_by_chunk i odpina chunk z drzewa.
 func _deactivate_single_chunk(coords: Vector2i) -> void:
 	var chunk_node: Node2D = chunk_nodes.get(coords)
 	if not is_instance_valid(chunk_node):
@@ -245,13 +247,19 @@ func _deactivate_single_chunk(coords: Vector2i) -> void:
 	var children: Array[Node] = chunk_node.get_children()
 	for i in range(children.size() - 1, -1, -1):
 		var child: Node = children[i]
+		# Pomijamy obiekty martwe lub oczekujące na usunięcie (queue_free), aby nie zostawiać
+		# wskaźników '<Freed Object>' w tablicy hibernacji!
+		if not is_instance_valid(child) or child.is_queued_for_deletion():
+			continue
 		if child is Node2D:
 			var child_2d: Node2D = child as Node2D
 			if child_2d is RigidBody2D:
 				(child_2d as RigidBody2D).freeze = true
 			child_2d.set_meta("_chunk_saved_transform", child_2d.transform)
 			chunk_node.remove_child(child_2d)
-			bucket.append(child_2d)
+			child_2d.owner = null
+			if not bucket.has(child_2d):
+				bucket.append(child_2d)
 
 	if chunk_node.get_parent() == entities_container:
 		entities_container.remove_child(chunk_node)
@@ -261,6 +269,8 @@ func _gather_streamables(node: Node, result: Array[Node]) -> void:
 	if node == null:
 		return
 	for child in node.get_children():
+		if not is_instance_valid(child) or child.is_queued_for_deletion():
+			continue
 		if child.name.begins_with("Chunk_") or child.name == "WorldStreamer":
 			continue
 		if child is TileMapLayer or child is NavigationRegion2D or child is CanvasModulate or child is Camera2D:
@@ -325,6 +335,22 @@ func _process(_delta: float) -> void:
 		_last_grid_state = GlobalSettings.show_chunk_grid
 		queue_redraw()
 
+## Bezpiecznie pobiera kolejny prawidłowy obiekt Node2D z koszyka hibernacji (zasada DRY).
+## Weryfikuje ważność instancji na typie Variant PRZED wykonaniem rzutowania 'as Node2D',
+## co całkowicie eliminuje błąd 'Trying to cast a freed object', gdy obiekt zginął przed wybudzeniem chunka.
+func _pop_next_valid_hibernated_entity(bucket: Array) -> Node2D:
+	while not bucket.is_empty():
+		var raw_entity: Variant = bucket.pop_back()
+		if not is_instance_valid(raw_entity):
+			continue
+		if not (raw_entity is Node2D):
+			continue
+		var node_2d: Node2D = raw_entity as Node2D
+		if node_2d.is_queued_for_deletion():
+			continue
+		return node_2d
+	return null
+
 ## Płynnie dogrywa obiekty z bufora dla nowo odkrytych chunków podczas chodzenia po świecie (max 4 ms na klatkę).
 func _process_pending_active_chunk_entities() -> void:
 	var frame_start_msec: int = Time.get_ticks_msec()
@@ -336,26 +362,31 @@ func _process_pending_active_chunk_entities() -> void:
 			continue
 		var chunk_node: Node2D = _get_or_create_chunk(coords)
 		while not bucket.is_empty():
-			var entity_2d: Node2D = bucket.pop_back() as Node2D
-			if is_instance_valid(entity_2d):
+			var entity_2d: Node2D = _pop_next_valid_hibernated_entity(bucket)
+			if entity_2d != null:
 				_attach_staged_entity_to_active_chunk(entity_2d, chunk_node)
 			if Time.get_ticks_msec() - frame_start_msec >= MAX_FRAME_BUDGET_MSEC:
 				return
 
-func _Flush_all_active_chunk_buckets_immediately() -> void:
+## Natychmiastowo opróżnia koszyki hibernacji dla wszystkich aktywnych chunków (używane przy synchronicznym starcie).
+func _flush_all_active_chunk_buckets_immediately() -> void:
 	for coords in active_chunks:
 		if not _hibernated_entities_by_chunk.has(coords):
 			continue
 		var bucket: Array = _hibernated_entities_by_chunk[coords]
 		var chunk_node: Node2D = _get_or_create_chunk(coords)
 		while not bucket.is_empty():
-			var entity_2d: Node2D = bucket.pop_back() as Node2D
-			if is_instance_valid(entity_2d):
+			var entity_2d: Node2D = _pop_next_valid_hibernated_entity(bucket)
+			if entity_2d != null:
 				_attach_staged_entity_to_active_chunk(entity_2d, chunk_node)
+
+## Alias zachowujący pełną kompatybilność wsteczną.
+func _Flush_all_active_chunk_buckets_immediately() -> void:
+	_flush_all_active_chunk_buckets_immediately()
 
 ## Rejestruje nowy obiekt (np. zespawnowany w trakcie gry) do odpowiedniego chunka.
 func register_entity(node: Node) -> void:
-	if not is_instance_valid(node) or not node is Node2D:
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is Node2D):
 		return
 	if node.is_in_group("Player") or node.is_in_group("AlwaysActive"):
 		return
@@ -382,7 +413,7 @@ func register_entity(node: Node) -> void:
 
 ## Wypina obiekt ze sceny i odkłada go do bufora hibernacji odpowiedniego chunka.
 func _stage_entity_into_hibernation(node: Node) -> void:
-	if not is_instance_valid(node) or not node is Node2D:
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is Node2D):
 		return
 	if node is Door or node is LevelEntrance or node.is_in_group("Player") or node.is_in_group("AlwaysActive"):
 		return
@@ -411,17 +442,26 @@ func _stage_entity_into_hibernation(node: Node) -> void:
 
 	if not _hibernated_entities_by_chunk.has(chunk_coords):
 		_hibernated_entities_by_chunk[chunk_coords] = []
-	_hibernated_entities_by_chunk[chunk_coords].append(node_2d)
+	var bucket: Array = _hibernated_entities_by_chunk[chunk_coords]
+	if not bucket.has(node_2d):
+		bucket.append(node_2d)
 
 ## Dodaje pojedynczy obiekt z bufora hibernacji do aktywnego węzła chunka w drzewie sceny.
 func _attach_staged_entity_to_active_chunk(node_2d: Node2D, chunk_node: Node2D) -> void:
-	if not is_instance_valid(node_2d) or not is_instance_valid(chunk_node):
+	if not is_instance_valid(node_2d) or node_2d.is_queued_for_deletion() or not is_instance_valid(chunk_node):
 		return
+	if node_2d.get_parent() == chunk_node:
+		return
+
 	var saved_xform: Transform2D = (
 		node_2d.get_meta("_chunk_saved_transform")
 		if node_2d.has_meta("_chunk_saved_transform")
 		else node_2d.transform
 	)
+	var current_parent: Node = node_2d.get_parent()
+	if current_parent != null:
+		current_parent.remove_child(node_2d)
+
 	node_2d.owner = null
 	chunk_node.add_child(node_2d)
 	if chunk_node.is_inside_tree():
@@ -448,7 +488,7 @@ func _get_transform_relative_to_root(node_2d: Node2D) -> Transform2D:
 	return xform
 
 func _transfer_node_to_chunk(node_2d: Node2D, target_chunk_node: Node2D) -> void:
-	if not is_instance_valid(node_2d) or not is_instance_valid(target_chunk_node):
+	if not is_instance_valid(node_2d) or node_2d.is_queued_for_deletion() or not is_instance_valid(target_chunk_node):
 		return
 	if node_2d.get_parent() == target_chunk_node:
 		return
@@ -487,7 +527,7 @@ func _track_moving_entities() -> void:
 
 		var children_snapshot: Array[Node] = chunk_node.get_children()
 		for entity in children_snapshot:
-			if not is_instance_valid(entity) or entity.is_queued_for_deletion() or not entity is Node2D:
+			if not is_instance_valid(entity) or entity.is_queued_for_deletion() or not (entity is Node2D):
 				continue
 			if entity is BaseWorldSpawner:
 				continue
@@ -582,9 +622,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		for bucket in _hibernated_entities_by_chunk.values():
 			if bucket is Array:
-				for entity in bucket:
-					if is_instance_valid(entity) and entity.get_parent() == null:
-						entity.queue_free()
+				for raw_entity in bucket:
+					if is_instance_valid(raw_entity) and raw_entity is Node and (raw_entity as Node).get_parent() == null:
+						(raw_entity as Node).queue_free()
 		_hibernated_entities_by_chunk.clear()
 		for chunk_node in chunk_nodes.values():
 			if is_instance_valid(chunk_node) and chunk_node.get_parent() == null:

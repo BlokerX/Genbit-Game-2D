@@ -55,6 +55,7 @@ func process_threats(delta: float) -> void:
 
 	var total_avoidance: Vector2 = Vector2.ZERO
 	var current_threat: float = base_fear
+	var entity_pos: Vector2 = entity.global_position
 
 	# Zmiana kierunku strafingu co losowy czas (aby AI "zygzakowało")
 	_strafe_timer -= delta
@@ -75,42 +76,46 @@ func process_threats(delta: float) -> void:
 
 				if weapon_threat >= STRAFE_EVASION_THREAT_THRESHOLD:
 					# Zamiast uciekać do tyłu, schodzimy BOKIEM (prostopadle do linii celowania gracza)
-					var dir_to_player: Vector2 = entity.global_position.direction_to(blackboard.target.global_position)
+					var dir_to_player: Vector2 = entity_pos.direction_to(blackboard.target.global_position)
 					var tangent: Vector2 = Vector2(-dir_to_player.y, dir_to_player.x) * _strafe_direction
 					total_avoidance += tangent * (weapon_threat * STRAFE_WEIGHT_MULTIPLIER)
 
 	# =========================================================================
-	# 2. OMIJANIE POCISKÓW, RZUTEK, PUŁAPEK I MIN (Analiza Węzłów z grupy "Hazard")
+	# 2. OMIJANIE POCISKÓW, RZUTEK, PUŁAPEK I MIN (Współdzielony Cache "Hazard")
 	# =========================================================================
-	var hazards: Array[Node] = get_tree().get_nodes_in_group("Hazard")
-	var my_radius: float = float(entity.combat_radius) if "combat_radius" in entity else DEFAULT_ENTITY_COMBAT_RADIUS_PX
+	var hazards: Array[Node] = PerceptionComponent.get_shared_hazards(get_tree())
+	if not hazards.is_empty():
+		var my_radius: float = float(entity.combat_radius) if "combat_radius" in entity else DEFAULT_ENTITY_COMBAT_RADIUS_PX
+		var effective_proj_radius: float = maxf(scan_radius, projectile_scan_radius)
+		var max_check_radius_sq: float = effective_proj_radius * effective_proj_radius
 
-	for hazard in hazards:
-		if not is_instance_valid(hazard) or hazard.is_queued_for_deletion() or not (hazard is Node2D):
-			continue
-
-		var hazard_shooter: Node2D = _get_valid_hazard_shooter(hazard)
-		# AI nie ucieka przed własnymi pociskami ani minami
-		if hazard_shooter == entity:
-			continue
-
-		# Sprawdzamy, czy pocisk/mina należy do sojusznika (i ma wyłączony friendly_fire)
-		var fallback_faction: StringName = _get_hazard_fallback_faction(hazard)
-		if FactionComponent.is_ally_of(hazard_shooter, entity, fallback_faction):
-			var has_ff: bool = bool(hazard.get("friendly_fire")) if "friendly_fire" in hazard else false
-			if not has_ff:
+		for hazard in hazards:
+			if not is_instance_valid(hazard) or hazard.is_queued_for_deletion() or not (hazard is Node2D):
 				continue
 
-		var hazard_2d: Node2D = hazard as Node2D
-		var dist: float = entity.global_position.distance_to(hazard_2d.global_position)
-		var hazard_velocity: Vector2 = _extract_hazard_velocity(hazard_2d)
+			var hazard_2d: Node2D = hazard as Node2D
+			var dist_sq: float = entity_pos.distance_squared_to(hazard_2d.global_position)
+			# Szybkie odrzucenie obiektów spoza maksymalnego zasięgu skanowania (brak zbędnych obliczeń)
+			if dist_sq > max_check_radius_sq:
+				continue
 
-		# --- WARIANT A: SZYBKI POCISK W LOCIE (Uskok prostopadły do trajektorii lotu) ---
-		if hazard_velocity.length() >= MIN_PROJECTILE_SPEED_FOR_SIDESTEP:
-			var effective_proj_radius: float = maxf(scan_radius, projectile_scan_radius)
-			if dist <= effective_proj_radius:
+			var hazard_shooter: Node2D = _get_valid_hazard_shooter(hazard)
+			if hazard_shooter == entity:
+				continue
+
+			var fallback_faction: StringName = _get_hazard_fallback_faction(hazard)
+			if FactionComponent.is_ally_of(hazard_shooter, entity, fallback_faction):
+				var has_ff: bool = bool(hazard.get("friendly_fire")) if "friendly_fire" in hazard else false
+				if not has_ff:
+					continue
+
+			var dist: float = sqrt(dist_sq)
+			var hazard_velocity: Vector2 = _extract_hazard_velocity(hazard_2d)
+
+			# --- WARIANT A: SZYBKI POCISK W LOCIE (Uskok prostopadły do trajektorii lotu) ---
+			if hazard_velocity.length_squared() >= MIN_PROJECTILE_SPEED_FOR_SIDESTEP * MIN_PROJECTILE_SPEED_FOR_SIDESTEP:
 				var sidestep_vec: Vector2 = _calculate_projectile_sidestep(
-					entity.global_position,
+					entity_pos,
 					my_radius,
 					hazard_2d.global_position,
 					hazard_velocity,
@@ -121,29 +126,28 @@ func process_threats(delta: float) -> void:
 					var proj_threat: float = max_fear if dist < HAZARD_CLOSE_PANIC_DISTANCE_PX else HAZARD_DEFAULT_THREAT_LEVEL
 					current_threat = maxf(current_threat, proj_threat)
 					total_avoidance += sidestep_vec
-			continue
+				continue
 
-		# --- WARIANT B: ZAGROŻENIE STACJONARNE / POWOLNE (Mina, Granat na ziemi) ---
-		if dist < scan_radius:
-			var hazard_threat: float = max_fear if dist < HAZARD_CLOSE_PANIC_DISTANCE_PX else HAZARD_DEFAULT_THREAT_LEVEL
-			current_threat = maxf(current_threat, hazard_threat)
+			# --- WARIANT B: ZAGROŻENIE STACJONARNE / POWOLNE (Mina, Granat na ziemi) ---
+			if dist < scan_radius:
+				var hazard_threat: float = max_fear if dist < HAZARD_CLOSE_PANIC_DISTANCE_PX else HAZARD_DEFAULT_THREAT_LEVEL
+				current_threat = maxf(current_threat, hazard_threat)
 
-			var dir_to_hazard: Vector2 = entity.global_position.direction_to(hazard_2d.global_position)
-			var dir_away: Vector2 = -dir_to_hazard
+				var dir_to_hazard: Vector2 = entity_pos.direction_to(hazard_2d.global_position)
+				var dir_away: Vector2 = -dir_to_hazard
 
-			var current_move_dir: Vector2 = entity.velocity.normalized()
-			if current_move_dir == Vector2.ZERO and is_instance_valid(blackboard.target):
-				current_move_dir = entity.global_position.direction_to(blackboard.target.global_position)
+				var current_move_dir: Vector2 = entity.velocity.normalized()
+				if current_move_dir == Vector2.ZERO and is_instance_valid(blackboard.target):
+					current_move_dir = entity_pos.direction_to(blackboard.target.global_position)
 
-			# Jeśli AI idzie prosto na minę, odchylamy wektor ucieczki w bok (styczna)
-			if current_move_dir.dot(dir_to_hazard) > HAZARD_HEAD_ON_DOT_THRESHOLD:
-				var tangent: Vector2 = Vector2(-dir_to_hazard.y, dir_to_hazard.x)
-				if current_move_dir.dot(tangent) < 0.0:
-					tangent = -tangent
-				dir_away = (dir_away + tangent * HAZARD_TANGENT_STEER_MULTIPLIER).normalized()
+				if current_move_dir.dot(dir_to_hazard) > HAZARD_HEAD_ON_DOT_THRESHOLD:
+					var tangent: Vector2 = Vector2(-dir_to_hazard.y, dir_to_hazard.x)
+					if current_move_dir.dot(tangent) < 0.0:
+						tangent = -tangent
+					dir_away = (dir_away + tangent * HAZARD_TANGENT_STEER_MULTIPLIER).normalized()
 
-			var distance_weight: float = clampf(1.0 - (dist / maxf(1.0, scan_radius)), 0.0, 1.0)
-			total_avoidance += dir_away * distance_weight * HAZARD_REPULSION_FORCE_WEIGHT
+				var distance_weight: float = clampf(1.0 - (dist / maxf(1.0, scan_radius)), 0.0, 1.0)
+				total_avoidance += dir_away * distance_weight * HAZARD_REPULSION_FORCE_WEIGHT
 
 	blackboard.threat_level = clampf(current_threat, 0.0, 1.0)
 	blackboard.avoidance_vector = total_avoidance
@@ -193,11 +197,9 @@ func _calculate_projectile_sidestep(
 	var proj_dir: Vector2 = proj_velocity.normalized()
 	var proj_to_entity: Vector2 = entity_pos - proj_pos
 
-	# Sprawdzamy, czy pocisk faktycznie zbliża się do AI (a nie minął go już i leci za plecami)
 	if proj_dir.dot(proj_to_entity.normalized()) <= INCOMING_PROJECTILE_DOT_MIN:
 		return Vector2.ZERO
 
-	# Rzutujemy pozycję AI na półprostą lotu pocisku, wyznaczając najkrótszą odległość od osi strzału
 	var projection_dist: float = maxf(0.0, proj_to_entity.dot(proj_dir))
 	var closest_point_on_ray: Vector2 = proj_pos + (proj_dir * projection_dist)
 	var lateral_offset: Vector2 = entity_pos - closest_point_on_ray
@@ -207,7 +209,6 @@ func _calculate_projectile_sidestep(
 	if lateral_dist > danger_corridor:
 		return Vector2.ZERO
 
-	# Kierunek uskoku jest zawsze prostopadły do toru lotu pocisku
 	var sidestep_dir: Vector2
 	if lateral_dist >= MIN_LATERAL_OFFSET_PX:
 		sidestep_dir = lateral_offset.normalized()
