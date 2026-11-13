@@ -47,6 +47,10 @@ func _physics_process(delta: float) -> void:
 	if _has_hit:
 		return
 
+	# Oczyszczenie wskaźnika strzelca, jeśli zginął w trakcie lotu pocisku (chroni przed błędem 'previously freed')
+	if not is_instance_valid(shooter):
+		shooter = null
+
 	_time_alive += delta
 	if _time_alive >= lifetime:
 		queue_free()
@@ -63,7 +67,7 @@ func _physics_process(delta: float) -> void:
 	query.collide_with_areas = detect_placed_object_areas
 
 	var excluded_rids: Array[RID] = [get_rid()]
-	if is_instance_valid(shooter) and shooter is CollisionObject2D:
+	if shooter != null and shooter is CollisionObject2D:
 		excluded_rids.append((shooter as CollisionObject2D).get_rid())
 	query.exclude = excluded_rids
 
@@ -100,7 +104,7 @@ func _physics_process(delta: float) -> void:
 			continue
 
 		# 3. Trafiono samego strzelca lub sojusznika (gdy friendly_fire == false)
-		if resolved_target == shooter or (not friendly_fire and _is_ally(resolved_target)):
+		if (shooter != null and resolved_target == shooter) or (not friendly_fire and _is_ally(resolved_target)):
 			if raw_collider is CollisionObject2D:
 				excluded_rids.append((raw_collider as CollisionObject2D).get_rid())
 			if resolved_target is CollisionObject2D:
@@ -121,7 +125,7 @@ func _physics_process(delta: float) -> void:
 
 ## Rozwiązuje trafiony kolider do właściwego węzła docelowego (obsługuje również InteractableComponent na skrzyniach).
 func _resolve_collision_target(collider: Object) -> Node2D:
-	if collider == null or not (collider is Node):
+	if not is_instance_valid(collider) or not (collider is Node):
 		return null
 
 	if collider is PlacedObject or collider is CharacterEntity:
@@ -148,7 +152,9 @@ func _on_area_entered(area: Area2D) -> void:
 		_apply_hit_and_destroy(resolved)
 
 func _apply_hit_and_destroy(target_node: Node2D) -> void:
-	if _has_hit or target_node == null or target_node == shooter:
+	if not is_instance_valid(shooter):
+		shooter = null
+	if _has_hit or not is_instance_valid(target_node) or (shooter != null and target_node == shooter):
 		return
 	if not friendly_fire and _is_ally(target_node):
 		return
@@ -176,4 +182,5 @@ func _apply_hit_and_destroy(target_node: Node2D) -> void:
 
 ## Sprawdza FactionComponent by zweryfikować czy cele są po tej samej stronie (DRY).
 func _is_ally(body: Node2D) -> bool:
-	return FactionComponent.is_ally_of(shooter, body, _shooter_faction_name)
+	var valid_shooter: Node2D = shooter if is_instance_valid(shooter) else null
+	return FactionComponent.is_ally_of(valid_shooter, body, _shooter_faction_name)
