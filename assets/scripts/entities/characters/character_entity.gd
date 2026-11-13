@@ -211,12 +211,14 @@ func _on_character_died() -> void:
 		return
 	is_dead = true
 
-	# Natychmiastowe zamrożenie fizyki i wyczyszczenie efektów (np. FreezeEffect z ciastka)
+	# Natychmiastowe zamrożenie fizyki, wyczyszczenie efektów oraz reset cooldownu
 	# ZANIM ustawimy klatkę krzyża (_apply_death_visuals)!
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	cancel_current_attack()
 	purge_absolutely_everything()
+	if interaction_and_attack_stats_script:
+		interaction_and_attack_stats_script.reset_for_respawn(false)
 
 	# Zmiana wizualna: "Kładziemy" postać na ziemi (bez błędów dla postaci o mniejszej liczbie klatek)
 	_apply_death_visuals()
@@ -247,10 +249,12 @@ func respawn_sequence() -> void:
 	position = respawnVector
 	velocity.x = 0.0
 	velocity.y = 0.0
-	# przywrócenie domyślnej orientacji i skali
+	# przywrócenie domyślnej orientacji, skali i czystych cooldownów
 	reset_visual_scale()
 	_set_character_sprite_frame(STANDING_DEFAULT_FRAME_INDEX)
 	purge_absolutely_everything()
+	if interaction_and_attack_stats_script:
+		interaction_and_attack_stats_script.reset_for_respawn(false)
 
 # --- FUNKCJA WYWOŁYWANA PRZEZ MAPĘ (Gdy ekran jest w 100% czarny) ---
 func reset_state_for_respawn() -> void:
@@ -261,8 +265,11 @@ func reset_state_for_respawn() -> void:
 		character_sprite.rotation_degrees = 0.0
 		_set_character_sprite_frame(STANDING_DEFAULT_FRAME_INDEX)
 
-	# --- WSKRZESZENIE ---
+	# --- WSKRZESZENIE I RESET ZEGARA COOLDOWNU ---
 	is_dead = false
+	is_frozen = false
+	if interaction_and_attack_stats_script:
+		interaction_and_attack_stats_script.reset_for_respawn(false)
 #endregion
 
 #region Obsługa systemu akcji (Effect)
