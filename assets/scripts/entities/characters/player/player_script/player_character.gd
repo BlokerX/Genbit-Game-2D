@@ -27,8 +27,8 @@ const INPUT_DOWN = "Down"
 
 ## Maksymalna prędkość nadawana popychanym przedmiotom (chroni przed wbijaniem itemów w ściany).
 const MAX_PUSHED_RIGIDBODY_SPEED: float = 120.0
-## Mnożnik płynnego przepychania lekkich postaci AI przy bezpośrednim kontakcie.
-const AI_PUSH_STEP_MULTIPLIER: float = 0.25
+## Prędkość łańcuchowego odpychania lekkich jednostek AI przy bezpośrednim kontakcie z graczem.
+const AI_DIRECT_CONTACT_PUSH_SPEED_PX: float = 220.0
 ## Czas oczekiwania (w sekundach) na ekranie śmierci przed przejściem do respawnu.
 const DEATH_SCREEN_DELAY_SEC: float = 1.5
 #endregion
@@ -242,7 +242,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = Vector2.ZERO
 
-	# Łańcuchowe rozsuwanie lekkich jednostek roju w kontakcie (100% twardych kolizji - SRP)
+	# Łańcuchowe rozsuwanie wielowarstwowego roju przed idącym graczem (100% twardych kolizji - SRP)
 	if _crowd_collision_controller != null:
 		_crowd_collision_controller.process_player_crowd_interaction(self, input_dir, delta)
 
@@ -256,7 +256,7 @@ func _physics_process(delta: float) -> void:
 	var current_range: float = builder_component.build_range if is_building else get_current_attack_range()
 
 	aim_controller.process_aiming(_input_controller.is_using_mouse, current_range, is_building)
-	_handle_pushing()
+	_handle_pushing(input_dir, delta)
 	_input_controller.process_item_dropping(delta)
 
 	if interaction_and_attack_stats_script != null:
@@ -266,7 +266,7 @@ func _physics_process(delta: float) -> void:
 		if _input_controller.is_holding_attack and interaction_and_attack_stats_script.can_attack():
 			perform_attack()
 
-func _handle_pushing() -> void:
+func _handle_pushing(desired_input_dir: Vector2 = Vector2.ZERO, delta: float = 0.016) -> void:
 	for i in get_slide_collision_count():
 		var collision: KinematicCollision2D = get_slide_collision(i)
 		var collider: Object = collision.get_collider()
@@ -277,12 +277,16 @@ func _handle_pushing() -> void:
 			if rigid.linear_velocity.length() < MAX_PUSHED_RIGIDBODY_SPEED:
 				rigid.apply_central_impulse(-collision.get_normal() * push_force)
 
-		# 2. Popychanie Wrogów - skalowane przez masę/odporność jednostki (Giga Bossowie nie są przepychane!)
-		elif collider is AICharacterEntity:
-			var ai_entity: AICharacterEntity = collider as AICharacterEntity
-			var push_mult: float = ai_entity.get_crowd_push_multiplier()
-			if push_mult > 0.0:
-				ai_entity.move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER * push_mult))
+		# 2. Łańcuchowe przepychanie lekkich wrogów w tłumie (Giga Bossowie mają mnożnik 0.0 i stoją twardo!)
+		elif collider is AICharacterEntity and _crowd_collision_controller != null:
+			_crowd_collision_controller.push_blocking_ai_chain(
+				self,
+				collider as AICharacterEntity,
+				collision.get_normal(),
+				desired_input_dir,
+				AI_DIRECT_CONTACT_PUSH_SPEED_PX,
+				delta
+			)
 
 func _unhandled_input(event: InputEvent) -> void:
 	_input_controller.handle_unhandled_input(
