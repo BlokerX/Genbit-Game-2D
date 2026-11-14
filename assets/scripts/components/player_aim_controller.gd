@@ -423,16 +423,10 @@ func is_target_enemy() -> bool:
 func is_target_building() -> bool:
 	return current_target != null and is_instance_valid(current_target) and current_target.is_building_target()
 
-func get_edge_distance(target_node: Node2D) -> float:
-	if not is_instance_valid(target_node):
+func get_edge_distance(target_node: Variant) -> float:
+	if not is_instance_valid(target_node) or not (target_node is Node2D):
 		return INF
-	var my_radius: float = DEFAULT_COMBAT_RADIUS_PX
-	if get_parent() and "combat_radius" in get_parent():
-		my_radius = float(get_parent().get("combat_radius"))
+	var origin_node: Node2D = get_parent() as Node2D if get_parent() is Node2D else self
+	return CharacterEntity.get_edge_distance_between(origin_node, target_node)
 
-	var target_radius: float = DEFAULT_COMBAT_RADIUS_PX
-	if "combat_radius" in target_node:
-		target_radius = float(target_node.get("combat_radius"))
-
-	return maxf(0.0, global_position.distance_to(target_node.global_position) - (my_radius + target_radius))
 #endregion

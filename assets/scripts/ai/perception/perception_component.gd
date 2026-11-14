@@ -70,7 +70,7 @@ func process_perception(_delta: float) -> void:
 	var best_target: CharacterEntity = null
 	var best_distance: float = detection_distance
 	var entity_pos: Vector2 = entity.global_position
-	var my_rad: float = float(entity.combat_radius) if "combat_radius" in entity else DEFAULT_COMBAT_RADIUS_PX
+	var my_rad: float = entity.get_effective_combat_radius()
 	var tree: SceneTree = get_tree()
 
 	for potential_target in get_shared_characters(tree):
@@ -86,7 +86,7 @@ func process_perception(_delta: float) -> void:
 			continue
 
 		# OPTYMALIZACJA: Szybki test kwadratu odległości ZANIM odpytamy FactionComponent lub RayCast2D!
-		var target_rad: float = float(target_2d.get("combat_radius")) if "combat_radius" in target_2d else DEFAULT_COMBAT_RADIUS_PX
+		var target_rad: float = CharacterEntity.get_effective_radius_of(target_2d)
 		var max_allowed_center_dist: float = best_distance + my_rad + target_rad
 		var dist_sq: float = entity_pos.distance_squared_to(target_2d.global_position)
 		if dist_sq >= max_allowed_center_dist * max_allowed_center_dist:

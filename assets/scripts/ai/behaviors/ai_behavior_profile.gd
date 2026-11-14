@@ -43,6 +43,22 @@ class_name AIBehaviorProfile
 ## zanim podejmie kolejny losowy krok podczas wędrówki.
 @export var wander_interval_max: float = 6.0
 
+@export_category("Fizyka Tłumu i Anty-Blokowanie")
+## Czy jednostka zachowuje odstęp od innych jednostek AI w grupie (zapobiega zbijaniu się roju w jedną bryłę)?
+@export var enable_crowd_separation: bool = true
+## Promień przestrzeni osobistej (od krawędzi do krawędzi w pikselach) względem sąsiednich jednostek AI.
+@export_range(5.0, 150.0, 1.0) var separation_radius: float = 32.0
+## Siła wektora odpychania od innych jednostek AI w tłumie.
+@export_range(0.0, 4.0, 0.05) var separation_weight: float = 1.35
+## Czy jednostka ma zakaz dociskania gracza na siłę do ściany (zostawia korytarz na wyjście z narożnika)?
+@export var avoid_pinning_target_to_wall: bool = true
+## Minimalny odstęp osobisty od celu na otwartej przestrzeni (w pikselach od krawędzi do krawędzi).
+@export_range(0.0, 50.0, 1.0) var player_personal_space_margin: float = 16.0
+## Szerokość korytarza bezpieczeństwa (w pikselach od krawędzi do krawędzi), jaką AI zostawia graczowi przyciśniętemu do ściany/lawy.
+@export_range(20.0, 120.0, 2.0) var wall_escape_corridor_distance: float = 58.0
+## Dodatkowa odporność na przepychanie przez gracza (0.0 = lekka jednostka, 1.0 = nieprzesuwalny kolos/boss).
+@export_range(0.0, 1.0, 0.05) var push_resistance: float = 0.0
+
 @export_category("Walka i Wybór Broni")
 ## Dystans, poniżej którego AI schowa broń palną i wyciągnie broń białą (np. nóż).
 @export var melee_switch_distance: float = 60.0

@@ -49,10 +49,6 @@ func _find_executable_attack_component(weapon_instance: ItemInstance) -> ItemCom
 			return comp
 	return null
 
-## Oblicza dystans od krawędzi do krawędzi (Edge-to-Edge) pomiędzy strzelcem a celem.
-func _get_edge_distance(shooter: Node2D, target: Node2D) -> float:
-	if not is_instance_valid(shooter) or not is_instance_valid(target):
-		return INF
-	var shooter_rad: float = float(shooter.get("combat_radius")) if "combat_radius" in shooter else DEFAULT_COMBAT_RADIUS_PX
-	var target_rad: float = float(target.get("combat_radius")) if "combat_radius" in target else DEFAULT_COMBAT_RADIUS_PX
-	return maxf(0.0, shooter.global_position.distance_to(target.global_position) - (shooter_rad + target_rad))
+## Oblicza dystans od krawędzi do krawędzi (Edge-to-Edge) pomiędzy strzelcem a celem (DRY - uwzględnia skalę bossów).
+func _get_edge_distance(shooter: Variant, target: Variant) -> float:
+	return CharacterEntity.get_edge_distance_between(shooter, target)

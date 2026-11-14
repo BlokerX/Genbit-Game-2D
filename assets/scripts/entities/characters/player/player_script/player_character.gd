@@ -15,6 +15,9 @@ const PlayerInputControllerType = preload(
 const PlayerFeedbackControllerType = preload(
 	"res://assets/scripts/audio_system/player_feedback_controller.gd"
 )
+const CrowdCollisionControllerType = preload(
+	"res://assets/scripts/components/crowd_collision_controller.gd"
+)
 
 #region STAŁE WEJŚCIA I FIZYKI (Wyeliminowanie magicznych liczb i stringów)
 const INPUT_LEFT = "Left"
@@ -24,8 +27,8 @@ const INPUT_DOWN = "Down"
 
 ## Maksymalna prędkość nadawana popychanym przedmiotom (chroni przed wbijaniem itemów w ściany).
 const MAX_PUSHED_RIGIDBODY_SPEED: float = 120.0
-## Mnożnik płynnego przepychania postaci AI przy bezpośrednim kontakcie.
-const AI_PUSH_STEP_MULTIPLIER: float = 0.2
+## Mnożnik płynnego przepychania lekkich postaci AI przy bezpośrednim kontakcie.
+const AI_PUSH_STEP_MULTIPLIER: float = 0.25
 ## Czas oczekiwania (w sekundach) na ekranie śmierci przed przejściem do respawnu.
 const DEATH_SCREEN_DELAY_SEC: float = 1.5
 #endregion
@@ -53,6 +56,7 @@ func get_inventory() -> Inventory:
 var _passive_effect_controller: PlayerPassiveEffectControllerType
 var _held_item_controller: PlayerHeldItemControllerType
 var _input_controller: PlayerInputControllerType
+var _crowd_collision_controller: CrowdCollisionControllerType
 @onready var _feedback_controller: PlayerFeedbackControllerType = $PlayerFeedbackController
 
 var is_using_mouse: bool:
@@ -116,6 +120,7 @@ func _ready() -> void:
 		builder_component,
 		interaction_and_attack_stats_script
 	)
+	_crowd_collision_controller = CrowdCollisionControllerType.new()
 
 	if attack_component and not attack_component.spawn_projectile_requested.is_connected(
 		_on_spawn_requested
@@ -230,13 +235,18 @@ func _physics_process(delta: float) -> void:
 	#region Move Procedure
 	var horizontal: float = Input.get_axis(INPUT_LEFT, INPUT_RIGHT)
 	var vertical: float = Input.get_axis(INPUT_UP, INPUT_DOWN)
+	var input_dir := Vector2(horizontal, vertical)
 
 	if movement_universal_script != null:
-		velocity = movement_universal_script.movement_procedure(delta, velocity, Vector2(horizontal, vertical))
+		velocity = movement_universal_script.movement_procedure(delta, velocity, input_dir)
 	else:
 		velocity = Vector2.ZERO
 
-	_update_sprite_direction(Vector2(horizontal, vertical))
+	# Łańcuchowe rozsuwanie lekkich jednostek roju w kontakcie (100% twardych kolizji - SRP)
+	if _crowd_collision_controller != null:
+		_crowd_collision_controller.process_player_crowd_interaction(self, input_dir, delta)
+
+	_update_sprite_direction(input_dir)
 	move_and_slide()
 	if is_instance_valid(_feedback_controller):
 		_feedback_controller.process_movement_feedback(delta, get_real_velocity())
@@ -267,9 +277,12 @@ func _handle_pushing() -> void:
 			if rigid.linear_velocity.length() < MAX_PUSHED_RIGIDBODY_SPEED:
 				rigid.apply_central_impulse(-collision.get_normal() * push_force)
 
-		# 2. Popychanie Wrogów - NATURALNE PRZEPYCHANIE
+		# 2. Popychanie Wrogów - skalowane przez masę/odporność jednostki (Giga Bossowie nie są przepychane!)
 		elif collider is AICharacterEntity:
-			(collider as AICharacterEntity).move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER))
+			var ai_entity: AICharacterEntity = collider as AICharacterEntity
+			var push_mult: float = ai_entity.get_crowd_push_multiplier()
+			if push_mult > 0.0:
+				ai_entity.move_and_collide(-collision.get_normal() * (push_force * AI_PUSH_STEP_MULTIPLIER * push_mult))
 
 func _unhandled_input(event: InputEvent) -> void:
 	_input_controller.handle_unhandled_input(

@@ -55,10 +55,7 @@ func process_combat(delta: float) -> void:
 	# AI aktywnie widzi cel - odliczamy czas walki!
 	time_in_combat += delta
 
-	var dist: float = entity.global_position.distance_to(blackboard.target.global_position)
-	var my_radius: float = float(entity.combat_radius) if "combat_radius" in entity else DEFAULT_COMBAT_RADIUS_PX
-	var target_radius: float = float(blackboard.target.combat_radius) if "combat_radius" in blackboard.target else DEFAULT_COMBAT_RADIUS_PX
-	var edge_dist: float = maxf(0.0, dist - (my_radius + target_radius))
+	var edge_dist: float = CharacterEntity.get_edge_distance_between(entity, blackboard.target)
 
 	# 1. SPRAWDZANIE ZDOLNOŚCI SPECJALNYCH
 	var ability_casted_this_frame: bool = false

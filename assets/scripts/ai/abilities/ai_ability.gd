@@ -100,16 +100,12 @@ static func spawn_ability_node(attacker: Node2D, node_to_spawn: Node2D, spawn_po
 		attacker.get_tree().current_scene.add_child(node_to_spawn)
 		node_to_spawn.global_position = spawn_pos
 
-## Oblicza dystans od krawędzi do krawędzi (Edge-to-Edge) pomiędzy dwoma obiektami.
-static func get_edge_distance(entity_a: Node2D, entity_b: Node2D) -> float:
-	if not is_instance_valid(entity_a) or not is_instance_valid(entity_b):
-		return INF
-	var rad_a: float = float(entity_a.get("combat_radius")) if "combat_radius" in entity_a else DEFAULT_ENTITY_COMBAT_RADIUS
-	var rad_b: float = float(entity_b.get("combat_radius")) if "combat_radius" in entity_b else DEFAULT_TARGET_COMBAT_RADIUS
-	return maxf(0.0, entity_a.global_position.distance_to(entity_b.global_position) - (rad_a + rad_b))
+## Oblicza dystans od krawędzi do krawędzi (Edge-to-Edge) pomiędzy dwoma obiektami (DRY - z uwzględnieniem skali bossów).
+static func get_edge_distance(entity_a: Variant, entity_b: Variant) -> float:
+	return CharacterEntity.get_edge_distance_between(entity_a, entity_b)
 
-## Deleguje sprawdzenie sojuszu do FactionComponent (zachowuje kompatybilność wewnątrz zdolności AI).
-static func is_ally_of(attacker: Node2D, target: Node2D, fallback_faction_name: StringName = &"") -> bool:
+## Deleguje sprawdzenie sojuszu do FactionComponent (parametry Variant chronią przed błędem 'previously freed').
+static func is_ally_of(attacker: Variant, target: Variant, fallback_faction_name: StringName = &"") -> bool:
 	return FactionComponent.is_ally_of(attacker, target, fallback_faction_name)
 
 ## Wywołuje wstrząs kamery gracza (naprawia błąd szukania CameraComponent bezpośrednio w current_scene).

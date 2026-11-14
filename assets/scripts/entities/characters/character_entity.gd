@@ -6,10 +6,15 @@ const CharacterEffectsControllerType = preload(
 	"res://assets/scripts/entities/characters/character_effects_controller.gd"
 )
 
-# --- STAŁE ANIMACJI KIERUNKOWYCH (Brak magicznych liczb) ---
+# --- STAŁE ANIMACJI KIERUNKOWYCH I FIZYKI (Brak magicznych liczb) ---
 const MIN_DIRECTIONAL_FRAMES_COUNT: int = 8
 const DEFAULT_DEATH_FRAME_INDEX: int = 8
 const STANDING_DEFAULT_FRAME_INDEX: int = 0
+const DEFAULT_FALLBACK_COMBAT_RADIUS_PX: float = 20.0
+## Próg skali węzła, powyżej którego jednostka traktowana jest jako nieprzesuwalny kolos/boss (np. Posmita/Paxie 3x).
+const HEAVY_BOSS_SCALE_THRESHOLD: float = 2.0
+## Wykładnik tłumienia pchnięcia dla lekko powiększonych jednostek (poniżej progu bossa).
+const MASS_SCALE_DAMPING_EXPONENT: float = 2.0
 
 const FRAME_DOWN: int = 0
 const FRAME_DOWN_RIGHT: int = 1
@@ -45,7 +50,7 @@ signal entity_spawn_requested(spawned_node: Node2D, global_spawn_position: Vecto
 @export var loot_drop_script : LootDropComponent
 
 @export_category("Dane Fizyczne i Wizualne")
-## Indywidualna grubość postaci do walki ---
+## Indywidualna grubość postaci do walki (automatycznie skalowana przez scale węzła).
 @export var combat_radius: float = 40.0
 @export var character_sprite : AnimatedSprite2D
 @export var effects_collector : Node
@@ -88,6 +93,57 @@ func _process(_delta: float) -> void:
 
 func _physics_process(_delta: float) -> void:
 	pass
+
+## Zwraca rzeczywisty promień kolizji bojowej w świecie gry z uwzględnieniem skali węzła (np. Boss 3x = 120 px).
+func get_effective_combat_radius() -> float:
+	var ref_scale: Vector2 = base_scale if base_scale != Vector2.ZERO else scale
+	var scale_factor: float = maxf(1.0, maxf(absf(ref_scale.x), absf(ref_scale.y)))
+	return combat_radius * scale_factor
+
+## Zwraca mnożnik podatności jednostki na fizyczne przepychanie przez gracza (1.0 = lekki pająk, 0.0 = ciężki boss).
+## Realizuje wzorzec Information Expert (SOLID): bossowie o skali >= 2.0 stoją twardo i nie dają się przepychać ciałem.
+func get_crowd_push_multiplier() -> float:
+	var ref_scale: Vector2 = base_scale if base_scale != Vector2.ZERO else scale
+	var scale_factor: float = maxf(1.0, maxf(absf(ref_scale.x), absf(ref_scale.y)))
+	if scale_factor >= HEAVY_BOSS_SCALE_THRESHOLD:
+		return 0.0
+
+	var mass_factor: float = 1.0 / pow(scale_factor, MASS_SCALE_DAMPING_EXPONENT)
+	var cc_res: float = clampf(health_stats_script.cc_resistance, 0.0, 1.0) if health_stats_script != null else 0.0
+	var profile_push_res: float = 0.0
+
+	var ai_ctrl: Node = get_node_or_null("AIController")
+	if ai_ctrl != null and ai_ctrl.get("behavior_profile") != null:
+		var prof: Resource = ai_ctrl.behavior_profile
+		if "push_resistance" in prof:
+			profile_push_res = clampf(float(prof.get("push_resistance")), 0.0, 1.0)
+
+	return clampf(mass_factor * (1.0 - cc_res) * (1.0 - profile_push_res), 0.0, 1.0)
+
+## Uniwersalna metoda statyczna (DRY): Zwraca efektywny promień bojowy dowolnego węzła 2D.
+## Parametr ma typ Variant, aby przekazanie usuniętego obiektu nigdy nie powodowało błędu typu!
+static func get_effective_radius_of(node: Variant, fallback_radius: float = DEFAULT_FALLBACK_COMBAT_RADIUS_PX) -> float:
+	if not is_instance_valid(node) or not (node is Node2D):
+		return fallback_radius
+	if node is CharacterEntity:
+		return (node as CharacterEntity).get_effective_combat_radius()
+	var node_2d: Node2D = node as Node2D
+	if "combat_radius" in node_2d:
+		var scale_mult: float = maxf(1.0, maxf(absf(node_2d.scale.x), absf(node_2d.scale.y)))
+		return float(node_2d.get("combat_radius")) * scale_mult
+	return fallback_radius
+
+## Uniwersalna metoda statyczna (DRY): Oblicza dystans od krawędzi do krawędzi (Edge-to-Edge) między dwoma węzłami.
+static func get_edge_distance_between(node_a: Variant, node_b: Variant) -> float:
+	if not is_instance_valid(node_a) or not is_instance_valid(node_b):
+		return INF
+	if not (node_a is Node2D) or not (node_b is Node2D):
+		return INF
+	var a_2d: Node2D = node_a as Node2D
+	var b_2d: Node2D = node_b as Node2D
+	var rad_a: float = get_effective_radius_of(a_2d)
+	var rad_b: float = get_effective_radius_of(b_2d)
+	return maxf(0.0, a_2d.global_position.distance_to(b_2d.global_position) - (rad_a + rad_b))
 
 ## Zwraca główny węzeł graficzny postaci (wspólny punkt dla wszystkich efektów wizualnych - DRY).
 func get_visual_sprite() -> CanvasItem:
