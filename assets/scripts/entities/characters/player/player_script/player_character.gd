@@ -18,6 +18,9 @@ const PlayerFeedbackControllerType = preload(
 const CrowdCollisionControllerType = preload(
 	"res://assets/scripts/components/crowd_collision_controller.gd"
 )
+const PlayerRadialCooldownIndicatorType = preload(
+	"res://assets/scripts/ui/player_radial_cooldown_indicator.gd"
+)
 
 #region STAŁE WEJŚCIA I FIZYKI (Wyeliminowanie magicznych liczb i stringów)
 const INPUT_LEFT = "Left"
@@ -29,6 +32,8 @@ const INPUT_DOWN = "Down"
 const MAX_PUSHED_RIGIDBODY_SPEED: float = 120.0
 ## Prędkość łańcuchowego odpychania lekkich jednostek AI przy bezpośrednim kontakcie z graczem.
 const AI_DIRECT_CONTACT_PUSH_SPEED_PX: float = 220.0
+## Domyślny krok czasu fizyki używany awaryjnie przy przepychaniu.
+const DEFAULT_PHYSICS_DELTA_FALLBACK_SEC: float = 0.016
 ## Czas oczekiwania (w sekundach) na ekranie śmierci przed przejściem do respawnu.
 const DEATH_SCREEN_DELAY_SEC: float = 1.5
 #endregion
@@ -57,6 +62,7 @@ var _passive_effect_controller: PlayerPassiveEffectControllerType
 var _held_item_controller: PlayerHeldItemControllerType
 var _input_controller: PlayerInputControllerType
 var _crowd_collision_controller: CrowdCollisionControllerType
+var _radial_cooldown_indicator: PlayerRadialCooldownIndicatorType
 @onready var _feedback_controller: PlayerFeedbackControllerType = $PlayerFeedbackController
 
 var is_using_mouse: bool:
@@ -121,6 +127,10 @@ func _ready() -> void:
 		interaction_and_attack_stats_script
 	)
 	_crowd_collision_controller = CrowdCollisionControllerType.new()
+	_radial_cooldown_indicator = PlayerRadialCooldownIndicatorType.new()
+	_radial_cooldown_indicator.name = "PlayerRadialCooldownIndicator"
+	add_child(_radial_cooldown_indicator)
+	_radial_cooldown_indicator.initialize(self, interaction_and_attack_stats_script)
 
 	if attack_component and not attack_component.spawn_projectile_requested.is_connected(
 		_on_spawn_requested
@@ -266,7 +276,10 @@ func _physics_process(delta: float) -> void:
 		if _input_controller.is_holding_attack and interaction_and_attack_stats_script.can_attack():
 			perform_attack()
 
-func _handle_pushing(desired_input_dir: Vector2 = Vector2.ZERO, delta: float = 0.016) -> void:
+func _handle_pushing(
+	desired_input_dir: Vector2 = Vector2.ZERO,
+	delta: float = DEFAULT_PHYSICS_DELTA_FALLBACK_SEC
+) -> void:
 	for i in get_slide_collision_count():
 		var collision: KinematicCollision2D = get_slide_collision(i)
 		var collider: Object = collision.get_collider()

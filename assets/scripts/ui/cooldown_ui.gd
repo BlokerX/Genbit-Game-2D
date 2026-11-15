@@ -7,8 +7,13 @@ const READY_TEXT: String = "Gotowe!"
 @export var cooldown_label: Label
 
 func _ready() -> void:
+	UIThemeStyler.apply_progress_bar_style(self, UIThemeStyler.COOLDOWN_BAR_FILL_COLOR)
+	if cooldown_label != null:
+		UIThemeStyler.apply_readable_label_style(cooldown_label)
+
 	if player != null and player.interaction_and_attack_stats_script != null:
 		var stats: InteractionAndAttackStatsComponent = player.interaction_and_attack_stats_script
+
 		# Podłączamy sygnały z komponentu gracza
 		if not stats.cooldown_started.is_connected(_on_cooldown_started):
 			stats.cooldown_started.connect(_on_cooldown_started)
@@ -41,6 +46,7 @@ func _process(_delta: float) -> void:
 	value = clampf(stats.get_cooldown_progress_ratio() * max_value, 0.0, max_value)
 
 # --- REAKCJE NA SYGNAŁY ---
+
 func _on_cooldown_started() -> void:
 	# Gracz uderzył, przeładowuje lub otrzymał Stun! Budzimy skrypt UI do życia:
 	if cooldown_label != null:

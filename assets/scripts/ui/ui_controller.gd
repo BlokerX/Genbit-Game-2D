@@ -1,7 +1,7 @@
 class_name UIController
 extends CanvasLayer
 ## Główny kontroler interfejsu rozgrywki zarządzający otwieraniem okien, kursorem pada,
-## konfigurowalnym zatrzymywaniem czasu gry (pauzą) oraz synchronizacją widoczności HUD-u.
+## konfigurowalnym zatrzymywaniem czasu gry (pauzą) oraz synchronizacją widoczności i stylów HUD-u.
 
 const INPUT_TOGGLE_INVENTORY: String = "ToggleInventory"
 const INPUT_TOGGLE_CRAFTING: String = "ToggleCrafting"
@@ -12,6 +12,9 @@ const CHEST_AUTO_CLOSE_DISTANCE_PX: float = 150.0
 const DROP_HOLD_INITIAL_DELAY_SEC: float = 0.4
 const DROP_HOLD_TICK_INTERVAL_SEC: float = 0.1
 const MIN_CURSOR_MOVE_DELTA_PX: float = 1.0
+const INVENTORY_WINDOW_PADDING_PX: float = 22.0
+const ITEM_INFO_CARD_PADDING_H: float = 14.0
+const ITEM_INFO_CARD_PADDING_V: float = 10.0
 
 const EquipmentInventoryUIType = preload("res://assets/scripts/ui/equipment_inventory_ui.gd")
 const InventorySlotInteractorType = preload("res://assets/scripts/ui/inventory_slot_interactor.gd")
@@ -81,8 +84,8 @@ var _last_mouse_pos: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	_slot_interactor = InventorySlotInteractorType.new()
 	_cursor_controller = InventoryCursorControllerType.new()
-
 	_rebuild_pause_rules()
+
 	_validate_player_refs()
 
 	_slot_interactor.held_item_changed.connect(_cursor_controller.update_cursor_visuals)
@@ -111,12 +114,40 @@ func _ready() -> void:
 		"QuestLog": quest_log_ui
 	}
 
+	_apply_global_hud_and_window_styles()
 	_close_all_ui()
 
 	# Gwarantujemy odtworzenie zapisanych ustawień widoczności i skali GUI po każdym załadowaniu sceny gry
 	if GlobalSettings.has_method("apply_gui_visibility_to_tree"):
 		GlobalSettings.apply_gui_visibility_to_tree()
 		GlobalSettings.call_deferred("apply_gui_visibility_to_tree")
+
+## Nadaje oknu ekwipunku, kafelkowi informacji o przedmiocie oraz monitorowi debugowania spójny styl UIThemeStyler (DRY).
+func _apply_global_hud_and_window_styles() -> void:
+	if main_inventory_window != null:
+		var inv_panel: PanelContainer = main_inventory_window.get_node_or_null("PanelContainer") as PanelContainer
+		if inv_panel != null:
+			inv_panel.add_theme_stylebox_override(
+				"panel",
+				UIThemeStyler.create_window_stylebox(INVENTORY_WINDOW_PADDING_PX)
+			)
+
+	var item_info_panel: PanelContainer = get_node_or_null("HUD_Layer/TopRight_Zone/ItemInfoPanelContainer") as PanelContainer
+	if item_info_panel != null:
+		var card_style: StyleBoxFlat = UIThemeStyler.create_hud_card_stylebox(
+			ITEM_INFO_CARD_PADDING_H,
+			ITEM_INFO_CARD_PADDING_V
+		)
+		var info_lbl: Label = item_info_panel.get_node_or_null("InfoLabel") as Label
+		if info_lbl != null:
+			UIThemeStyler.apply_readable_label_style(info_lbl, UIThemeStyler.BODY_LIGHT_TEXT_COLOR)
+			UIThemeStyler.bind_auto_hide_panel_to_label(item_info_panel, info_lbl, card_style)
+		else:
+			item_info_panel.add_theme_stylebox_override("panel", card_style)
+
+	var debug_lbl: Label = get_node_or_null("HUD_Layer/BottomRight_Zone/Minimap/DebugMonitorLabel") as Label
+	if debug_lbl != null:
+		UIThemeStyler.apply_readable_label_style(debug_lbl, UIThemeStyler.DEBUG_TEXT_COLOR)
 
 ## Inicjalizuje słownik reguł pauzowania czasu na podstawie właściwości @export z Inspektora.
 func _rebuild_pause_rules() -> void:
@@ -139,11 +170,14 @@ func set_menu_pause_rule(menu_key: String, should_pause: bool) -> void:
 func should_pause_tree() -> bool:
 	if EventBus.active_menus.get(EventBus.MENU_PAUSE, false):
 		return true
+
 	for menu_key in _menu_pause_rules.keys():
 		if EventBus.active_menus.get(menu_key, false) and bool(_menu_pause_rules[menu_key]):
 			return true
+
 	if DialogueManager.is_active and pause_on_dialogue:
 		return true
+
 	return false
 
 ## Synchronizuje stan get_tree().paused z aktualnie otwartymi oknami i ich konfiguracją pauzy.
@@ -167,7 +201,7 @@ func _restore_hotbar_visibility() -> void:
 func _on_quest_log_closed_internally() -> void:
 	if _active_menu_name == "QuestLog":
 		_active_menu_name = ""
-		_restore_hotbar_visibility()
+	_restore_hotbar_visibility()
 	_sync_tree_pause_state()
 
 func _validate_player_refs() -> bool:
