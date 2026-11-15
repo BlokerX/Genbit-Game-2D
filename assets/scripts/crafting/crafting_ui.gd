@@ -111,7 +111,7 @@ func _update_details_panel() -> void:
 	var inventory: Inventory = player.inventory
 
 	# --- SEKCJA 1: OTRZYMASZ (CO DAJE PRZEPIS) ---
-	var details_text: String = "[center][b][color=%s]Otrzymasz:[/color][/b][/center]\n" % SECTION_HEADER_HEX
+	var details_text: String = "[center][b][color=%s]Otrzymasz:[/color][/b]\n" % SECTION_HEADER_HEX
 
 	for result in selected_recipe.results:
 		if result.item_data:
@@ -127,7 +127,7 @@ func _update_details_panel() -> void:
 			]
 
 	# --- SEKCJA 2: WYMAGANIA ---
-	details_text += "\n[center][b][color=%s]Wymagane składniki:[/color][/b][/center]\n" % SECTION_HEADER_HEX
+	details_text += "\n[b][color=%s]Wymagane składniki:[/color][/b]\n" % SECTION_HEADER_HEX
 
 	for ingredient in selected_recipe.ingredients:
 		var owned_amount: int = CraftingSystem.get_ingredient_available_amount(
@@ -144,7 +144,7 @@ func _update_details_panel() -> void:
 		var has_enough: bool = owned_amount >= required_amount
 		var color_hex: String = AVAILABLE_INGREDIENT_HEX if has_enough else MISSING_INGREDIENT_HEX
 		var status_symbol: String = "✔ " if has_enough else "✖ "
-		details_text += "[color=%s]  %s%s: %d / %d[/color]\n" % [
+		details_text += "[color=%s]%s%s: %d / %d[/color]\n" % [
 			color_hex,
 			status_symbol,
 			item_name,
@@ -152,6 +152,7 @@ func _update_details_panel() -> void:
 			required_amount
 		]
 
+	details_text += "[/center]"
 	ingredients_label.text = details_text
 	craft_button.disabled = not CraftingSystem.can_craft(inventory, selected_recipe)
 

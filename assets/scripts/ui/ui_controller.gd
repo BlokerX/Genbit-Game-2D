@@ -15,6 +15,10 @@ const MIN_CURSOR_MOVE_DELTA_PX: float = 1.0
 const INVENTORY_WINDOW_PADDING_PX: float = 22.0
 const ITEM_INFO_CARD_PADDING_H: float = 14.0
 const ITEM_INFO_CARD_PADDING_V: float = 10.0
+const INVENTORY_GRIDS_VBOX_SEPARATION_PX: int = 24
+const AVATAR_BG_MODULATE_COLOR := Color(0.14, 0.15, 0.20, 0.92)
+const QUEST_TRACKER_PADDING_H: float = 12.0
+const QUEST_TRACKER_PADDING_V: float = 8.0
 
 const EquipmentInventoryUIType = preload("res://assets/scripts/ui/equipment_inventory_ui.gd")
 const InventorySlotInteractorType = preload("res://assets/scripts/ui/inventory_slot_interactor.gd")
@@ -122,7 +126,7 @@ func _ready() -> void:
 		GlobalSettings.apply_gui_visibility_to_tree()
 		GlobalSettings.call_deferred("apply_gui_visibility_to_tree")
 
-## Nadaje oknu ekwipunku, kafelkowi informacji o przedmiocie oraz monitorowi debugowania spójny styl UIThemeStyler (DRY).
+## Nadaje oknu ekwipunku, portretowi gracza oraz kafelkom HUD spójny styl UIThemeStyler (DRY).
 func _apply_global_hud_and_window_styles() -> void:
 	if main_inventory_window != null:
 		var inv_panel: PanelContainer = main_inventory_window.get_node_or_null("PanelContainer") as PanelContainer
@@ -131,6 +135,16 @@ func _apply_global_hud_and_window_styles() -> void:
 				"panel",
 				UIThemeStyler.create_window_stylebox(INVENTORY_WINDOW_PADDING_PX)
 			)
+		var grids_vbox: VBoxContainer = main_inventory_window.get_node_or_null("PanelContainer/MainHBox/VBoxContainer") as VBoxContainer
+		if grids_vbox != null:
+			grids_vbox.add_theme_constant_override("separation", INVENTORY_GRIDS_VBOX_SEPARATION_PX)
+
+	# Przyciemnienie jaskrawobiałego tła pod portretem gracza w lewym górnym rogu
+	var avatar_slot: TextureRect = get_node_or_null(
+		"HUD_Layer/TopLeft_Zone/MarginContainer/PlayerUIGroup/CharacterSlotTextureRect"
+	) as TextureRect
+	if avatar_slot != null:
+		avatar_slot.self_modulate = AVATAR_BG_MODULATE_COLOR
 
 	var item_info_panel: PanelContainer = get_node_or_null("HUD_Layer/TopRight_Zone/ItemInfoPanelContainer") as PanelContainer
 	if item_info_panel != null:
@@ -144,6 +158,11 @@ func _apply_global_hud_and_window_styles() -> void:
 			UIThemeStyler.bind_auto_hide_panel_to_label(item_info_panel, info_lbl, card_style)
 		else:
 			item_info_panel.add_theme_stylebox_override("panel", card_style)
+
+	# Samodopasowujący się kafelek tła pod całym blokiem QuestTrackerUI (tytuł, czas i lista celów)
+	var quest_tracker: Control = get_node_or_null("HUD_Layer/Right_Center_Zone/QuestTrackerUI") as Control
+	if quest_tracker != null:
+		UIThemeStyler.attach_auto_bounds_backdrop(quest_tracker, QUEST_TRACKER_PADDING_H, QUEST_TRACKER_PADDING_V)
 
 	var debug_lbl: Label = get_node_or_null("HUD_Layer/BottomRight_Zone/Minimap/DebugMonitorLabel") as Label
 	if debug_lbl != null:

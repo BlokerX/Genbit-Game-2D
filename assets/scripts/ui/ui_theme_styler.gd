@@ -189,7 +189,6 @@ static func apply_readable_label_style(
 	label.add_theme_constant_override("shadow_offset_y", DEFAULT_SHADOW_OFFSET_PX)
 
 ## Automatycznie ukrywa tło PanelContainera, gdy znajdująca się w nim etykieta Label jest pusta lub niewidoczna.
-## Eliminuje wyświetlanie pustej ramki w prawym górnym rogu ekranu, gdy gracz nic nie trzyma w dłoni.
 static func bind_auto_hide_panel_to_label(
 	panel: PanelContainer,
 	label: Label,
@@ -209,3 +208,106 @@ static func bind_auto_hide_panel_to_label(
 	if not label.visibility_changed.is_connected(sync_panel_style):
 		label.visibility_changed.connect(sync_panel_style)
 	sync_panel_style.call()
+
+## Podpina pod dowolny kontener (np. QuestTrackerUI) samodopasowujący się kafelek tła,
+## który obejmuje cały blok śledzonego zadania (tytuł, licznik czasu i cele) oraz znika w 100%, gdy nic nie jest śledzone.
+static func attach_auto_bounds_backdrop(
+	target_root: Control,
+	padding_h: float = HUD_CARD_DEFAULT_PADDING_H,
+	padding_v: float = HUD_CARD_DEFAULT_PADDING_V
+) -> void:
+	if target_root == null or target_root.get_node_or_null("AutoBoundsBackdrop") != null:
+		return
+	var backdrop := _AutoBoundsBackdrop.new()
+	backdrop.name = "AutoBoundsBackdrop"
+	backdrop.setup(target_root, create_hud_card_stylebox(0.0, 0.0), padding_h, padding_v)
+	target_root.add_child(backdrop)
+
+## Wewnętrzny komponent śledzący rzeczywiste granice (Rect2) wszystkich widocznych elementów tekstowych
+## (Label, RichTextLabel oraz ich kontenerów) wewnątrz węzła docelowego (SRP).
+class _AutoBoundsBackdrop extends Panel:
+	const MIN_VALID_RECT_SIZE_PX: float = 2.0
+
+	var _target_root: Control = null
+	var _pad_h: float = 12.0
+	var _pad_v: float = 8.0
+
+	func setup(target_root: Control, style: StyleBoxFlat, pad_h: float, pad_v: float) -> void:
+		_target_root = target_root
+		_pad_h = pad_h
+		_pad_v = pad_v
+		show_behind_parent = true
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_theme_stylebox_override("panel", style)
+		visible = false
+
+	func _process(_delta: float) -> void:
+		if not is_instance_valid(_target_root) or not _target_root.is_visible_in_tree():
+			visible = false
+			return
+
+		var has_any_visible_text: bool = false
+		var merged_global_rect := Rect2()
+		var container_rects: Array[Rect2] = []
+
+		var stack: Array[Node] = [_target_root]
+		while not stack.is_empty():
+			var current: Node = stack.pop_back()
+			if current == self:
+				continue
+
+			if current is Label:
+				var lbl: Label = current as Label
+				if lbl.is_visible_in_tree() and not lbl.text.strip_edges().is_empty():
+					_ensure_control_text_outline(lbl)
+					var lbl_rect: Rect2 = lbl.get_global_rect()
+					lbl_rect.size.x = maxf(lbl_rect.size.x, lbl.get_minimum_size().x)
+					lbl_rect.size.y = maxf(lbl_rect.size.y, lbl.get_minimum_size().y)
+					if lbl_rect.size.x > MIN_VALID_RECT_SIZE_PX and lbl_rect.size.y > MIN_VALID_RECT_SIZE_PX:
+						merged_global_rect = lbl_rect if not has_any_visible_text else merged_global_rect.merge(lbl_rect)
+						has_any_visible_text = true
+
+			elif current is RichTextLabel:
+				var rtl: RichTextLabel = current as RichTextLabel
+				if rtl.is_visible_in_tree() and not rtl.get_parsed_text().strip_edges().is_empty():
+					_ensure_control_text_outline(rtl)
+					var rtl_rect: Rect2 = rtl.get_global_rect()
+					var scale_vec: Vector2 = rtl.get_global_transform_with_canvas().get_scale()
+					var content_w: float = float(rtl.get_content_width()) * absf(scale_vec.x)
+					var content_h: float = float(rtl.get_content_height()) * absf(scale_vec.y)
+					rtl_rect.size.x = maxf(rtl_rect.size.x, content_w)
+					rtl_rect.size.y = maxf(rtl_rect.size.y, content_h)
+					if rtl_rect.size.x > MIN_VALID_RECT_SIZE_PX and rtl_rect.size.y > MIN_VALID_RECT_SIZE_PX:
+						merged_global_rect = rtl_rect if not has_any_visible_text else merged_global_rect.merge(rtl_rect)
+						has_any_visible_text = true
+
+			elif current is Container and current != _target_root:
+				var cont: Container = current as Container
+				if cont.is_visible_in_tree():
+					var cont_rect: Rect2 = cont.get_global_rect()
+					if cont_rect.size.x > MIN_VALID_RECT_SIZE_PX and cont_rect.size.y > MIN_VALID_RECT_SIZE_PX:
+						container_rects.append(cont_rect)
+
+			for child in current.get_children():
+				stack.append(child)
+
+		if not has_any_visible_text:
+			visible = false
+			return
+
+		for c_rect in container_rects:
+			merged_global_rect = merged_global_rect.merge(c_rect)
+
+		visible = true
+		var inv_scale: Vector2 = get_global_transform_with_canvas().get_scale()
+		var scale_x: float = maxf(0.001, absf(inv_scale.x))
+		var scale_y: float = maxf(0.001, absf(inv_scale.y))
+		global_position = merged_global_rect.position - Vector2(_pad_h * scale_x, _pad_v * scale_y)
+		size = (merged_global_rect.size / Vector2(scale_x, scale_y)) + Vector2(_pad_h * 2.0, _pad_v * 2.0)
+
+	func _ensure_control_text_outline(ctrl: Control) -> void:
+		if ctrl.has_meta("hud_styled"):
+			return
+		ctrl.set_meta("hud_styled", true)
+		ctrl.add_theme_color_override("font_outline_color", UIThemeStyler.TEXT_OUTLINE_COLOR)
+		ctrl.add_theme_constant_override("outline_size", UIThemeStyler.DEFAULT_OUTLINE_SIZE)
