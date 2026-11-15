@@ -116,6 +116,16 @@ func evaluate_effect_protection(
 		"modified": false
 	}
 
+## Sprawdza, czy komponent wymaga natychmiastowego usunięcia już aktywnego efektu trwającego na postaci.
+func should_purge_active_effect(
+	_item_instance: ItemInstance,
+	_active_effect: Effect,
+	_is_equipped: bool,
+	_is_held: bool,
+	_is_in_inventory: bool
+) -> bool:
+	return false
+
 # =========================================================================
 # INTERFEJS OPISÓW DLA UI (Zasada Open/Closed - OCP oraz Information Expert)
 # =========================================================================

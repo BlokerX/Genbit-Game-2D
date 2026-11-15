@@ -1,21 +1,33 @@
 class_name PlayerPassiveEffectController
 extends RefCounted
+## Kontroler synchronizujący pasywne efekty z ekwipunku gracza oraz natychmiastowe oczyszczanie
+## aktywnych efektów przez przedmioty posiadające ProtectiveItemComponent (SOLID - SRP).
 
 var _character: CharacterEntity
 var _effects_collector: Node
 
+## Inicjalizuje kontroler referencją do postaci oraz jej kontenera aktywnych efektów.
 func initialize(character: CharacterEntity, effects_collector: Node) -> void:
 	_character = character
 	_effects_collector = effects_collector
 
+## Synchronizuje pasywki trzymanego w dłoni przedmiotu oraz czyści efekty zablokowane przez ten przedmiot.
 func sync_held_passives(inventory: Inventory) -> void:
 	_sync_passives(inventory.get_held_passives(), "HELD")
+	if inventory != null and is_instance_valid(_effects_collector):
+		inventory.purge_protected_active_effects(_effects_collector)
 
+## Synchronizuje pasywki założonego pancerza/akcesoriów oraz czyści efekty zablokowane przez założony sprzęt.
 func sync_equipment_passives(inventory: Inventory) -> void:
 	_sync_passives(inventory.get_equipment_passives(), "EQUIP")
+	if inventory != null and is_instance_valid(_effects_collector):
+		inventory.purge_protected_active_effects(_effects_collector)
 
+## Synchronizuje pasywki z plecaka oraz czyści efekty zablokowane przez przedmioty w plecaku.
 func sync_inventory_passives(inventory: Inventory) -> void:
 	_sync_passives(inventory.get_inventory_passives(), "INVENTORY")
+	if inventory != null and is_instance_valid(_effects_collector):
+		inventory.purge_protected_active_effects(_effects_collector)
 
 func _sync_passives(effects: Array[Effect], source_name: String) -> void:
 	_clear_passives_by_source(source_name)
@@ -46,13 +58,13 @@ func _apply_passives(effects: Array[Effect], source_name: String) -> void:
 	if not is_instance_valid(_character):
 		return
 
-	for effect in effects:
+	for i in range(effects.size()):
+		var effect: Effect = effects[i]
 		if effect == null:
 			continue
 		var effect_copy: Effect = effect.duplicate(true)
 		effect_copy.set_meta("passive_source", source_name)
-		# NAPRAWA KRYTYCZNA: Efekty pasywne z ekwipunku/plecaka muszą trwać w nieskończoność
-		# (dopóki gracz ma założony przedmiot), niezależnie od czasu 'duration' wpisanego w pliku .tres!
+		effect_copy.set_meta("passive_instance_id", source_name + "_" + str(i))
 		if "is_infinite" in effect_copy:
 			effect_copy.is_infinite = true
 		_character.receive_effect(effect_copy)

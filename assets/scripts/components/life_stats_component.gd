@@ -59,7 +59,7 @@ func is_immune_to(effect: Effect) -> bool:
 	var effective_cat: int = int(effect.get_effective_category())
 	if effective_cat != int(Effect.EffectCategory.NONE):
 		for immune_cat in immune_categories:
-			if int(immune_cat) == effective_cat:
+			if effect.matches_category(immune_cat):
 				return true
 
 	if effect.effect_name != "":

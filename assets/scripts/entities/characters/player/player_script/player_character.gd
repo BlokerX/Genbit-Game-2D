@@ -318,7 +318,9 @@ func _cancel_building() -> void:
 #region Obsługa sygnałów
 func on_inventory_update() -> void:
 	var current_item: ItemInstance = inventory.get_current_item()
-	_held_item_controller.refresh(current_item)
+	_held_item_controller.refresh(current_item, inventory)
+	if is_instance_valid(effects_collector):
+		inventory.purge_protected_active_effects(effects_collector)
 
 	if current_state == PlayerState.BUILDING:
 		var is_placeable: bool = false

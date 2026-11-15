@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://th0runcxbhea"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_6n5y2"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_5luq6"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_t0axk"]
+[ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/timed_effects/speed/slow_effect.gd" id="4_5luq6"]
+[ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="4_33k0h"]
+[ext_resource type="Script" uid="uid://cs0uaow55h16g" path="res://assets/scripts/components/effect_protection_rule.gd" id="5_ab25o"]
+[ext_resource type="Script" uid="uid://frydcgtw0aji" path="res://assets/scripts/entities/effects/timed_effects/armor/armor_buff_effect.gd" id="5_t0axk"]
+[ext_resource type="Script" uid="uid://upg27um1tsh0" path="res://assets/scripts/components/protective_item_component.gd" id="6_ouqkl"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="7_6aqjm"]
+[ext_resource type="Script" uid="uid://bbjk7mcc7yknx" path="res://assets/scripts/entities/effects/timed_effects/speed/speed_effect.gd" id="8_33k0h"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="9_pqwns"]
+[ext_resource type="Texture2D" uid="uid://itiqs2ftmtkx" path="res://assets/textures/samples_examples/items/coin.png" id="9_t0axk"]
+
+[sub_resource type="Resource" id="Resource_33k0h"]
+script = ExtResource("4_5luq6")
+is_infinite = true
+metadata/_custom_type_script = "uid://bmbnddjayowv6"
+
+[sub_resource type="Resource" id="Resource_ab25o"]
+script = ExtResource("5_t0axk")
+armor_adder = 20.0
+is_infinite = true
+metadata/_custom_type_script = "uid://frydcgtw0aji"
+
+[sub_resource type="Resource" id="Resource_mwk6a"]
+script = ExtResource("4_33k0h")
+equip_slot_type = 4
+passive_buffs = Array[ExtResource("3_t0axk")]([SubResource("Resource_33k0h"), SubResource("Resource_ab25o")])
+
+[sub_resource type="Resource" id="Resource_5luq6"]
+script = ExtResource("5_ab25o")
+target_effect_script = ExtResource("8_33k0h")
+block_completely = true
+clear_existing_active_effects = true
+metadata/_custom_type_script = "uid://cs0uaow55h16g"
+
+[sub_resource type="Resource" id="Resource_o4syj"]
+script = ExtResource("6_ouqkl")
+activation_scope = 0
+protection_rules = Array[ExtResource("5_ab25o")]([SubResource("Resource_5luq6")])
+metadata/_custom_type_script = "uid://upg27um1tsh0"
+
+[sub_resource type="Resource" id="Resource_s0de3"]
+script = ExtResource("7_6aqjm")
+max_durability = 500
+
+[resource]
+script = ExtResource("9_pqwns")
+item_id = &"sticky_boots"
+item_name = "Sticky Boots"
+item_description = "Sticky!"
+item_icon = ExtResource("9_t0axk")
+components = Array[ExtResource("1_6n5y2")]([SubResource("Resource_mwk6a"), SubResource("Resource_o4syj"), SubResource("Resource_s0de3")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

@@ -12,6 +12,7 @@ func _init(_duration: float = 10.0):
 	effect_category = EffectCategory.UTILITY
 	duration = _duration
 	tick_interval = 0.0
+	stack_passive_instances = false
 
 func on_effect_start(target: Node2D) -> void:
 	var sprite: CanvasItem = target.call("get_visual_sprite") if target.has_method("get_visual_sprite") else null

@@ -185,10 +185,22 @@ func _validate_player_refs() -> bool:
 				main_inventory_window, crafting_ui, 
 				cursor_item_rect, cursor_amount_label
 			)
+			if not player_inventory.before_drop_all_items.is_connected(_on_before_player_drop_all_items):
+				player_inventory.before_drop_all_items.connect(_on_before_player_drop_all_items)
 			if equipment_inventory_ui:
 				equipment_inventory_ui.initialize(player_inventory)
 			return true
 	return false
+
+## Wywoływane natychmiast w chwili śmierci gracza przed wyrzuceniem zawartości slotów:
+## gwarantuje, że przedmiot trzymany w tym momencie na kursorze myszy również wypadnie przy krzyżu śmierci!
+func _on_before_player_drop_all_items() -> void:
+	if _slot_interactor != null and _slot_interactor.held_item != null and is_instance_valid(player_inventory):
+		var cursor_item: ItemInstance = _slot_interactor.held_item
+		_slot_interactor.held_item = null
+		if _cursor_controller != null:
+			_cursor_controller.update_cursor_visuals()
+		player_inventory.item_dropped.emit(cursor_item, false)
 
 func _process(delta: float) -> void:
 	if DialogueManager.is_active:

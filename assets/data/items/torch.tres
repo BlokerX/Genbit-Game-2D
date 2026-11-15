@@ -4,11 +4,18 @@
 [ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="2_76b7h"]
 [ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_r22a7"]
 [ext_resource type="Script" uid="uid://b3dk7g7wl0tkt" path="res://assets/scripts/entities/items/components/light_source_component.gd" id="3_r22a7"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="4_jtfh4"]
 [ext_resource type="Texture2D" uid="uid://chwel483cqsgp" path="res://assets/textures/samples_examples/items/torch.png" id="4_r22a7"]
+[ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="5_nyr05"]
 
 [sub_resource type="Resource" id="Resource_vigi8"]
 script = ExtResource("3_r22a7")
 metadata/_custom_type_script = "uid://b3dk7g7wl0tkt"
+
+[sub_resource type="Resource" id="Resource_d5mnx"]
+script = ExtResource("5_nyr05")
+equip_slot_type = 6
+metadata/_custom_type_script = "uid://fxf8d7uhq6ix"
 
 [resource]
 script = ExtResource("2_76b7h")
@@ -16,5 +23,5 @@ item_id = &"torch"
 item_name = "Torch"
 item_description = "Light it!"
 item_icon = ExtResource("4_r22a7")
-components = Array[ExtResource("1_r8kns")]([SubResource("Resource_vigi8")])
+components = Array[ExtResource("1_r8kns")]([SubResource("Resource_vigi8"), SubResource("Resource_d5mnx")])
 metadata/_custom_type_script = "uid://civbd34phwaj1"

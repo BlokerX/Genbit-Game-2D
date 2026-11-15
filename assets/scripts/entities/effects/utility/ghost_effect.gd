@@ -13,6 +13,7 @@ func _init(_duration: float = 8.0):
 	effect_category = EffectCategory.UTILITY
 	duration = _duration
 	tick_interval = 0.0
+	stack_passive_instances = false
 
 func on_effect_start(target: Node2D) -> void:
 	target.set_meta("is_ghost", true)

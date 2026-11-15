@@ -70,14 +70,27 @@ func update_cursor_position() -> void:
 	_cursor_item_rect.global_position = viewport.get_mouse_position() - (_cursor_item_rect.size / 2.0)
 
 ## Zwraca przedmiot trzymany kursorem do ekwipunku podczas zamykania interfejsu.
+## Jeśli jednak gracz zginął lub jest w trakcie respawnu, wyrzuca przedmiot w miejscu śmierci zamiast chować go do plecaka!
 func return_held_item_to_inventory() -> void:
 	if not _is_initialized() or _slot_interactor.held_item == null:
 		return
-	var remainder: ItemInstance = _player_inventory.add_instance(_slot_interactor.held_item)
-	if remainder != null:
-		_player_inventory.item_dropped.emit(remainder, true)
+
+	var held_item: ItemInstance = _slot_interactor.held_item
 	_slot_interactor.held_item = null
 	update_cursor_visuals()
+
+	var player: Node = _ui_owner.get_tree().get_first_node_in_group("Player") if _ui_owner.is_inside_tree() else null
+	var player_dead_or_respawning: bool = (
+		player != null and (bool(player.get("is_dead")) or bool(player.get("is_respawning")))
+	)
+
+	if player_dead_or_respawning:
+		_player_inventory.item_dropped.emit(held_item, false)
+		return
+
+	var remainder: ItemInstance = _player_inventory.add_instance(held_item)
+	if remainder != null:
+		_player_inventory.item_dropped.emit(remainder, true)
 
 ## Wyrzuca z kursora cały stos lub jedną sztukę przedmiotu do świata.
 func drop_item_from_cursor(drop_all: bool = true) -> void:

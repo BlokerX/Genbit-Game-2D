@@ -30,6 +30,8 @@ const InventoryItemTransferControllerType = preload(
 #region Signals
 ## Sygnał, który powiadomi UI o zmianie
 signal inventory_updated
+## Emitowany tuż przed wyrzuceniem zawartości ekwipunku po śmierci, pozwalając UI zrzucić przedmiot trzymany na kursorze myszy.
+signal before_drop_all_items
 signal item_dropped(dropped_instance: ItemInstance, is_thrown: bool)
 signal equipment_updated
 
@@ -140,6 +142,7 @@ func consume_from_slot(slot_index: int, amount: int) -> int:
 
 ## Wyrzuca wszystkie przedmioty gracza po śmierci.
 func drop_all_items(_owner_entity: Node2D) -> void:
+	before_drop_all_items.emit()
 	var dropped_any: bool = false
 
 	for slot in slots:
@@ -274,6 +277,10 @@ func get_inventory_passives() -> Array[Effect]:
 func preprocess_incoming_effect(effect: Effect) -> Effect:
 	return _passive_controller.preprocess_incoming_effect(self, effect)
 
+## Natychmiast usuwa z kontenera effects_collector te aktywne efekty, które są czyszczone przez założone/trzymane przedmioty ochronne.
+func purge_protected_active_effects(effects_collector: Node) -> void:
+	_passive_controller.purge_protected_active_effects(self, effects_collector)
+
 ## Zwraca skumulowaną odporność (0.0 - 1.0) na podaną akcję (np. &"steal") z przedmiotów w ekwipunku/zbroi.
 func get_action_protection_score(action_tag: StringName) -> float:
 	return _passive_controller.get_total_action_protection(self, action_tag)
@@ -281,6 +288,10 @@ func get_action_protection_score(action_tag: StringName) -> float:
 ## Zwraca true, jeśli aktualnie trzymany w dłoni przedmiot posiada ochronę przed kradzieżą/wytrąceniem.
 func is_current_item_theft_protected() -> bool:
 	return _passive_controller.is_item_theft_protected(get_current_item())
+
+## Zwraca najsilniejszy aktywny komponent oświetlenia (LightSourceComponent) z dłoni, założonego ekwipunku (np. Accessory) lub plecaka.
+func get_active_light_source() -> LightSourceComponent:
+	return _passive_controller.get_active_light_source(self)
 
 ## Prosi obserwatorów o ponowne zastosowanie pasywek bez zmiany zawartości.
 func refresh_passives() -> void:

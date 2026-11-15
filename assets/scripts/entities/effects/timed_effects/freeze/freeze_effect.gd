@@ -13,6 +13,7 @@ func _init(_duration: float = 2.0, _apply_blue_tint: bool = true) -> void:
 	duration = _duration
 	apply_blue_tint = _apply_blue_tint
 	tick_interval = 0.0 # 0, ponieważ nie potrzebujemy "tików", działa to jako twardy stan
+	stack_passive_instances = false
 
 func on_effect_start(target: Node2D) -> void:
 	print("Zamrażam obiekt: ", target.name, " na ", duration, " sekund!")

@@ -1,11 +1,12 @@
 class_name ProtectiveItemComponent
 extends ItemComponent
 ## Modularny komponent przedmiotu zapewniający ochronę przed kradzieżą, wybranymi akcjami
-## oraz blokowanie lub osłabianie przychodzących efektów (Stun, Freeze, Poison, Knockback itp.).
+## oraz blokowanie, osłabianie lub natychmiastowe usuwanie aktywnych efektów (Stun, Freeze, Poison, Speed itp.).
 ## Realizuje zasady Single Responsibility (SRP) oraz Open/Closed (OCP).
 
+## Określa wymagane miejsce przedmiotu w ekwipunku, aby jego ochrona była aktywna.
 enum ActivationScope {
-	WHEN_EQUIPPED,     ## Działa, gdy przedmiot jest założony w slocie zbroi/akcesoriów.
+	WHEN_EQUIPPED,     ## Działa tylko wtedy, gdy przedmiot jest założony w slocie zbroi/akcesoriów.
 	WHEN_HELD,         ## Działa wyłącznie wtedy, gdy gracz trzyma ten przedmiot aktywnie w dłoni.
 	WHEN_IN_INVENTORY, ## Działa zawsze, dopóki przedmiot znajduje się w plecaku, dłoni lub na zbroi.
 	EQUIPPED_OR_HELD   ## Działa zarówno po założeniu na slot zbroi, jak i podczas trzymania w dłoni.
@@ -17,25 +18,27 @@ const FULL_RESISTANCE: float = 1.0
 @export_category("Zakres Aktywacji Ochrony")
 ## Określa, gdzie musi znajdować się przedmiot, aby jego właściwości ochronne były aktywne.
 @export var activation_scope: ActivationScope = ActivationScope.EQUIPPED_OR_HELD
-## Jeśli true, mnożniki ochrony kumulują się z liczbą sztuk przedmiotu w stosie.
+## Jeśli włączone, mnożniki ochrony oraz redukcji kumulują się z liczbą sztuk przedmiotu w jednym stosie.
 @export var scale_with_stack_amount: bool = false
 
 @export_category("Ochrona przed Kradzieżą i Akcjami")
-## Jeśli true, ten konkretny przedmiot jest przypięty na stałe i nigdy nie może zostać wytrącony ani skradziony z dłoni.
+## Jeśli włączone, ten konkretny przedmiot jest przypięty na stałe i nigdy nie może zostać wytrącony ani skradziony z dłoni.
 @export var cannot_be_stolen_itself: bool = false
 ## Dodatkowa odporność (0.0 - 1.0) chroniąca gracza przed kradzieżą jakiegokolwiek trzymanego przedmiotu (1.0 = 100% odporności).
 @export_range(0.0, 1.0, 0.05) var steal_protection_bonus: float = 0.0
 ## Dodatkowe tagi akcji specjalnych (np. &"steal", &"disarm", &"trap"), przed którymi ten przedmiot całkowicie chroni.
 @export var blocked_action_tags: Array[StringName] = []
 
-@export_category("Reguły Modyfikacji Efektów")
-## Lista reguł określających, które efekty mają być blokowane, skracane lub osłabiane.
+@export_category("Reguły Modyfikacji i Czyszczenia Efektów")
+## Lista reguł (EffectProtectionRule) określających, które efekty mają być blokowane, skracane, osłabiane lub usuwane.
 @export var protection_rules: Array[EffectProtectionRule] = []
 
+## Inicjalizuje flagę stanu przedmiotu chroniącą go przed kradzieżą.
 func initialize_state(item_instance: ItemInstance) -> void:
 	if item_instance != null and cannot_be_stolen_itself:
 		item_instance.state["cannot_be_stolen"] = true
 
+## Tworzy niezależną kopię komponentu oraz jego reguł ochronnych dla unikalnej instancji przedmiotu.
 func create_unique_copy() -> ItemComponent:
 	var copy: ProtectiveItemComponent = super.create_unique_copy() as ProtectiveItemComponent
 	if copy != null:
@@ -49,7 +52,7 @@ func create_unique_copy() -> ItemComponent:
 			copy.protection_rules = cloned_rules
 	return copy
 
-## Sprawdza, czy komponent jest aktywny w bieżącym położeniu przedmiotu.
+## Sprawdza, czy komponent jest aktywny w bieżącym położeniu przedmiotu (zbroja / dłoń / plecak).
 func is_active_in_context(is_equipped: bool, is_held: bool, is_in_inventory: bool) -> bool:
 	match activation_scope:
 		ActivationScope.WHEN_EQUIPPED:
@@ -66,9 +69,11 @@ func is_active_in_context(is_equipped: bool, is_held: bool, is_in_inventory: boo
 # IMPLEMENTACJA POLIMORFICZNEGO KONTRAKTU OCHRONY (SOLID - OCP)
 # =========================================================================
 
+## Zwraca false, jeśli ten przedmiot ma włączoną ochronę przed wytrąceniem z dłoni.
 func can_item_be_stolen(_item_instance: ItemInstance) -> bool:
 	return not cannot_be_stolen_itself
 
+## Zwraca wartość ochrony (0.0 - 1.0) przed określoną akcją (np. &"steal") w podanym kontekście ekwipunku.
 func get_action_protection_score(
 	item_instance: ItemInstance,
 	action_tag: StringName,
@@ -88,6 +93,7 @@ func get_action_protection_score(
 
 	return 0.0
 
+## Ocenia wpływ wszystkich reguł komponentu na nowo przychodzący efekt.
 func evaluate_effect_protection(
 	item_instance: ItemInstance,
 	effect: Effect,
@@ -132,6 +138,25 @@ func evaluate_effect_protection(
 
 	return result
 
+## Sprawdza, czy którakolwiek reguła tego komponentu nakazuje natychmiastowe usunięcie już trwającego efektu.
+func should_purge_active_effect(
+	_item_instance: ItemInstance,
+	active_effect: Effect,
+	is_equipped: bool,
+	is_held: bool,
+	is_in_inventory: bool
+) -> bool:
+	if active_effect == null or protection_rules.is_empty():
+		return false
+	if not is_active_in_context(is_equipped, is_held, is_in_inventory):
+		return false
+
+	for rule in protection_rules:
+		if rule != null and rule.should_purge_existing_effect(active_effect):
+			return true
+
+	return false
+
 func _get_effective_stack_count(item_instance: ItemInstance) -> int:
 	if not scale_with_stack_amount or item_instance == null:
 		return 1
@@ -153,6 +178,7 @@ func _get_scope_label() -> String:
 # OPISY DLA UI (Tooltip i Panel HUD - OCP)
 # =========================================================================
 
+## Formatuje informacje o ochronie do wyświetlenia w dymku (Tooltip) po najechaniu myszką na slot.
 func get_tooltip_info(_item_instance: ItemInstance) -> String:
 	var lines: Array[String] = _collect_protection_description_lines()
 	if lines.is_empty():
@@ -162,6 +188,7 @@ func get_tooltip_info(_item_instance: ItemInstance) -> String:
 		text += "- " + line + "\n"
 	return text
 
+## Formatuje informacje o ochronie do wyświetlenia w prawym górnym panelu HUD.
 func get_hud_info(_item_instance: ItemInstance, is_advanced: bool) -> String:
 	var lines: Array[String] = _collect_protection_description_lines()
 	if lines.is_empty():
