@@ -47,17 +47,23 @@ class_name AIBehaviorProfile
 ## Czy jednostka zachowuje odstęp od innych jednostek AI w grupie (zapobiega zbijaniu się roju w jedną bryłę)?
 @export var enable_crowd_separation: bool = true
 ## Promień przestrzeni osobistej (od krawędzi do krawędzi w pikselach) względem sąsiednich jednostek AI.
-@export_range(5.0, 150.0, 1.0) var separation_radius: float = 32.0
+@export_range(5.0, 150.0, 1.0) var separation_radius: float = 28.0
 ## Siła wektora odpychania od innych jednostek AI w tłumie.
-@export_range(0.0, 4.0, 0.05) var separation_weight: float = 1.35
-## Czy jednostka ma zakaz dociskania gracza na siłę do ściany (zostawia korytarz na wyjście z narożnika)?
+@export_range(0.0, 4.0, 0.05) var separation_weight: float = 1.25
+## Czy jednostka ma odblokowywać przejście graczowi, gdy gracz jest przyciśnięty do ściany i próbuje wyjść z narożnika?
 @export var avoid_pinning_target_to_wall: bool = true
-## Minimalny odstęp osobisty od celu na otwartej przestrzeni (w pikselach od krawędzi do krawędzi).
-@export_range(0.0, 50.0, 1.0) var player_personal_space_margin: float = 16.0
-## Szerokość korytarza bezpieczeństwa (w pikselach od krawędzi do krawędzi), jaką AI zostawia graczowi przyciśniętemu do ściany/lawy.
-@export_range(20.0, 120.0, 2.0) var wall_escape_corridor_distance: float = 58.0
-## Dodatkowa odporność na przepychanie przez gracza (0.0 = lekka jednostka, 1.0 = nieprzesuwalny kolos/boss).
+## Dodatkowy odstęp osobisty od celu na otwartej przestrzeni (0.0 = pełna styczność kapsuł kolizyjnych bez uciekania).
+@export_range(0.0, 50.0, 1.0) var player_personal_space_margin: float = 0.0
+## Szerokość korytarza wyjściowego (w pikselach od krawędzi do krawędzi), jaką AI/Boss otwiera, gdy gracz pod ścianą próbuje uciec.
+## Dla dużych bossów (skala 3x) zalecane 75 - 95 px, aby gracz (średnica 80 px) swobodnie wyszedł z narożnika.
+@export_range(10.0, 180.0, 2.0) var wall_escape_corridor_distance: float = 65.0
+## Odległość (w pikselach) za plecami gracza, w jakiej wykrywana jest ściana/lawa uruchamiająca ochronę przed dociskiem.
+@export_range(20.0, 150.0, 2.0) var wall_pin_detection_distance: float = 60.0
+## Dodatkowa odporność na przepychanie przez gracza na otwartym polu (0.0 = lekka jednostka, 1.0 = nieprzesuwalny boss).
 @export_range(0.0, 1.0, 0.05) var push_resistance: float = 0.0
+## Podatność na boczne odsunięcie WYŁĄCZNIE w sytuacji, gdy gracz jest przyciśnięty plecami do ściany/lawy i próbuje wyjść obok bossa.
+## (Na otwartym polu boss pozostaje w 100% nieprzesuwalny, ale w ciasnym narożniku pozwala graczowi się wyślizgnąć).
+@export_range(0.0, 1.0, 0.05) var wall_pin_push_allowance: float = 0.45
 
 @export_category("Walka i Wybór Broni")
 ## Dystans, poniżej którego AI schowa broń palną i wyciągnie broń białą (np. nóż).

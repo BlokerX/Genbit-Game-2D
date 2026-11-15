@@ -1,7 +1,7 @@
 extends Node
 class_name AINavigationController
 ## Kontroler nawigacji AI przekształcający ścieżkę z NavigationAgent2D, unikanie zagrożeń,
-## separację pierścieni roju oraz zakaz dociskania gracza do ściany w płynny ruch fizyczny.
+## separację pierścieni roju oraz odblokowywanie gracza pod ścianą w płynny ruch fizyczny.
 
 const AVOIDANCE_THREAT_WEIGHT_MULTIPLIER: float = 2.0
 const DEFAULT_FALLBACK_MOVE_SPEED: float = 150.0
@@ -10,13 +10,10 @@ const MIN_AVOIDANCE_VECTOR_LEN_SQ: float = 0.04
 
 const SEPARATION_UPDATE_INTERVAL_SEC: float = 0.06
 const MAX_SEPARATION_NEIGHBORS_CHECKED: int = 12
-const STOPPED_RELIEF_SPEED_RATIO: float = 0.85
-const STOPPED_SEPARATION_WEIGHT: float = 0.75
+const WALL_RELIEF_SPEED_RATIO: float = 0.80
 const MIN_RELIEF_TRIGGER_LEN_SQ: float = 0.02
 ## Próg iloczynu skalarnego określający, że inny sojusznik stoi bezpośrednio przed nami na linii do gracza.
 const INNER_RING_ALLY_BLOCK_DOT_THRESHOLD: float = 0.45
-## Waga aktywnego schodzenia z linii marszu gracza podczas rozpychania tłumu.
-const ACTIVE_PARTING_STEER_WEIGHT: float = 2.4
 
 var controller: AIController
 var nav_agent: NavigationAgent2D
@@ -49,12 +46,6 @@ func process_navigation(delta: float) -> void:
 	else:
 		blackboard.target = null
 
-	# 1. Jeśli gracz właśnie toruje sobie drogę przez tę jednostkę, jednostka aktywnie schodzi mu z drogi na bok!
-	var parting_dir: Vector2 = _get_active_player_parting_direction(entity)
-	if parting_dir != Vector2.ZERO:
-		_apply_entity_movement(entity, profile, delta, parting_dir, 1.0)
-		return
-
 	_update_crowd_separation_vector(delta, entity, valid_target, profile)
 	var wall_relief_vec: Vector2 = _calculate_wall_relief(entity, valid_target, profile)
 
@@ -64,17 +55,11 @@ func process_navigation(delta: float) -> void:
 
 	_process_active_path_navigation(entity, profile, blackboard, valid_target, wall_relief_vec, delta)
 
-## Zwraca wektor zejścia na bok, jeśli jednostka jest aktualnie rozpychana przez idącego gracza.
-func _get_active_player_parting_direction(entity: CharacterEntity) -> Vector2:
-	if not entity.has_meta("crowd_parted_until_msec"):
-		return Vector2.ZERO
-	var until_msec: int = int(entity.get_meta("crowd_parted_until_msec"))
-	if Time.get_ticks_msec() > until_msec:
-		return Vector2.ZERO
-	var part_dir: Vector2 = Vector2(entity.get_meta("crowd_parting_dir")) if entity.has_meta("crowd_parting_dir") else Vector2.ZERO
-	if part_dir.length_squared() <= 0.001:
-		return Vector2.ZERO
-	return (part_dir * ACTIVE_PARTING_STEER_WEIGHT + _cached_separation_vector).normalized()
+## Sprawdza, czy gracz w tej klatce fizycznie napiera na tę jednostkę w zwarciu.
+func _is_being_pushed_by_player_contact(entity: CharacterEntity) -> bool:
+	if not entity.has_meta("crowd_contact_yield_until_msec"):
+		return false
+	return Time.get_ticks_msec() <= int(entity.get_meta("crowd_contact_yield_until_msec"))
 
 func _process_stationary_navigation(
 	entity: CharacterEntity,
@@ -95,9 +80,10 @@ func _process_stationary_navigation(
 		_apply_entity_movement(entity, profile, delta, evade_dir, 1.0)
 		return
 
-	var total_stationary_relief: Vector2 = wall_relief_vec + (_cached_separation_vector * STOPPED_SEPARATION_WEIGHT)
-	if total_stationary_relief.length_squared() >= MIN_RELIEF_TRIGGER_LEN_SQ:
-		_apply_entity_movement(entity, profile, delta, total_stationary_relief.normalized(), STOPPED_RELIEF_SPEED_RATIO)
+	# Na otwartym polu (gdy wall_relief_vec == ZERO) jednostka stoi twardo i jest styczna z graczem (nie ucieka!).
+	# Ruch odblokowujący wykonuje wyłącznie wtedy, gdy gracz pod ścianą aktywnie próbuje wyjść z narożnika.
+	if wall_relief_vec.length_squared() >= MIN_RELIEF_TRIGGER_LEN_SQ:
+		_apply_entity_movement(entity, profile, delta, wall_relief_vec.normalized(), WALL_RELIEF_SPEED_RATIO)
 		return
 
 	_stop_entity_movement(entity, delta)
@@ -115,12 +101,12 @@ func _process_active_path_navigation(
 
 	var next_pos: Vector2 = nav_agent.get_next_path_position()
 	var direction: Vector2 = entity.global_position.direction_to(next_pos)
+	var is_pushed_in_contact: bool = _is_being_pushed_by_player_contact(entity)
 
-	# KLUCZOWA NAPRAWA PRASY HYDRAULICZNEJ W TŁUMIE:
-	# Jeśli przed pająkiem z 2., 3. lub 4. rzędu stoi już inny pająk bliżej gracza (_is_blocked_by_inner_ally),
-	# lub jeśli naruszamy strefę przy ścianie (wall_relief_vec != ZERO), wycinamy składową parcia do przodu!
-	# Dzięki temu zewnętrzne rzędy nie wbijają wewnętrznego rzędu w gracza i separacja nie jest kasowana przez .normalized()!
-	if (wall_relief_vec != Vector2.ZERO or _is_blocked_by_inner_ally) and valid_target != null:
+	# Jeśli jednostka jest w 2./3. rzędzie za sojusznikiem (_is_blocked_by_inner_ally),
+	# lub gracz właśnie przepycha się przez nią w kontakcie (is_pushed_in_contact),
+	# wycinamy składową parcia w głąb gracza, pozwalając na ruch styczny bez uciekania!
+	if (wall_relief_vec != Vector2.ZERO or _is_blocked_by_inner_ally or is_pushed_in_contact) and valid_target != null:
 		var dir_to_target: Vector2 = entity.global_position.direction_to(valid_target.global_position)
 		if direction.dot(dir_to_target) > 0.0:
 			direction = direction.slide(dir_to_target)
@@ -129,7 +115,13 @@ func _process_active_path_navigation(
 		direction += blackboard.avoidance_vector * (blackboard.threat_level * AVOIDANCE_THREAT_WEIGHT_MULTIPLIER)
 
 	if profile != null and profile.enable_crowd_separation and _cached_separation_vector != Vector2.ZERO:
-		direction += _cached_separation_vector * profile.separation_weight
+		var sep_vec: Vector2 = _cached_separation_vector * profile.separation_weight
+		# Jeśli jednostka jest w kontakcie z graczem, separacja od innych mobów nie może spychać jej na gracza!
+		if valid_target != null:
+			var dir_to_target: Vector2 = entity.global_position.direction_to(valid_target.global_position)
+			if sep_vec.dot(dir_to_target) > 0.0 and CharacterEntity.get_edge_distance_between(entity, valid_target) <= 6.0:
+				sep_vec = sep_vec.slide(dir_to_target)
+		direction += sep_vec
 
 	if wall_relief_vec != Vector2.ZERO:
 		direction += wall_relief_vec
@@ -151,11 +143,10 @@ func _calculate_wall_relief(
 	return CrowdCollisionController.calculate_wall_escape_vector(
 		entity,
 		valid_target,
-		profile.player_personal_space_margin,
-		profile.wall_escape_corridor_distance
+		profile.wall_escape_corridor_distance,
+		profile.wall_pin_detection_distance
 	)
 
-## Oblicza wektor separacji od sąsiadów oraz wykrywa, czy przed jednostką stoi już inny sojusznik z wewnętrznego pierścienia.
 func _update_crowd_separation_vector(
 	delta: float,
 	entity: CharacterEntity,
@@ -175,11 +166,9 @@ func _update_crowd_separation_vector(
 	var my_pos: Vector2 = entity.global_position
 	var my_rad: float = entity.get_effective_combat_radius()
 	var has_target: bool = is_instance_valid(valid_target) and (valid_target is Node2D)
-	var dir_to_target: Vector2 = (
-		my_pos.direction_to((valid_target as Node2D).global_position)
-		if has_target
-		else Vector2.ZERO
-	)
+	var target_pos: Vector2 = (valid_target as Node2D).global_position if has_target else Vector2.ZERO
+	var my_dist_to_target_sq: float = my_pos.distance_squared_to(target_pos) if has_target else INF
+	var dir_to_target: Vector2 = my_pos.direction_to(target_pos) if has_target else Vector2.ZERO
 
 	var sep_accum: Vector2 = Vector2.ZERO
 	var blocked_in_front: bool = false
@@ -204,9 +193,10 @@ func _update_crowd_separation_vector(
 			else Vector2.RIGHT.rotated(float(entity.get_instance_id() % 360) * (TAU / 360.0))
 		)
 
-		# Sprawdzamy, czy ten sąsiad stoi bezpośrednio między nami a graczem (w wewnętrznym pierścieniu)
+		# Sąsiad blokuje nas od przodu TYLKO wtedy, gdy faktycznie znajduje się bliżej gracza niż my!
 		if has_target and dir_to_target.dot(dir_to_other) >= INNER_RING_ALLY_BLOCK_DOT_THRESHOLD:
-			blocked_in_front = true
+			if other_2d.global_position.distance_squared_to(target_pos) < my_dist_to_target_sq:
+				blocked_in_front = true
 
 		var push_away_dir: Vector2 = -dir_to_other
 		var overlap_ratio: float = clampf(1.0 - (dist / maxf(1.0, desired_gap)), 0.15, 1.0)

@@ -1,10 +1,9 @@
 extends AIState
 class_name StateChase
-## Stan aktywnego pościgu AI za celem (obsługuje utrzymywanie dystansu bojowego, kiting,
-## zakaz dociskania gracza do ściany oraz obrót w stronę celu).
+## Stan aktywnego pościgu AI za celem (obsługuje utrzymywanie dystansu bojowego, kiting oraz obrót w stronę celu).
 
 const RETREAT_TARGET_OFFSET_PX: float = 150.0
-const ATTACK_RANGE_STOPPING_SAFETY_MARGIN_PX: float = 8.0
+const ATTACK_RANGE_STOPPING_SAFETY_MARGIN_PX: float = 6.0
 
 func enter() -> void:
 	blackboard.want_to_move = true
@@ -40,8 +39,8 @@ func physics_process(delta: float) -> void:
 		if entity.has_method("set_movement_target"):
 			entity.set_movement_target(retreat_pos)
 	else:
-		# --- 2. NORMALNY POŚCIG Z ZAKAZEM DOCISKANIA GRACZA DO ŚCIANY ---
-		var effective_stop_dist: float = _get_effective_stopping_distance(entity, blackboard.target, profile)
+		# --- 2. NORMALNY POŚCIG DO STYKU BOJOWEGO ---
+		var effective_stop_dist: float = _get_effective_stopping_distance(entity, profile)
 		blackboard.want_to_move = edge_distance > effective_stop_dist
 
 		if blackboard.want_to_move and entity.has_method("set_movement_target"):
@@ -51,17 +50,9 @@ func physics_process(delta: float) -> void:
 		var target_angle: float = entity.global_position.angle_to_point(blackboard.target.global_position)
 		entity.rotation = lerp_angle(entity.rotation, target_angle, profile.rotation_speed * delta)
 
-## Oblicza dystans zatrzymania z uwzględnieniem korytarza ucieczki pod ścianą oraz zasięgu ataku jednostki.
-func _get_effective_stopping_distance(
-	entity: CharacterEntity,
-	target: CharacterEntity,
-	profile: AIBehaviorProfile
-) -> float:
-	var required_margin: float = profile.player_personal_space_margin
-	if profile.avoid_pinning_target_to_wall and CrowdCollisionController.is_target_backed_against_wall(entity, target):
-		required_margin = maxf(required_margin, profile.wall_escape_corridor_distance)
-
-	var desired_stop: float = maxf(profile.min_stopping_distance, required_margin)
+## Oblicza dystans zatrzymania zgodny z profilem jednostki, pilnując by nie przekroczył zasięgu jej ataku.
+func _get_effective_stopping_distance(entity: CharacterEntity, profile: AIBehaviorProfile) -> float:
+	var desired_stop: float = maxf(0.0, profile.min_stopping_distance)
 	var stats: InteractionAndAttackStatsComponent = entity.interaction_and_attack_stats_script
 	if stats != null:
 		var max_attack_range: float = maxf(0.0, stats.get_total_range() - ATTACK_RANGE_STOPPING_SAFETY_MARGIN_PX)
