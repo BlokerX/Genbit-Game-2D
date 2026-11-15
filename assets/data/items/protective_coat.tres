@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dfqrds5idtgyo"]
+
+[ext_resource type="Script" uid="uid://o1p3kd6abot2" path="res://assets/scripts/entities/items/components/item_component.gd" id="1_x86sn"]
+[ext_resource type="Script" uid="uid://c56eivkcsvqcp" path="res://assets/scripts/entities/items/components/conditions/item_condition.gd" id="2_d0w4x"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_cm65p"]
+[ext_resource type="Script" uid="uid://fxf8d7uhq6ix" path="res://assets/scripts/entities/items/components/equippable_component.gd" id="4_cm65p"]
+[ext_resource type="Script" uid="uid://cs0uaow55h16g" path="res://assets/scripts/components/effect_protection_rule.gd" id="5_ao2lp"]
+[ext_resource type="Script" uid="uid://upg27um1tsh0" path="res://assets/scripts/components/protective_item_component.gd" id="6_6eary"]
+[ext_resource type="Script" uid="uid://l7xgpk2wjbr4" path="res://assets/scripts/entities/items/components/durability_component.gd" id="7_1v4ht"]
+[ext_resource type="Script" uid="uid://civbd34phwaj1" path="res://assets/scripts/entities/items/item_data.gd" id="7_n323g"]
+[ext_resource type="Texture2D" uid="uid://dfpdovxaqp3li" path="res://assets/textures/samples_examples/items/shirt.png" id="8_n323g"]
+
+[sub_resource type="Resource" id="Resource_mwk6a"]
+script = ExtResource("4_cm65p")
+equip_slot_type = 2
+
+[sub_resource type="Resource" id="Resource_cm65p"]
+script = ExtResource("5_ao2lp")
+target_category = 2
+block_completely = true
+metadata/_custom_type_script = "uid://cs0uaow55h16g"
+
+[sub_resource type="Resource" id="Resource_o4syj"]
+script = ExtResource("6_6eary")
+activation_scope = 0
+cannot_be_stolen_itself = true
+protection_rules = Array[ExtResource("5_ao2lp")]([SubResource("Resource_cm65p")])
+metadata/_custom_type_script = "uid://upg27um1tsh0"
+
+[sub_resource type="Resource" id="Resource_s0de3"]
+script = ExtResource("7_1v4ht")
+max_durability = 500
+
+[resource]
+script = ExtResource("7_n323g")
+item_id = &"protective_coat"
+item_name = "Protective Coat"
+item_description = "Acid protection."
+item_icon = ExtResource("8_n323g")
+components = Array[ExtResource("1_x86sn")]([SubResource("Resource_mwk6a"), SubResource("Resource_o4syj"), SubResource("Resource_s0de3")])
+metadata/_custom_type_script = "uid://civbd34phwaj1"

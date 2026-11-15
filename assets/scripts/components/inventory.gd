@@ -270,6 +270,18 @@ func get_equipment_passives() -> Array[Effect]:
 func get_inventory_passives() -> Array[Effect]:
 	return _passive_controller.get_inventory_passives(self)
 
+## Przepuszcza przychodzący efekt przez aktywne komponenty ochronne w ekwipunku, zbroi i dłoni.
+func preprocess_incoming_effect(effect: Effect) -> Effect:
+	return _passive_controller.preprocess_incoming_effect(self, effect)
+
+## Zwraca skumulowaną odporność (0.0 - 1.0) na podaną akcję (np. &"steal") z przedmiotów w ekwipunku/zbroi.
+func get_action_protection_score(action_tag: StringName) -> float:
+	return _passive_controller.get_total_action_protection(self, action_tag)
+
+## Zwraca true, jeśli aktualnie trzymany w dłoni przedmiot posiada ochronę przed kradzieżą/wytrąceniem.
+func is_current_item_theft_protected() -> bool:
+	return _passive_controller.is_item_theft_protected(get_current_item())
+
 ## Prosi obserwatorów o ponowne zastosowanie pasywek bez zmiany zawartości.
 func refresh_passives() -> void:
 	held_passives_changed.emit()

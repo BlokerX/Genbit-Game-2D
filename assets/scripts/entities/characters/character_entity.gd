@@ -366,6 +366,42 @@ func remove_effect_by_name(eff_name: String) -> void:
 ## Całkowite czyszczenie absolutnie wszystkiego [Effects] (Używane przy śmierci/respawnie)
 func purge_absolutely_everything() -> void:
 	_effects_controller.purge_absolutely_everything(effects_collector)
+
+## Przetwarza przychodzący efekt przez opcjonalne modyfikatory ochronne ekwipunku postaci (Loose Coupling / DIP).
+## Zwraca zmodyfikowany efekt lub null, jeśli efekt został całkowicie zablokowany przez przedmiot.
+func preprocess_incoming_effect(effect: Effect) -> Effect:
+	if effect == null:
+		return null
+	if has_method("get_inventory"):
+		var inv: Variant = call("get_inventory")
+		if is_instance_valid(inv) and inv.has_method("preprocess_incoming_effect"):
+			return inv.call("preprocess_incoming_effect", effect) as Effect
+	return effect
+
+## Zwraca łączną odporność (0.0 - 1.0) postaci na podaną akcję specjalną (np. &"steal").
+func get_action_resistance(action_tag: StringName) -> float:
+	var resistance: float = 0.0
+	if has_meta("steal_resistance") and action_tag == &"steal":
+		resistance = maxf(resistance, float(get_meta("steal_resistance")))
+	if has_method("get_inventory"):
+		var inv: Variant = call("get_inventory")
+		if is_instance_valid(inv) and inv.has_method("get_action_protection_score"):
+			var inv_prot: float = float(inv.call("get_action_protection_score", action_tag))
+			resistance = clampf(1.0 - ((1.0 - resistance) * (1.0 - inv_prot)), 0.0, 1.0)
+	return resistance
+
+## Zwraca true, jeśli podana akcja (np. &"steal") jest całkowicie zablokowana przez ekwipunek lub status postaci.
+func is_action_blocked(action_tag: StringName) -> bool:
+	if action_tag == &"steal":
+		if has_meta("immune_to_steal") and bool(get_meta("immune_to_steal")):
+			return true
+		if has_method("get_inventory"):
+			var inv: Variant = call("get_inventory")
+			if is_instance_valid(inv) and inv.has_method("is_current_item_theft_protected"):
+				if bool(inv.call("is_current_item_theft_protected")):
+					return true
+	return get_action_resistance(action_tag) >= 1.0
+
 #endregion
 
 #region Silnik animacji

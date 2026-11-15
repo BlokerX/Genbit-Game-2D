@@ -25,14 +25,14 @@ enum EffectCategory {
 @export var effect_name : String = "Effect"
 @export var effect_color : Color = Color.WHITE
 @export var icon : Texture2D
-## Kategoria efektu wykorzystywana przez system odporności (LifeStatsComponent).
+## Kategoria efektu wykorzystywana przez system odporności (LifeStatsComponent oraz ProtectiveItemComponent).
 @export var effect_category : EffectCategory = EffectCategory.NONE
 
 @export_group("Zasady Aplikacji i Wizualizacji")
 ## Jeśli false, efekt ofensywny NIE zadziała na samego twórcę (source_entity == target).
 ## Chroni bossów i postacie przed zabiciem samych siebie własnymi plamami kwasu lub wybuchami.
 @export var allow_self_inflict : bool = false
-## Czy nałożenie tego efektu ma wyzwalać oprawę ekranową/dźwiękową u gracza (np. zielony błysk przy leczeniu)?
+## Czy nałożenie tego efektu ma wyzwalać oprawę ekranową u gracza (np. zielony błysk przy leczeniu)?
 @export var show_screen_feedback : bool = true
 
 ## Informacje o sprawcy (wstrzykiwane w locie przez broń, pocisk lub umiejętność).
@@ -43,6 +43,14 @@ var source_position: Vector2 = Vector2.ZERO
 ## Zwraca true, jeśli efekt został pomyślnie nałożony na cel.
 func apply_effect(_target : Node2D) -> bool:
 	return false
+
+## Skaluje czas trwania efektu przez podany mnożnik (metoda polimorficzna dla ProtectiveItemComponent - OCP).
+func apply_duration_multiplier(_multiplier: float) -> void:
+	pass
+
+## Skaluje siłę oddziaływania efektu przez podany mnożnik (metoda polimorficzna dla ProtectiveItemComponent - OCP).
+func apply_potency_multiplier(_multiplier: float) -> void:
+	pass
 
 ## Zwraca rzeczywistą kategorię efektu w czasie wykonywania gry (odporną na serializację .tres w Godocie).
 func get_effective_category() -> EffectCategory:

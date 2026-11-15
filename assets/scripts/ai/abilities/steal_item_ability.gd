@@ -136,32 +136,32 @@ func _try_steal_held_item(attacker: CharacterEntity, target: CharacterEntity) ->
 	elif debug_mode:
 		print("[StealItem] Próba kradzieży nieudana (Wylosowano: %.2f > Wymagane: %.2f)." % [roll, effective_chance])
 
-## Oblicza ostateczną szansę powodzenia kradzieży z uwzględnieniem odporności celu oraz właściwości przedmiotu.
+## Oblicza ostateczną szansę powodzenia kradzieży z uwzględnieniem odporności celu oraz właściwości ochronnych przedmiotów.
 func _calculate_effective_steal_chance(_attacker: CharacterEntity, target: CharacterEntity, item_instance: ItemInstance) -> float:
-	if steal_success_chance <= 0.0 or item_instance == null:
+	if steal_success_chance <= 0.0 or item_instance == null or not is_instance_valid(target):
 		return 0.0
 
-	# 1. Sprawdzenie, czy sam przedmiot lub stan postaci blokuje kradzież (wsparcie dla unikalnych itemów i buffów)
 	if item_instance.state.get("cannot_be_stolen", false) == true:
 		return 0.0
-	if target.has_meta("immune_to_steal") and bool(target.get_meta("immune_to_steal")) == true:
-		return 0.0
+	if item_instance.data != null and item_instance.data.components != null:
+		for comp in item_instance.data.components:
+			if comp != null and not comp.can_item_be_stolen(item_instance):
+				return 0.0
+
 	if target.has_method("is_action_blocked") and bool(target.call("is_action_blocked", &"steal")):
 		return 0.0
 
-	var chance: float = steal_success_chance
-
-	# 2. Uwzględnienie odporności na kontrolę tłumu (cc_resistance) lub dedykowanej odporności na kradzież
 	var resistance: float = 0.0
 	if affected_by_target_cc_resistance and target.get("health_stats_script") != null:
 		resistance = maxf(resistance, float(target.health_stats_script.cc_resistance))
-	if target.has_meta("steal_resistance"):
-		resistance = clampf(resistance + float(target.get_meta("steal_resistance")), 0.0, FULL_RESISTANCE_THRESHOLD)
+	if target.has_method("get_action_resistance"):
+		var action_res: float = float(target.call("get_action_resistance", &"steal"))
+		resistance = clampf(1.0 - ((1.0 - resistance) * (1.0 - action_res)), 0.0, FULL_RESISTANCE_THRESHOLD)
 
 	if resistance >= FULL_RESISTANCE_THRESHOLD:
 		return 0.0
 
-	return clampf(chance * (1.0 - resistance), 0.0, 1.0)
+	return clampf(steal_success_chance * (1.0 - resistance), 0.0, 1.0)
 
 # ==============================================================================
 # KLASA WEWNĘTRZNA: Graficzny Debugger

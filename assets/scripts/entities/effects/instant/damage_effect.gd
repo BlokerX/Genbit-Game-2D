@@ -12,6 +12,9 @@ func _init(_damage_amount: int = 0, _armor_penetration: float = 0.0, _is_reflect
 	effect_name = "Damage"
 	effect_category = EffectCategory.PHYSICAL_DAMAGE
 
+func apply_potency_multiplier(multiplier: float) -> void:
+	damage_amount = maxi(1, int(round(float(damage_amount) * maxf(0.0, multiplier))))
+
 func apply_effect(target : Node2D) -> bool:
 	if target.get("health_stats_script") != null:
 		var stats = target.health_stats_script

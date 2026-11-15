@@ -24,6 +24,13 @@ func _init(_duration: float = 10.0, _tick_interval: float = 2.0, _hp_per_tick: i
 	hp_per_tick = _hp_per_tick
 	effect_category = EffectCategory.HEAL if _hp_per_tick >= 0 else EffectCategory.POISON_ACID
 
+func apply_potency_multiplier(multiplier: float) -> void:
+	var scaled_val: int = int(round(float(abs(hp_per_tick)) * maxf(0.0, multiplier)))
+	if hp_per_tick < 0:
+		hp_per_tick = -maxi(1, scaled_val)
+	elif hp_per_tick > 0:
+		hp_per_tick = maxi(1, scaled_val)
+
 ## Gwarantuje poprawną kategorię nawet dla starych plików .tres zapisanych przed dodaniem EffectCategory.
 func get_effective_category() -> EffectCategory:
 	if hp_per_tick < 0:

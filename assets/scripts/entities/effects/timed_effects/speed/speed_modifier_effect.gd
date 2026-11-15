@@ -10,6 +10,14 @@ func _init(_duration: float = 10.0, _speed_multiplier: float = 1.0) -> void:
 	effect_name = "SpeedModifier"
 	effect_category = EffectCategory.SLOW if _speed_multiplier < 1.0 else EffectCategory.STAT_BUFF
 
+func apply_potency_multiplier(multiplier: float) -> void:
+	var clamped_mult: float = clampf(multiplier, 0.0, 2.0)
+	# Dla spowolnienia (speed_multiplier < 1.0) mniejszy mnożnik potency zbliża wartość do 1.0 (osłabia spowolnienie)
+	if speed_multiplier < 1.0:
+		speed_multiplier = lerpf(1.0, speed_multiplier, clamped_mult)
+	else:
+		speed_multiplier = 1.0 + ((speed_multiplier - 1.0) * clamped_mult)
+
 # Pomocnicza funkcja wykrywająca właściwy komponent ruchu w obiekcie
 func _get_movement_resource(target: Node2D) -> Resource:
 	if "movement_universal_script" in target and target.movement_universal_script != null:

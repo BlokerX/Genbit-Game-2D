@@ -32,7 +32,6 @@ func create_unique_copy() -> ItemComponent:
 ## Sprawdza, czy wszystkie warunki do wykonania akcji są spełnione.
 func can_execute(actor: Node2D, item_instance: ItemInstance) -> bool:
 	for condition in conditions:
-		# ZABEZPIECZENIE: Ignorujemy puste pola w Inspektorze
 		if condition != null:
 			if not condition.check_condition(actor, item_instance):
 				return false
@@ -85,6 +84,39 @@ func get_ai_threat_score() -> float:
 	return DEFAULT_AI_THREAT_RATIO
 
 # =========================================================================
+# INTERFEJS PROTEKCJI I MODYFIKACJI EFEKTÓW (Zasada Open/Closed - OCP)
+# =========================================================================
+
+## Zwraca false, jeśli komponent blokuje możliwość kradzieży/wytrącenia tego przedmiotu.
+func can_item_be_stolen(_item_instance: ItemInstance) -> bool:
+	return true
+
+## Zwraca wartość ochrony (0.0 - 1.0) przed określoną akcją (np. &"steal") w podanym kontekście ekwipunku.
+func get_action_protection_score(
+	_item_instance: ItemInstance,
+	_action_tag: StringName,
+	_is_equipped: bool,
+	_is_held: bool,
+	_is_in_inventory: bool
+) -> float:
+	return 0.0
+
+## Ocenia wpływ komponentu na przychodzący efekt (blokada, mnożnik czasu trwania, mnożnik siły).
+func evaluate_effect_protection(
+	_item_instance: ItemInstance,
+	_effect: Effect,
+	_is_equipped: bool,
+	_is_held: bool,
+	_is_in_inventory: bool
+) -> Dictionary:
+	return {
+		"blocked": false,
+		"duration_multiplier": 1.0,
+		"potency_multiplier": 1.0,
+		"modified": false
+	}
+
+# =========================================================================
 # INTERFEJS OPISÓW DLA UI (Zasada Open/Closed - OCP oraz Information Expert)
 # =========================================================================
 
@@ -93,7 +125,6 @@ func get_tooltip_info(_item_instance: ItemInstance) -> String:
 	return ""
 
 ## Zwraca linie opisu tego komponentu do wyświetlenia w panelu informacji o trzymanym przedmiocie (HUD).
-## Parametr is_advanced określa, czy gracz włączył widok szczegółowy (InfoMode.ADVANCED).
 func get_hud_info(_item_instance: ItemInstance, _is_advanced: bool) -> String:
 	return ""
 

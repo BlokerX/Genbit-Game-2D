@@ -5,6 +5,7 @@ class_name TimedEffect
 ## Krok zaokrąglania modyfikatorów zmiennoprzecinkowych.
 ## Zapobiega błędom precyzji procesora (float drift, np. 0.99999994 zamiast 1.0) po zdjęciu buffa.
 const STAT_MODIFIER_SNAP_STEP: float = 0.0001
+const MIN_TIMED_EFFECT_DURATION_SEC: float = 0.05
 
 @export var duration : float = 5.0
 ## Czy efekt ma trwać wiecznie?
@@ -12,15 +13,18 @@ const STAT_MODIFIER_SNAP_STEP: float = 0.0001
 ## Odstęp (w sekundach) między kolejnymi wykonaniami on_effect_tick(). Wartość 0.0 wyłącza tiki.
 @export var tick_interval : float = 1.0
 
+func apply_duration_multiplier(multiplier: float) -> void:
+	if not is_infinite:
+		duration = maxf(MIN_TIMED_EFFECT_DURATION_SEC, duration * maxf(0.0, multiplier))
+
 # Nadpisujemy metodę aplikowania z bazowego Effect
 func apply_effect(target : Node2D) -> bool:
 	var effect_parent : Node = target
 	if "effects_collector" in target and target.effects_collector != null:
 		effect_parent = target.effects_collector
 
-	# Odczytujemy skąd pochodzi NASZ efekt
-	var my_is_aura = self.has_meta("is_environment_aura") and self.get_meta("is_environment_aura") == true
-	var my_passive_src = self.get_meta("passive_source") if self.has_meta("passive_source") else ""
+	var my_is_aura: bool = self.has_meta("is_environment_aura") and self.get_meta("is_environment_aura") == true
+	var my_passive_src: String = str(self.get_meta("passive_source")) if self.has_meta("passive_source") else ""
 
 	# 1. SPRAWDZAMY CZY EFEKT JUŻ ISTNIEJE NA CELU
 	for child in effect_parent.get_children():
@@ -28,16 +32,11 @@ func apply_effect(target : Node2D) -> bool:
 			continue
 		if child.get("effect_resource") != null and child.effect_resource.effect_name == self.effect_name:
 			var child_res = child.effect_resource
-			var child_is_aura = child_res.has_meta("is_environment_aura") and child_res.get_meta("is_environment_aura") == true
-			var child_passive_src = child_res.get_meta("passive_source") if child_res.has_meta("passive_source") else ""
+			var child_is_aura: bool = child_res.has_meta("is_environment_aura") and child_res.get_meta("is_environment_aura") == true
+			var child_passive_src: String = str(child_res.get_meta("passive_source")) if child_res.has_meta("passive_source") else ""
 
-			# TARCZA KANAŁÓW: Nadpisujemy efekt TYLKO jeśli pochodzi z tego samego źródła!
-			# Mróz z HELD (broń) vs Mróz z INVENTORY (Plecak) vs Mróz z potki ("" puste)
 			if my_is_aura == child_is_aura and my_passive_src == child_passive_src:
-				# Oznaczamy, że to tylko odświeżenie czasu trwania (zapobiega spamowi audio/VFX)
 				set_meta("was_refreshed", true)
-
-				# Aktualizujemy sprawcę na wypadek odświeżenia trucizny/kwasu
 				if is_instance_valid(self.source_entity):
 					child_res.source_entity = self.source_entity
 					child_res.source_position = self.source_position
@@ -46,19 +45,18 @@ func apply_effect(target : Node2D) -> bool:
 					return true
 				if self.is_infinite:
 					child.is_infinite = true
-				child.duration = max(child.duration, self.duration)
+
+				child.duration = maxf(child.duration, self.duration)
 				return true
 
 	if has_meta("was_refreshed"):
 		remove_meta("was_refreshed")
 
 	# 2. JEŚLI NIE MA TAKIEGO EFEKTU W TYM KANALE, DODAJEMY NOWY
-	var active_node = Node.new()
+	var active_node: Node = Node.new()
 	active_node.set_script(preload("res://assets/scripts/entities/effects/base/_active_effect.gd"))
 	active_node.name = effect_name.replace(" ", "_")
 
-	# WAŻNE: Konfigurujemy dane PRZED dodaniem do drzewa, aby sygnał child_entered_tree w UI
-	# od razu widział przypisany effect_resource bez konieczności czekania klatki!
 	active_node.setup(target, self, duration, tick_interval, is_infinite)
 	if my_is_aura:
 		active_node.set_meta("is_environment_aura", true)
@@ -81,12 +79,11 @@ static func snap_stat_division(current_value: float, divisor: float) -> float:
 		return current_value
 	return snappedf(current_value / divisor, STAT_MODIFIER_SNAP_STEP)
 
-# Metody do nadpisania w konkretnych efektach czasowych:
 func on_effect_start(_target : Node2D) -> void:
-	pass # Co ma się stać na samym początku?
+	pass
 
 func on_effect_tick(_target : Node2D) -> void:
-	pass # Co ma się stać co każdy tick_interval?
+	pass
 
 func on_effect_end(_target : Node2D) -> void:
-	pass # Co ma się stać po upływie czasu?
+	pass

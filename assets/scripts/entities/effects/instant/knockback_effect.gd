@@ -15,6 +15,12 @@ func _init(_force: float = DEFAULT_KNOCKBACK_FORCE, _duration: float = DEFAULT_K
 	knockback_force = _force
 	duration = _duration
 
+func apply_duration_multiplier(multiplier: float) -> void:
+	duration = maxf(0.05, duration * maxf(0.0, multiplier))
+
+func apply_potency_multiplier(multiplier: float) -> void:
+	knockback_force = maxf(0.0, knockback_force * maxf(0.0, multiplier))
+
 func apply_effect(target: Node2D) -> bool:
 	if not is_instance_valid(target):
 		return false
