@@ -1,5 +1,6 @@
 class_name PlayerFeedbackController
 extends Node
+## Kontroler oprawy audiowizualnej i ekranowej gracza (SOLID - SRP).
 
 const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
 const ScreenFeedbackOverlayType = preload(
@@ -101,20 +102,13 @@ func play_received_effect(effect: Effect) -> void:
 	if effect.is_silent_or_passive() or effect.has_meta("was_refreshed"):
 		return
 
+	var selected_cue: FeedbackCueType = status_effect_cue
 	if effect is DamageEffect:
-		_play_cue(
-			damage_received_cue, _player.character_sprite, _player.global_position, _player
-		)
+		selected_cue = damage_received_cue
 	elif effect is FreezeEffect:
-		_play_cue(freeze_cue, _player.character_sprite, _player.global_position, _player)
-	elif effect.is_beneficial():
-		_play_cue(
-			status_effect_cue, _player.character_sprite, _player.global_position, _player
-		)
-	else:
-		_play_cue(
-			status_effect_cue, _player.character_sprite, _player.global_position, _player
-		)
+		selected_cue = freeze_cue
+
+	_play_cue(selected_cue, _player.character_sprite, _player.global_position, _player)
 
 ## Odtwarza krok w określonych odstępach, kiedy gracz rzeczywiście się porusza.
 func process_movement_feedback(delta: float, movement_velocity: Vector2) -> void:
@@ -145,6 +139,11 @@ func play_item_pickup() -> void:
 func play_item_drop() -> void:
 	_play_cue(item_drop_cue, null, _player.global_position, _player)
 
+## Wyświetla zieloną obwódkę ekranu przy leczeniu (parametr is_subtle = true dla delikatnych tików regeneracji).
+func play_healing_screen_flash(is_subtle: bool = true) -> void:
+	if is_instance_valid(_screen_overlay):
+		_screen_overlay.call("show_healing_feedback", is_subtle)
+
 ## Synchronizuje czas trwania niebieskiej obwódki z cyklem życia efektu mrozu.
 func set_freeze_feedback_active(is_active: bool) -> void:
 	_active_freeze_effect_count = maxi(
@@ -167,10 +166,10 @@ func _play_cue(
 		visual_target = _player
 	GameFeedback.play_cue(cue, animation_target, world_position, sound_emitter, visual_target)
 
-## Reaguje na faktyczne uleczenie: pokazuje zieloną obwódkę TYLKO jeśli uleczono > 0 HP i leczenie nie było ciche/pasywne.
+## Reaguje na faktyczne uleczenie: pokazuje pełną zieloną obwódkę TYLKO jeśli uleczono > 0 HP i leczenie nie było ciche/pasywne.
 func _on_player_health_healed(amount_restored: int, is_silent: bool) -> void:
-	if amount_restored > 0 and not is_silent and is_instance_valid(_screen_overlay):
-		_screen_overlay.call("show_healing_feedback")
+	if amount_restored > 0 and not is_silent:
+		play_healing_screen_flash(false)
 
 func _on_player_health_changed(current_health: int, maximum_health: int) -> void:
 	_last_known_health = current_health

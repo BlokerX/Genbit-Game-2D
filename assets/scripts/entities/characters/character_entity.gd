@@ -92,6 +92,8 @@ func _ready() -> void:
 	if health_stats_script:
 		if not health_stats_script.died.is_connected(_on_character_died):
 			health_stats_script.died.connect(_on_character_died)
+		if not health_stats_script.health_healed.is_connected(_on_character_healed):
+			health_stats_script.health_healed.connect(_on_character_healed)
 
 	_combat_animator.call_deferred("initialize", self)
 
@@ -283,9 +285,28 @@ func play_throw_attack_animation(target_world_pos: Vector2) -> void:
 func play_hit_reaction(hit_source_world_pos: Vector2 = Vector2.INF) -> void:
 	if _combat_animator != null:
 		_combat_animator.play_hit_reaction(hit_source_world_pos)
+
+## Odtwarza wizualną animację i zielone podświetlenie leczenia na postaci (SOLID - SRP).
+## Parametr is_subtle = true uruchamia łagodniejszy impuls (np. dla tików regeneracji w czasie).
+func play_heal_reaction(is_subtle: bool = false) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_heal_reaction(is_subtle)
+
+## Odtwarza opcjonalny impuls obwódki ekranu przy leczeniu (nadpisywane w PlayerCharacter, ignorowane u AI - OCP).
+func play_heal_screen_feedback(_is_subtle: bool = true) -> void:
+	pass
+
 #endregion
 
 #region Obsługa sygnałów
+
+## Reaguje na sygnał faktycznego przywrócenia zdrowia z LifeStatsComponent.
+## Wywołuje zielone podświetlenie postaci wyłącznie dla jawnego leczenia (pomija respawn i podtrzymanie 1 HP przez Nieśmiertelność).
+func _on_character_healed(amount_restored: int, is_silent: bool) -> void:
+	if is_silent or amount_restored <= 0 or is_dead or is_respawning:
+		return
+	play_heal_reaction(false)
+
 # Funkcja wywoływana TYLKO gdy postać zginie
 func _on_character_died() -> void:
 	# --- TARCZA NIEŚMIERTELNOŚCI (Immortality) ---

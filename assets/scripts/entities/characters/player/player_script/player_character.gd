@@ -181,6 +181,11 @@ func set_freeze_feedback_active(is_active: bool) -> void:
 	if is_instance_valid(_feedback_controller):
 		_feedback_controller.set_freeze_feedback_active(is_active)
 
+## Przekazuje impuls obwódki ekranu przy leczeniu (np. delikatny błysk dla tików regeneracji).
+func play_heal_screen_feedback(is_subtle: bool = true) -> void:
+	if is_instance_valid(_feedback_controller):
+		_feedback_controller.play_healing_screen_flash(is_subtle)
+
 ## Wywoływane przez efekty obrażeń po trafieniu zadanym przez gracza.
 func notify_damage_dealt(target: Node2D) -> void:
 	if is_instance_valid(_feedback_controller):
