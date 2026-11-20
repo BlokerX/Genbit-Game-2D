@@ -15,6 +15,7 @@ var _ai_inventory: AIInventoryController = null
 var _attack_component: AttackComponent = null
 
 @export_category("Zdolności Specjalne")
+## Lista zasobów AIAbility (plików .tres) dostępnych dla tego przeciwnika.
 @export var abilities: Array[AIAbility] = []
 var _ability_cooldowns: Dictionary = {}
 var is_casting_ability: bool = false
@@ -76,8 +77,9 @@ func process_combat(delta: float) -> void:
 					GameFeedback.play_cue(
 						ability.feedback_cue, entity.character_sprite, entity.global_position, entity
 					)
+				ability.apply_caster_self_effects(entity)
 				ability.execute(entity, blackboard.target)
-				_ability_cooldowns[ability] = ability.cooldown
+				_ability_cooldowns[ability] = ability.get_effective_cooldown(entity)
 				ability_casted_this_frame = true
 
 				if not ability.ignore_global_cast_lock:
