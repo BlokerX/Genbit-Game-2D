@@ -70,6 +70,10 @@ func get_use_feedback() -> FeedbackCue:
 		return get("use_feedback") as FeedbackCue
 	return null
 
+## Odtwarza polimorficzną animację ruchu broni i postaci odpowiednią dla tego typu komponentu (SOLID - OCP).
+func play_weapon_attack_animation(_actor: Node2D, _target_world_pos: Vector2) -> void:
+	pass
+
 ## Wgrywa statystyki trzymanego przedmiotu (attack_data, cooldown, efekty) do zasobu statystyk ataku postaci (Resource).
 ## Zwraca true, jeśli komponent zmodyfikował statystyki bojowe.
 func apply_held_stats_to(_attack_stats: Resource) -> bool:

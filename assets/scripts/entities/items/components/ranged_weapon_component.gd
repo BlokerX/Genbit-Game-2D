@@ -132,7 +132,9 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 				if eff != null:
 					generated_effects.append(eff.duplicate(true))
 
-	# 4. SPAWN POCISKU
+	# 4. SPAWN POCISKU I ANIMACJA ODRZUTU BRONI PALNEJ
+	play_weapon_attack_animation(actor, target_pos)
+
 	var proj = projectile_scene.instantiate()
 	proj.shooter = actor
 	proj.global_position = actor.global_position
@@ -180,6 +182,10 @@ func requires_melee_range_check() -> bool:
 
 func get_use_feedback() -> FeedbackCue:
 	return use_feedback
+
+func play_weapon_attack_animation(actor: Node2D, target_world_pos: Vector2) -> void:
+	if is_instance_valid(actor) and actor.has_method("play_ranged_weapon_animation"):
+		actor.call("play_ranged_weapon_animation", target_world_pos)
 
 func apply_held_stats_to(attack_stats: Resource) -> bool:
 	if attack_stats == null:

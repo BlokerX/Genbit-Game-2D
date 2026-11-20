@@ -121,6 +121,7 @@ func process_combat(delta: float) -> void:
 				_attack_component.execute_attack(entity, blackboard.target, weapon, _ai_inventory, stats, has_los)
 	else:
 		if edge_dist <= stats.get_total_range() and stats.can_attack():
+			entity.play_unarmed_attack_animation(blackboard.target.global_position)
 			stats.execute_attack_on_target(entity, blackboard.target)
 
 func _process_ability_cooldowns(delta: float) -> void:

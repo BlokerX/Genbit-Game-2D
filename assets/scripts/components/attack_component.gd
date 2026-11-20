@@ -4,8 +4,6 @@ class_name AttackComponent
 
 signal spawn_projectile_requested(projectile_node: Node2D, spawn_position: Vector2)
 
-const DEFAULT_COMBAT_RADIUS_PX: float = 20.0
-
 func execute_attack(
 	shooter: CharacterEntity,
 	target: Node2D,
@@ -20,13 +18,14 @@ func execute_attack(
 	# 1. SPRAWDZENIE CZY TRZYMANY PRZEDMIOT POSIADA KOMPONENT BOJOWY / WYKONAWCZY (SOLID - OCP)
 	var executable_comp: ItemComponent = _find_executable_attack_component(weapon_instance)
 
-	# Jeśli brak broni (lub trzymamy np. zasób drewna) -> uderzamy gołą pięścią!
+	# Jeśli brak broni (lub trzymamy np. zasób drewna) -> uderzamy gołą pięścią z animacją wypadu!
 	if executable_comp == null:
 		if target == null:
 			return false
 		var unarmed_dist: float = _get_edge_distance(shooter, target)
 		if unarmed_dist > stats_script.get_total_range():
 			return false
+		shooter.play_unarmed_attack_animation(target.global_position)
 		stats_script.execute_attack_on_target(shooter, target)
 		return true
 

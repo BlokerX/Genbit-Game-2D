@@ -41,6 +41,8 @@ func execute(actor: Node2D, _target: Node2D, item_instance: ItemInstance) -> voi
 		# Zabezpieczenie przed wrzuceniem granatu/noża bezpośrednio w ścianę przed graczem!
 		spawn_pos = ItemPickup.calculate_safe_spawn_position(actor.global_position, desired_spawn_pos, actor)
 
+	play_weapon_attack_animation(actor, actor.global_position + (throw_dir * DEFAULT_THROW_SPAWN_OFFSET_PX))
+
 	var entity = entity_scene.instantiate()
 
 	if "shooter" in entity:
@@ -89,6 +91,10 @@ func requires_melee_range_check() -> bool:
 
 func get_use_feedback() -> FeedbackCue:
 	return use_feedback
+
+func play_weapon_attack_animation(actor: Node2D, target_world_pos: Vector2) -> void:
+	if is_instance_valid(actor) and actor.has_method("play_throw_attack_animation"):
+		actor.call("play_throw_attack_animation", target_world_pos)
 
 func apply_held_stats_to(attack_stats: Resource) -> bool:
 	if attack_stats == null:

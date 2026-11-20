@@ -33,7 +33,8 @@ func execute(actor: Node2D, target: Node2D, _item_instance: ItemInstance) -> voi
 	# 1. Wgrywamy statystyki tego komponentu do aktora
 	apply_held_stats_to(stats)
 
-	# 2. Wykonujemy cios
+	# 2. Wykonujemy cios oraz proceduralną animację zamachu bronią białą
+	play_weapon_attack_animation(actor, target.global_position)
 	stats.call("execute_attack_on_target", actor, target)
 	FeedbackDispatcherType.play_for_actor(use_feedback, actor, target)
 
@@ -57,6 +58,10 @@ func requires_melee_range_check() -> bool:
 
 func get_use_feedback() -> FeedbackCue:
 	return use_feedback
+
+func play_weapon_attack_animation(actor: Node2D, target_world_pos: Vector2) -> void:
+	if is_instance_valid(actor) and actor.has_method("play_melee_weapon_animation"):
+		actor.call("play_melee_weapon_animation", target_world_pos)
 
 func apply_held_stats_to(attack_stats: Resource) -> bool:
 	if attack_stats == null:

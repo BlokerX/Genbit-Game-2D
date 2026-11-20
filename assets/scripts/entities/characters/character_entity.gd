@@ -5,6 +5,9 @@ class_name CharacterEntity
 const CharacterEffectsControllerType = preload(
 	"res://assets/scripts/entities/characters/character_effects_controller.gd"
 )
+const CharacterCombatAnimatorType = preload(
+	"res://assets/scripts/entities/characters/character_combat_animator.gd"
+)
 
 # --- STAŁE ANIMACJI KIERUNKOWYCH I FIZYKI (Brak magicznych liczb) ---
 const MIN_DIRECTIONAL_FRAMES_COUNT: int = 8
@@ -68,10 +71,12 @@ var is_dead: bool = false
 ## Zapamiętana skala bazowa węzła z momentu startu sceny (chroni przed trwałym powiększeniem po skoku).
 var base_scale: Vector2 = Vector2.ONE
 var _effects_controller: CharacterEffectsControllerType
+var _combat_animator: CharacterCombatAnimatorType
 
 #region Główne funkcje silnikowe
 func _ready() -> void:
 	_effects_controller = CharacterEffectsControllerType.new()
+	_combat_animator = CharacterCombatAnimatorType.new()
 	base_scale = scale
 	set_meta("base_scale", base_scale)
 
@@ -87,6 +92,8 @@ func _ready() -> void:
 	if health_stats_script:
 		if not health_stats_script.died.is_connected(_on_character_died):
 			health_stats_script.died.connect(_on_character_died)
+
+	_combat_animator.call_deferred("initialize", self)
 
 func _process(_delta: float) -> void:
 	pass
@@ -240,13 +247,42 @@ func reset_visual_scale() -> void:
 		target_scale = base_scale * total_mult
 	scale = target_scale
 
-## Przerywa bieżące tweeny ataku/skoku i bezpiecznie przywraca skalę postaci.
+## Przerywa bieżące tweeny ataku/skoku i bezpiecznie przywraca skalę oraz pozycję spoczynkową sprite'a.
 func cancel_current_attack() -> void:
 	for t in active_tweens:
 		if t and t.is_valid():
 			t.kill()
 	active_tweens.clear()
 	reset_visual_scale()
+	if _combat_animator != null:
+		_combat_animator.reset_pose()
+#endregion
+
+#region Animacje Walki i Reakcji na Obrażenia (Delegacja do CharacterCombatAnimator - SRP)
+## Odtwarza proceduralną animację uderzenia wręcz (gołą dłonią lub ciałem).
+func play_unarmed_attack_animation(target_world_pos: Vector2) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_unarmed_strike(target_world_pos)
+
+## Odtwarza proceduralny zamach bronią białą po łuku.
+func play_melee_weapon_animation(target_world_pos: Vector2) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_melee_swing(target_world_pos)
+
+## Odtwarza proceduralny odrzut broni palnej i błysk lufy.
+func play_ranged_weapon_animation(target_world_pos: Vector2) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_ranged_recoil(target_world_pos)
+
+## Odtwarza proceduralny zamach przy rzucie przedmiotem.
+func play_throw_attack_animation(target_world_pos: Vector2) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_throw_motion(target_world_pos)
+
+## Odtwarza wizualną reakcję postaci na otrzymane obrażenia (odskok i błysk trafienia).
+func play_hit_reaction(hit_source_world_pos: Vector2 = Vector2.INF) -> void:
+	if _combat_animator != null:
+		_combat_animator.play_hit_reaction(hit_source_world_pos)
 #endregion
 
 #region Obsługa sygnałów
@@ -307,6 +343,8 @@ func respawn_sequence() -> void:
 	velocity.y = 0.0
 	# przywrócenie domyślnej orientacji, skali i czystych cooldownów
 	reset_visual_scale()
+	if _combat_animator != null:
+		_combat_animator.reset_pose()
 	_set_character_sprite_frame(STANDING_DEFAULT_FRAME_INDEX)
 	purge_absolutely_everything()
 	if interaction_and_attack_stats_script:
@@ -316,6 +354,8 @@ func respawn_sequence() -> void:
 func reset_state_for_respawn() -> void:
 	health_stats_script.heal_completely(true)
 	reset_visual_scale()
+	if _combat_animator != null:
+		_combat_animator.reset_pose()
 
 	if character_sprite:
 		character_sprite.rotation_degrees = 0.0
@@ -401,7 +441,6 @@ func is_action_blocked(action_tag: StringName) -> bool:
 				if bool(inv.call("is_current_item_theft_protected")):
 					return true
 	return get_action_resistance(action_tag) >= 1.0
-
 #endregion
 
 #region Silnik animacji
