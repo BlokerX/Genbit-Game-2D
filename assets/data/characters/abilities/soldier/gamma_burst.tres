@@ -1,32 +1,59 @@
 [gd_resource type="Resource" script_class="TelegraphedBurstAbility" format=3 uid="uid://p8tttld1kkhp"]
 
-[ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/telegraphed_burst_ability.gd" id="1_2p250"]
-[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_1kljh"]
-[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="2_eff"]
-[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
-[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="4_pois"]
-[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="6_comp"]
+[ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/telegraphed_burst_ability.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_fb"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="3_eff"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="4_atk"]
+[ext_resource type="Script" uid="uid://5wxlib6depjn" path="res://assets/scripts/entities/effects/instant/stun_effect.gd" id="5_stun"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="6_pois"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/timed_effects/health/regeneration_buff_effect.gd" id="7_reg"]
+[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="8_comp"]
+[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/ally_pulse_ability_component.gd" id="9_ally"]
+[ext_resource type="Script" uid="uid://8ivuv6uww2ta" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="10_shake"]
 
 [sub_resource type="Resource" id="Resource_gamma_attack"]
-script = ExtResource("3_atk")
+script = ExtResource("4_atk")
 damage = 25
 max_range = 250.0
 stun_time = 0.8
 
 [sub_resource type="Resource" id="Resource_gamma_poison"]
-script = ExtResource("4_pois")
+script = ExtResource("6_pois")
 hp_per_tick = -5
 duration = 10.0
 tick_interval = 2.0
 effect_name = "Skażenie Gamma"
 effect_category = 5
 
+[sub_resource type="Resource" id="Resource_gamma_regen"]
+script = ExtResource("7_reg")
+hp_per_tick = 10
+duration = 5.0
+tick_interval = 1.0
+
+[sub_resource type="Resource" id="Resource_gamma_ally_pacify"]
+script = ExtResource("5_stun")
+stun_time = 5.0
+show_screen_feedback = false
+
+[sub_resource type="Resource" id="Resource_gamma_ally_comp"]
+script = ExtResource("9_ally")
+trigger_phase = 0
+ally_effects = Array[ExtResource("3_eff")]([SubResource("Resource_gamma_regen"), SubResource("Resource_gamma_ally_pacify")])
+
+[sub_resource type="Resource" id="Resource_gamma_shake_comp"]
+script = ExtResource("10_shake")
+trigger_mode = 0
+trauma_amount = 0.35
+
 [resource]
-script = ExtResource("1_2p250")
+script = ExtResource("1_script")
 ability_name = "Promieniowanie Gamma"
 cooldown = 15.0
 max_range = 250.0
+feedback_cue = ExtResource("2_fb")
 attack_data = SubResource("Resource_gamma_attack")
 damage_category = 5
-on_hit_effects = Array[ExtResource("2_eff")]([SubResource("Resource_gamma_poison")])
+on_hit_effects = Array[ExtResource("3_eff")]([SubResource("Resource_gamma_poison")])
+components = Array[ExtResource("8_comp")]([SubResource("Resource_gamma_ally_comp"), SubResource("Resource_gamma_shake_comp")])
 metadata/_custom_type_script = "uid://merq2t58givb"

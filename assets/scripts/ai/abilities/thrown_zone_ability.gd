@@ -3,7 +3,8 @@ class_name ThrownZoneAbility
 ## Uniwersalny archetyp rzucanego pocisku tworzącego na ziemi aktywną, organiczną strefę (SOLID - SRP / OCP / DRY).
 ## Pozwala tworzyć w plikach .tres dowolne strefy (kałuża kwasu, plama lawy, strefa mrozu lub pole leczenia sojuszników).
 ## Uderzenie pocisku korzysta z głównego AttackData + on_hit_effects, natomiast sama strefa na ziemi
-## z niezależnych zone_tick_attack_data + zone_tick_effects. Kształt strefy buforuje kolizje ze ścianami (0 raycastów/klatkę po rozlaniu!).
+## z niezależnych zone_tick_attack_data + zone_tick_effects.
+## Kształt strefy buforuje kolizje ze ścianami (0 raycastów/klatkę po rozlaniu) i zamraża geometrię dla statycznych plam.
 
 ## Określa, na jakie grupy postaci oddziałuje rozlana strefa oraz uderzenie pocisku.
 enum ZoneTargetMode {
@@ -56,36 +57,36 @@ const TELEGRAPH_TINT_WEIGHT: float = 0.70
 @export var zone_tick_effects: Array[Effect] = []
 
 @export_group("Wizualizacje, Kształt Strefy i Warstwy (VFX)")
-## Główny kolor pocisku i strefy (np. zieleń kwasu, pomarańcz lawy, błękit lodu).
-@export var zone_color: Color = Color(0.20, 0.90, 0.10, 0.85)
+## Główny kolor pocisku i strefy (np. głęboka toksyczna zieleń kwasu, pomarańcz lawy, błękit lodu).
+@export var zone_color: Color = Color(0.16, 0.72, 0.12, 0.82)
 ## Warstwa renderowania (Z-Index) dla rozlanej strefy na ziemi (domyślnie GameLayers.FLOOR_HAZARD).
 @export var zone_z_index: int = GameLayers.FLOOR_HAZARD
-## Częstotliwość szumu krawędzi (niższa wartość = łagodniejsze fale brzegowe).
+## Częstotliwość szumu krawędzi (niższa wartość = łagodniejsze, naturalne łuki brzegowe).
 @export_range(0.005, 0.1, 0.005) var noise_frequency: float = 0.025
 ## Siła organicznego zniekształcenia krawędzi (0.20 = 20% odchylenia od koła).
 @export_range(0.0, 0.5, 0.01) var noise_amplitude: float = 0.20
-## Szybkość płynięcia/falowania krawędzi strefy (0.0 = kształt statyczny).
-@export_range(0.0, 20.0, 0.1) var noise_speed: float = 0.4
-## Liczba wierzchołków krawędzi strefy (48–72 daje idealnie gładką krawędź przy minimalnym koszcie CPU).
+## Szybkość płynięcia/falowania krawędzi po rozlaniu (0.0 = naturalna, statyczna kałuża w jednym miejscu).
+@export_range(0.0, 20.0, 0.1) var noise_speed: float = 0.0
+## Liczba wierzchołków krawędzi strefy (48–72 daje gładki kształt przy niskim koszcie CPU).
 @export_range(16, 128, 4) var polygon_resolution: int = 64
 ## Liczba iteracji wygładzania krawędzi (Moving Average).
 @export_range(0, 4, 1) var smoothing_iterations: int = 2
-## Szybkość pulsowania (oddychania) rozlanej strefy.
-@export_range(0.0, 10.0, 0.2) var zone_pulse_speed: float = 1.2
-## Amplituda pulsowania promienia strefy (0.02 = +/- 2%).
-@export_range(0.0, 0.15, 0.01) var zone_pulse_strength: float = 0.02
-## Skala wewnętrznego, bardziej nasyconego rdzenia strefy (0.0 wyłącza rdzeń).
-@export_range(0.0, 1.0, 0.05) var visual_core_scale: float = 0.72
-## Czas (w sekundach), w jakim strefa rozlewa się po rozbiciu pocisku.
+## Szybkość pulsowania (oddychania) rozlanej strefy (0.0 = wyłączone, brak powiększania i zmniejszania).
+@export_range(0.0, 10.0, 0.2) var zone_pulse_speed: float = 0.0
+## Amplituda pulsowania promienia strefy (0.0 = wyłączone, plama leży spokojnie w jednym miejscu).
+@export_range(0.0, 0.15, 0.01) var zone_pulse_strength: float = 0.0
+## Skala wewnętrznego, głębszego rdzenia cieczy (0.0 wyłącza wielowarstwowe cieniowanie środka).
+@export_range(0.0, 1.0, 0.05) var visual_core_scale: float = 0.68
+## Czas (w sekundach), w jakim ciecz rozlewa się po rozbiciu pocisku.
 @export_range(0.1, 3.0, 0.1) var zone_spill_time: float = 0.4
 ## Czas zanikania przezroczystości pod koniec życia strefy (w sekundach).
 @export_range(0.1, 5.0, 0.1) var zone_fade_time: float = 1.6
-## Grubość obrysu zewnętrznej krawędzi strefy (0.0 wyłącza obrys).
-@export_range(0.0, 8.0, 0.5) var zone_outline_thickness: float = 2.0
+## Grubość subtelnego, ciemnego obrysu krawędzi (0.0 = miękka krawędź cieczy bez konturu).
+@export_range(0.0, 8.0, 0.5) var zone_outline_thickness: float = 0.0
 ## Czy rysować animowane bąbelki / punkty energii pękające na powierzchni strefy?
 @export var show_surface_bubbles: bool = true
 ## Liczba równoczesnych bąbelków animowanych na powierzchni strefy.
-@export_range(0, 24, 1) var surface_bubble_count: int = 10
+@export_range(0, 24, 1) var surface_bubble_count: int = 12
 
 func _init() -> void:
 	ability_name = "Rzut Strefą"
@@ -244,7 +245,7 @@ func _finish_cast(
 	notify_components_cast_finished(live_attacker)
 
 # ==============================================================================
-# KLASA WEWNĘTRZNA: Lot pocisku, buforowane raycasty ścian, bąbelki i logika AoE
+# KLASA WEWNĘTRZNA: Lot pocisku, buforowane raycasty ścian, naturalna ciecz i bąbelki
 # ==============================================================================
 class ThrownZoneNode extends Node2D:
 	const MIN_TIME_SEC: float = 0.01
@@ -252,14 +253,25 @@ class ThrownZoneNode extends Node2D:
 	const SHADOW_ALPHA_MAX: float = 0.32
 	const WALL_INSET_PX: float = 2.0
 	const NOISE_SAMPLE_RADIUS: float = 50.0
-	const OUTER_FILL_ALPHA_MULT: float = 0.46
-	const CORE_FILL_ALPHA_MULT: float = 0.78
-	const BORDER_ALPHA_MULT: float = 0.90
 	const IMPACT_SPARK_COUNT: int = 10
+
+	## Naturalne 3-warstwowe przyciemnienie cieczy (eliminuje plastikowy, jaskrawy obrys).
+	const OUTER_DARKEN_AMOUNT: float = 0.38
+	const OUTER_FILL_ALPHA_MULT: float = 0.38
+	const MID_LAYER_BLEND_RATIO: float = 0.48
+	const MID_DARKEN_AMOUNT: float = 0.18
+	const MID_FILL_ALPHA_MULT: float = 0.44
+	const CORE_DARKEN_AMOUNT: float = 0.08
+	const CORE_FILL_ALPHA_MULT: float = 0.56
+	const BORDER_DARKEN_AMOUNT: float = 0.52
+	const BORDER_ALPHA_MULT: float = 0.42
+
 	const BUBBLE_MIN_RADIUS_PX: float = 2.5
-	const BUBBLE_MAX_RADIUS_PX: float = 7.5
-	const BUBBLE_CYCLE_SPEED_MIN: float = 0.75
-	const BUBBLE_CYCLE_SPEED_MAX: float = 1.65
+	const BUBBLE_MAX_RADIUS_PX: float = 7.0
+	const BUBBLE_CYCLE_SPEED_MIN: float = 0.70
+	const BUBBLE_CYCLE_SPEED_MAX: float = 1.50
+	const BUBBLE_HIGHLIGHT_LIGHTEN: float = 0.38
+	const BUBBLE_RIM_DARKEN: float = 0.25
 
 	var _attacker_ref: WeakRef = null
 	var _attacker_faction_name: StringName = &""
@@ -271,12 +283,14 @@ class ThrownZoneNode extends Node2D:
 
 	var _elapsed: float = 0.0
 	var _is_zone_active: bool = false
+	var _is_polygon_settled: bool = false
 	var _tick_timer: float = 0.0
 	var _noise: FastNoiseLite = null
 
 	## Bufor maksymalnych dystansów do ścian obliczany JEDNORAZOWO w chwili rozbicia pocisku (0 raycastów na klatkę!).
 	var _cached_wall_limits: PackedFloat32Array = PackedFloat32Array()
 	var _outer_polygon: PackedVector2Array = PackedVector2Array()
+	var _mid_polygon: PackedVector2Array = PackedVector2Array()
 	var _inner_polygon: PackedVector2Array = PackedVector2Array()
 	var _bubbles: Array[Dictionary] = []
 
@@ -329,7 +343,9 @@ class ThrownZoneNode extends Node2D:
 				_tick_timer = 0.0
 				_apply_zone_tick_effects()
 
-			_rebuild_organic_polygon()
+			# Dla statycznej plamy po zakończeniu rozlewania nie przebudowujemy wielokąta (0 alokacji/klatkę!).
+			if not _is_polygon_settled:
+				_rebuild_organic_polygon()
 			queue_redraw()
 
 			if _elapsed >= flight_dur + float(_cfg["zone_lifetime"]):
@@ -338,6 +354,7 @@ class ThrownZoneNode extends Node2D:
 	## Rozbija pocisk, buforuje dystanse do ścian jednym przebiegiem raycastów i inicjalizuje bąbelki.
 	func _detonate_and_spawn_zone() -> void:
 		_is_zone_active = true
+		_is_polygon_settled = false
 		global_position = _cfg["target_pos"]
 		z_index = int(_cfg["z_index"])
 
@@ -350,7 +367,7 @@ class ThrownZoneNode extends Node2D:
 		_rebuild_organic_polygon()
 
 		CombatVFXHelper.spawn_shockwave(self, global_position, proj_rad * 2.2, base_col)
-		CombatVFXHelper.spawn_impact_sparks(self, global_position, Vector2.ZERO, base_col.lightened(0.3), IMPACT_SPARK_COUNT, proj_rad * 1.8)
+		CombatVFXHelper.spawn_impact_sparks(self, global_position, Vector2.ZERO, base_col.lightened(0.25), IMPACT_SPARK_COUNT, proj_rad * 1.8)
 
 		if _on_detonated.is_valid():
 			_on_detonated.call(global_position, zone_rad)
@@ -359,7 +376,7 @@ class ThrownZoneNode extends Node2D:
 			_apply_aoe_effects(proj_rad * ThrownZoneAbility.IMPACT_RADIUS_MULTIPLIER, _impact_effects, true)
 		_apply_zone_tick_effects()
 
-	## Jednorazowo mierzy dystans od środka strefy do najbliższych ścian dla każdego promienia wielokąta (ogromny zysk FPS!).
+	## Jednorazowo mierzy dystans od środka strefy do najbliższych ścian dla każdego promienia wielokąta.
 	func _cache_wall_distances(max_zone_radius: float) -> void:
 		var poly_res: int = maxi(16, int(_cfg["polygon_resolution"]))
 		var max_organic_reach: float = max_zone_radius * (1.0 + float(_cfg["noise_amplitude"]) + float(_cfg["pulse_strength"]))
@@ -400,7 +417,7 @@ class ThrownZoneNode extends Node2D:
 		for _i in range(count):
 			var idx: int = randi_range(0, poly_res - 1)
 			var angle: float = (float(idx) / float(poly_res)) * TAU
-			var max_dist: float = minf(zone_rad * 0.82, _cached_wall_limits[idx] * 0.82)
+			var max_dist: float = minf(zone_rad * 0.78, _cached_wall_limits[idx] * 0.78)
 			var dist: float = sqrt(randf()) * max_dist
 			_bubbles.append({
 				"pos": Vector2.from_angle(angle) * dist,
@@ -409,7 +426,7 @@ class ThrownZoneNode extends Node2D:
 				"max_r": randf_range(BUBBLE_MIN_RADIUS_PX, BUBBLE_MAX_RADIUS_PX)
 			})
 
-	## Przelicza płynne falowanie krawędzi z buforowanych granic ścian — ZERO raycastów w _process()!
+	## Buduje 3 współśrodkowe wielokąty cieczy na podstawie buforowanych granic ścian — ZERO raycastów w _process()!
 	func _rebuild_organic_polygon() -> void:
 		var poly_res: int = _cached_wall_limits.size()
 		if poly_res < 3:
@@ -418,15 +435,21 @@ class ThrownZoneNode extends Node2D:
 		var flight_dur: float = float(_cfg["flight_time"])
 		var zone_elapsed: float = maxf(0.0, _elapsed - flight_dur)
 		var spill_time: float = float(_cfg["spill_time"])
-		var size_mult: float = 1.0
-		if spill_time > 0.0 and zone_elapsed < spill_time:
-			size_mult = lerpf(0.12, 1.0, clampf(zone_elapsed / spill_time, 0.0, 1.0))
+		var is_spilling: bool = spill_time > 0.0 and zone_elapsed < spill_time
+		var size_mult: float = lerpf(0.12, 1.0, clampf(zone_elapsed / maxf(MIN_TIME_SEC, spill_time), 0.0, 1.0)) if is_spilling else 1.0
 
 		var base_rad: float = float(_cfg["zone_radius"]) * size_mult
-		var pulse_wave: float = sin(zone_elapsed * float(_cfg["pulse_speed"])) * (base_rad * float(_cfg["pulse_strength"]))
+		var pulse_strength: float = float(_cfg["pulse_strength"])
+		var pulse_speed: float = float(_cfg["pulse_speed"])
+		var pulse_wave: float = (
+			sin(zone_elapsed * pulse_speed) * (base_rad * pulse_strength)
+			if pulse_strength > 0.0 and pulse_speed > 0.0
+			else 0.0
+		)
 		var current_radius: float = base_rad + pulse_wave
 		var n_amp: float = float(_cfg["noise_amplitude"])
-		var n_z: float = zone_elapsed * float(_cfg["noise_speed"])
+		var n_spd: float = float(_cfg["noise_speed"])
+		var n_z: float = zone_elapsed * n_spd
 		var core_scale: float = float(_cfg["core_scale"])
 
 		var raw_outer := PackedVector2Array()
@@ -450,11 +473,19 @@ class ThrownZoneNode extends Node2D:
 			raw_outer = smoothed
 
 		_outer_polygon = raw_outer
+		_mid_polygon = PackedVector2Array()
 		_inner_polygon = PackedVector2Array()
 		if core_scale > 0.0:
+			var mid_scale: float = lerpf(1.0, core_scale, MID_LAYER_BLEND_RATIO)
+			_mid_polygon.resize(poly_res)
 			_inner_polygon.resize(poly_res)
 			for i in range(poly_res):
+				_mid_polygon[i] = _outer_polygon[i] * mid_scale
 				_inner_polygon[i] = _outer_polygon[i] * core_scale
+
+		# Jeśli rozlewanie się zakończyło i nie ma animacji falowania/pulsowania, zamrażamy kształt w jednym miejscu.
+		if not is_spilling and n_spd <= 0.0 and (pulse_strength <= 0.0 or pulse_speed <= 0.0):
+			_is_polygon_settled = true
 
 	func _draw() -> void:
 		var base_col: Color = _cfg["color"]
@@ -466,12 +497,11 @@ class ThrownZoneNode extends Node2D:
 			var draw_rad: float = float(_cfg["projectile_radius"]) * arc_scale
 			var target_local: Vector2 = (_cfg["target_pos"] as Vector2) - global_position
 
-			# Cień lądowania na ziemi + lecący pocisk z jasnym rdzeniem
 			draw_circle(target_local, draw_rad * 0.85, Color(0.0, 0.0, 0.0, SHADOW_ALPHA_MAX * (1.0 - progress)))
 			draw_arc(target_local, float(_cfg["projectile_radius"]) * 1.4, 0.0, TAU, 24, Color(base_col.r, base_col.g, base_col.b, 0.45 * progress), 2.0, true)
 			draw_circle(Vector2.ZERO, draw_rad * 1.25, Color(base_col.r, base_col.g, base_col.b, 0.30))
 			draw_circle(Vector2.ZERO, draw_rad, base_col)
-			draw_circle(Vector2.ZERO, draw_rad * 0.45, base_col.lightened(0.45))
+			draw_circle(Vector2.ZERO, draw_rad * 0.45, base_col.lightened(0.35))
 			return
 
 		var zone_elapsed: float = maxf(0.0, _elapsed - flight_dur)
@@ -481,34 +511,43 @@ class ThrownZoneNode extends Node2D:
 		if fade_time > 0.0 and time_left < fade_time:
 			alpha_mult = clampf(time_left / fade_time, 0.0, 1.0)
 
+		# 3-warstwowa głębia rozlanej cieczy (ciemniejsza krawędź -> półprzezroczysty środek -> głębsze dno)
 		if _outer_polygon.size() >= 3:
-			var outer_col := Color(base_col.r, base_col.g, base_col.b, base_col.a * OUTER_FILL_ALPHA_MULT * alpha_mult)
-			draw_colored_polygon(_outer_polygon, outer_col)
+			var outer_tint: Color = base_col.darkened(OUTER_DARKEN_AMOUNT)
+			outer_tint.a = base_col.a * OUTER_FILL_ALPHA_MULT * alpha_mult
+			draw_colored_polygon(_outer_polygon, outer_tint)
+
+			if _mid_polygon.size() >= 3:
+				var mid_tint: Color = base_col.darkened(MID_DARKEN_AMOUNT)
+				mid_tint.a = base_col.a * MID_FILL_ALPHA_MULT * alpha_mult
+				draw_colored_polygon(_mid_polygon, mid_tint)
 
 			if _inner_polygon.size() >= 3:
-				var core_col := Color(base_col.r, base_col.g, base_col.b, base_col.a * CORE_FILL_ALPHA_MULT * alpha_mult)
-				draw_colored_polygon(_inner_polygon, core_col)
+				var core_tint: Color = base_col.darkened(CORE_DARKEN_AMOUNT)
+				core_tint.a = base_col.a * CORE_FILL_ALPHA_MULT * alpha_mult
+				draw_colored_polygon(_inner_polygon, core_tint)
 
 			var outline_thick: float = float(_cfg["outline_thickness"])
 			if outline_thick > 0.0:
 				var outline: PackedVector2Array = _outer_polygon.duplicate()
 				outline.append(outline[0])
-				var border_col: Color = base_col.lightened(0.20)
+				var border_col: Color = base_col.darkened(BORDER_DARKEN_AMOUNT)
 				border_col.a = base_col.a * BORDER_ALPHA_MULT * alpha_mult
 				draw_polyline(outline, border_col, outline_thick, true)
 
-		# Animowane bąbelki na powierzchni strefy
+		# Animowane bąbelki na powierzchni cieczy
 		if not _bubbles.is_empty():
 			var spill_time: float = float(_cfg["spill_time"])
 			var spill_ratio: float = clampf(zone_elapsed / maxf(MIN_TIME_SEC, spill_time), 0.0, 1.0)
-			var bubble_col: Color = base_col.lightened(0.55)
+			var bubble_rim: Color = base_col.darkened(BUBBLE_RIM_DARKEN)
+			var bubble_glint: Color = base_col.lightened(BUBBLE_HIGHLIGHT_LIGHTEN)
 			for b in _bubbles:
 				var cycle: float = fmod(float(b["phase"]) + (zone_elapsed * float(b["speed"])), 1.0)
 				var b_pos: Vector2 = (b["pos"] as Vector2) * spill_ratio
 				var b_rad: float = float(b["max_r"]) * lerpf(0.25, 1.0, cycle)
-				var b_alpha: float = sin(cycle * PI) * 0.85 * alpha_mult
-				var draw_b_col := Color(bubble_col.r, bubble_col.g, bubble_col.b, b_alpha)
-				draw_arc(b_pos, b_rad, 0.0, TAU, 14, draw_b_col, 1.6, true)
+				var b_alpha: float = sin(cycle * PI) * alpha_mult
+				draw_circle(b_pos, b_rad, Color(bubble_rim.r, bubble_rim.g, bubble_rim.b, 0.28 * b_alpha))
+				draw_arc(b_pos, b_rad, 0.0, TAU, 14, Color(bubble_glint.r, bubble_glint.g, bubble_glint.b, 0.72 * b_alpha), 1.4, true)
 
 	func _apply_zone_tick_effects() -> void:
 		if _zone_effects.is_empty():
