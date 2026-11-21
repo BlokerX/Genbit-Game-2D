@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://sp1q5lo3d7t0"]
 
 [ext_resource type="Script" uid="uid://ce6yrm52sb2dy" path="res://assets/scripts/entities/items/throwable_entities/throwable_physics.gd" id="1_7yb6a"]
-[ext_resource type="Texture2D" uid="uid://bs1ij1rpdpt8p" path="res://assets/textures/samples_examples/items/bomb_activated.png" id="2_7yb6a"]
+[ext_resource type="Texture2D" path="res://assets/textures/samples_examples/items/bomb.png" id="2_bomb"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q7pnx"]
 radius = 35.0
@@ -13,6 +13,8 @@ radius = 150.0
 collision_layer = 32
 collision_mask = 47
 script = ExtResource("1_7yb6a")
+fuse_path_points = PackedVector2Array(12, -24, 6, -18, 1, -11)
+rotate_to_throw_direction = false
 activate_on_trigger = false
 friendly_fire = true
 aoe_area = NodePath("ExplosionArea")
@@ -20,7 +22,7 @@ aoe_area = NodePath("ExplosionArea")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1049323652]
 texture_filter = 5
 scale = Vector2(4, 4)
-texture = ExtResource("2_7yb6a")
+texture = ExtResource("2_bomb")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1941373633]
 shape = SubResource("CircleShape2D_q7pnx")

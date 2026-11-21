@@ -1,8 +1,8 @@
 class_name CombatVFXHelper
 extends RefCounted
 ## Centralny serwis lekkich, proceduralnych efektów wizualnych walki (SOLID - SRP / DRY).
-## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier, smugi pocisków/rzutek oraz wielowarstwowe eksplozje
-## bez zaśmiecania logiki fizyki i bez duplikowania metod _draw() między umiejętnościami, pociskami i bombami.
+## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier, kroplowe smugi pocisków/noży
+## oraz wielowarstwowe eksplozje bez duplikowania logiki _draw() między skryptami.
 
 #region Stałe Konfiguracyjne VFX (Brak magicznych liczb)
 const DEFAULT_SHOCKWAVE_DURATION_SEC: float = 0.28
@@ -13,12 +13,19 @@ const DEFAULT_SPARK_DURATION_SEC: float = 0.20
 const DEFAULT_EXPLOSION_DURATION_SEC: float = 0.36
 const DEFAULT_EXPLOSION_CORE_COLOR := Color(1.0, 0.96, 0.78, 1.0)
 
-const TRAIL_OUTER_ALPHA: float = 0.42
-const TRAIL_CORE_ALPHA: float = 0.88
-const TRAIL_CORE_WIDTH_RATIO: float = 0.42
-const TRAIL_CORE_LENGTH_RATIO: float = 0.72
-const TRAIL_CORE_LIGHTEN: float = 0.55
-const MIN_VISIBLE_TRAIL_LEN_PX: float = 2.0
+## Parametry geometryczne i kolorystyczne smugi kroplowej (droplet envelope).
+const DROPLET_ARC_SEGMENTS: int = 10
+const DROPLET_MIN_CONVEX_MARGIN_PX: float = 2.0
+const DROPLET_OUTER_ALPHA: float = 0.40
+const DROPLET_INNER_ALPHA: float = 0.68
+const DROPLET_INNER_WIDTH_RATIO: float = 0.62
+const DROPLET_INNER_HEAD_RATIO: float = 0.78
+const DROPLET_INNER_TAIL_RATIO: float = 0.72
+const DROPLET_INNER_LIGHTEN: float = 0.28
+const DROPLET_GLINT_ALPHA: float = 0.72
+const DROPLET_GLINT_RADIUS_RATIO: float = 0.36
+const DROPLET_GLINT_HEAD_RATIO: float = 0.68
+const DROPLET_GLINT_LIGHTEN: float = 0.60
 
 const PRIORITY_ELEMENTAL: int = 3
 const PRIORITY_CUSTOM_COLOR: int = 2
@@ -50,6 +57,18 @@ const ELEMENTAL_CATEGORY_PRIORITIES: Dictionary = {
 }
 #endregion
 
+## Zwraca true, jeśli tablica efektów zawiera efekt żywiołowy/specjalny (inny niż zwykłe obrażenia fizyczne i samo ogłuszenie).
+static func has_elemental_effect(effects: Array[Effect]) -> bool:
+	for eff in effects:
+		if eff == null:
+			continue
+		var cat: Effect.EffectCategory = eff.get_effective_category()
+		if int(ELEMENTAL_CATEGORY_PRIORITIES.get(cat, 0)) >= PRIORITY_MOVEMENT_CC:
+			return true
+		if cat == Effect.EffectCategory.NONE and eff.effect_color.a > 0.0 and not eff.effect_color.is_equal_approx(Color.WHITE):
+			return true
+	return false
+
 ## Dobiera dominujący kolor VFX na podstawie priorytetów kategorii w liście efektów (DRY / OCP).
 ## Żywioły (np. FROST_FREEZE, POISON_ACID, FIRE_BURN) zawsze mają pierwszeństwo przed ogólnym STUN.
 static func resolve_color_from_effects(effects: Array[Effect], default_color: Color) -> Color:
@@ -77,31 +96,68 @@ static func resolve_color_from_effects(effects: Array[Effect], default_color: Co
 
 	return best_color
 
-## Rysuje lekką, dwuwarstwową smugę ruchu w układzie lokalnym obiektu (DRY: Projectile oraz ThrowableProjectile).
-static func draw_motion_trail(
+## Rysuje płynną, dwuwarstwową kroplę / otoczkę smugi wysuniętą lekko przed czubek pocisku lub noża (DRY).
+## Geometria kropli jest matematycznie wypukła, więc draw_colored_polygon zawsze renderuje ją bez artefaktów.
+static func draw_droplet_trail(
 	canvas: CanvasItem,
 	world_direction: Vector2,
 	world_rotation: float,
-	trail_length: float,
-	trail_width: float,
+	head_lead_px: float,
+	tail_length_px: float,
+	width_px: float,
 	color: Color
 ) -> void:
-	if canvas == null or world_direction == Vector2.ZERO or trail_length < MIN_VISIBLE_TRAIL_LEN_PX:
+	if canvas == null or world_direction == Vector2.ZERO or width_px <= 0.5:
 		return
 
-	var local_back: Vector2 = (-world_direction.normalized()).rotated(-world_rotation) * trail_length
-	var outer_col := Color(color.r, color.g, color.b, TRAIL_OUTER_ALPHA)
-	var core_col: Color = color.lightened(TRAIL_CORE_LIGHTEN)
-	core_col.a = TRAIL_CORE_ALPHA
+	var fwd: Vector2 = world_direction.normalized().rotated(-world_rotation)
+	var perp: Vector2 = fwd.orthogonal()
+	var outer_radius: float = maxf(1.0, width_px * 0.5)
 
-	canvas.draw_line(Vector2.ZERO, local_back, outer_col, trail_width, true)
-	canvas.draw_line(
-		Vector2.ZERO,
-		local_back * TRAIL_CORE_LENGTH_RATIO,
-		core_col,
-		trail_width * TRAIL_CORE_WIDTH_RATIO,
-		true
+	# 1. Zewnętrzna, półprzezroczysta kropla otaczająca cały pocisk / nóż
+	var outer_poly: PackedVector2Array = _build_teardrop_polygon(fwd, perp, head_lead_px, tail_length_px, outer_radius)
+	var outer_col := Color(color.r, color.g, color.b, DROPLET_OUTER_ALPHA)
+	canvas.draw_colored_polygon(outer_poly, outer_col)
+
+	# 2. Wewnętrzny, jaśniejszy rdzeń kropli
+	var inner_radius: float = maxf(0.8, outer_radius * DROPLET_INNER_WIDTH_RATIO)
+	var inner_poly: PackedVector2Array = _build_teardrop_polygon(
+		fwd,
+		perp,
+		head_lead_px * DROPLET_INNER_HEAD_RATIO,
+		tail_length_px * DROPLET_INNER_TAIL_RATIO,
+		inner_radius
 	)
+	var inner_col: Color = color.lightened(DROPLET_INNER_LIGHTEN)
+	inner_col.a = DROPLET_INNER_ALPHA
+	canvas.draw_colored_polygon(inner_poly, inner_col)
+
+	# 3. Delikatny rozbłysk na przedniej krawędzi kropli
+	var glint_col: Color = color.lightened(DROPLET_GLINT_LIGHTEN)
+	glint_col.a = DROPLET_GLINT_ALPHA
+	canvas.draw_circle(fwd * (head_lead_px * DROPLET_GLINT_HEAD_RATIO), outer_radius * DROPLET_GLINT_RADIUS_RATIO, glint_col)
+
+## Buduje wypukły wielokąt kropli: półkole z przodu na wysokości head_lead_px zwężające się do punktu tail_length_px z tyłu.
+static func _build_teardrop_polygon(
+	fwd: Vector2,
+	perp: Vector2,
+	head_lead_px: float,
+	tail_length_px: float,
+	radius: float
+) -> PackedVector2Array:
+	var nose_center: Vector2 = fwd * head_lead_px
+	# Gwarancja ścisłej wypukłości wielokąta (ogon zawsze znajduje się za tylną krawędzią półkola nosa)
+	var safe_tail_dist: float = maxf(tail_length_px, radius - head_lead_px + DROPLET_MIN_CONVEX_MARGIN_PX)
+	var tail_tip: Vector2 = -fwd * safe_tail_dist
+
+	var poly := PackedVector2Array()
+	poly.resize(DROPLET_ARC_SEGMENTS + 2)
+	for i in range(DROPLET_ARC_SEGMENTS + 1):
+		var angle: float = lerpf(-PI * 0.5, PI * 0.5, float(i) / float(DROPLET_ARC_SEGMENTS))
+		var arc_offset: Vector2 = ((fwd * cos(angle)) + (perp * sin(angle))) * radius
+		poly[i] = nose_center + arc_offset
+	poly[DROPLET_ARC_SEGMENTS + 1] = tail_tip
+	return poly
 
 ## Spawnuje rozchodzącą się falę uderzeniową (podwójny pierścień + opcjonalne miękkie wypełnienie).
 static func spawn_shockwave(

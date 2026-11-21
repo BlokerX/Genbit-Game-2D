@@ -1,19 +1,21 @@
 extends RigidBody2D
 class_name ThrowablePhysics
 ## Fizyczny obiekt miotany lub stawiany (np. granat, bomba, mina) oparty na RigidBody2D.
-## Współpracuje z ThrowableExplosiveController w zakresie zapalnika, iskrzenia lontu oraz wybuchów AoE (SOLID - SRP / DRY).
+## Współpracuje z ThrowableExplosiveController w zakresie zapalnika, animowanego spalania po knocie oraz wybuchów AoE (SOLID - SRP / DRY).
 
 const DAMP_DIVISOR: float = 100.0
 const MAX_REPORTED_CONTACTS: int = 5
-const DEFAULT_FUSE_SPARK_OFFSET := Vector2(-4.0, -16.0)
 
 @export_category("Wizualizacje")
 @export var main_sprite: Sprite2D
 @export var activated_texture: Texture2D
-## Czy czasowy obiekt wybuchowy (np. bomba) ma iskrzyć od razu w trakcie odliczania do wybuchu?
+## Czy czasowy obiekt wybuchowy (np. bomba) ma wyświetlać animowany płomień i iskry od razu podczas odliczania?
 @export var emit_fuse_sparks: bool = true
-## Lokalne przesunięcie punktu emisji iskier lontu względem środka obiektu (uwzględnia obrót bryły).
-@export var fuse_spark_offset: Vector2 = DEFAULT_FUSE_SPARK_OFFSET
+## Ścieżka knota w układzie lokalnym obiektu (od czubka knota [0] aż do obudowy [n-1]).
+## Pozostaw pustą tablicę, aby płomień i iskry pojawiały się dokładnie na środku obiektu (0, 0).
+@export var fuse_path_points: PackedVector2Array = PackedVector2Array()
+## Jeśli true, obiekt obraca się w kierunku rzutu. Wyłącz (false) dla okrągłych bomb z pionowym knotem!
+@export var rotate_to_throw_direction: bool = true
 
 @export_category("Ustawienia Obiektu")
 @export var destroy_on_impact: bool = false
@@ -50,13 +52,14 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 	if current_velocity != Vector2.ZERO:
-		rotation = current_velocity.angle()
+		if rotate_to_throw_direction:
+			rotation = current_velocity.angle()
 		apply_central_impulse(current_velocity)
 
 	_explosive_ctrl.cache_shooter_faction(shooter)
 
 	if _should_emit_countdown_sparks():
-		_explosive_ctrl.play_fuse_ignition_vfx(self, fuse_spark_offset)
+		_explosive_ctrl.play_fuse_ignition_vfx(self, fuse_path_points)
 
 	if is_instance_valid(shooter) and shooter is CollisionObject2D:
 		add_collision_exception_with(shooter)
@@ -79,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		is_infinite,
 		activation_delay,
 		_should_emit_countdown_sparks(),
-		fuse_spark_offset
+		fuse_path_points
 	)
 
 func _should_emit_countdown_sparks() -> bool:
@@ -94,7 +97,7 @@ func _on_body_entered(body: Node) -> void:
 
 func trigger_effect(direct_hit: Node2D) -> void:
 	_explosive_ctrl.handle_trigger(
-		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture, fuse_spark_offset
+		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture, fuse_path_points
 	)
 
 func _execute_explosion(direct_hit: Node2D) -> void:

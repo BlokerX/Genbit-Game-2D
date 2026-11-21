@@ -1,25 +1,32 @@
 extends Area2D
 class_name ThrowableProjectile
 ## Niematerialny pocisk miotany (np. nóż do rzucania, strzałka, mina) oparty na Area2D i RayCastach.
-## Generuje lekką smugę ruchu dobieraną automatycznie do żywiołu/efektu (np. zieleń trucizny dla zatrutego noża - DRY / OCP).
+## Generuje kroplową smugę otaczającą lecący obiekt (np. zieloną kroplę trucizny wokół noża - DRY / OCP)
+## oraz obsługuje punkt zapalnika/diody (domyślnie środek obiektu dla miny).
 
 #region Stałe Wizualne i Fizyczne (Brak magicznych liczb)
 const DEFAULT_TRAIL_COLOR := Color(0.90, 0.94, 1.0, 0.90)
 const MIN_TRAIL_VELOCITY_SQ: float = 25.0
 const TRAIL_REFERENCE_SPEED_PX: float = 300.0
+const MIN_TRAIL_GROWTH_RATIO: float = 0.35
+const ELEMENTAL_WIDTH_BOOST_MULT: float = 1.25
 #endregion
 
 @export_category("Wizualizacje")
 @export var main_sprite: Sprite2D
 @export var activated_texture: Texture2D
-## Czy rysować dwuwarstwową smugę podczas lotu (automatycznie wyłączona, gdy obiekt stoi w miejscu, np. Mina)?
+## Czy rysować kroplową smugę otaczającą rzutkę w trakcie lotu (nieaktywna dla nieruchomej miny)?
 @export var enable_trail: bool = true
-## Maksymalna długość smugi ciągnącej się za lecącą rzutką (w pikselach).
+## Wysunięcie zaokrąglonego przodu kropli przed środek rzutki (w pikselach), aby nóż leciał w otoczce efektu.
+@export_range(0.0, 30.0, 1.0) var trail_head_lead_px: float = 13.0
+## Maksymalna długość zwężającego się ogona smugi za rzutką (w pikselach).
 @export_range(6.0, 80.0, 2.0) var trail_length_px: float = 24.0
-## Grubość zewnętrznej poświaty smugi za rzutką (w pikselach).
-@export_range(1.0, 10.0, 0.2) var trail_width_px: float = 3.0
-## Opcjonalny własny kolor smugi. Gdy przezroczysty (alpha == 0), kolor dobierany jest z efektów rzutki (np. trucizna -> zieleń).
+## Szerokość otoczki kropli w najszerszym miejscu (w pikselach).
+@export_range(2.0, 30.0, 0.5) var trail_width_px: float = 11.0
+## Opcjonalny własny kolor smugi. Gdy przezroczysty (alpha == 0), kolor dobierany jest z efektów (np. trucizna -> zieleń).
 @export var override_vfx_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+## Opcjonalna ścieżka knota w układzie lokalnym. Pusta tablica oznacza środek (0, 0) — idealne dla miny!
+@export var fuse_path_points: PackedVector2Array = PackedVector2Array()
 
 @export_category("Ustawienia Obiektu")
 @export var destroy_on_impact: bool = true
@@ -43,6 +50,7 @@ var _explosive_ctrl: ThrowableExplosiveController = ThrowableExplosiveController
 var _traveled_distance: float = 0.0
 var _was_drawing_trail: bool = false
 var _resolved_trail_color: Color = DEFAULT_TRAIL_COLOR
+var _has_elemental_vfx: bool = false
 
 func _ready() -> void:
 	add_to_group("Hazard")
@@ -51,11 +59,14 @@ func _ready() -> void:
 	if current_velocity != Vector2.ZERO:
 		rotation = current_velocity.angle()
 
+	_has_elemental_vfx = CombatVFXHelper.has_elemental_effect(effects_to_apply)
 	_resolved_trail_color = _resolve_trail_color()
 	_explosive_ctrl.cache_shooter_faction(shooter)
 
 func _physics_process(delta: float) -> void:
-	if _explosive_ctrl.process_timers(self, delta, lifetime, is_infinite, activation_delay):
+	if _explosive_ctrl.process_timers(
+		self, delta, lifetime, is_infinite, activation_delay, false, fuse_path_points
+	):
 		return
 
 	if current_velocity.length_squared() > 0.0:
@@ -92,14 +103,18 @@ func _draw() -> void:
 	if not enable_trail or current_velocity.length_squared() < MIN_TRAIL_VELOCITY_SQ:
 		return
 
-	var speed_factor: float = clampf(current_velocity.length() / TRAIL_REFERENCE_SPEED_PX, 0.25, 1.0)
-	var current_len: float = minf(trail_length_px * speed_factor, _traveled_distance)
-	CombatVFXHelper.draw_motion_trail(
+	var speed_factor: float = clampf(current_velocity.length() / TRAIL_REFERENCE_SPEED_PX, 0.35, 1.0)
+	var growth_factor: float = clampf(_traveled_distance / maxf(1.0, trail_length_px * 0.5), MIN_TRAIL_GROWTH_RATIO, 1.0)
+	var effective_width: float = trail_width_px * (ELEMENTAL_WIDTH_BOOST_MULT if _has_elemental_vfx else 1.0)
+	var current_tail: float = minf(trail_length_px * speed_factor, maxf(effective_width, _traveled_distance))
+
+	CombatVFXHelper.draw_droplet_trail(
 		self,
 		current_velocity,
 		global_rotation,
-		current_len,
-		trail_width_px,
+		trail_head_lead_px * growth_factor,
+		current_tail,
+		effective_width,
 		_resolved_trail_color
 	)
 
@@ -115,7 +130,7 @@ func _on_body_entered(body: Node2D) -> void:
 
 func trigger_effect(direct_hit: Node2D) -> void:
 	_explosive_ctrl.handle_trigger(
-		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture
+		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture, fuse_path_points
 	)
 
 func _execute_explosion(direct_hit: Node2D) -> void:
