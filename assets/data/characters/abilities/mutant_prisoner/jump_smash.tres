@@ -1,10 +1,37 @@
 [gd_resource type="Resource" script_class="JumpSmashAbility" format=3 uid="uid://b2ekbgwuyl38v"]
 
 [ext_resource type="Script" uid="uid://de1surupc81ha" path="res://assets/scripts/ai/abilities/jump_smash_ability.gd" id="1_l3bby"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_fb"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
+[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="4_comp"]
+[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="5_shake"]
+
+[sub_resource type="Resource" id="Resource_mutant_smash_atk"]
+script = ExtResource("3_atk")
+damage = 30
+max_range = 250.0
+stun_time = 1.5
+knockback_force = 800.0
+
+[sub_resource type="Resource" id="Resource_mutant_smash_shake"]
+script = ExtResource("5_shake")
+trigger_mode = 0
+trauma_amount = 0.4
 
 [resource]
 script = ExtResource("1_l3bby")
 ability_name = "Mutant Smash"
+cooldown = 8.0
 min_range = 50.0
 max_range = 250.0
+feedback_cue = ExtResource("2_fb")
+attack_data = SubResource("Resource_mutant_smash_atk")
+damage_category = 1
+components = Array[ExtResource("4_comp")]([SubResource("Resource_mutant_smash_shake")])
+aoe_radius = 80.0
+cast_time = 0.7
+prediction_factor = 1.0
+jump_duration = 0.4
+recovery_time = 0.8
+hit_only_primary_target = true
 metadata/_custom_type_script = "uid://de1surupc81ha"

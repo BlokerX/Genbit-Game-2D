@@ -1,7 +1,36 @@
-[gd_resource type="Resource" script_class="StealItemAbility" format=3 uid="uid://c3eab0vyjyi36"]
+[gd_resource type="Resource" script_class="DashStrikeAbility" format=3 uid="uid://c3eab0vyjyi36"]
 
-[ext_resource type="Script" uid="uid://dnu80ykb4pewa" path="res://assets/scripts/ai/abilities/steal_item_ability.gd" id="1_gdi26"]
+[ext_resource type="Script" uid="uid://dnu80ykb4pewa" path="res://assets/scripts/ai/abilities/dash_strike_ability.gd" id="1_gdi26"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_fb"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
+[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="4_comp"]
+[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/steal_item_ability_component.gd" id="5_steal"]
+
+[sub_resource type="Resource" id="Resource_steal_attack"]
+script = ExtResource("3_atk")
+damage = 12
+max_range = 110.0
+stun_time = 0.0
+
+[sub_resource type="Resource" id="Resource_steal_comp"]
+script = ExtResource("5_steal")
+steal_success_chance = 0.35
+affected_by_target_cc_resistance = true
+steal_entire_stack = true
 
 [resource]
 script = ExtResource("1_gdi26")
+ability_name = "Kradzież Ekwipunku"
+cooldown = 12.0
+min_range = 0.0
+max_range = 110.0
+feedback_cue = ExtResource("2_fb")
+attack_data = SubResource("Resource_steal_attack")
+damage_category = 1
+apply_attack_stun = false
+components = Array[ExtResource("4_comp")]([SubResource("Resource_steal_comp")])
+cast_time = 0.3
+dash_distance = 120.0
+hit_distance_leeway = 60.0
+return_to_start_position = true
 metadata/_custom_type_script = "uid://dnu80ykb4pewa"
