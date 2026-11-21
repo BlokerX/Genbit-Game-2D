@@ -4,7 +4,7 @@ class_name ThrownZoneAbility
 ## Pozwala tworzyć w plikach .tres dowolne strefy (kałuża kwasu, plama lawy, strefa mrozu lub pole leczenia sojuszników).
 ## Uderzenie pocisku korzysta z głównego AttackData + on_hit_effects, natomiast sama strefa na ziemi
 ## z niezależnych zone_tick_attack_data + zone_tick_effects.
-## Kształt strefy buforuje kolizje ze ścianami (0 raycastów/klatkę po rozlaniu) i zamraża geometrię dla statycznych plam.
+## Renderuje płynny gradient radialny w siatce ArrayMesh (1 wywołanie draw_mesh, 0 raycastów/klatkę po rozlaniu).
 
 ## Określa, na jakie grupy postaci oddziałuje rozlana strefa oraz uderzenie pocisku.
 enum ZoneTargetMode {
@@ -56,9 +56,14 @@ const TELEGRAPH_TINT_WEIGHT: float = 0.70
 ## Otwarta lista efektów nakładanych cyklicznie (co zone_tick_rate) na cele stojące w rozlanej strefie (OCP).
 @export var zone_tick_effects: Array[Effect] = []
 
-@export_group("Wizualizacje, Kształt Strefy i Warstwy (VFX)")
-## Główny kolor pocisku i strefy (np. głęboka toksyczna zieleń kwasu, pomarańcz lawy, błękit lodu).
+@export_group("Wizualizacje, Gradient i Kształt Strefy (VFX)")
+## Główny kolor pocisku oraz baza dla automatycznego gradientu strefy (gdy zone_gradient == null).
 @export var zone_color: Color = Color(0.16, 0.72, 0.12, 0.82)
+## Opcjonalny własny zasób Gradient (od środka 0.0 do krawędzi 1.0) pozwalający tworzyć wielokolorowe strefy w .tres.
+## Gdy pusty (null), automatycznie generowany jest płynny gradient cieczy z zone_color i visual_core_scale.
+@export var zone_gradient: Gradient = null
+## Liczba pierścieni radialnych w siatce gradientu (5 daje płynne, miękkie przejście bez schodków).
+@export_range(2, 8, 1) var gradient_ring_count: int = 5
 ## Warstwa renderowania (Z-Index) dla rozlanej strefy na ziemi (domyślnie GameLayers.FLOOR_HAZARD).
 @export var zone_z_index: int = GameLayers.FLOOR_HAZARD
 ## Częstotliwość szumu krawędzi (niższa wartość = łagodniejsze, naturalne łuki brzegowe).
@@ -75,13 +80,13 @@ const TELEGRAPH_TINT_WEIGHT: float = 0.70
 @export_range(0.0, 10.0, 0.2) var zone_pulse_speed: float = 0.0
 ## Amplituda pulsowania promienia strefy (0.0 = wyłączone, plama leży spokojnie w jednym miejscu).
 @export_range(0.0, 0.15, 0.01) var zone_pulse_strength: float = 0.0
-## Skala wewnętrznego, głębszego rdzenia cieczy (0.0 wyłącza wielowarstwowe cieniowanie środka).
-@export_range(0.0, 1.0, 0.05) var visual_core_scale: float = 0.68
+## Określa zasięg gęstego środka cieczy w domyślnym gradiencie (0.68 = 68% pełnej głębi przed łagodnym zanikiem krawędzi).
+@export_range(0.15, 0.90, 0.05) var visual_core_scale: float = 0.68
 ## Czas (w sekundach), w jakim ciecz rozlewa się po rozbiciu pocisku.
 @export_range(0.1, 3.0, 0.1) var zone_spill_time: float = 0.4
 ## Czas zanikania przezroczystości pod koniec życia strefy (w sekundach).
 @export_range(0.1, 5.0, 0.1) var zone_fade_time: float = 1.6
-## Grubość subtelnego, ciemnego obrysu krawędzi (0.0 = miękka krawędź cieczy bez konturu).
+## Grubość subtelnego, ciemnego obrysu krawędzi (0.0 = naturalne, bezszwowe rozmycie w podłoże).
 @export_range(0.0, 8.0, 0.5) var zone_outline_thickness: float = 0.0
 ## Czy rysować animowane bąbelki / punkty energii pękające na powierzchni strefy?
 @export var show_surface_bubbles: bool = true
@@ -183,6 +188,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		"target_pos": final_target_pos,
 		"flight_time": flight_time,
 		"color": zone_color,
+		"gradient": zone_gradient,
+		"gradient_ring_count": gradient_ring_count,
 		"projectile_radius": projectile_radius,
 		"zone_radius": zone_radius,
 		"zone_lifetime": zone_lifetime,
@@ -245,7 +252,7 @@ func _finish_cast(
 	notify_components_cast_finished(live_attacker)
 
 # ==============================================================================
-# KLASA WEWNĘTRZNA: Lot pocisku, buforowane raycasty ścian, naturalna ciecz i bąbelki
+# KLASA WEWNĘTRZNA: Lot pocisku, buforowane raycasty ścian, płynny gradient ArrayMesh i bąbelki
 # ==============================================================================
 class ThrownZoneNode extends Node2D:
 	const MIN_TIME_SEC: float = 0.01
@@ -255,14 +262,16 @@ class ThrownZoneNode extends Node2D:
 	const NOISE_SAMPLE_RADIUS: float = 50.0
 	const IMPACT_SPARK_COUNT: int = 10
 
-	## Naturalne 3-warstwowe przyciemnienie cieczy (eliminuje plastikowy, jaskrawy obrys).
-	const OUTER_DARKEN_AMOUNT: float = 0.38
-	const OUTER_FILL_ALPHA_MULT: float = 0.38
-	const MID_LAYER_BLEND_RATIO: float = 0.48
-	const MID_DARKEN_AMOUNT: float = 0.18
-	const MID_FILL_ALPHA_MULT: float = 0.44
-	const CORE_DARKEN_AMOUNT: float = 0.08
-	const CORE_FILL_ALPHA_MULT: float = 0.56
+	## Progi domyślnego płynnego gradientu radialnego cieczy (środek -> ciało -> półprzezroczysty brzeg -> miękki zanik).
+	const GRADIENT_CORE_DARKEN: float = 0.06
+	const GRADIENT_CORE_ALPHA_MULT: float = 0.86
+	const GRADIENT_BODY_DARKEN: float = 0.14
+	const GRADIENT_BODY_ALPHA_MULT: float = 0.72
+	const GRADIENT_RIM_OFFSET: float = 0.86
+	const GRADIENT_RIM_DARKEN: float = 0.28
+	const GRADIENT_RIM_ALPHA_MULT: float = 0.36
+	const GRADIENT_EDGE_DARKEN: float = 0.42
+	const GRADIENT_EDGE_ALPHA: float = 0.0
 	const BORDER_DARKEN_AMOUNT: float = 0.52
 	const BORDER_ALPHA_MULT: float = 0.42
 
@@ -286,12 +295,12 @@ class ThrownZoneNode extends Node2D:
 	var _is_polygon_settled: bool = false
 	var _tick_timer: float = 0.0
 	var _noise: FastNoiseLite = null
+	var _active_gradient: Gradient = null
 
 	## Bufor maksymalnych dystansów do ścian obliczany JEDNORAZOWO w chwili rozbicia pocisku (0 raycastów na klatkę!).
 	var _cached_wall_limits: PackedFloat32Array = PackedFloat32Array()
 	var _outer_polygon: PackedVector2Array = PackedVector2Array()
-	var _mid_polygon: PackedVector2Array = PackedVector2Array()
-	var _inner_polygon: PackedVector2Array = PackedVector2Array()
+	var _zone_mesh: ArrayMesh = null
 	var _bubbles: Array[Dictionary] = []
 
 	func setup(
@@ -314,6 +323,9 @@ class ThrownZoneNode extends Node2D:
 		_on_detonated = on_detonated_cb
 		_on_target_hit = on_target_hit_cb
 
+		_active_gradient = _resolve_effective_gradient()
+		_zone_mesh = ArrayMesh.new()
+
 		z_as_relative = false
 		z_index = GameLayers.FX
 
@@ -325,6 +337,36 @@ class ThrownZoneNode extends Node2D:
 		_noise.frequency = float(_cfg["noise_frequency"])
 
 		global_position = _cfg["start_pos"]
+
+	## Zwraca własny gradient z .tres lub buduje płynny 4-punktowy gradient cieczy z zone_color i visual_core_scale.
+	func _resolve_effective_gradient() -> Gradient:
+		var custom_grad: Gradient = _cfg.get("gradient") as Gradient
+		if custom_grad != null:
+			return custom_grad
+
+		var base_col: Color = _cfg["color"]
+		var body_offset: float = clampf(float(_cfg["core_scale"]), 0.15, GRADIENT_RIM_OFFSET - 0.06)
+
+		var core_col: Color = base_col.darkened(GRADIENT_CORE_DARKEN)
+		core_col.a = base_col.a * GRADIENT_CORE_ALPHA_MULT
+
+		var body_col: Color = base_col.darkened(GRADIENT_BODY_DARKEN)
+		body_col.a = base_col.a * GRADIENT_BODY_ALPHA_MULT
+
+		var rim_col: Color = base_col.darkened(GRADIENT_RIM_DARKEN)
+		rim_col.a = base_col.a * GRADIENT_RIM_ALPHA_MULT
+
+		var edge_col: Color = base_col.darkened(GRADIENT_EDGE_DARKEN)
+		edge_col.a = GRADIENT_EDGE_ALPHA
+
+		var grad := Gradient.new()
+		grad.set_offset(0, 0.0)
+		grad.set_color(0, core_col)
+		grad.set_offset(1, 1.0)
+		grad.set_color(1, edge_col)
+		grad.add_point(body_offset, body_col)
+		grad.add_point(GRADIENT_RIM_OFFSET, rim_col)
+		return grad
 
 	func _process(delta: float) -> void:
 		_elapsed += delta
@@ -343,7 +385,7 @@ class ThrownZoneNode extends Node2D:
 				_tick_timer = 0.0
 				_apply_zone_tick_effects()
 
-			# Dla statycznej plamy po zakończeniu rozlewania nie przebudowujemy wielokąta (0 alokacji/klatkę!).
+			# Dla statycznej plamy po zakończeniu rozlewania nie przebudowujemy siatki (0 alokacji/klatkę!).
 			if not _is_polygon_settled:
 				_rebuild_organic_polygon()
 			queue_redraw()
@@ -417,7 +459,7 @@ class ThrownZoneNode extends Node2D:
 		for _i in range(count):
 			var idx: int = randi_range(0, poly_res - 1)
 			var angle: float = (float(idx) / float(poly_res)) * TAU
-			var max_dist: float = minf(zone_rad * 0.78, _cached_wall_limits[idx] * 0.78)
+			var max_dist: float = minf(zone_rad * 0.72, _cached_wall_limits[idx] * 0.72)
 			var dist: float = sqrt(randf()) * max_dist
 			_bubbles.append({
 				"pos": Vector2.from_angle(angle) * dist,
@@ -426,7 +468,7 @@ class ThrownZoneNode extends Node2D:
 				"max_r": randf_range(BUBBLE_MIN_RADIUS_PX, BUBBLE_MAX_RADIUS_PX)
 			})
 
-	## Buduje 3 współśrodkowe wielokąty cieczy na podstawie buforowanych granic ścian — ZERO raycastów w _process()!
+	## Wyznacza organiczny obrys strefy na podstawie buforowanych granic ścian i aktualizuje siatkę gradientową ArrayMesh.
 	func _rebuild_organic_polygon() -> void:
 		var poly_res: int = _cached_wall_limits.size()
 		if poly_res < 3:
@@ -450,7 +492,6 @@ class ThrownZoneNode extends Node2D:
 		var n_amp: float = float(_cfg["noise_amplitude"])
 		var n_spd: float = float(_cfg["noise_speed"])
 		var n_z: float = zone_elapsed * n_spd
-		var core_scale: float = float(_cfg["core_scale"])
 
 		var raw_outer := PackedVector2Array()
 		raw_outer.resize(poly_res)
@@ -473,19 +514,77 @@ class ThrownZoneNode extends Node2D:
 			raw_outer = smoothed
 
 		_outer_polygon = raw_outer
-		_mid_polygon = PackedVector2Array()
-		_inner_polygon = PackedVector2Array()
-		if core_scale > 0.0:
-			var mid_scale: float = lerpf(1.0, core_scale, MID_LAYER_BLEND_RATIO)
-			_mid_polygon.resize(poly_res)
-			_inner_polygon.resize(poly_res)
-			for i in range(poly_res):
-				_mid_polygon[i] = _outer_polygon[i] * mid_scale
-				_inner_polygon[i] = _outer_polygon[i] * core_scale
+		_rebuild_gradient_mesh()
 
-		# Jeśli rozlewanie się zakończyło i nie ma animacji falowania/pulsowania, zamrażamy kształt w jednym miejscu.
 		if not is_spilling and n_spd <= 0.0 and (pulse_strength <= 0.0 or pulse_speed <= 0.0):
 			_is_polygon_settled = true
+
+	## Generuje wielopierścieniową siatkę trójkątów ArrayMesh z kolorami wierzchołków interpolowanymi sprzętowo przez GPU (SRP).
+	func _rebuild_gradient_mesh() -> void:
+		var poly_res: int = _outer_polygon.size()
+		if poly_res < 3 or _zone_mesh == null or _active_gradient == null:
+			return
+
+		var ring_count: int = maxi(2, int(_cfg["gradient_ring_count"]))
+		var total_vertices: int = 1 + (ring_count * poly_res)
+
+		var vertices := PackedVector2Array()
+		var colors := PackedColorArray()
+		vertices.resize(total_vertices)
+		colors.resize(total_vertices)
+
+		# Wierzchołek centralny (indeks 0)
+		vertices[0] = Vector2.ZERO
+		colors[0] = _active_gradient.sample(0.0)
+
+		# Pierścienie koncentryczne od środka do pełnego organicznego obrysu
+		for r in range(ring_count):
+			var t: float = float(r + 1) / float(ring_count)
+			var ring_col: Color = _active_gradient.sample(t)
+			var ring_base: int = 1 + (r * poly_res)
+			for i in range(poly_res):
+				vertices[ring_base + i] = _outer_polygon[i] * t
+				colors[ring_base + i] = ring_col
+
+		# Budowanie indeksów trójkątów: wachlarz centralny + pasy między pierścieniami
+		var total_indices: int = (poly_res * 3) + ((ring_count - 1) * poly_res * 6)
+		var indices := PackedInt32Array()
+		indices.resize(total_indices)
+		var write_idx: int = 0
+
+		for i in range(poly_res):
+			var next_i: int = (i + 1) % poly_res
+			indices[write_idx] = 0
+			indices[write_idx + 1] = 1 + i
+			indices[write_idx + 2] = 1 + next_i
+			write_idx += 3
+
+		for r in range(ring_count - 1):
+			var inner_base: int = 1 + (r * poly_res)
+			var outer_base: int = 1 + ((r + 1) * poly_res)
+			for i in range(poly_res):
+				var next_i: int = (i + 1) % poly_res
+				var a: int = inner_base + i
+				var b: int = inner_base + next_i
+				var c: int = outer_base + i
+				var d: int = outer_base + next_i
+
+				indices[write_idx] = a
+				indices[write_idx + 1] = c
+				indices[write_idx + 2] = d
+				indices[write_idx + 3] = a
+				indices[write_idx + 4] = d
+				indices[write_idx + 5] = b
+				write_idx += 6
+
+		var surface_arrays: Array = []
+		surface_arrays.resize(Mesh.ARRAY_MAX)
+		surface_arrays[Mesh.ARRAY_VERTEX] = vertices
+		surface_arrays[Mesh.ARRAY_COLOR] = colors
+		surface_arrays[Mesh.ARRAY_INDEX] = indices
+
+		_zone_mesh.clear_surfaces()
+		_zone_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_arrays)
 
 	func _draw() -> void:
 		var base_col: Color = _cfg["color"]
@@ -511,31 +610,20 @@ class ThrownZoneNode extends Node2D:
 		if fade_time > 0.0 and time_left < fade_time:
 			alpha_mult = clampf(time_left / fade_time, 0.0, 1.0)
 
-		# 3-warstwowa głębia rozlanej cieczy (ciemniejsza krawędź -> półprzezroczysty środek -> głębsze dno)
-		if _outer_polygon.size() >= 3:
-			var outer_tint: Color = base_col.darkened(OUTER_DARKEN_AMOUNT)
-			outer_tint.a = base_col.a * OUTER_FILL_ALPHA_MULT * alpha_mult
-			draw_colored_polygon(_outer_polygon, outer_tint)
+		# 1. Płynny gradient radialny (1 wywołanie draw_mesh z interpolacją sprzętową GPU)
+		if _zone_mesh != null and _zone_mesh.get_surface_count() > 0:
+			draw_mesh(_zone_mesh, null, Transform2D.IDENTITY, Color(1.0, 1.0, 1.0, alpha_mult))
 
-			if _mid_polygon.size() >= 3:
-				var mid_tint: Color = base_col.darkened(MID_DARKEN_AMOUNT)
-				mid_tint.a = base_col.a * MID_FILL_ALPHA_MULT * alpha_mult
-				draw_colored_polygon(_mid_polygon, mid_tint)
+		# 2. Opcjonalny ciemny obrys krawędzi (wyłączony dla naturalnych cieczy)
+		var outline_thick: float = float(_cfg["outline_thickness"])
+		if outline_thick > 0.0 and _outer_polygon.size() >= 3:
+			var outline: PackedVector2Array = _outer_polygon.duplicate()
+			outline.append(outline[0])
+			var border_col: Color = base_col.darkened(BORDER_DARKEN_AMOUNT)
+			border_col.a = base_col.a * BORDER_ALPHA_MULT * alpha_mult
+			draw_polyline(outline, border_col, outline_thick, true)
 
-			if _inner_polygon.size() >= 3:
-				var core_tint: Color = base_col.darkened(CORE_DARKEN_AMOUNT)
-				core_tint.a = base_col.a * CORE_FILL_ALPHA_MULT * alpha_mult
-				draw_colored_polygon(_inner_polygon, core_tint)
-
-			var outline_thick: float = float(_cfg["outline_thickness"])
-			if outline_thick > 0.0:
-				var outline: PackedVector2Array = _outer_polygon.duplicate()
-				outline.append(outline[0])
-				var border_col: Color = base_col.darkened(BORDER_DARKEN_AMOUNT)
-				border_col.a = base_col.a * BORDER_ALPHA_MULT * alpha_mult
-				draw_polyline(outline, border_col, outline_thick, true)
-
-		# Animowane bąbelki na powierzchni cieczy
+		# 3. Animowane bąbelki na powierzchni cieczy
 		if not _bubbles.is_empty():
 			var spill_time: float = float(_cfg["spill_time"])
 			var spill_ratio: float = clampf(zone_elapsed / maxf(MIN_TIME_SEC, spill_time), 0.0, 1.0)
