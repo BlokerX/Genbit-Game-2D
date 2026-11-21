@@ -10,7 +10,7 @@
 [sub_resource type="Resource" id="Resource_tail_atk"]
 script = ExtResource("3_atk")
 damage = 35
-max_range = 120.0
+max_range = 190.0
 stun_time = 1.5
 knockback_force = 1200.0
 
@@ -23,8 +23,12 @@ trauma_amount = 0.6
 script = ExtResource("1_dd2gn")
 ability_name = "Bioniczny Ogon i Porażenie"
 cooldown = 7.0
-max_range = 120.0
+max_range = 190.0
+feedback_cue = ExtResource("2_2xspu")
 attack_data = SubResource("Resource_tail_atk")
 attack_knockback_duration = 0.7
 components = Array[ExtResource("4_comp")]([SubResource("Resource_tail_shake")])
+dash_distance = 100.0
+slash_radius = 200.0
+include_caster_radius = true
 metadata/_custom_type_script = "uid://c1qtc44mffk1u"

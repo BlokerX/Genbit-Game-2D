@@ -1,9 +1,56 @@
-[gd_resource type="Resource" script_class="AcidThrowAbility" format=3 uid="uid://cysyepmtwumy4"]
+[gd_resource type="Resource" script_class="ThrownZoneAbility" format=3 uid="uid://cysyepmtwumy4"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_ink8o"]
 [ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_kusl1"]
-[ext_resource type="Script" uid="uid://3obnyo3ee8cy" path="res://assets/scripts/ai/abilities/acid_throw_ability.gd" id="3_etw4g"]
+[ext_resource type="Script" uid="uid://3obnyo3ee8cy" path="res://assets/scripts/ai/abilities/thrown_zone_ability.gd" id="3_etw4g"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="4_atk"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="5_pois"]
+[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="6_comp"]
+[ext_resource type="Script" uid="uid://8ivuv6uww2ta" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="7_shake"]
+
+[sub_resource type="Resource" id="Resource_acid_throw_atk"]
+script = ExtResource("4_atk")
+damage = 20
+max_range = 700.0
+stun_time = 0.0
+
+[sub_resource type="Resource" id="Resource_acid_puddle_poison"]
+script = ExtResource("5_pois")
+hp_per_tick = -4
+duration = 4.0
+tick_interval = 1.0
+effect_name = "Kwasowa Zgnilizna"
+effect_category = 2
+
+[sub_resource type="Resource" id="Resource_acid_throw_shake"]
+script = ExtResource("7_shake")
+trigger_mode = 0
+trauma_amount = 0.4
 
 [resource]
 script = ExtResource("3_etw4g")
+ability_name = "Rzut Kwasem"
+cooldown = 10.0
+min_range = 0.0
+max_range = 700.0
+feedback_cue = ExtResource("2_kusl1")
+attack_data = SubResource("Resource_acid_throw_atk")
+damage_category = 2
+apply_attack_stun = false
+components = Array[ExtResource("6_comp")]([SubResource("Resource_acid_throw_shake")])
+telegraph_time = 1.3
+flight_time = 1.0
+prediction_factor = 0.6
+projectile_radius = 20.0
+zone_radius = 300.0
+zone_lifetime = 7.0
+zone_tick_rate = 0.5
+zone_tick_effects = Array[ExtResource("1_ink8o")]([SubResource("Resource_acid_puddle_poison")])
+zone_color = Color(0.2, 0.9, 0.1, 0.85)
+polygon_resolution = 64
+smoothing_iterations = 2
+visual_core_scale = 0.72
+zone_outline_thickness = 2.0
+show_surface_bubbles = true
+surface_bubble_count = 12
 metadata/_custom_type_script = "uid://3obnyo3ee8cy"

@@ -1,8 +1,44 @@
-[gd_resource type="Resource" script_class="AcidSpitAbility" format=3 uid="uid://c0vw7l24sp7od"]
+[gd_resource type="Resource" script_class="ZoneBarrageAbility" format=3 uid="uid://c0vw7l24sp7od"]
 
 [ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="1_ae3n4"]
-[ext_resource type="Script" uid="uid://gmij6pfs44ua" path="res://assets/scripts/ai/abilities/acid_spit_ability.gd" id="1_ai3fh"]
+[ext_resource type="Script" uid="uid://gmij6pfs44ua" path="res://assets/scripts/ai/abilities/zone_barrage_ability.gd" id="1_ai3fh"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="2_eff"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="4_pois"]
+
+[sub_resource type="Resource" id="Resource_spit_atk"]
+script = ExtResource("3_atk")
+damage = 15
+max_range = 600.0
+stun_time = 0.0
+
+[sub_resource type="Resource" id="Resource_spit_poison"]
+script = ExtResource("4_pois")
+hp_per_tick = -5
+duration = 6.0
+tick_interval = 1.0
+effect_name = "Kwasowy Deszcz"
+effect_category = 2
 
 [resource]
 script = ExtResource("1_ai3fh")
+ability_name = "Wirujący Deszcz Kwasu"
+cooldown = 15.0
+min_range = 0.0
+max_range = 600.0
+feedback_cue = ExtResource("1_ae3n4")
+attack_data = SubResource("Resource_spit_atk")
+damage_category = 2
+apply_attack_stun = false
+on_hit_effects = Array[ExtResource("2_eff")]([SubResource("Resource_spit_poison")])
+barrage_duration = 6.0
+spawn_interval = 0.7
+zones_per_tick = 5
+barrage_radius = 1000.0
+sub_zone_radius = 65.0
+sub_zone_cast_time = 1.2
+prediction_time = 0.7
+barrage_fill_color = Color(0.82, 0.0, 0.329, 0.24)
+barrage_outline_color = Color(1.0, 0.12, 0.18, 0.72)
+sub_zone_danger_color = Color(1.0, 0.624, 0.102, 0.612)
 metadata/_custom_type_script = "uid://gmij6pfs44ua"
