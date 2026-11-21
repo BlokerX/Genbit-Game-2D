@@ -1,8 +1,16 @@
 class_name CombatVFXHelper
 extends RefCounted
-## Centralny serwis lekkich, proceduralnych efektów wizualnych walki (SOLID - SRP / DRY).
-## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier, kroplowe smugi pocisków/noży
+## Centralny serwis lekkich, proceduralnych efektów wizualnych walki (SOLID - SRP / OCP / DRY).
+## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier, wybór stylu śladu lotu (TRAIL vs DROPLET)
 ## oraz wielowarstwowe eksplozje bez duplikowania logiki _draw() między skryptami.
+
+## Styl rysowania śladu lotu dla pocisków (Projectile) oraz rzutek (ThrowableProjectile).
+enum TrailStyle {
+	NONE,    ## Brak smugi ani otoczki.
+	TRAIL,   ## Klasyczna, zwężająca się dwuwarstwowa smuga wyłącznie ZA obiektem (nie wystaje przed przód).
+	DROPLET, ## Wypukła kropla wysunięta PRZED czubek i otaczająca obiekt (idealna dla żywiołów/trucizny/mrozu).
+	AUTO     ## Automatyczny dobór: DROPLET przy obecności efektu żywiołowego/specjalnego, w przeciwnym razie TRAIL.
+}
 
 #region Stałe Konfiguracyjne VFX (Brak magicznych liczb)
 const DEFAULT_SHOCKWAVE_DURATION_SEC: float = 0.28
@@ -13,7 +21,15 @@ const DEFAULT_SPARK_DURATION_SEC: float = 0.20
 const DEFAULT_EXPLOSION_DURATION_SEC: float = 0.36
 const DEFAULT_EXPLOSION_CORE_COLOR := Color(1.0, 0.96, 0.78, 1.0)
 
-## Parametry geometryczne i kolorystyczne smugi kroplowej (droplet envelope).
+## Parametry klasycznej, zwężającej się smugi (TRAIL — wyłącznie za obiektem).
+const TRAIL_MIN_VISIBLE_LEN_PX: float = 2.0
+const TRAIL_OUTER_ALPHA: float = 0.44
+const TRAIL_INNER_ALPHA: float = 0.86
+const TRAIL_INNER_WIDTH_RATIO: float = 0.46
+const TRAIL_INNER_LENGTH_RATIO: float = 0.72
+const TRAIL_INNER_LIGHTEN: float = 0.48
+
+## Parametry geometryczne i kolorystyczne smugi kroplowej (DROPLET — otoczka wysunięta przed obiekt).
 const DROPLET_ARC_SEGMENTS: int = 10
 const DROPLET_MIN_CONVEX_MARGIN_PX: float = 2.0
 const DROPLET_OUTER_ALPHA: float = 0.40
@@ -69,6 +85,12 @@ static func has_elemental_effect(effects: Array[Effect]) -> bool:
 			return true
 	return false
 
+## Rozwiązuje końcowy styl śladu (zamienia AUTO na DROPLET lub TRAIL zależnie od obecności żywiołu - DRY).
+static func resolve_trail_style(configured_style: TrailStyle, has_elemental: bool) -> TrailStyle:
+	if configured_style == TrailStyle.AUTO:
+		return TrailStyle.DROPLET if has_elemental else TrailStyle.TRAIL
+	return configured_style
+
 ## Dobiera dominujący kolor VFX na podstawie priorytetów kategorii w liście efektów (DRY / OCP).
 ## Żywioły (np. FROST_FREEZE, POISON_ACID, FIRE_BURN) zawsze mają pierwszeństwo przed ogólnym STUN.
 static func resolve_color_from_effects(effects: Array[Effect], default_color: Color) -> Color:
@@ -95,6 +117,57 @@ static func resolve_color_from_effects(effects: Array[Effect], default_color: Co
 					best_color = custom_col
 
 	return best_color
+
+## Wspólna fasada rysująca wybrany styl śladu lotu (TRAIL albo DROPLET) w układzie lokalnym obiektu (SOLID - OCP / DRY).
+static func draw_projectile_trail(
+	canvas: CanvasItem,
+	style: TrailStyle,
+	world_direction: Vector2,
+	world_rotation: float,
+	head_lead_px: float,
+	tail_length_px: float,
+	width_px: float,
+	color: Color
+) -> void:
+	match style:
+		TrailStyle.TRAIL:
+			draw_motion_trail(canvas, world_direction, world_rotation, tail_length_px, width_px, color)
+		TrailStyle.DROPLET:
+			draw_droplet_trail(canvas, world_direction, world_rotation, head_lead_px, tail_length_px, width_px, color)
+
+## Rysuje smukłą, zwężającą się dwuwarstwową smugę wyłącznie ZA obiektem (od środka do ostrego końca z tyłu).
+static func draw_motion_trail(
+	canvas: CanvasItem,
+	world_direction: Vector2,
+	world_rotation: float,
+	tail_length_px: float,
+	width_px: float,
+	color: Color
+) -> void:
+	if canvas == null or world_direction == Vector2.ZERO or width_px <= 0.5 or tail_length_px < TRAIL_MIN_VISIBLE_LEN_PX:
+		return
+
+	var fwd: Vector2 = world_direction.normalized().rotated(-world_rotation)
+	var perp: Vector2 = fwd.orthogonal()
+	var outer_r: float = maxf(0.6, width_px * 0.5)
+	var inner_r: float = maxf(0.4, outer_r * TRAIL_INNER_WIDTH_RATIO)
+
+	var outer_poly := PackedVector2Array([
+		perp * outer_r,
+		-perp * outer_r,
+		-fwd * tail_length_px
+	])
+	var outer_col := Color(color.r, color.g, color.b, TRAIL_OUTER_ALPHA)
+	canvas.draw_colored_polygon(outer_poly, outer_col)
+
+	var inner_poly := PackedVector2Array([
+		perp * inner_r,
+		-perp * inner_r,
+		-fwd * (tail_length_px * TRAIL_INNER_LENGTH_RATIO)
+	])
+	var inner_col: Color = color.lightened(TRAIL_INNER_LIGHTEN)
+	inner_col.a = TRAIL_INNER_ALPHA
+	canvas.draw_colored_polygon(inner_poly, inner_col)
 
 ## Rysuje płynną, dwuwarstwową kroplę / otoczkę smugi wysuniętą lekko przed czubek pocisku lub noża (DRY).
 ## Geometria kropli jest matematycznie wypukła, więc draw_colored_polygon zawsze renderuje ją bez artefaktów.

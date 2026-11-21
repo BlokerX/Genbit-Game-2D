@@ -7,20 +7,37 @@ const PROJECTILE_VERTICAL_SPRITE_OFFSET_RAD: float = PI / 2.0
 const PERCENT_MULTIPLIER: float = 100.0
 const DURABILITY_CONSUMPTION_PER_SHOT: int = 1
 const NO_PREFERRED_AMMO_ID: int = -1
+const MAX_ARMOR_PENETRATION: float = 1.0
 
 # Stałe oceny zagrożenia dla AI (Brak magicznych liczb)
 const HIGH_DAMAGE_THRESHOLD: int = 20
 const HIGH_DAMAGE_RANGED_THREAT_RATIO: float = 0.85
 const NORMAL_RANGED_THREAT_RATIO: float = 0.45
 
+enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_RIFLE_BULLET, SHOTGUN_BULLET }
+
+## Opcjonalne nadpisanie stylu śladu pocisku w pliku .tres konkretnej broni (bez duplikowania projectile.tscn).
+enum ProjectileTrailOverride {
+	INHERIT_SCENE, ## Dziedziczy styl ze sceny projectile_scene (domyślnie TRAIL — smuga za pociskiem).
+	NONE,          ## Wyłącza smugę / kroplę dla tej broni.
+	TRAIL,         ## Wymusza klasyczną smugę ciągnącą się wyłącznie ZA pociskiem.
+	DROPLET,       ## Wymusza kroplę wysuniętą PRZED czubek i otaczającą pocisk.
+	AUTO           ## Automatycznie: kropla dla pocisków żywiołowych, smuga dla zwykłych.
+}
+
+const TRAIL_OVERRIDE_TO_VFX_STYLE: Dictionary = {
+	ProjectileTrailOverride.NONE: CombatVFXHelper.TrailStyle.NONE,
+	ProjectileTrailOverride.TRAIL: CombatVFXHelper.TrailStyle.TRAIL,
+	ProjectileTrailOverride.DROPLET: CombatVFXHelper.TrailStyle.DROPLET,
+	ProjectileTrailOverride.AUTO: CombatVFXHelper.TrailStyle.AUTO
+}
+
 @export_group("Oprawa użycia")
 ## Oprawa wizualna i dźwiękowa tego konkretnego strzału.
 @export var use_feedback: FeedbackCue
 
-enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_RIFLE_BULLET, SHOTGUN_BULLET }
-
 @export_category("Ustawienia Dystansowe")
-@export var use_cooldown: float = 0.8 
+@export var use_cooldown: float = 0.8
 @export var allow_auto_aim: bool = true
 
 @export_group("Statystyki Własne Broni")
@@ -40,6 +57,10 @@ enum AmmoType { NONE, ARROW, BULLET, SHELL, ROCKET, ENERGY, GUN_BULLET, ASSAULT_
 @export var projectile_speed: float = 500.0
 @export var projectile_lifetime: float = 2.0
 @export var projectile_scene: PackedScene
+## Styl śladu pocisku dla tej konkretnej broni w .tres (domyślnie dziedziczy TRAIL ze sceny pocisku; można przełączyć na DROPLET, AUTO lub NONE).
+@export var projectile_trail_style: ProjectileTrailOverride = ProjectileTrailOverride.INHERIT_SCENE
+## Opcjonalny kolor smugi/kropli i iskier dla tej broni (Alpha == 0 oznacza dobór automatyczny z efektów pocisku).
+@export var projectile_vfx_color_override: Color = Color(0.0, 0.0, 0.0, 0.0)
 
 ## Ustawiamy domyślny stan amunicji przy stworzeniu broni.
 func initialize_state(item_instance: ItemInstance) -> void:
@@ -49,7 +70,7 @@ func initialize_state(item_instance: ItemInstance) -> void:
 		item_instance.state["preferred_ammo_id"] = NO_PREFERRED_AMMO_ID
 
 func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void:
-	if projectile_scene == null: 
+	if projectile_scene == null:
 		return
 
 	# --- INTELIGENTNE CELOWANIE ---
@@ -60,7 +81,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		var scanner = actor.get_node("AimController").aim_scanner
 		target_pos = actor.global_position + scanner.target_position
 	else:
-		return 
+		return
 
 	var stats = actor.get("interaction_and_attack_stats_script")
 	var inv = actor.call("get_inventory") if actor.has_method("get_inventory") else null
@@ -107,7 +128,7 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 	if randf() <= stats.get_total_critical_rate():
 		final_damage += int(stats.get_total_critical_damage())
 
-	var final_penetration: float = clampf(base_penetration + stats.armor_penetration_adder, 0.0, 1.0)
+	var final_penetration: float = clampf(base_penetration + stats.armor_penetration_adder, 0.0, MAX_ARMOR_PENETRATION)
 
 	var generated_effects: Array[Effect] = []
 	generated_effects.append(DamageEffect.new(final_damage, final_penetration))
@@ -147,6 +168,10 @@ func execute(actor: Node2D, target: Node2D, item_instance: ItemInstance) -> void
 		proj.speed = final_speed
 	if "lifetime" in proj:
 		proj.lifetime = projectile_lifetime
+	if projectile_trail_style != ProjectileTrailOverride.INHERIT_SCENE and "trail_style" in proj:
+		proj.set("trail_style", int(TRAIL_OVERRIDE_TO_VFX_STYLE[projectile_trail_style]))
+	if projectile_vfx_color_override.a > 0.0 and "override_vfx_color" in proj:
+		proj.set("override_vfx_color", projectile_vfx_color_override)
 
 	var sprite = proj.get_node_or_null("Sprite2D")
 	if sprite != null and final_tex != null:

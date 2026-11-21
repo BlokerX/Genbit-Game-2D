@@ -2,7 +2,8 @@ extends Area2D
 class_name Projectile
 ## Pocisk wystrzeliwany z broni dystansowej (RangedWeaponComponent).
 ## Obsługuje detekcję RayCast oraz powierzchniową, penetrację sojuszników, kolizje z osłonami (PlacedObject),
-## kroplową otoczkę dla pocisków żywiołowych (np. lodowych) oraz iskry impaktu (SOLID - SRP / DRY).
+## konfigurowalny styl śladu (domyślnie TRAIL — smuga za pociskiem; opcjonalnie DROPLET / AUTO / NONE)
+## oraz iskry impaktu (SOLID - SRP / OCP / DRY).
 
 #region Stałe Fizyczne i Wizualne (Brak magicznych liczb)
 const MAX_ALLY_PENETRATIONS: int = 5
@@ -10,9 +11,6 @@ const MAX_RAY_QUERY_STEPS: int = 16
 const SPRITE_ROTATION_OFFSET_RAD: float = 0.0
 
 const DEFAULT_PROJECTILE_VFX_COLOR := Color(1.0, 0.86, 0.42, 0.95)
-const ELEMENTAL_HEAD_LEAD_PX: float = 10.0
-const ELEMENTAL_WIDTH_MULTIPLIER: float = 1.85
-const ELEMENTAL_TAIL_LENGTH_BONUS_PX: float = 4.0
 const MIN_TRAIL_GROWTH_RATIO: float = 0.40
 const IMPACT_SPARK_COUNT: int = 6
 const IMPACT_SPARK_RADIUS_PX: float = 18.0
@@ -31,14 +29,17 @@ const IMPACT_SPARK_DURATION_SEC: float = 0.16
 @export var detect_placed_object_areas: bool = true
 
 @export_group("Efekty Wizualne (VFX)")
-## Czy rysować kroplową smugę za lecącym pociskiem (otaczającą pocisk dla żywiołów np. lodu)?
-@export var enable_trail: bool = true
-## Bazowe wysunięcie przodu smugi przed środek zwykłego pocisku (dla żywiołów rozszerzane automatycznie do ELEMENTAL_HEAD_LEAD_PX).
-@export_range(0.0, 20.0, 0.5) var trail_head_lead_px: float = 5.0
-## Maksymalna długość zwężającego się ogona smugi (w pikselach).
+## Wybór stylu śladu: NONE (brak), TRAIL (domyślnie: smuga wyłącznie za pociskiem), DROPLET (kropla otaczająca
+## i wysunięta przed pocisk), AUTO (kropla dla żywiołów, smuga dla zwykłych kul). Nadpisywalny w RangedWeaponComponent (.tres).
+@export var trail_style: CombatVFXHelper.TrailStyle = CombatVFXHelper.TrailStyle.TRAIL
+## Maksymalna długość zwężającego się ogona smugi / kropli za pociskiem (w pikselach).
 @export_range(6.0, 80.0, 2.0) var trail_length_px: float = 18.0
-## Bazowa szerokość smugi dla zwykłego pocisku (dla pocisków z efektem mnożona przez ELEMENTAL_WIDTH_MULTIPLIER).
-@export_range(1.0, 14.0, 0.5) var trail_width_px: float = 5.0
+## Szerokość u podstawy dla trybu TRAIL (klasyczna smuga wyłącznie za pociskiem).
+@export_range(1.0, 14.0, 0.5) var trail_width_px: float = 4.5
+## Wysunięcie zaokrąglonego przodu przed środek pocisku dla trybu DROPLET (w pikselach).
+@export_range(0.0, 24.0, 0.5) var droplet_head_lead_px: float = 10.0
+## Szerokość otoczki kropli w najszerszym miejscu dla trybu DROPLET (w pikselach).
+@export_range(2.0, 24.0, 0.5) var droplet_width_px: float = 9.5
 ## Czy w punkcie trafienia (wróg, skrzynia, ściana) generować rozbłysk iskier (CombatVFXHelper)?
 @export var spawn_impact_sparks: bool = true
 ## Opcjonalny własny kolor smugi i iskier. Gdy przezroczysty (alpha == 0), kolor dobierany jest automatycznie z efektów pocisku.
@@ -50,7 +51,7 @@ var effects_to_apply: Array[Effect] = []
 var _time_alive: float = 0.0
 var _traveled_distance: float = 0.0
 var _trail_settled: bool = false
-var _has_elemental_vfx: bool = false
+var _resolved_trail_style: CombatVFXHelper.TrailStyle = CombatVFXHelper.TrailStyle.NONE
 var _resolved_vfx_color: Color = DEFAULT_PROJECTILE_VFX_COLOR
 var shooter: Node2D = null
 var _shooter_faction_name: StringName = &""
@@ -72,7 +73,9 @@ func _ready() -> void:
 
 	# Zachowujemy pionowy offset rotacji tekstury pocisku nadany przez RangedWeaponComponent
 	rotation = direction.angle() + SPRITE_ROTATION_OFFSET_RAD
-	_has_elemental_vfx = CombatVFXHelper.has_elemental_effect(effects_to_apply)
+
+	var has_elemental: bool = CombatVFXHelper.has_elemental_effect(effects_to_apply)
+	_resolved_trail_style = CombatVFXHelper.resolve_trail_style(trail_style, has_elemental)
 	_resolved_vfx_color = _resolve_vfx_color()
 
 func _physics_process(delta: float) -> void:
@@ -155,34 +158,32 @@ func _physics_process(delta: float) -> void:
 	if not hit_valid_target:
 		global_position += direction * remaining_dist
 		_traveled_distance += remaining_dist
-		var target_tail_len: float = _get_effective_tail_length()
-		if enable_trail and not _trail_settled:
+		if _resolved_trail_style != CombatVFXHelper.TrailStyle.NONE and not _trail_settled:
 			queue_redraw()
-			if _traveled_distance >= target_tail_len:
+			if _traveled_distance >= trail_length_px:
 				_trail_settled = true
 
 func _draw() -> void:
-	if not enable_trail or direction == Vector2.ZERO:
+	if _resolved_trail_style == CombatVFXHelper.TrailStyle.NONE or direction == Vector2.ZERO:
 		return
 
-	var target_tail: float = _get_effective_tail_length()
-	var effective_width: float = trail_width_px * (ELEMENTAL_WIDTH_MULTIPLIER if _has_elemental_vfx else 1.0)
-	var effective_head: float = maxf(trail_head_lead_px, ELEMENTAL_HEAD_LEAD_PX) if _has_elemental_vfx else trail_head_lead_px
-	var growth_factor: float = clampf(_traveled_distance / maxf(1.0, target_tail * 0.5), MIN_TRAIL_GROWTH_RATIO, 1.0)
-	var current_tail: float = minf(target_tail, maxf(effective_width * 0.6, _traveled_distance))
+	var is_droplet: bool = (_resolved_trail_style == CombatVFXHelper.TrailStyle.DROPLET)
+	var width_px: float = droplet_width_px if is_droplet else trail_width_px
+	var growth_factor: float = clampf(_traveled_distance / maxf(1.0, trail_length_px * 0.5), MIN_TRAIL_GROWTH_RATIO, 1.0)
+	var current_tail: float = minf(trail_length_px, _traveled_distance)
+	if is_droplet:
+		current_tail = minf(trail_length_px, maxf(width_px * 0.6, _traveled_distance))
 
-	CombatVFXHelper.draw_droplet_trail(
+	CombatVFXHelper.draw_projectile_trail(
 		self,
+		_resolved_trail_style,
 		direction,
 		global_rotation,
-		effective_head * growth_factor,
+		droplet_head_lead_px * growth_factor,
 		current_tail,
-		effective_width,
+		width_px,
 		_resolved_vfx_color
 	)
-
-func _get_effective_tail_length() -> float:
-	return trail_length_px + (ELEMENTAL_TAIL_LENGTH_BONUS_PX if _has_elemental_vfx else 0.0)
 
 ## Dobiera kolor smugi i iskier na podstawie własnego nadpisania lub priorytetu efektów pocisku (DRY / OCP).
 func _resolve_vfx_color() -> Color:

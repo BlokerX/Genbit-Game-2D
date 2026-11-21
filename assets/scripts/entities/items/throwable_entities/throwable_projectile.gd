@@ -1,7 +1,7 @@
 extends Area2D
 class_name ThrowableProjectile
 ## Niematerialny pocisk miotany (np. nóż do rzucania, strzałka, mina) oparty na Area2D i RayCastach.
-## Generuje kroplową smugę otaczającą lecący obiekt (np. zieloną kroplę trucizny wokół noża - DRY / OCP)
+## Wspiera wybór stylu śladu (TRAIL vs DROPLET vs AUTO) współdzielony z Projectile (SOLID - SRP / OCP / DRY)
 ## oraz obsługuje punkt zapalnika/diody (domyślnie środek obiektu dla miny).
 
 #region Stałe Wizualne i Fizyczne (Brak magicznych liczb)
@@ -9,20 +9,22 @@ const DEFAULT_TRAIL_COLOR := Color(0.90, 0.94, 1.0, 0.90)
 const MIN_TRAIL_VELOCITY_SQ: float = 25.0
 const TRAIL_REFERENCE_SPEED_PX: float = 300.0
 const MIN_TRAIL_GROWTH_RATIO: float = 0.35
-const ELEMENTAL_WIDTH_BOOST_MULT: float = 1.25
 #endregion
 
 @export_category("Wizualizacje")
 @export var main_sprite: Sprite2D
 @export var activated_texture: Texture2D
-## Czy rysować kroplową smugę otaczającą rzutkę w trakcie lotu (nieaktywna dla nieruchomej miny)?
-@export var enable_trail: bool = true
-## Wysunięcie zaokrąglonego przodu kropli przed środek rzutki (w pikselach), aby nóż leciał w otoczce efektu.
-@export_range(0.0, 30.0, 1.0) var trail_head_lead_px: float = 13.0
-## Maksymalna długość zwężającego się ogona smugi za rzutką (w pikselach).
+## Wybór stylu śladu podczas lotu (nieaktywny, gdy obiekt stoi w miejscu np. Mina):
+## NONE (brak), TRAIL (smuga za rzutką), DROPLET (kropla otaczająca czubek), AUTO (kropla dla żywiołów, smuga dla zwykłych).
+@export var trail_style: CombatVFXHelper.TrailStyle = CombatVFXHelper.TrailStyle.AUTO
+## Maksymalna długość zwężającego się ogona smugi / kropli za rzutką (w pikselach).
 @export_range(6.0, 80.0, 2.0) var trail_length_px: float = 24.0
-## Szerokość otoczki kropli w najszerszym miejscu (w pikselach).
-@export_range(2.0, 30.0, 0.5) var trail_width_px: float = 11.0
+## Szerokość u podstawy dla trybu TRAIL (smuga wyłącznie za rzutką).
+@export_range(1.0, 14.0, 0.5) var trail_width_px: float = 5.0
+## Wysunięcie zaokrąglonego przodu kropli przed środek rzutki dla trybu DROPLET (w pikselach).
+@export_range(0.0, 30.0, 1.0) var droplet_head_lead_px: float = 13.0
+## Szerokość otoczki kropli w najszerszym miejscu dla trybu DROPLET (w pikselach).
+@export_range(2.0, 30.0, 0.5) var droplet_width_px: float = 13.0
 ## Opcjonalny własny kolor smugi. Gdy przezroczysty (alpha == 0), kolor dobierany jest z efektów (np. trucizna -> zieleń).
 @export var override_vfx_color: Color = Color(0.0, 0.0, 0.0, 0.0)
 ## Opcjonalna ścieżka knota w układzie lokalnym. Pusta tablica oznacza środek (0, 0) — idealne dla miny!
@@ -49,8 +51,8 @@ var effects_to_apply: Array[Effect] = []
 var _explosive_ctrl: ThrowableExplosiveController = ThrowableExplosiveController.new()
 var _traveled_distance: float = 0.0
 var _was_drawing_trail: bool = false
+var _resolved_trail_style: CombatVFXHelper.TrailStyle = CombatVFXHelper.TrailStyle.NONE
 var _resolved_trail_color: Color = DEFAULT_TRAIL_COLOR
-var _has_elemental_vfx: bool = false
 
 func _ready() -> void:
 	add_to_group("Hazard")
@@ -59,7 +61,8 @@ func _ready() -> void:
 	if current_velocity != Vector2.ZERO:
 		rotation = current_velocity.angle()
 
-	_has_elemental_vfx = CombatVFXHelper.has_elemental_effect(effects_to_apply)
+	var has_elemental: bool = CombatVFXHelper.has_elemental_effect(effects_to_apply)
+	_resolved_trail_style = CombatVFXHelper.resolve_trail_style(trail_style, has_elemental)
 	_resolved_trail_color = _resolve_trail_color()
 	_explosive_ctrl.cache_shooter_faction(shooter)
 
@@ -90,7 +93,7 @@ func _physics_process(delta: float) -> void:
 			global_position += move_vector
 			_traveled_distance += move_vector.length()
 
-	if enable_trail:
+	if _resolved_trail_style != CombatVFXHelper.TrailStyle.NONE:
 		var is_moving_fast: bool = current_velocity.length_squared() >= MIN_TRAIL_VELOCITY_SQ
 		if is_moving_fast:
 			_was_drawing_trail = true
@@ -100,21 +103,25 @@ func _physics_process(delta: float) -> void:
 			queue_redraw()
 
 func _draw() -> void:
-	if not enable_trail or current_velocity.length_squared() < MIN_TRAIL_VELOCITY_SQ:
+	if _resolved_trail_style == CombatVFXHelper.TrailStyle.NONE or current_velocity.length_squared() < MIN_TRAIL_VELOCITY_SQ:
 		return
 
+	var is_droplet: bool = (_resolved_trail_style == CombatVFXHelper.TrailStyle.DROPLET)
+	var width_px: float = droplet_width_px if is_droplet else trail_width_px
 	var speed_factor: float = clampf(current_velocity.length() / TRAIL_REFERENCE_SPEED_PX, 0.35, 1.0)
 	var growth_factor: float = clampf(_traveled_distance / maxf(1.0, trail_length_px * 0.5), MIN_TRAIL_GROWTH_RATIO, 1.0)
-	var effective_width: float = trail_width_px * (ELEMENTAL_WIDTH_BOOST_MULT if _has_elemental_vfx else 1.0)
-	var current_tail: float = minf(trail_length_px * speed_factor, maxf(effective_width, _traveled_distance))
+	var current_tail: float = minf(trail_length_px * speed_factor, _traveled_distance)
+	if is_droplet:
+		current_tail = minf(trail_length_px * speed_factor, maxf(width_px, _traveled_distance))
 
-	CombatVFXHelper.draw_droplet_trail(
+	CombatVFXHelper.draw_projectile_trail(
 		self,
+		_resolved_trail_style,
 		current_velocity,
 		global_rotation,
-		trail_head_lead_px * growth_factor,
+		droplet_head_lead_px * growth_factor,
 		current_tail,
-		effective_width,
+		width_px,
 		_resolved_trail_color
 	)
 

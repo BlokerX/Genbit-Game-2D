@@ -6,10 +6,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oebot"]
 size = Vector2(20, 10)
 
-[node name="ThrowingKnife" type="Area2D" unique_id=375860518]
+[node name="ThrowingKnife" type="Area2D" unique_id=375860518 node_paths=PackedStringArray("main_sprite")]
 collision_layer = 32
 collision_mask = 39
 script = ExtResource("1_oebot")
+main_sprite = NodePath("Sprite2D")
 lifetime = 10.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1049323652]
