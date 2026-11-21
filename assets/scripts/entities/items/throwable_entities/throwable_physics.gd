@@ -1,13 +1,19 @@
 extends RigidBody2D
 class_name ThrowablePhysics
-## Fizyczny obiekt miotany lub stawiany (np. granat, mina zbliżeniowa) oparty na RigidBody2D.
+## Fizyczny obiekt miotany lub stawiany (np. granat, bomba, mina) oparty na RigidBody2D.
+## Współpracuje z ThrowableExplosiveController w zakresie zapalnika, iskrzenia lontu oraz wybuchów AoE (SOLID - SRP / DRY).
 
 const DAMP_DIVISOR: float = 100.0
 const MAX_REPORTED_CONTACTS: int = 5
+const DEFAULT_FUSE_SPARK_OFFSET := Vector2(-4.0, -16.0)
 
 @export_category("Wizualizacje")
 @export var main_sprite: Sprite2D
 @export var activated_texture: Texture2D
+## Czy czasowy obiekt wybuchowy (np. bomba) ma iskrzyć od razu w trakcie odliczania do wybuchu?
+@export var emit_fuse_sparks: bool = true
+## Lokalne przesunięcie punktu emisji iskier lontu względem środka obiektu (uwzględnia obrót bryły).
+@export var fuse_spark_offset: Vector2 = DEFAULT_FUSE_SPARK_OFFSET
 
 @export_category("Ustawienia Obiektu")
 @export var destroy_on_impact: bool = false
@@ -49,6 +55,9 @@ func _ready() -> void:
 
 	_explosive_ctrl.cache_shooter_faction(shooter)
 
+	if _should_emit_countdown_sparks():
+		_explosive_ctrl.play_fuse_ignition_vfx(self, fuse_spark_offset)
+
 	if is_instance_valid(shooter) and shooter is CollisionObject2D:
 		add_collision_exception_with(shooter)
 
@@ -63,7 +72,18 @@ func _ready() -> void:
 			)
 
 func _physics_process(delta: float) -> void:
-	_explosive_ctrl.process_timers(self, delta, lifetime, is_infinite, activation_delay)
+	_explosive_ctrl.process_timers(
+		self,
+		delta,
+		lifetime,
+		is_infinite,
+		activation_delay,
+		_should_emit_countdown_sparks(),
+		fuse_spark_offset
+	)
+
+func _should_emit_countdown_sparks() -> bool:
+	return emit_fuse_sparks and not is_infinite and aoe_area != null
 
 func _on_body_entered(body: Node) -> void:
 	if not destroy_on_impact:
@@ -74,7 +94,7 @@ func _on_body_entered(body: Node) -> void:
 
 func trigger_effect(direct_hit: Node2D) -> void:
 	_explosive_ctrl.handle_trigger(
-		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture
+		self, shooter, direct_hit, friendly_fire, activation_delay, main_sprite, activated_texture, fuse_spark_offset
 	)
 
 func _execute_explosion(direct_hit: Node2D) -> void:

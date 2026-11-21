@@ -1,8 +1,8 @@
 class_name CombatVFXHelper
 extends RefCounted
 ## Centralny serwis lekkich, proceduralnych efektów wizualnych walki (SOLID - SRP / DRY).
-## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier oraz wielowarstwowe eksplozje
-## bez zaśmiecania logiki fizyki i bez duplikowania metod _draw() między umiejętnościami i pociskami.
+## Generuje samooczyszczające się fale uderzeniowe, rozbłyski iskier, smugi pocisków/rzutek oraz wielowarstwowe eksplozje
+## bez zaśmiecania logiki fizyki i bez duplikowania metod _draw() między umiejętnościami, pociskami i bombami.
 
 #region Stałe Konfiguracyjne VFX (Brak magicznych liczb)
 const DEFAULT_SHOCKWAVE_DURATION_SEC: float = 0.28
@@ -12,7 +12,96 @@ const DEFAULT_SPARK_RADIUS_PX: float = 20.0
 const DEFAULT_SPARK_DURATION_SEC: float = 0.20
 const DEFAULT_EXPLOSION_DURATION_SEC: float = 0.36
 const DEFAULT_EXPLOSION_CORE_COLOR := Color(1.0, 0.96, 0.78, 1.0)
+
+const TRAIL_OUTER_ALPHA: float = 0.42
+const TRAIL_CORE_ALPHA: float = 0.88
+const TRAIL_CORE_WIDTH_RATIO: float = 0.42
+const TRAIL_CORE_LENGTH_RATIO: float = 0.72
+const TRAIL_CORE_LIGHTEN: float = 0.55
+const MIN_VISIBLE_TRAIL_LEN_PX: float = 2.0
+
+const PRIORITY_ELEMENTAL: int = 3
+const PRIORITY_CUSTOM_COLOR: int = 2
+const PRIORITY_MOVEMENT_CC: int = 2
+const PRIORITY_GENERIC_CC: int = 1
+
+## Mapa kolorów VFX przypisanych do kategorii żywiołów i statusów (SOLID - OCP, brak drabin if/elif).
+const ELEMENTAL_CATEGORY_COLORS: Dictionary = {
+	Effect.EffectCategory.FROST_FREEZE: Color(0.35, 0.85, 1.0, 0.95),
+	Effect.EffectCategory.POISON_ACID: Color(0.28, 0.95, 0.22, 0.95),
+	Effect.EffectCategory.FIRE_BURN: Color(1.0, 0.45, 0.12, 0.95),
+	Effect.EffectCategory.RADIATION: Color(0.55, 1.0, 0.18, 0.95),
+	Effect.EffectCategory.MENTAL_PSYCHOSIS: Color(0.72, 0.30, 1.0, 0.95),
+	Effect.EffectCategory.HEAL: Color(0.32, 0.98, 0.52, 0.95),
+	Effect.EffectCategory.SLOW: Color(0.55, 0.72, 0.95, 0.95),
+	Effect.EffectCategory.STUN: Color(1.0, 0.92, 0.30, 0.95)
+}
+
+## Priorytety kategorii przy doborze koloru VFX: żywioły zawsze wygrywają nad ogólnym StunEffect broni!
+const ELEMENTAL_CATEGORY_PRIORITIES: Dictionary = {
+	Effect.EffectCategory.FROST_FREEZE: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.POISON_ACID: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.FIRE_BURN: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.RADIATION: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.MENTAL_PSYCHOSIS: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.HEAL: PRIORITY_ELEMENTAL,
+	Effect.EffectCategory.SLOW: PRIORITY_MOVEMENT_CC,
+	Effect.EffectCategory.STUN: PRIORITY_GENERIC_CC
+}
 #endregion
+
+## Dobiera dominujący kolor VFX na podstawie priorytetów kategorii w liście efektów (DRY / OCP).
+## Żywioły (np. FROST_FREEZE, POISON_ACID, FIRE_BURN) zawsze mają pierwszeństwo przed ogólnym STUN.
+static func resolve_color_from_effects(effects: Array[Effect], default_color: Color) -> Color:
+	if effects.is_empty():
+		return default_color
+
+	var best_priority: int = 0
+	var best_color: Color = default_color
+
+	for eff in effects:
+		if eff == null:
+			continue
+		var cat: Effect.EffectCategory = eff.get_effective_category()
+		if ELEMENTAL_CATEGORY_COLORS.has(cat):
+			var priority: int = int(ELEMENTAL_CATEGORY_PRIORITIES.get(cat, PRIORITY_GENERIC_CC))
+			if priority > best_priority:
+				best_priority = priority
+				best_color = ELEMENTAL_CATEGORY_COLORS[cat]
+		elif cat == Effect.EffectCategory.NONE:
+			var custom_col: Color = eff.effect_color
+			if custom_col.a > 0.0 and not custom_col.is_equal_approx(Color.WHITE):
+				if PRIORITY_CUSTOM_COLOR > best_priority:
+					best_priority = PRIORITY_CUSTOM_COLOR
+					best_color = custom_col
+
+	return best_color
+
+## Rysuje lekką, dwuwarstwową smugę ruchu w układzie lokalnym obiektu (DRY: Projectile oraz ThrowableProjectile).
+static func draw_motion_trail(
+	canvas: CanvasItem,
+	world_direction: Vector2,
+	world_rotation: float,
+	trail_length: float,
+	trail_width: float,
+	color: Color
+) -> void:
+	if canvas == null or world_direction == Vector2.ZERO or trail_length < MIN_VISIBLE_TRAIL_LEN_PX:
+		return
+
+	var local_back: Vector2 = (-world_direction.normalized()).rotated(-world_rotation) * trail_length
+	var outer_col := Color(color.r, color.g, color.b, TRAIL_OUTER_ALPHA)
+	var core_col: Color = color.lightened(TRAIL_CORE_LIGHTEN)
+	core_col.a = TRAIL_CORE_ALPHA
+
+	canvas.draw_line(Vector2.ZERO, local_back, outer_col, trail_width, true)
+	canvas.draw_line(
+		Vector2.ZERO,
+		local_back * TRAIL_CORE_LENGTH_RATIO,
+		core_col,
+		trail_width * TRAIL_CORE_WIDTH_RATIO,
+		true
+	)
 
 ## Spawnuje rozchodzącą się falę uderzeniową (podwójny pierścień + opcjonalne miękkie wypełnienie).
 static func spawn_shockwave(
@@ -215,7 +304,7 @@ class _ImpactSparksVFX extends Node2D:
 		var eased: float = 1.0 - pow(1.0 - _progress, 2.0)
 		var width: float = lerpf(START_LINE_WIDTH_PX, END_LINE_WIDTH_PX, _progress)
 
-		var core_col: Color = Color(1.0, 1.0, 1.0, fade * 0.9)
+		var core_col := Color(1.0, 1.0, 1.0, fade * 0.9)
 		draw_circle(Vector2.ZERO, _radius * CORE_FLASH_RATIO * fade, core_col)
 
 		var spark_col := Color(_color.r, _color.g, _color.b, fade)

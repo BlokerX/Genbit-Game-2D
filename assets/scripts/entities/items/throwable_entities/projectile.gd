@@ -1,11 +1,19 @@
 extends Area2D
 class_name Projectile
 ## Pocisk wystrzeliwany z broni dystansowej (RangedWeaponComponent).
-## Obsługuje detekcję RayCast oraz powierzchniową, penetrację sojuszników oraz kolizje z osłonami (PlacedObject).
+## Obsługuje detekcję RayCast oraz powierzchniową, penetrację sojuszników, kolizje z osłonami (PlacedObject),
+## proceduralną smugę lotu oraz iskry impaktu dobierane automatycznie do żywiołu pocisku (SOLID - SRP / DRY).
 
+#region Stałe Fizyczne i Wizualne (Brak magicznych liczb)
 const MAX_ALLY_PENETRATIONS: int = 5
 const MAX_RAY_QUERY_STEPS: int = 16
 const SPRITE_ROTATION_OFFSET_RAD: float = 0.0
+
+const DEFAULT_PROJECTILE_VFX_COLOR := Color(1.0, 0.86, 0.42, 0.95)
+const IMPACT_SPARK_COUNT: int = 6
+const IMPACT_SPARK_RADIUS_PX: float = 18.0
+const IMPACT_SPARK_DURATION_SEC: float = 0.16
+#endregion
 
 @export var speed: float = 600.0
 @export var lifetime: float = 4.0
@@ -18,10 +26,25 @@ const SPRITE_ROTATION_OFFSET_RAD: float = 0.0
 ## Gwarantuje trafianie w skrzynie niezależnie od ustawionej warstwy StaticBody2D.
 @export var detect_placed_object_areas: bool = true
 
+@export_group("Efekty Wizualne (VFX)")
+## Czy rysować lekką, dwuwarstwową smugę energetyczną za lecącym pociskiem?
+@export var enable_trail: bool = true
+## Maksymalna długość smugi ciągnącej się za pociskiem (w pikselach).
+@export_range(6.0, 80.0, 2.0) var trail_length_px: float = 20.0
+## Grubość zewnętrznej poświaty smugi u podstawy pocisku (w pikselach).
+@export_range(1.0, 10.0, 0.2) var trail_width_px: float = 2.5
+## Czy w punkcie trafienia (wróg, skrzynia, ściana) generować rozbłysk iskier (CombatVFXHelper)?
+@export var spawn_impact_sparks: bool = true
+## Opcjonalny własny kolor smugi i iskier. Gdy przezroczysty (alpha == 0), kolor dobierany jest automatycznie z efektów pocisku.
+@export var override_vfx_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+
 var direction: Vector2 = Vector2.ZERO
 var effects_to_apply: Array[Effect] = []
 
 var _time_alive: float = 0.0
+var _traveled_distance: float = 0.0
+var _trail_settled: bool = false
+var _resolved_vfx_color: Color = DEFAULT_PROJECTILE_VFX_COLOR
 var shooter: Node2D = null
 var _shooter_faction_name: StringName = &""
 var _has_hit: bool = false
@@ -42,6 +65,7 @@ func _ready() -> void:
 
 	# Zachowujemy pionowy offset rotacji tekstury pocisku nadany przez RangedWeaponComponent
 	rotation = direction.angle() + SPRITE_ROTATION_OFFSET_RAD
+	_resolved_vfx_color = _resolve_vfx_color()
 
 func _physics_process(delta: float) -> void:
 	if _has_hit:
@@ -94,7 +118,7 @@ func _physics_process(delta: float) -> void:
 			continue
 
 		# 2. Trafiono obiekt PlacedObject, który ma włączoną opcję niewidzialności na pociski (invisible_to_projectiles)
-		if resolved_target.has_method("should_block_projectile") and not bool(resolved_target.call("should_block_projectile", self)):
+		if resolved_target.has_method("should_block_projectile") and resolved_target.call("should_block_projectile", self) != true:
 			if raw_collider is CollisionObject2D:
 				excluded_rids.append((raw_collider as CollisionObject2D).get_rid())
 			if resolved_target is CollisionObject2D:
@@ -122,6 +146,23 @@ func _physics_process(delta: float) -> void:
 
 	if not hit_valid_target:
 		global_position += direction * remaining_dist
+		_traveled_distance += remaining_dist
+		if enable_trail and not _trail_settled:
+			queue_redraw()
+			if _traveled_distance >= trail_length_px:
+				_trail_settled = true
+
+func _draw() -> void:
+	if not enable_trail or direction == Vector2.ZERO:
+		return
+	var current_len: float = minf(trail_length_px, _traveled_distance)
+	CombatVFXHelper.draw_motion_trail(self, direction, global_rotation, current_len, trail_width_px, _resolved_vfx_color)
+
+## Dobiera kolor smugi i iskier na podstawie własnego nadpisania lub priorytetu efektów pocisku (DRY / OCP).
+func _resolve_vfx_color() -> Color:
+	if override_vfx_color.a > 0.0:
+		return override_vfx_color
+	return CombatVFXHelper.resolve_color_from_effects(effects_to_apply, DEFAULT_PROJECTILE_VFX_COLOR)
 
 ## Rozwiązuje trafiony kolider do właściwego węzła docelowego (obsługuje również InteractableComponent na skrzyniach).
 func _resolve_collision_target(collider: Object) -> Node2D:
@@ -158,7 +199,7 @@ func _apply_hit_and_destroy(target_node: Node2D) -> void:
 		return
 	if not friendly_fire and _is_ally(target_node):
 		return
-	if target_node.has_method("should_block_projectile") and not bool(target_node.call("should_block_projectile", self)):
+	if target_node.has_method("should_block_projectile") and target_node.call("should_block_projectile", self) != true:
 		return
 
 	_has_hit = true
@@ -169,10 +210,21 @@ func _apply_hit_and_destroy(target_node: Node2D) -> void:
 
 	set_deferred("monitoring", false)
 
+	if spawn_impact_sparks:
+		CombatVFXHelper.spawn_impact_sparks(
+			self,
+			global_position,
+			-direction,
+			_resolved_vfx_color,
+			IMPACT_SPARK_COUNT,
+			IMPACT_SPARK_RADIUS_PX,
+			IMPACT_SPARK_DURATION_SEC
+		)
+
 	if target_node.has_method("receive_effect"):
 		for effect in effects_to_apply:
 			if effect != null:
-				var cloned_eff: Effect = effect.duplicate(true)
+				var cloned_eff: Effect = effect.duplicate(true) as Effect
 				cloned_eff.source_position = self.global_position
 				cloned_eff.source_entity = shooter if is_instance_valid(shooter) else null
 				cloned_eff.set_meta("from_projectile", true)
