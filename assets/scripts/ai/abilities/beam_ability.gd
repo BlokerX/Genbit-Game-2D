@@ -22,6 +22,7 @@ const IMPACT_SPARK_COUNT: int = 5
 const IMPACT_SPARK_RADIUS_MULT: float = 1.65
 const DEFAULT_BEAM_DAMAGE_PER_TICK: int = 5
 const DEFAULT_BEAM_MAX_RANGE: float = 800.0
+const BEAM_FAILSAFE_EXTRA_SEC: float = 0.50
 #endregion
 
 @export_group("Oprawa Dźwiękowa Wiązki")
@@ -94,14 +95,29 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_caster_active(attacker) or not is_instance_valid(target):
 		return
 
+	var attacker_ref: WeakRef = weakref(attacker)
+	var target_ref: WeakRef = weakref(target)
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
+	var combat_ctrl_ref: WeakRef = weakref(combat_ctrl) if combat_ctrl != null else null
 	notify_components_cast_started(attacker, target)
 
 	var sprite: CanvasItem = attacker.get_visual_sprite()
+	var sprite_ref: WeakRef = weakref(sprite) if sprite != null else null
 	var orig_modulate: Color = sprite.self_modulate if sprite != null else Color.WHITE
 
 	var beam_node := BeamVisual.new()
-	beam_node.setup(beam_width, beam_color, core_color, show_charge_rings, beam_fade_out_time, beam_z_index)
+	beam_node.setup(
+		attacker,
+		beam_width,
+		beam_color,
+		core_color,
+		show_charge_rings,
+		beam_fade_out_time,
+		cast_time + beam_duration + BEAM_FAILSAFE_EXTRA_SEC,
+		beam_z_index
+	)
+	var beam_ref: WeakRef = weakref(beam_node)
+
 	if charge_feedback_cue != null:
 		GameFeedback.play_cue(charge_feedback_cue, null, attacker.global_position, attacker)
 
@@ -111,6 +127,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if aim_dir == Vector2.ZERO:
 		aim_dir = Vector2.RIGHT
 
+	var scene_tree: SceneTree = attacker.get_tree()
 	var space_state: PhysicsDirectSpaceState2D = attacker.get_world_2d().direct_space_state
 
 	# =========================================================
@@ -118,72 +135,86 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# =========================================================
 	var elapsed: float = 0.0
 	while elapsed < cast_time:
-		if not is_caster_active(attacker) or not is_instance_valid(target):
-			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
+		var live_attacker: Variant = attacker_ref.get_ref()
+		var live_target: Variant = target_ref.get_ref()
+		var live_beam: Variant = beam_ref.get_ref()
+		if not is_caster_active(live_attacker) or not is_instance_valid(live_target) or not is_instance_valid(live_beam):
+			_finish_cast(attacker_ref, combat_ctrl_ref, sprite_ref, orig_modulate, beam_ref, false)
 			return
+
+		var caster: CharacterEntity = live_attacker as CharacterEntity
+		var tgt: Node2D = live_target as Node2D
+		var visual: BeamVisual = live_beam as BeamVisual
 
 		if track_target_during_cast:
-			var desired_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
+			var desired_dir: Vector2 = caster.global_position.direction_to(tgt.global_position)
 			if desired_dir != Vector2.ZERO:
 				aim_dir = aim_dir.lerp(desired_dir, tracking_smoothness).normalized()
-				orient_towards(attacker, aim_dir)
+				orient_towards(caster, aim_dir)
 
-		var ray_data: Dictionary = _trace_beam_endpoint(space_state, attacker, aim_dir)
-		beam_node.update_beam_geometry(attacker.global_position, ray_data["end_pos"], bool(ray_data["hit_obstacle"]))
+		var ray_data: Dictionary = _trace_beam_endpoint(space_state, caster, aim_dir)
+		visual.update_beam_geometry(caster.global_position, ray_data["end_pos"], bool(ray_data["hit_obstacle"]))
 
 		var charge_progress: float = clampf(elapsed / maxf(MIN_DURATION_SEC, cast_time), 0.0, 1.0)
-		beam_node.charge_progress = charge_progress
+		visual.charge_progress = charge_progress
 
-		if pulse_caster_during_cast and is_instance_valid(sprite) and not attacker.is_frozen:
+		var live_sprite: Variant = sprite_ref.get_ref() if sprite_ref != null else null
+		if pulse_caster_during_cast and is_instance_valid(live_sprite) and not caster.is_frozen:
 			var pulse: float = (sin(elapsed * CHARGE_PULSE_SPEED_RAD) + 1.0) * 0.5
-			sprite.self_modulate = orig_modulate.lerp(beam_color, pulse * charge_progress)
+			(live_sprite as CanvasItem).self_modulate = orig_modulate.lerp(beam_color, pulse * charge_progress)
 
-		if not is_caster_active(attacker):
-			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
-			return
+		elapsed += caster.get_physics_process_delta_time()
+		await scene_tree.physics_frame
 
-		elapsed += attacker.get_physics_process_delta_time()
-		await attacker.get_tree().physics_frame
+	var post_charge_attacker: Variant = attacker_ref.get_ref()
+	var post_charge_sprite: Variant = sprite_ref.get_ref() if sprite_ref != null else null
+	if is_instance_valid(post_charge_sprite) and not (is_caster_active(post_charge_attacker) and (post_charge_attacker as CharacterEntity).is_frozen):
+		(post_charge_sprite as CanvasItem).self_modulate = orig_modulate
 
-	if is_instance_valid(sprite) and not (is_caster_active(attacker) and attacker.is_frozen):
-		sprite.self_modulate = orig_modulate
-
-	if not is_caster_active(attacker):
-		_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
+	var post_charge_beam: Variant = beam_ref.get_ref()
+	if not is_caster_active(post_charge_attacker) or not is_instance_valid(post_charge_beam):
+		_finish_cast(attacker_ref, combat_ctrl_ref, sprite_ref, orig_modulate, beam_ref, false)
 		return
 
 	# =========================================================
 	# FAZA 2: AKTYWNY STRZAŁ WIĄZKĄ I NAKŁADANIE EFEKTÓW
 	# =========================================================
-	beam_node.begin_firing()
+	(post_charge_beam as BeamVisual).begin_firing()
 	if fire_feedback_cue != null:
-		GameFeedback.play_cue(fire_feedback_cue, null, attacker.global_position, attacker)
+		var firing_caster: CharacterEntity = post_charge_attacker as CharacterEntity
+		GameFeedback.play_cue(fire_feedback_cue, null, firing_caster.global_position, firing_caster)
 
 	var fire_elapsed: float = 0.0
 	var next_damage_tick: float = 0.0
 	var next_spark_tick: float = 0.0
 
 	while fire_elapsed < beam_duration:
-		if not is_caster_active(attacker):
-			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
+		var live_attacker: Variant = attacker_ref.get_ref()
+		var live_beam: Variant = beam_ref.get_ref()
+		if not is_caster_active(live_attacker) or not is_instance_valid(live_beam):
+			_finish_cast(attacker_ref, combat_ctrl_ref, sprite_ref, orig_modulate, beam_ref, true)
 			return
 
-		if track_target_during_fire and is_instance_valid(target):
-			var desired_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
+		var caster: CharacterEntity = live_attacker as CharacterEntity
+		var visual: BeamVisual = live_beam as BeamVisual
+		var live_target: Variant = target_ref.get_ref()
+
+		if track_target_during_fire and is_instance_valid(live_target) and live_target is Node2D:
+			var desired_dir: Vector2 = caster.global_position.direction_to((live_target as Node2D).global_position)
 			if desired_dir != Vector2.ZERO:
 				aim_dir = aim_dir.lerp(desired_dir, firing_tracking_smoothness).normalized()
-				orient_towards(attacker, aim_dir)
+				orient_towards(caster, aim_dir)
 
-		var start_pos: Vector2 = attacker.global_position
-		var ray_data: Dictionary = _trace_beam_endpoint(space_state, attacker, aim_dir)
+		var start_pos: Vector2 = caster.global_position
+		var ray_data: Dictionary = _trace_beam_endpoint(space_state, caster, aim_dir)
 		var final_end_pos: Vector2 = ray_data["end_pos"]
 		var hit_obstacle: bool = bool(ray_data["hit_obstacle"])
-		beam_node.update_beam_geometry(start_pos, final_end_pos, hit_obstacle)
+		visual.update_beam_geometry(start_pos, final_end_pos, hit_obstacle)
 
 		if show_impact_sparks and hit_obstacle and fire_elapsed >= next_spark_tick:
 			next_spark_tick += IMPACT_SPARK_INTERVAL_SEC
 			CombatVFXHelper.spawn_impact_sparks(
-				attacker,
+				caster,
 				final_end_pos,
 				-aim_dir,
 				beam_color,
@@ -193,17 +224,13 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 
 		if fire_elapsed >= next_damage_tick:
 			next_damage_tick += damage_tick_rate
-			_apply_beam_hit_tick(space_state, attacker, start_pos, final_end_pos, aim_dir)
-			notify_components_area_detonated(attacker, final_end_pos, beam_width)
+			_apply_beam_hit_tick(space_state, caster, start_pos, final_end_pos, aim_dir)
+			notify_components_area_detonated(caster, final_end_pos, beam_width)
 
-		if not is_caster_active(attacker):
-			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
-			return
+		fire_elapsed += caster.get_physics_process_delta_time()
+		await scene_tree.physics_frame
 
-		fire_elapsed += attacker.get_physics_process_delta_time()
-		await attacker.get_tree().physics_frame
-
-	_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
+	_finish_cast(attacker_ref, combat_ctrl_ref, sprite_ref, orig_modulate, beam_ref, true)
 
 ## Wyznacza punkt końcowy wiązki (z uwzględnieniem opcjonalnego przenikania przez przeszkody).
 func _trace_beam_endpoint(
@@ -276,30 +303,39 @@ func _can_beam_hit_target(attacker: CharacterEntity, target: Node2D) -> bool:
 			return can_affect_target(attacker, target, true, true, false)
 	return false
 
-## Bezpiecznie zamyka cykl życia wiązki i zawsze zwalnia blokadę is_casting_ability.
-## Parametry typu Variant chronią przed błędem 'previously freed', gdy jednostka zginie w trakcie await!
+## Bezpiecznie zamyka cykl życia wiązki i zawsze zwalnia blokadę is_casting_ability (WeakRef = zero 'previously freed').
 func _finish_cast(
-	attacker: Variant,
-	combat_ctrl: Variant,
-	sprite: Variant,
+	attacker_ref: WeakRef,
+	combat_ctrl_ref: WeakRef,
+	sprite_ref: WeakRef,
 	orig_modulate: Color,
-	beam_node: Variant,
+	beam_ref: WeakRef,
 	allow_fade_out: bool
 ) -> void:
-	if is_instance_valid(sprite) and sprite is CanvasItem:
-		(sprite as CanvasItem).self_modulate = orig_modulate
-	if is_instance_valid(beam_node) and beam_node is BeamVisual:
-		var visual: BeamVisual = beam_node as BeamVisual
-		if allow_fade_out:
-			visual.begin_fade_out()
-		else:
-			visual.queue_free()
-	if is_instance_valid(combat_ctrl) and combat_ctrl is AICombatController:
-		(combat_ctrl as AICombatController).is_casting_ability = false
-	notify_components_cast_finished(attacker)
+	if sprite_ref != null:
+		var live_sprite: Variant = sprite_ref.get_ref()
+		if is_instance_valid(live_sprite) and live_sprite is CanvasItem:
+			(live_sprite as CanvasItem).self_modulate = orig_modulate
+
+	if beam_ref != null:
+		var live_beam: Variant = beam_ref.get_ref()
+		if is_instance_valid(live_beam) and live_beam is BeamVisual:
+			var visual: BeamVisual = live_beam as BeamVisual
+			if allow_fade_out:
+				visual.begin_fade_out()
+			else:
+				visual.queue_free()
+
+	if combat_ctrl_ref != null:
+		var live_ctrl: Variant = combat_ctrl_ref.get_ref()
+		if is_instance_valid(live_ctrl) and live_ctrl is AICombatController:
+			(live_ctrl as AICombatController).is_casting_ability = false
+
+	var live_attacker: Variant = attacker_ref.get_ref() if attacker_ref != null else null
+	notify_components_cast_finished(live_attacker)
 
 # ==============================================================================
-# KLASA WEWNĘTRZNA: 3-warstwowy renderer wiązki (Ładowanie -> Strzał -> Wygaszanie)
+# KLASA WEWNĘTRZNA: 3-warstwowy renderer wiązki (samooczyszczający się po śmierci rzucającego)
 # ==============================================================================
 class BeamVisual extends Node2D:
 	enum VisualPhase { CHARGE, FIRE, FADE_OUT }
@@ -336,24 +372,30 @@ class BeamVisual extends Node2D:
 	var fade_out_duration: float = 0.18
 	var charge_progress: float = 0.0
 
+	var _caster_ref: WeakRef = null
+	var _max_lifetime_sec: float = 5.0
 	var _phase: VisualPhase = VisualPhase.CHARGE
 	var _time_elapsed: float = 0.0
 	var _fade_elapsed: float = 0.0
 	var _hit_obstacle: bool = false
 
 	func setup(
+		caster: Node2D,
 		width: float,
 		main_col: Color,
 		inner_core_col: Color,
 		enable_charge_rings: bool,
 		fade_duration: float,
+		max_lifetime: float,
 		z_layer: int
 	) -> void:
+		_caster_ref = weakref(caster) if is_instance_valid(caster) else null
 		beam_width = width
 		beam_color = main_col
 		core_color = inner_core_col
 		show_charge_rings = enable_charge_rings
 		fade_out_duration = maxf(0.05, fade_duration)
+		_max_lifetime_sec = maxf(0.2, max_lifetime)
 		z_as_relative = false
 		z_index = z_layer
 
@@ -366,12 +408,23 @@ class BeamVisual extends Node2D:
 		_phase = VisualPhase.FIRE
 
 	func begin_fade_out() -> void:
+		if _phase == VisualPhase.FADE_OUT:
+			return
 		_phase = VisualPhase.FADE_OUT
 		_fade_elapsed = 0.0
 
 	func _process(delta: float) -> void:
 		_time_elapsed += delta
-		if _phase == VisualPhase.FADE_OUT:
+		var live_caster: Variant = _caster_ref.get_ref() if _caster_ref != null else null
+
+		if _phase == VisualPhase.CHARGE:
+			if not AIAbility.is_caster_active(live_caster) or _time_elapsed >= _max_lifetime_sec:
+				queue_free()
+				return
+		elif _phase == VisualPhase.FIRE:
+			if not AIAbility.is_caster_active(live_caster) or _time_elapsed >= _max_lifetime_sec:
+				begin_fade_out()
+		elif _phase == VisualPhase.FADE_OUT:
 			_fade_elapsed += delta
 			if _fade_elapsed >= fade_out_duration:
 				queue_free()

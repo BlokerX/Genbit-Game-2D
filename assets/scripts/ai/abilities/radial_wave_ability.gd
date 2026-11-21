@@ -53,12 +53,16 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_caster_active(attacker):
 		return
 
+	# WeakRef chroni przed błędami zwolnionych obiektów po wznowieniu z await!
+	var attacker_ref: WeakRef = weakref(attacker)
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
+	var combat_ctrl_ref: WeakRef = weakref(combat_ctrl) if combat_ctrl != null else null
 	notify_components_cast_started(attacker, target)
 
-	# 1. Wielopierścieniowa wizualizacja fali wokół atakującego
+	# 1. Wielopierścieniowa wizualizacja fali wokół atakującego (sama się usuwa po śmierci rzucającego!)
 	var wave_visual := RadialWaveVisual.new()
 	wave_visual.setup(attacker, blast_radius, aura_color, cast_time, explosion_fade_time, wave_ring_count, wave_z_index)
+	var visual_ref: WeakRef = weakref(wave_visual)
 	spawn_ability_node(attacker, wave_visual, attacker.global_position)
 
 	# Pulsowanie skali w oparciu o bezpieczne base_scale
@@ -67,40 +71,44 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	tween.tween_property(attacker, "scale", orig_scale * visual_scale_pulse, cast_time * HALF_CAST_FACTOR).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(attacker, "scale", orig_scale, cast_time * HALF_CAST_FACTOR).set_trans(Tween.TRANS_SINE)
 
-	if not is_caster_active(attacker):
-		_cleanup_cast(attacker, combat_ctrl, wave_visual, true)
+	var scene_tree: SceneTree = attacker.get_tree()
+	if scene_tree == null:
+		_cleanup_cast(attacker_ref, combat_ctrl_ref, visual_ref, true)
 		return
 
 	# 2. Faza ładowania fali
-	await attacker.get_tree().create_timer(cast_time).timeout
+	await scene_tree.create_timer(cast_time).timeout
 
-	if not is_caster_active(attacker):
-		_cleanup_cast(attacker, combat_ctrl, wave_visual, true)
+	var live_attacker: Variant = attacker_ref.get_ref()
+	if not is_caster_active(live_attacker):
+		_cleanup_cast(attacker_ref, combat_ctrl_ref, visual_ref, true)
 		return
 
-	attacker.reset_visual_scale()
+	var caster: CharacterEntity = live_attacker as CharacterEntity
+	caster.reset_visual_scale()
 
 	# 3. Uderzenie fali i aplikacja efektów z jednolitego kontraktu AIAbility + komponentów
-	if is_instance_valid(wave_visual):
-		wave_visual.explode()
-	CombatVFXHelper.spawn_shockwave(attacker, attacker.global_position, blast_radius, aura_color)
-	notify_components_area_detonated(attacker, attacker.global_position, blast_radius)
+	var live_visual: Variant = visual_ref.get_ref()
+	if is_instance_valid(live_visual) and live_visual is RadialWaveVisual:
+		(live_visual as RadialWaveVisual).explode()
+	CombatVFXHelper.spawn_shockwave(caster, caster.global_position, blast_radius, aura_color)
+	notify_components_area_detonated(caster, caster.global_position, blast_radius)
 
-	var hits: Array[Dictionary] = _query_targets_in_radius(attacker)
-	var hit_effects: Array[Effect] = build_hit_effects(attacker)
+	var hits: Array[Dictionary] = _query_targets_in_radius(caster)
+	var hit_effects: Array[Effect] = build_hit_effects(caster)
 
 	if include_caster:
-		apply_effects_to_target(attacker, attacker, hit_effects, attacker.global_position)
-		notify_components_target_hit(attacker, attacker, attacker.global_position)
+		apply_effects_to_target(caster, caster, hit_effects, caster.global_position)
+		notify_components_target_hit(caster, caster, caster.global_position)
 
 	for hit in hits:
 		var col: Node2D = hit["collider"] as Node2D
-		if not _can_wave_hit_target(attacker, col):
+		if not _can_wave_hit_target(caster, col):
 			continue
-		apply_effects_to_target(attacker, col, hit_effects, attacker.global_position)
-		notify_components_target_hit(attacker, col, attacker.global_position)
+		apply_effects_to_target(caster, col, hit_effects, caster.global_position)
+		notify_components_target_hit(caster, col, caster.global_position)
 
-	_cleanup_cast(attacker, combat_ctrl, wave_visual, false)
+	_cleanup_cast(attacker_ref, combat_ctrl_ref, visual_ref, false)
 
 func _query_targets_in_radius(attacker: CharacterEntity) -> Array[Dictionary]:
 	var space_state: PhysicsDirectSpaceState2D = attacker.get_world_2d().direct_space_state
@@ -122,27 +130,36 @@ func _can_wave_hit_target(attacker: CharacterEntity, target: Node2D) -> bool:
 			return can_affect_target(attacker, target, true, true, false)
 	return false
 
-## Bezpiecznie kończy rzucanie fali (parametry Variant chronią przed błędem 'previously freed' po await).
+## Bezpiecznie kończy rzucanie fali (WeakRef gwarantuje brak błędów po śmierci rzucającego w trakcie await).
 func _cleanup_cast(
-	attacker: Variant,
-	combat_ctrl: Variant,
-	wave_visual: Variant,
+	attacker_ref: WeakRef,
+	combat_ctrl_ref: WeakRef,
+	visual_ref: WeakRef,
 	destroy_visual: bool
 ) -> void:
-	if is_instance_valid(attacker) and attacker is CharacterEntity:
-		(attacker as CharacterEntity).reset_visual_scale()
-	if destroy_visual and is_instance_valid(wave_visual) and wave_visual is Node:
-		(wave_visual as Node).queue_free()
-	if is_instance_valid(combat_ctrl) and combat_ctrl is AICombatController:
-		(combat_ctrl as AICombatController).is_casting_ability = false
-	notify_components_cast_finished(attacker)
+	var live_attacker: Variant = attacker_ref.get_ref() if attacker_ref != null else null
+	if is_instance_valid(live_attacker) and live_attacker is CharacterEntity:
+		(live_attacker as CharacterEntity).reset_visual_scale()
+
+	if destroy_visual and visual_ref != null:
+		var live_visual: Variant = visual_ref.get_ref()
+		if is_instance_valid(live_visual) and live_visual is Node:
+			(live_visual as Node).queue_free()
+
+	if combat_ctrl_ref != null:
+		var live_ctrl: Variant = combat_ctrl_ref.get_ref()
+		if is_instance_valid(live_ctrl) and live_ctrl is AICombatController:
+			(live_ctrl as AICombatController).is_casting_ability = false
+
+	notify_components_cast_finished(live_attacker)
 
 # ==============================================================================
-# KLASA WEWNĘTRZNA: Wielopierścieniowa fala ładowania i eksplozji
+# KLASA WEWNĘTRZNA: Wielopierścieniowa fala ładowania i eksplozji (samooczyszczająca się)
 # ==============================================================================
 class RadialWaveVisual extends Node2D:
 	const RING_POINTS: int = 64
 	const MIN_TIME_SEC: float = 0.01
+	const CHARGE_FAILSAFE_EXTRA_SEC: float = 0.25
 	const CHARGE_PULSE_SPEED_RAD: float = 15.0
 	const CHARGE_FILL_MIN_ALPHA: float = 0.08
 	const CHARGE_FILL_MAX_ALPHA: float = 0.24
@@ -153,7 +170,7 @@ class RadialWaveVisual extends Node2D:
 	const EXPLOSION_END_WIDTH_PX: float = 1.2
 	const CORE_RING_LIGHTEN: float = 0.45
 
-	var _target_node: Node2D = null
+	var _caster_ref: WeakRef = null
 	var _radius: float = 300.0
 	var _color: Color = Color.PURPLE
 	var _cast_time: float = 1.0
@@ -164,7 +181,7 @@ class RadialWaveVisual extends Node2D:
 	var _post_explode_timer: float = 0.0
 
 	func setup(
-		target: Node2D,
+		caster: Node2D,
 		wave_radius: float,
 		wave_color: Color,
 		cast_dur: float,
@@ -172,7 +189,7 @@ class RadialWaveVisual extends Node2D:
 		rings: int,
 		z_layer: int
 	) -> void:
-		_target_node = target
+		_caster_ref = weakref(caster) if is_instance_valid(caster) else null
 		_radius = wave_radius
 		_color = wave_color
 		_cast_time = maxf(MIN_TIME_SEC, cast_dur)
@@ -185,12 +202,22 @@ class RadialWaveVisual extends Node2D:
 		_exploded = true
 
 	func _process(delta: float) -> void:
-		if is_instance_valid(_target_node):
-			global_position = _target_node.global_position
+		var live_caster: Variant = _caster_ref.get_ref() if _caster_ref != null else null
 
 		if not _exploded:
+			# Natychmiastowe usunięcie fali ładowania, gdy rzucający zginął lub został przerwany!
+			if not AIAbility.is_caster_active(live_caster):
+				queue_free()
+				return
+			global_position = (live_caster as Node2D).global_position
 			_elapsed += delta
+			# Awaryjny bezpiecznik: gdyby explode() nigdy nie zostało wywołane, efekt nie zostanie na mapie.
+			if _elapsed >= _cast_time + CHARGE_FAILSAFE_EXTRA_SEC:
+				queue_free()
+				return
 		else:
+			if is_instance_valid(live_caster) and live_caster is Node2D:
+				global_position = (live_caster as Node2D).global_position
 			_post_explode_timer += delta
 			if _post_explode_timer >= _fade_time:
 				queue_free()

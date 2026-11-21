@@ -16,6 +16,8 @@ const DEFAULT_BURST_MAX_RANGE: float = 250.0
 @export_range(0.1, 6.0, 0.1) var cast_time: float = 1.5
 ## Czy strefa wybuchu ma ranić również sojuszników (friendly fire)?
 @export var friendly_fire: bool = false
+## Jeśli true (domyślnie), zabicie rzucającego w trakcie ładowania anuluje strefę wybuchu.
+@export var cancel_on_caster_death: bool = true
 
 @export_group("Wizualizacje i Warstwy Strefy")
 ## Warstwa renderowania (Z-Index) dla strefy zagrożenia TelegraphedAOE.
@@ -34,7 +36,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	if not is_caster_active(attacker):
 		return
 
+	var attacker_ref: WeakRef = weakref(attacker)
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
+	var combat_ctrl_ref: WeakRef = weakref(combat_ctrl) if combat_ctrl != null else null
 	notify_components_cast_started(attacker, target)
 
 	var enemy_effects: Array[Effect] = build_hit_effects(attacker)
@@ -42,21 +46,27 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		var aoe := TelegraphedAOE.new()
 		aoe.setup(attacker.global_position, blast_radius, cast_time, enemy_effects, attacker)
 		aoe.friendly_fire = friendly_fire
+		aoe.cancel_on_caster_death = cancel_on_caster_death
 		aoe.z_index = aoe_z_index
 		aoe.z_as_relative = false
 		aoe.danger_color = aoe_danger_color
 		aoe.on_detonated_callback = func(origin_pos: Vector2, rad: float) -> void:
-			notify_components_area_detonated(attacker, origin_pos, rad)
+			notify_components_area_detonated(attacker_ref.get_ref(), origin_pos, rad)
 		aoe.on_target_hit_callback = func(hit_target: Node2D, origin_pos: Vector2) -> void:
-			notify_components_target_hit(attacker, hit_target, origin_pos)
+			notify_components_target_hit(attacker_ref.get_ref(), hit_target, origin_pos)
 		spawn_ability_node(attacker, aoe, attacker.global_position)
 
-	await attacker.get_tree().create_timer(cast_time).timeout
+	var scene_tree: SceneTree = attacker.get_tree()
+	if scene_tree != null:
+		await scene_tree.create_timer(cast_time).timeout
 
-	_finish_cast(attacker, combat_ctrl)
+	_finish_cast(attacker_ref, combat_ctrl_ref)
 
-## Bezpiecznie kończy rzucanie zdolności (parametry Variant chronią przed błędem 'previously freed' po await).
-func _finish_cast(attacker: Variant, combat_ctrl: Variant) -> void:
-	if is_instance_valid(combat_ctrl) and combat_ctrl is AICombatController:
-		(combat_ctrl as AICombatController).is_casting_ability = false
-	notify_components_cast_finished(attacker)
+## Bezpiecznie kończy rzucanie zdolności (WeakRef chroni przed błędem 'previously freed' po await).
+func _finish_cast(attacker_ref: WeakRef, combat_ctrl_ref: WeakRef) -> void:
+	if combat_ctrl_ref != null:
+		var live_ctrl: Variant = combat_ctrl_ref.get_ref()
+		if is_instance_valid(live_ctrl) and live_ctrl is AICombatController:
+			(live_ctrl as AICombatController).is_casting_ability = false
+	var live_attacker: Variant = attacker_ref.get_ref() if attacker_ref != null else null
+	notify_components_cast_finished(live_attacker)

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="SpinSlashAbility" format=3 uid="uid://buk5ggsjtqvfk"]
 
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_5siou"]
 [ext_resource type="Script" uid="uid://c1qtc44mffk1u" path="res://assets/scripts/ai/abilities/spin_slash_ability.gd" id="1_dd2gn"]
 [ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_2xspu"]
 [ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
-[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="4_comp"]
-[ext_resource type="Script" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="5_shake"]
+[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="4_comp"]
+[ext_resource type="Script" uid="uid://8ivuv6uww2ta" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="5_shake"]
 
 [sub_resource type="Resource" id="Resource_tail_atk"]
 script = ExtResource("3_atk")
@@ -22,21 +23,8 @@ trauma_amount = 0.6
 script = ExtResource("1_dd2gn")
 ability_name = "Bioniczny Ogon i Porażenie"
 cooldown = 7.0
-min_range = 0.0
 max_range = 120.0
-feedback_cue = ExtResource("2_2xspu")
 attack_data = SubResource("Resource_tail_atk")
-damage_category = 1
 attack_knockback_duration = 0.7
 components = Array[ExtResource("4_comp")]([SubResource("Resource_tail_shake")])
-telegraph_time = 1.0
-dash_forward_time = 0.5
-slash_duration = 1.5
-dash_return_time = 0.4
-dash_distance = 60.0
-return_to_original_position = false
-slash_radius = 120.0
-spin_rotations = 1.5
-turn_away_during_telegraph = true
-friendly_fire = false
 metadata/_custom_type_script = "uid://c1qtc44mffk1u"
