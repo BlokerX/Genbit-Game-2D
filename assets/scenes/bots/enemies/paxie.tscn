@@ -17,8 +17,6 @@
 [ext_resource type="Script" uid="uid://c8iewgurqtnad" path="res://assets/scripts/ai/navigation/ai_navigation_controller.gd" id="15_j8p70"]
 [ext_resource type="Script" uid="uid://jorlgpryjbvo" path="res://assets/scripts/ai/combat/ai_combat_controller.gd" id="16_2d2yl"]
 [ext_resource type="Script" uid="uid://c7prajsmue4da" path="res://assets/scripts/ai/abilities/ai_ability.gd" id="17_8fg6v"]
-[ext_resource type="Script" uid="uid://de1surupc81ha" path="res://assets/scripts/ai/abilities/jump_smash_ability.gd" id="18_roghq"]
-[ext_resource type="Script" uid="uid://gmij6pfs44ua" path="res://assets/scripts/ai/abilities/acid_spit_ability.gd" id="19_8sgug"]
 [ext_resource type="Texture2D" uid="uid://b2h1ydnmlp7ym" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_front.png" id="20_lfn0y"]
 [ext_resource type="StyleBox" uid="uid://bqewl13eybri3" path="res://assets/themes/theme_overrides/CooldownBarStyleBoxFlat.tres" id="20_qaym0"]
 [ext_resource type="Script" uid="uid://6x8akwv5y36v" path="res://assets/scripts/ui/entity_healthbar.gd" id="21_2nuae"]
@@ -27,9 +25,12 @@
 [ext_resource type="Texture2D" uid="uid://cr3g6h062uvpn" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_back_right.png" id="23_4qhsp"]
 [ext_resource type="Texture2D" uid="uid://3bm8i2bruo1a" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_back.png" id="24_qlti1"]
 [ext_resource type="Texture2D" uid="uid://dl8c1jbusb3q5" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_back_left.png" id="25_lmdfy"]
+[ext_resource type="Resource" uid="uid://dpupye2abc2qr" path="res://assets/data/characters/abilities/paxie/paxie_jump_smash.tres" id="26_ixgyu"]
 [ext_resource type="Texture2D" uid="uid://bx5u1qspcdxkd" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_left.png" id="26_j8p70"]
 [ext_resource type="Texture2D" uid="uid://cu505qi4srool" path="res://assets/textures/samples_examples/entities/Dragon/purple_dragon_front_left.png" id="27_2d2yl"]
-[ext_resource type="Script" uid="uid://c1qtc44mffk1u" path="res://assets/scripts/ai/abilities/bionic_tail_ability.gd" id="27_bwhst"]
+[ext_resource type="Resource" uid="uid://buk5ggsjtqvfk" path="res://assets/data/characters/abilities/paxie/bionic_tail.tres" id="27_dwebl"]
+[ext_resource type="Resource" uid="uid://c0vw7l24sp7od" path="res://assets/data/characters/abilities/paxie/acid_spit.tres" id="28_43rt8"]
+[ext_resource type="Script" uid="uid://dco034rfy4hcw" path="res://assets/scripts/ai/components/ai_phase_controller.gd" id="29_dwebl"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_pijm0"]
 animations = [{
@@ -62,21 +63,6 @@ animations = [{
 "name": &"default",
 "speed": 5.0
 }]
-
-[sub_resource type="Resource" id="Resource_lmeha"]
-script = ExtResource("18_roghq")
-damage = 35
-aoe_radius = 200.0
-max_range = 1500.0
-metadata/_custom_type_script = "uid://de1surupc81ha"
-
-[sub_resource type="Resource" id="Resource_rm1ox"]
-script = ExtResource("27_bwhst")
-metadata/_custom_type_script = "uid://c1qtc44mffk1u"
-
-[sub_resource type="Resource" id="Resource_bwhst"]
-script = ExtResource("19_8sgug")
-metadata/_custom_type_script = "uid://gmij6pfs44ua"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_r73tf"]
 radius = 40.0
@@ -124,13 +110,14 @@ collision_mask = 3
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=815930574]
 
-[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat")]
+[node name="AIController" type="Node" parent="." unique_id=666546109 node_paths=PackedStringArray("perception", "state_machine", "navigation", "combat", "phase_controller")]
 script = ExtResource("8_jcrli")
 behavior_profile = ExtResource("9_e5sme")
 perception = NodePath("PerceptionComponent")
 state_machine = NodePath("AIStateMachine")
 navigation = NodePath("AINavigationController")
 combat = NodePath("AICombatController")
+phase_controller = NodePath("AIPhaseController")
 metadata/_custom_type_script = "uid://0r6n7qknad1h"
 
 [node name="PerceptionComponent" type="Node" parent="AIController" unique_id=147680967 node_paths=PackedStringArray("los_ray")]
@@ -162,8 +149,12 @@ metadata/_custom_type_script = "uid://c8iewgurqtnad"
 
 [node name="AICombatController" type="Node" parent="AIController" unique_id=1803486750]
 script = ExtResource("16_2d2yl")
-abilities = Array[ExtResource("17_8fg6v")]([SubResource("Resource_lmeha"), SubResource("Resource_rm1ox"), SubResource("Resource_bwhst")])
+abilities = Array[ExtResource("17_8fg6v")]([ExtResource("26_ixgyu"), ExtResource("27_dwebl"), ExtResource("28_43rt8")])
 metadata/_custom_type_script = "uid://jorlgpryjbvo"
+
+[node name="AIPhaseController" type="Node" parent="AIController" unique_id=946439063]
+script = ExtResource("29_dwebl")
+metadata/_custom_type_script = "uid://dco034rfy4hcw"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1084945470]
 shape = SubResource("CircleShape2D_r73tf")

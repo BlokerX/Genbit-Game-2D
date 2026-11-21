@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="LaserVisionAbility" format=3 uid="uid://hrjh77gl5qcv"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_w15gs"]
+[ext_resource type="Resource" uid="uid://c0p1trpc67vrp" path="res://assets/data/feedback/enemies/laser_charge.tres" id="2_wl4s4"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="3_tgcfe"]
+[ext_resource type="Resource" uid="uid://doovn5ii2chkv" path="res://assets/data/feedback/enemies/laser_fire.tres" id="4_0clfx"]
+[ext_resource type="Script" uid="uid://bjh1cnwlg41cr" path="res://assets/scripts/ai/abilities/laser_vision_ability.gd" id="5_s04bg"]
+
+[resource]
+script = ExtResource("5_s04bg")
+metadata/_custom_type_script = "uid://bjh1cnwlg41cr"

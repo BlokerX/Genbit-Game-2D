@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="JumpSmashAbility" format=3 uid="uid://dpupye2abc2qr"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_v6rdu"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_fu1bn"]
+[ext_resource type="Script" uid="uid://de1surupc81ha" path="res://assets/scripts/ai/abilities/jump_smash_ability.gd" id="3_j7ypd"]
+
+[resource]
+script = ExtResource("3_j7ypd")
+damage = 35
+aoe_radius = 200.0
+max_range = 1500.0
+metadata/_custom_type_script = "uid://de1surupc81ha"

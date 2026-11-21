@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="GammaBurstAbility" format=3 uid="uid://p8tttld1kkhp"]
+
+[ext_resource type="Script" uid="uid://merq2t58givb" path="res://assets/scripts/ai/abilities/gamma_burst_ability.gd" id="1_2p250"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_1kljh"]
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="2_eff"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="3_atk"]
+[ext_resource type="Script" uid="uid://5wxlib6depjn" path="res://assets/scripts/entities/effects/instant/stun_effect.gd" id="3_dhljo"]
+[ext_resource type="Script" uid="uid://csdcvcev8ylem" path="res://assets/scripts/entities/effects/timed_effects/health/poison_debuff_effect.gd" id="4_pois"]
+[ext_resource type="Script" uid="uid://b0jnwhxn2iyb5" path="res://assets/scripts/entities/effects/timed_effects/health/regeneration_buff_effect.gd" id="5_reg"]
+
+[sub_resource type="Resource" id="Resource_gamma_regen"]
+script = ExtResource("5_reg")
+hp_per_tick = 10
+
+[sub_resource type="Resource" id="Resource_c1quy"]
+script = ExtResource("3_dhljo")
+stun_time = 5.0
+show_screen_feedback = false
+metadata/_custom_type_script = "uid://5wxlib6depjn"
+
+[sub_resource type="Resource" id="Resource_gamma_attack"]
+script = ExtResource("3_atk")
+damage = 25
+max_range = 250.0
+stun_time = 0.8
+
+[sub_resource type="Resource" id="Resource_gamma_poison"]
+script = ExtResource("4_pois")
+hp_per_tick = -5
+duration = 10.0
+tick_interval = 2.0
+effect_name = "Skażenie Gamma"
+effect_category = 5
+
+[resource]
+script = ExtResource("1_2p250")
+ally_effects = Array[ExtResource("2_eff")]([SubResource("Resource_gamma_regen"), SubResource("Resource_c1quy")])
+ability_name = "Promieniowanie Gamma"
+cooldown = 15.0
+max_range = 250.0
+attack_data = SubResource("Resource_gamma_attack")
+damage_category = 5
+on_hit_effects = Array[ExtResource("2_eff")]([SubResource("Resource_gamma_poison")])
+metadata/_custom_type_script = "uid://merq2t58givb"

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BionicTailAbility" format=3 uid="uid://buk5ggsjtqvfk"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_5siou"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_2xspu"]
+[ext_resource type="Script" uid="uid://c1qtc44mffk1u" path="res://assets/scripts/ai/abilities/bionic_tail_ability.gd" id="3_dd2gn"]
+
+[resource]
+script = ExtResource("3_dd2gn")
+metadata/_custom_type_script = "uid://c1qtc44mffk1u"

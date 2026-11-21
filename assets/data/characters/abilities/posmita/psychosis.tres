@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PsychosisAbility" format=3 uid="uid://dn5ec0dtpeu2s"]
+
+[ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_oa3kl"]
+[ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_2wpey"]
+[ext_resource type="Script" uid="uid://kpufsc0m73vy" path="res://assets/scripts/ai/abilities/psychosis_ability.gd" id="3_p5x8g"]
+
+[resource]
+script = ExtResource("3_p5x8g")
+metadata/_custom_type_script = "uid://kpufsc0m73vy"
