@@ -62,7 +62,7 @@ func on_effect_end(target: Node2D) -> void:
 	print("Odmrażam obiekt: ", target.name)
 
 	var is_dead_or_respawning: bool = (
-		bool(target.get("is_dead")) or bool(target.get("is_respawning"))
+		target.get("is_dead") == true or target.get("is_respawning") == true
 	)
 
 	# 1. Przywracamy ruch i wejście TYLKO wtedy, gdy postać żyje i nie jest w trakcie respawnu!

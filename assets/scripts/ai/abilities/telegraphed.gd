@@ -1,7 +1,8 @@
 extends Area2D
 class_name TelegraphedAOE
 ## Obszar ostrzegawczy (AOE) rysowany na ziemi przed wybuchem umiejętności specjalnej AI.
-## Posiada wyraźną granicę rażenia, narastający impuls ostrzegawczy oraz falę uderzeniową przy detonacji.
+## Posiada wyraźną granicę rażenia, narastający impuls ostrzegawczy, falę uderzeniową przy detonacji
+## oraz opcjonalne callbacki dla modularnych komponentów AbilityComponent (SOLID - OCP / DIP).
 
 #region Stałe Wizualne i Fizyczne (Brak magicznych liczb)
 const BACKGROUND_ALPHA_MULTIPLIER: float = 0.32
@@ -26,6 +27,10 @@ var effects: Array[Effect] = []
 var source_entity: Node2D = null
 var _source_faction_name: StringName = &""
 var specific_target: Node2D = null # Opcjonalny, pojedynczy cel
+## Opcjonalny callback wywoływany w chwili detonacji: func(origin_pos: Vector2, rad: float) -> void.
+var on_detonated_callback: Callable = Callable()
+## Opcjonalny callback wywoływany dla każdego trafionego celu: func(target: Node2D, origin_pos: Vector2) -> void.
+var on_target_hit_callback: Callable = Callable()
 
 @export_group("Zasady i Wygląd Strefy")
 ## Czy wybuch strefy ma ranić również sojuszników oraz samego rzucającego?
@@ -58,8 +63,8 @@ func _ready() -> void:
 		collision_layer = 0
 		collision_mask = ALL_LAYERS_MASK
 
-		var col: CollisionShape2D = CollisionShape2D.new()
-		var circle: CircleShape2D = CircleShape2D.new()
+		var col := CollisionShape2D.new()
+		var circle := CircleShape2D.new()
 		circle.radius = radius
 		col.shape = circle
 		add_child(col)
@@ -117,6 +122,9 @@ func _explode() -> void:
 	if spawn_detonation_vfx:
 		CombatVFXHelper.spawn_shockwave(self, global_position, radius, danger_color)
 
+	if on_detonated_callback.is_valid():
+		on_detonated_callback.call(global_position, radius)
+
 	if specific_target != null:
 		if is_instance_valid(specific_target):
 			var target_rad: float = CharacterEntity.get_effective_radius_of(specific_target, DEFAULT_TARGET_RADIUS)
@@ -142,3 +150,5 @@ func _is_ally(body: Node2D) -> bool:
 
 func _apply_effects_to(target_node: Node2D) -> void:
 	AIAbility.apply_effects_to_target(source_entity, target_node, effects, global_position)
+	if on_target_hit_callback.is_valid():
+		on_target_hit_callback.call(target_node, global_position)

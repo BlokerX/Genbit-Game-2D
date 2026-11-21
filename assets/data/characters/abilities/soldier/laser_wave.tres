@@ -1,11 +1,31 @@
-[gd_resource type="Resource" script_class="LaserVisionAbility" format=3 uid="uid://hrjh77gl5qcv"]
+[gd_resource type="Resource" script_class="BeamAbility" format=3 uid="uid://hrjh77gl5qcv"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_w15gs"]
 [ext_resource type="Resource" uid="uid://c0p1trpc67vrp" path="res://assets/data/feedback/enemies/laser_charge.tres" id="2_wl4s4"]
 [ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="3_tgcfe"]
 [ext_resource type="Resource" uid="uid://doovn5ii2chkv" path="res://assets/data/feedback/enemies/laser_fire.tres" id="4_0clfx"]
-[ext_resource type="Script" uid="uid://bjh1cnwlg41cr" path="res://assets/scripts/ai/abilities/laser_vision_ability.gd" id="5_s04bg"]
+[ext_resource type="Script" uid="uid://bjh1cnwlg41cr" path="res://assets/scripts/ai/abilities/beam_ability.gd" id="5_s04bg"]
+[ext_resource type="Script" uid="uid://xdxv87pcx8uw" path="res://assets/scripts/entities/combat/attack_data.gd" id="6_atk"]
+[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="7_comp"]
+[ext_resource type="Script" uid="uid://8ivuv6uww2ta" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="8_shake"]
+
+[sub_resource type="Resource" id="Resource_laser_attack"]
+script = ExtResource("6_atk")
+damage = 5
+max_range = 800.0
+stun_time = 0.0
+
+[sub_resource type="Resource" id="Resource_laser_shake"]
+script = ExtResource("8_shake")
+trauma_amount = 0.15
 
 [resource]
 script = ExtResource("5_s04bg")
+ability_name = "Ciągły Przeszywający Laser"
+cooldown = 12.0
+max_range = 800.0
+attack_data = SubResource("Resource_laser_attack")
+damage_category = 3
+apply_attack_stun = false
+components = Array[ExtResource("7_comp")]([SubResource("Resource_laser_shake")])
 metadata/_custom_type_script = "uid://bjh1cnwlg41cr"

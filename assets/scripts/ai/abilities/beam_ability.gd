@@ -1,19 +1,20 @@
 extends AIAbility
-class_name LaserVisionAbility
-## Uniwersalny archetyp wiązki energetycznej (SOLID - OCP / DRY).
-## Pozwala tworzyć w plikach .tres różne warianty wiązek (np. laser ogniowy, mroźny promień,
-## wiązka paraliżująca, snajperski strzał lub wiązka wsparcia dla sojuszników) wyłącznie przez AttackData i on_hit_effects.
+class_name BeamAbility
+## Uniwersalny archetyp wiązki energetycznej (SOLID - SRP / OCP / DRY).
+## Pozwala tworzyć w plikach .tres dowolne warianty wiązek (np. laser ogniowy, mroźny promień,
+## strzał snajperski, wiązka czyszcząca efekty lub wiązka lecząca sojuszników) za pomocą AttackData,
+## on_hit_effects oraz modularnych komponentów AbilityComponent (np. CameraShakeAbilityComponent).
 
 ## Określa, na kogo oddziałuje wiązka w momencie trafienia.
 enum BeamTargetMode {
-	ENEMIES_ONLY, ## Rani/nakłada efekty wyłącznie na wrogów.
-	ALLIES_ONLY,  ## Nakłada efekty wyłącznie na sojuszników (np. wiązka lecząca lub wzmacniająca).
+	ENEMIES_ONLY, ## Oddziałuje wyłącznie na wrogów.
+	ALLIES_ONLY,  ## Oddziałuje wyłącznie na sojuszników (np. wiązka lecząca lub wzmacniająca).
 	EVERYONE      ## Oddziałuje na wszystkie postacie na linii wiązki (friendly fire).
 }
 
 #region Stałe Domenowe i Fizyczne (Brak magicznych liczb)
 const CHARGE_PULSE_SPEED_RAD: float = 25.0
-const MAX_LASER_HITS: int = 64
+const MAX_BEAM_HITS: int = 64
 const MIN_DURATION_SEC: float = 0.01
 const MIN_BEAM_LENGTH_PX: float = 1.0
 const IMPACT_SPARK_INTERVAL_SEC: float = 0.09
@@ -33,13 +34,13 @@ const DEFAULT_BEAM_MAX_RANGE: float = 800.0
 	"res://assets/data/feedback/enemies/laser_fire.tres"
 )
 
-@export_category("Archetyp: Wiązka Energetyczna")
+@export_category("Archetyp: Wiązka Energetyczna (BeamAbility)")
 
 @export_group("Celowanie, Zasięg i Przeszkody")
 ## Czas ładowania i celowania przed odpaleniem pełnej wiązki (w sekundach).
 @export_range(0.1, 5.0, 0.1) var cast_time: float = 1.5
-## Maksymalna długość promienia lasera (w pikselach).
-@export_range(50.0, 4000.0, 25.0) var laser_range: float = 2000.0
+## Maksymalna długość promienia (w pikselach).
+@export_range(50.0, 4000.0, 25.0) var beam_range: float = 2000.0
 ## Jeśli zaznaczone, promień celownika podąża za celem w trakcie ładowania ataku.
 @export var track_target_during_cast: bool = true
 ## Prędkość obrotu celownika za celem podczas ładowania (0.01 = wolny, 1.0 = natychmiastowy).
@@ -48,14 +49,14 @@ const DEFAULT_BEAM_MAX_RANGE: float = 800.0
 @export var track_target_during_fire: bool = true
 ## Prędkość obrotu wiązki w trakcie strzału (wolniejsza pozwala graczowi uciec w bok).
 @export_range(0.005, 0.5, 0.005) var firing_tracking_smoothness: float = 0.01
-## Jeśli włączone, wiązka przenika przez ściany i przeszkody na całej długości laser_range.
+## Jeśli włączone, wiązka przenika przez ściany i przeszkody na całej długości beam_range.
 @export var pierce_obstacles: bool = false
 ## Maska fizyki dla ścian/przeszkód zatrzymujących wiązkę (gdy pierce_obstacles == false).
 @export_flags_2d_physics var obstacles_mask: int = 1
 
 @export_group("Rytm Strzału i Dobór Celów")
 ## Czas trwania aktywnego strzału wiązką (w sekundach). Ustaw np. 0.12 dla pojedynczego impulsu snajperskiego.
-@export_range(0.05, 10.0, 0.05) var laser_duration: float = 2.3
+@export_range(0.05, 10.0, 0.05) var beam_duration: float = 2.3
 ## Odstęp (w sekundach) pomiędzy kolejnymi aplikacjami efektów (AttackData + on_hit_effects) dla celów stojących w wiązce.
 @export_range(0.05, 2.0, 0.05) var damage_tick_rate: float = 0.1
 ## Określa, które jednostki są obejmowane działaniem wiązki (wrogowie, sojusznicy lub wszyscy).
@@ -63,23 +64,21 @@ const DEFAULT_BEAM_MAX_RANGE: float = 800.0
 
 @export_group("Wizualizacje i VFX Wiązki")
 ## Szerokość głównego strumienia wiązki oraz jej fizycznego hitboxa (w pikselach).
-@export_range(4.0, 120.0, 1.0) var laser_width: float = 15.0
+@export_range(4.0, 120.0, 1.0) var beam_width: float = 15.0
 ## Główny kolor wiązki i poświaty (np. czerwień ognia, błękit mrozu, zieleń kwasu lub złoto leczenia).
-@export var laser_color: Color = Color(1.0, 0.12, 0.10, 1.0)
+@export var beam_color: Color = Color(1.0, 0.12, 0.10, 1.0)
 ## Kolor gorącego rdzenia wiązki i rozbłysku w punkcie emisji.
 @export var core_color: Color = Color(1.0, 0.96, 0.92, 1.0)
 ## Czas płynnego wygaszania wiązki po zakończeniu fazy strzału (w sekundach).
 @export_range(0.05, 1.0, 0.02) var beam_fade_out_time: float = 0.18
 ## Warstwa renderowania (Z-Index) dla promienia. Domyślnie GameLayers.FX (nad postaciami).
-@export var laser_z_index: int = GameLayers.FX
+@export var beam_z_index: int = GameLayers.FX
 ## Czy podczas ładowania wyświetlać zbierające się pierścienie energii u źródła?
 @export var show_charge_rings: bool = true
 ## Czy generować iskry impaktu w miejscu uderzenia wiązki w ścianę lub cel?
 @export var show_impact_sparks: bool = true
 ## Czy podczas ładowania postać rzucającego ma pulsować kolorem wiązki?
 @export var pulse_caster_during_cast: bool = true
-## Siła wstrząsu kamery wywoływanego na każdy tick strzału (0.0 wyłącza wstrząs).
-@export_range(0.0, 1.0, 0.05) var camera_trauma_amount: float = 0.15
 
 func _init() -> void:
 	ability_name = "Wiązka Energetyczna"
@@ -87,25 +86,26 @@ func _init() -> void:
 	min_range = 0.0
 	max_range = DEFAULT_BEAM_MAX_RANGE
 	damage_category = Effect.EffectCategory.FIRE_BURN
-	# Domyślnie bez stuna na szybki tick; można włączyć i ustawić stun_time w pliku .tres!
 	apply_attack_stun = false
 	if attack_data == null:
 		attack_data = AttackData.new(DEFAULT_BEAM_DAMAGE_PER_TICK, 0, 0.0, DEFAULT_BEAM_MAX_RANGE, 0.0, 0.0, 0.0)
 
 func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
-	if not is_instance_valid(attacker) or not is_instance_valid(target):
+	if not is_caster_active(attacker) or not is_instance_valid(target):
 		return
 
 	var combat_ctrl: AICombatController = set_casting_state(attacker, true)
+	notify_components_cast_started(attacker, target)
+
 	var sprite: CanvasItem = attacker.get_visual_sprite()
 	var orig_modulate: Color = sprite.self_modulate if sprite != null else Color.WHITE
 
-	var laser_node := LaserBeamVisual.new()
-	laser_node.setup(laser_width, laser_color, core_color, show_charge_rings, beam_fade_out_time, laser_z_index)
+	var beam_node := BeamVisual.new()
+	beam_node.setup(beam_width, beam_color, core_color, show_charge_rings, beam_fade_out_time, beam_z_index)
 	if charge_feedback_cue != null:
 		GameFeedback.play_cue(charge_feedback_cue, null, attacker.global_position, attacker)
 
-	spawn_ability_node(attacker, laser_node, attacker.global_position)
+	spawn_ability_node(attacker, beam_node, attacker.global_position)
 
 	var aim_dir: Vector2 = attacker.global_position.direction_to(target.global_position)
 	if aim_dir == Vector2.ZERO:
@@ -118,8 +118,8 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	# =========================================================
 	var elapsed: float = 0.0
 	while elapsed < cast_time:
-		if not _is_caster_active(attacker) or not is_instance_valid(target):
-			_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, false)
+		if not is_caster_active(attacker) or not is_instance_valid(target):
+			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
 			return
 
 		if track_target_during_cast:
@@ -129,33 +129,33 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 				orient_towards(attacker, aim_dir)
 
 		var ray_data: Dictionary = _trace_beam_endpoint(space_state, attacker, aim_dir)
-		laser_node.update_beam_geometry(attacker.global_position, ray_data["end_pos"], bool(ray_data["hit_obstacle"]))
+		beam_node.update_beam_geometry(attacker.global_position, ray_data["end_pos"], bool(ray_data["hit_obstacle"]))
 
 		var charge_progress: float = clampf(elapsed / maxf(MIN_DURATION_SEC, cast_time), 0.0, 1.0)
-		laser_node.charge_progress = charge_progress
+		beam_node.charge_progress = charge_progress
 
 		if pulse_caster_during_cast and is_instance_valid(sprite) and not attacker.is_frozen:
 			var pulse: float = (sin(elapsed * CHARGE_PULSE_SPEED_RAD) + 1.0) * 0.5
-			sprite.self_modulate = orig_modulate.lerp(laser_color, pulse * charge_progress)
+			sprite.self_modulate = orig_modulate.lerp(beam_color, pulse * charge_progress)
 
-		if not _is_caster_active(attacker):
-			_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, false)
+		if not is_caster_active(attacker):
+			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
 			return
 
 		elapsed += attacker.get_physics_process_delta_time()
 		await attacker.get_tree().physics_frame
 
-	if is_instance_valid(sprite) and not (is_instance_valid(attacker) and attacker.is_frozen):
+	if is_instance_valid(sprite) and not (is_caster_active(attacker) and attacker.is_frozen):
 		sprite.self_modulate = orig_modulate
 
-	if not _is_caster_active(attacker):
-		_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, false)
+	if not is_caster_active(attacker):
+		_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, false)
 		return
 
 	# =========================================================
 	# FAZA 2: AKTYWNY STRZAŁ WIĄZKĄ I NAKŁADANIE EFEKTÓW
 	# =========================================================
-	laser_node.begin_firing()
+	beam_node.begin_firing()
 	if fire_feedback_cue != null:
 		GameFeedback.play_cue(fire_feedback_cue, null, attacker.global_position, attacker)
 
@@ -163,9 +163,9 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 	var next_damage_tick: float = 0.0
 	var next_spark_tick: float = 0.0
 
-	while fire_elapsed < laser_duration:
-		if not _is_caster_active(attacker):
-			_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, true)
+	while fire_elapsed < beam_duration:
+		if not is_caster_active(attacker):
+			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
 			return
 
 		if track_target_during_fire and is_instance_valid(target):
@@ -178,7 +178,7 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 		var ray_data: Dictionary = _trace_beam_endpoint(space_state, attacker, aim_dir)
 		var final_end_pos: Vector2 = ray_data["end_pos"]
 		var hit_obstacle: bool = bool(ray_data["hit_obstacle"])
-		laser_node.update_beam_geometry(start_pos, final_end_pos, hit_obstacle)
+		beam_node.update_beam_geometry(start_pos, final_end_pos, hit_obstacle)
 
 		if show_impact_sparks and hit_obstacle and fire_elapsed >= next_spark_tick:
 			next_spark_tick += IMPACT_SPARK_INTERVAL_SEC
@@ -186,25 +186,24 @@ func execute(attacker: CharacterEntity, target: CharacterEntity) -> void:
 				attacker,
 				final_end_pos,
 				-aim_dir,
-				laser_color,
+				beam_color,
 				IMPACT_SPARK_COUNT,
-				laser_width * IMPACT_SPARK_RADIUS_MULT
+				beam_width * IMPACT_SPARK_RADIUS_MULT
 			)
 
 		if fire_elapsed >= next_damage_tick:
 			next_damage_tick += damage_tick_rate
 			_apply_beam_hit_tick(space_state, attacker, start_pos, final_end_pos, aim_dir)
-			if camera_trauma_amount > 0.0:
-				trigger_camera_shake(attacker, camera_trauma_amount)
+			notify_components_area_detonated(attacker, final_end_pos, beam_width)
 
-		if not _is_caster_active(attacker):
-			_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, true)
+		if not is_caster_active(attacker):
+			_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
 			return
 
 		fire_elapsed += attacker.get_physics_process_delta_time()
 		await attacker.get_tree().physics_frame
 
-	_finish_cast(combat_ctrl, sprite, orig_modulate, laser_node, true)
+	_finish_cast(attacker, combat_ctrl, sprite, orig_modulate, beam_node, true)
 
 ## Wyznacza punkt końcowy wiązki (z uwzględnieniem opcjonalnego przenikania przez przeszkody).
 func _trace_beam_endpoint(
@@ -213,7 +212,7 @@ func _trace_beam_endpoint(
 	aim_dir: Vector2
 ) -> Dictionary:
 	var start_pos: Vector2 = attacker.global_position
-	var max_end_pos: Vector2 = start_pos + (aim_dir * laser_range)
+	var max_end_pos: Vector2 = start_pos + (aim_dir * beam_range)
 	if pierce_obstacles:
 		return {"end_pos": max_end_pos, "hit_obstacle": false}
 
@@ -225,7 +224,7 @@ func _trace_beam_endpoint(
 		return {"end_pos": result["position"], "hit_obstacle": true}
 	return {"end_pos": max_end_pos, "hit_obstacle": false}
 
-## Wykrywa wszystkie cele na obszarze prostokąta wiązki i nakłada efekty z AttackData + on_hit_effects.
+## Wykrywa wszystkie cele na obszarze prostokąta wiązki i nakłada efekty z AttackData + on_hit_effects + komponenty.
 func _apply_beam_hit_tick(
 	space_state: PhysicsDirectSpaceState2D,
 	attacker: CharacterEntity,
@@ -233,38 +232,38 @@ func _apply_beam_hit_tick(
 	end_pos: Vector2,
 	aim_dir: Vector2
 ) -> void:
-	var laser_length: float = start_pos.distance_to(end_pos)
-	if laser_length <= MIN_BEAM_LENGTH_PX:
+	var beam_length: float = start_pos.distance_to(end_pos)
+	if beam_length <= MIN_BEAM_LENGTH_PX:
 		return
 
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(laser_length, laser_width)
+	rect.size = Vector2(beam_length, beam_width)
 
 	var shape_query := PhysicsShapeQueryParameters2D.new()
 	shape_query.shape = rect
 	shape_query.transform = Transform2D(aim_dir.angle(), start_pos + ((end_pos - start_pos) * 0.5))
 	shape_query.exclude = [attacker.get_rid()]
 
-	var hits: Array[Dictionary] = space_state.intersect_shape(shape_query, MAX_LASER_HITS)
+	var hits: Array[Dictionary] = space_state.intersect_shape(shape_query, MAX_BEAM_HITS)
 	if hits.is_empty():
 		return
 
 	var tick_effects: Array[Effect] = build_hit_effects(attacker)
-	if tick_effects.is_empty():
-		return
 
 	for hit in hits:
 		var col: Node2D = hit["collider"] as Node2D
 		if not _can_beam_hit_target(attacker, col):
 			continue
-		if apply_effects_to_target(attacker, col, tick_effects, start_pos) and show_impact_sparks:
+		var hit_applied: bool = apply_effects_to_target(attacker, col, tick_effects, start_pos)
+		notify_components_target_hit(attacker, col, start_pos)
+		if hit_applied and show_impact_sparks:
 			CombatVFXHelper.spawn_impact_sparks(
 				attacker,
 				col.global_position,
 				-aim_dir,
 				core_color,
 				IMPACT_SPARK_COUNT,
-				laser_width * IMPACT_SPARK_RADIUS_MULT
+				beam_width * IMPACT_SPARK_RADIUS_MULT
 			)
 
 func _can_beam_hit_target(attacker: CharacterEntity, target: Node2D) -> bool:
@@ -277,31 +276,32 @@ func _can_beam_hit_target(attacker: CharacterEntity, target: Node2D) -> bool:
 			return can_affect_target(attacker, target, true, true, false)
 	return false
 
-func _is_caster_active(attacker: CharacterEntity) -> bool:
-	return is_instance_valid(attacker) and attacker.is_inside_tree() and not attacker.is_dead
-
-## Bezpiecznie zamyka cykl życia wiązki i zawsze zwalnia blokadę is_casting_ability (DRY / SRP).
+## Bezpiecznie zamyka cykl życia wiązki i zawsze zwalnia blokadę is_casting_ability.
+## Parametry typu Variant chronią przed błędem 'previously freed', gdy jednostka zginie w trakcie await!
 func _finish_cast(
-	combat_ctrl: AICombatController,
-	sprite: CanvasItem,
+	attacker: Variant,
+	combat_ctrl: Variant,
+	sprite: Variant,
 	orig_modulate: Color,
-	laser_node: LaserBeamVisual,
+	beam_node: Variant,
 	allow_fade_out: bool
 ) -> void:
-	if is_instance_valid(sprite):
-		sprite.self_modulate = orig_modulate
-	if is_instance_valid(laser_node):
+	if is_instance_valid(sprite) and sprite is CanvasItem:
+		(sprite as CanvasItem).self_modulate = orig_modulate
+	if is_instance_valid(beam_node) and beam_node is BeamVisual:
+		var visual: BeamVisual = beam_node as BeamVisual
 		if allow_fade_out:
-			laser_node.begin_fade_out()
+			visual.begin_fade_out()
 		else:
-			laser_node.queue_free()
-	if is_instance_valid(combat_ctrl):
-		combat_ctrl.is_casting_ability = false
+			visual.queue_free()
+	if is_instance_valid(combat_ctrl) and combat_ctrl is AICombatController:
+		(combat_ctrl as AICombatController).is_casting_ability = false
+	notify_components_cast_finished(attacker)
 
 # ==============================================================================
 # KLASA WEWNĘTRZNA: 3-warstwowy renderer wiązki (Ładowanie -> Strzał -> Wygaszanie)
 # ==============================================================================
-class LaserBeamVisual extends Node2D:
+class BeamVisual extends Node2D:
 	enum VisualPhase { CHARGE, FIRE, FADE_OUT }
 
 	const CHARGE_LINE_MIN_ALPHA: float = 0.28
@@ -329,8 +329,8 @@ class LaserBeamVisual extends Node2D:
 
 	var start_pos: Vector2 = Vector2.ZERO
 	var end_pos: Vector2 = Vector2.ZERO
-	var laser_width: float = 15.0
-	var laser_color: Color = Color.RED
+	var beam_width: float = 15.0
+	var beam_color: Color = Color.RED
 	var core_color: Color = Color.WHITE
 	var show_charge_rings: bool = true
 	var fade_out_duration: float = 0.18
@@ -343,14 +343,14 @@ class LaserBeamVisual extends Node2D:
 
 	func setup(
 		width: float,
-		beam_col: Color,
+		main_col: Color,
 		inner_core_col: Color,
 		enable_charge_rings: bool,
 		fade_duration: float,
 		z_layer: int
 	) -> void:
-		laser_width = width
-		laser_color = beam_col
+		beam_width = width
+		beam_color = main_col
 		core_color = inner_core_col
 		show_charge_rings = enable_charge_rings
 		fade_out_duration = maxf(0.05, fade_duration)
@@ -395,7 +395,7 @@ class LaserBeamVisual extends Node2D:
 		var pulse: float = (sin(_time_elapsed * CHARGE_PULSE_HZ) + 1.0) * 0.5
 		if local_start.distance_to(local_end) > MIN_DRAW_LENGTH_PX:
 			var aim_alpha: float = lerpf(CHARGE_LINE_MIN_ALPHA, CHARGE_LINE_MAX_ALPHA, charge_progress)
-			var aim_col := Color(laser_color.r, laser_color.g, laser_color.b, aim_alpha)
+			var aim_col := Color(beam_color.r, beam_color.g, beam_color.b, aim_alpha)
 			draw_dashed_line(
 				local_start,
 				local_end,
@@ -409,35 +409,30 @@ class LaserBeamVisual extends Node2D:
 		if show_charge_rings:
 			for i in range(CHARGE_RING_COUNT):
 				var ring_phase: float = fmod(charge_progress + (float(i) / float(CHARGE_RING_COUNT)), 1.0)
-				var ring_radius: float = lerpf(laser_width * CHARGE_RING_MAX_MULT, laser_width * 0.4, ring_phase)
-				var ring_col := Color(laser_color.r, laser_color.g, laser_color.b, ring_phase * 0.85)
+				var ring_radius: float = lerpf(beam_width * CHARGE_RING_MAX_MULT, beam_width * 0.4, ring_phase)
+				var ring_col := Color(beam_color.r, beam_color.g, beam_color.b, ring_phase * 0.85)
 				draw_arc(local_start, ring_radius, 0.0, TAU, CHARGE_RING_POINTS, ring_col, 2.0, true)
 
-		var orb_radius: float = lerpf(CHARGE_ORB_MIN_PX, laser_width * CHARGE_ORB_MAX_MULT, charge_progress)
-		var orb_col := Color(laser_color.r, laser_color.g, laser_color.b, lerpf(0.35, 0.92, pulse))
+		var orb_radius: float = lerpf(CHARGE_ORB_MIN_PX, beam_width * CHARGE_ORB_MAX_MULT, charge_progress)
+		var orb_col := Color(beam_color.r, beam_color.g, beam_color.b, lerpf(0.35, 0.92, pulse))
 		draw_circle(local_start, orb_radius, orb_col)
 		draw_circle(local_start, orb_radius * CHARGE_ORB_CORE_RATIO, core_color)
 
 	func _draw_active_beam(local_start: Vector2, local_end: Vector2, intensity: float) -> void:
 		var flicker: float = 1.0 + (sin(_time_elapsed * FIRE_FLICKER_SPEED_RAD) * FIRE_FLICKER_AMPLITUDE)
-		var eff_width: float = laser_width * flicker * intensity
+		var eff_width: float = beam_width * flicker * intensity
 
-		var glow_col := Color(laser_color.r, laser_color.g, laser_color.b, OUTER_GLOW_ALPHA * intensity)
-		var main_col := Color(laser_color.r, laser_color.g, laser_color.b, laser_color.a * intensity)
+		var glow_col := Color(beam_color.r, beam_color.g, beam_color.b, OUTER_GLOW_ALPHA * intensity)
+		var main_col := Color(beam_color.r, beam_color.g, beam_color.b, beam_color.a * intensity)
 		var inner_col := Color(core_color.r, core_color.g, core_color.b, core_color.a * intensity)
 
-		# 1. Szeroka miękka poświata zewnętrzna
 		draw_line(local_start, local_end, glow_col, eff_width * OUTER_GLOW_WIDTH_MULT, true)
-		# 2. Główny strumień wiązki
 		draw_line(local_start, local_end, main_col, eff_width, true)
-		# 3. Gorący pulsujący rdzeń
 		draw_line(local_start, local_end, inner_col, eff_width * CORE_WIDTH_MULT, true)
 
-		# Rozbłysk u źródła
 		draw_circle(local_start, eff_width * EMITTER_GLOW_MULT, glow_col)
 		draw_circle(local_start, eff_width * EMITTER_CORE_MULT, inner_col)
 
-		# Rozbłysk w punkcie końcowym (mocniejszy, gdy wiązka uderza w ścianę)
 		var end_mult: float = 1.15 if _hit_obstacle else 0.90
 		draw_circle(local_end, eff_width * IMPACT_GLOW_MULT * end_mult, main_col)
 		draw_circle(local_end, eff_width * IMPACT_CORE_MULT * end_mult, inner_col)

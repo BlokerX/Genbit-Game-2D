@@ -1,9 +1,52 @@
-[gd_resource type="Resource" script_class="PsychosisAbility" format=3 uid="uid://dn5ec0dtpeu2s"]
+[gd_resource type="Resource" script_class="RadialWaveAbility" format=3 uid="uid://dn5ec0dtpeu2s"]
 
 [ext_resource type="Script" uid="uid://bqfahjkxhwby5" path="res://assets/scripts/entities/effects/base/_effect.gd" id="1_oa3kl"]
 [ext_resource type="Resource" uid="uid://dcxqp3xk3wat2" path="res://assets/data/feedback/enemies/enemy_super_attack.tres" id="2_2wpey"]
-[ext_resource type="Script" uid="uid://kpufsc0m73vy" path="res://assets/scripts/ai/abilities/psychosis_ability.gd" id="3_p5x8g"]
+[ext_resource type="Script" uid="uid://kpufsc0m73vy" path="res://assets/scripts/ai/abilities/radial_wave_ability.gd" id="3_p5x8g"]
+[ext_resource type="Script" uid="uid://5wxlib6depjn" path="res://assets/scripts/entities/effects/instant/stun_effect.gd" id="4_stun"]
+[ext_resource type="Script" uid="uid://byffpv3e7benb" path="res://assets/scripts/entities/effects/timed_effects/freeze/freeze_effect.gd" id="5_freeze"]
+[ext_resource type="Script" uid="uid://bmbnddjayowv6" path="res://assets/scripts/entities/effects/timed_effects/speed/slow_effect.gd" id="6_slow"]
+[ext_resource type="Script" uid="uid://c4axh07gc6ar1" path="res://assets/scripts/ai/abilities/components/ability_component.gd" id="7_comp"]
+[ext_resource type="Script" uid="uid://cbjnnru2ex7we" path="res://assets/scripts/ai/abilities/components/screen_overlay_ability_component.gd" id="8_overlay"]
+[ext_resource type="Script" uid="uid://dx4wh80iik4lo" path="res://assets/scripts/ai/abilities/components/npc_amnesia_ability_component.gd" id="9_amnesia"]
+[ext_resource type="Script" uid="uid://8ivuv6uww2ta" path="res://assets/scripts/ai/abilities/components/camera_shake_ability_component.gd" id="10_shake"]
+
+[sub_resource type="Resource" id="Resource_psy_overlay"]
+script = ExtResource("8_overlay")
+
+[sub_resource type="Resource" id="Resource_psy_amnesia"]
+script = ExtResource("9_amnesia")
+
+[sub_resource type="Resource" id="Resource_psy_shake"]
+script = ExtResource("10_shake")
+trigger_mode = 1
+trauma_amount = 0.85
+
+[sub_resource type="Resource" id="Resource_psy_freeze"]
+script = ExtResource("5_freeze")
+apply_blue_tint = false
+duration = 1.5
+tick_interval = 0.0
+effect_name = "Szok Neurotyczny"
+effect_category = 6
+
+[sub_resource type="Resource" id="Resource_psy_stun"]
+script = ExtResource("4_stun")
+stun_time = 4.0
+
+[sub_resource type="Resource" id="Resource_psy_slow"]
+script = ExtResource("6_slow")
+speed_multiplier = 0.35
+duration = 6.0
+tick_interval = 0.0
+effect_name = "Otępienie Zmysłów"
 
 [resource]
 script = ExtResource("3_p5x8g")
+ability_name = "Fala Psychozy"
+cooldown = 18.0
+max_range = 700.0
+damage_category = 6
+on_hit_effects = Array[ExtResource("1_oa3kl")]([SubResource("Resource_psy_freeze"), SubResource("Resource_psy_stun"), SubResource("Resource_psy_slow")])
+components = Array[ExtResource("7_comp")]([SubResource("Resource_psy_overlay"), SubResource("Resource_psy_amnesia"), SubResource("Resource_psy_shake")])
 metadata/_custom_type_script = "uid://kpufsc0m73vy"

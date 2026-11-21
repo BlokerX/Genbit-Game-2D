@@ -2,8 +2,8 @@ extends Resource
 class_name AIAbility
 ## Bazowa klasa dla wszystkich zdolności specjalnych AI (SOLID - OCP / DRY / SRP).
 ## Stanowi jedno źródło prawdy dla integracji umiejętności z systemem walki:
-## AttackData (obrażenia, kryt, penetracja, stun, odrzut), skalowania statystykami postaci
-## oraz otwartych list efektów (on_hit_effects, caster_self_effects) konfigurowanych w plikach .tres.
+## AttackData (obrażenia, kryt, penetracja, stun, odrzut), skalowania statystykami postaci,
+## otwartych list efektów (on_hit_effects, caster_self_effects) oraz modularnych komponentów AbilityComponent.
 
 const FeedbackCueType = preload("res://assets/scripts/audio_system/feedback_cue.gd")
 
@@ -48,7 +48,7 @@ const MAX_CRIT_RATE: float = 1.0
 ## Jeśli włączone, AI może rzucić umiejętność NAWET jeśli inna jest aktualnie wykonywana.
 @export var ignore_global_cast_lock: bool = false
 
-@export_category("System Walki i Efekty (.tres - SOLID OCP)")
+@export_category("System Walki i Kompozycja (.tres - SOLID OCP)")
 @export_group("Statystyki Ataku (AttackData)")
 ## Jedyne źródło bazowych statystyk ataku (obrażenia, kryt, penetracja pancerza, stun, odrzut).
 ## Pozostaw null wyłącznie dla zdolności użytkowych/wsparcia, które nakładają tylko efekty z on_hit_effects.
@@ -64,12 +64,17 @@ const MAX_CRIT_RATE: float = 1.0
 ## Czas trwania odrzutu (w sekundach), gdy odrzut jest wyznaczany z attack_data.knockback_force.
 @export_range(0.05, 3.0, 0.05) var attack_knockback_duration: float = DEFAULT_ATTACK_KNOCKBACK_DURATION_SEC
 
-@export_group("Kompozycja Efektów (Konfiguracja w .tres)")
-## Otwarta lista dowolnych efektów (np. FreezeEffect, SlowEffect, PoisonDebuffEffect, ArmorDebuffEffect, HealEffect)
+@export_group("Efekty Zdolności (Konfiguracja w .tres)")
+## Otwarta lista dowolnych efektów (np. FreezeEffect, SlowEffect, PoisonDebuffEffect, ClearEffectsEffect, HealEffect)
 ## nakładanych na każdy trafiony cel (SOLID - OCP).
 @export var on_hit_effects: Array[Effect] = []
 ## Opcjonalna lista efektów nakładanych na samego rzucającego w chwili uruchomienia zdolności (np. tarcza, speed, regeneracja).
 @export var caster_self_effects: Array[Effect] = []
+
+@export_group("Komponenty Zdolności (Moduły Zachowań)")
+## Otwarta lista modularnych komponentów AbilityComponent (np. AllyPulseAbilityComponent, ScreenOverlayAbilityComponent,
+## NpcAmnesiaAbilityComponent, CameraShakeAbilityComponent, StealItemAbilityComponent) rozszerzających zdolność w .tres (OCP).
+@export var components: Array[AbilityComponent] = []
 
 ## Zwraca true, jeśli zdolność jest gotowa do użycia (sprawdza dystans i warunki specjalne).
 func check_conditions(_attacker: CharacterEntity, _target: CharacterEntity, distance: float) -> bool:
@@ -78,6 +83,42 @@ func check_conditions(_attacker: CharacterEntity, _target: CharacterEntity, dist
 ## Główna logika umiejętności, nadpisywana w konkretnych archetypach zdolności.
 func execute(_attacker: CharacterEntity, _target: CharacterEntity) -> void:
 	pass
+
+# =========================================================================
+# DYSPATCHER KOMPONENTÓW ZDOLNOŚCI (SOLID - OCP / DIP)
+# =========================================================================
+
+## Powiadamia wszystkie podpięte komponenty o rozpoczęciu rzucania zdolności.
+func notify_components_cast_started(attacker: CharacterEntity, target: Variant) -> void:
+	if not is_caster_active(attacker):
+		return
+	for comp in components:
+		if comp != null:
+			comp.on_cast_started(self, attacker, target)
+
+## Powiadamia wszystkie podpięte komponenty o detonacji obszaru lub głównym tiku zdolności.
+func notify_components_area_detonated(attacker: Variant, origin_pos: Vector2, radius: float) -> void:
+	if not is_caster_active(attacker):
+		return
+	var caster: CharacterEntity = attacker as CharacterEntity
+	for comp in components:
+		if comp != null:
+			comp.on_area_detonated(self, caster, origin_pos, radius)
+
+## Powiadamia wszystkie podpięte komponenty o trafieniu konkretnego celu.
+func notify_components_target_hit(attacker: Variant, target: Node2D, origin_pos: Vector2) -> void:
+	if not is_instance_valid(target):
+		return
+	var caster: CharacterEntity = attacker as CharacterEntity if is_instance_valid(attacker) and attacker is CharacterEntity else null
+	for comp in components:
+		if comp != null:
+			comp.on_target_hit(self, caster, target, origin_pos)
+
+## Powiadamia wszystkie podpięte komponenty o zakończeniu lub przerwaniu zdolności.
+func notify_components_cast_finished(attacker: Variant) -> void:
+	for comp in components:
+		if comp != null:
+			comp.on_cast_finished(self, attacker)
 
 # =========================================================================
 # JEDYNY KONTRAKT SYSTEMU WALKI (SOLID - OCP / DRY / SRP)
@@ -191,14 +232,15 @@ func _resolve_effective_attack_values(attacker: CharacterEntity, data: AttackDat
 		"knockback_force": final_knockback
 	}
 
-## Uniwersalna metoda aplikująca klonowane efekty na cel z pełnym wstrzyknięciem source_entity i source_position (DRY).
+## Uniwersalna metoda aplikująca klonowane efekty wyłącznie na cele wspierające kontrakt receive_effect (DRY).
+## Chroni statyczne elementy mapy (np. FloorTileMap / ściany) przed przypadkowym nakładaniem statusów.
 static func apply_effects_to_target(
 	attacker: Variant,
 	target: Node2D,
 	effects: Array[Effect],
 	origin_pos: Vector2
 ) -> bool:
-	if not is_instance_valid(target) or effects.is_empty():
+	if not is_instance_valid(target) or effects.is_empty() or not target.has_method("receive_effect"):
 		return false
 
 	var valid_attacker: Node2D = attacker as Node2D if is_instance_valid(attacker) and attacker is Node2D else null
@@ -210,15 +252,12 @@ static func apply_effects_to_target(
 		var cloned_eff: Effect = eff.duplicate(true) as Effect
 		cloned_eff.source_entity = valid_attacker
 		cloned_eff.source_position = origin_pos
-		if target.has_method("receive_effect"):
-			if bool(target.call("receive_effect", cloned_eff)):
-				applied_any = true
-		elif cloned_eff.apply_effect(target):
+		if target.call("receive_effect", cloned_eff) == true:
 			applied_any = true
 
 	return applied_any
 
-## Centralna weryfikacja przynależności celu dozwolonego przez zdolność (eliminuje duplikację filtrów frakcji - DRY).
+## Centralna weryfikacja, czy obiekt jest prawowitym celem bojowym (obsługuje receive_effect) i pasuje do filtrów frakcji (DRY).
 static func can_affect_target(
 	attacker: Variant,
 	target: Node2D,
@@ -227,7 +266,7 @@ static func can_affect_target(
 	allow_self: bool = false,
 	fallback_faction_name: StringName = &""
 ) -> bool:
-	if not is_instance_valid(target):
+	if not is_instance_valid(target) or not target.has_method("receive_effect"):
 		return false
 	var is_self: bool = is_instance_valid(attacker) and target == attacker
 	if is_self:
@@ -237,6 +276,14 @@ static func can_affect_target(
 	if is_ally:
 		return allow_allies
 	return allow_enemies
+
+## Bezpiecznie sprawdza po await, czy rzucający nadal istnieje w drzewie sceny i żyje.
+## Parametr typu Variant chroni przed błędem czasu wykonania 'previously freed' w GDScript 4!
+static func is_caster_active(attacker: Variant) -> bool:
+	if not is_instance_valid(attacker) or not (attacker is CharacterEntity):
+		return false
+	var entity: CharacterEntity = attacker as CharacterEntity
+	return entity.is_inside_tree() and not entity.is_dead
 
 func _contains_stun_effect(effects: Array[Effect]) -> bool:
 	for eff in effects:
@@ -255,10 +302,11 @@ func _contains_knockback_effect(effects: Array[Effect]) -> bool:
 # =========================================================================
 
 ## Pobiera AICombatController i ustawia flagę rzucania umiejętności (is_casting_ability).
-static func set_casting_state(attacker: CharacterEntity, is_casting: bool) -> AICombatController:
-	if not is_instance_valid(attacker):
+static func set_casting_state(attacker: Variant, is_casting: bool) -> AICombatController:
+	if not is_instance_valid(attacker) or not (attacker is CharacterEntity):
 		return null
-	var ai_controller: Node = attacker.get_node_or_null("AIController")
+	var entity: CharacterEntity = attacker as CharacterEntity
+	var ai_controller: Node = entity.get_node_or_null("AIController")
 	var combat_ctrl: AICombatController = (
 		ai_controller.get_node_or_null("AICombatController") as AICombatController
 		if ai_controller != null
@@ -274,7 +322,7 @@ static func can_entity_rotate(attacker: CharacterEntity) -> bool:
 		return false
 	var ai_controller: Node = attacker.get_node_or_null("AIController")
 	if ai_controller != null and ai_controller.get("behavior_profile") != null:
-		return bool(ai_controller.behavior_profile.can_rotate_to_target)
+		return ai_controller.behavior_profile.can_rotate_to_target == true
 	return false
 
 ## Obraca postać w podanym kierunku zgodnie z jej profilem zachowania (płynny obrót lub 8-kierunkowy sprite).
@@ -315,15 +363,18 @@ static func is_ally_of(attacker: Variant, target: Variant, fallback_faction_name
 	return FactionComponent.is_ally_of(attacker, target, fallback_faction_name)
 
 ## Wywołuje wstrząs kamery gracza (naprawia błąd szukania CameraComponent bezpośrednio w current_scene).
-static func trigger_camera_shake(context_node: Node, trauma_amount: float) -> void:
-	if trauma_amount <= 0.0 or not is_instance_valid(context_node) or not context_node.is_inside_tree():
+static func trigger_camera_shake(context_node: Variant, trauma_amount: float) -> void:
+	if trauma_amount <= 0.0 or not is_instance_valid(context_node) or not (context_node is Node):
 		return
-	var tree: SceneTree = context_node.get_tree()
+	var node: Node = context_node as Node
+	if not node.is_inside_tree():
+		return
+	var tree: SceneTree = node.get_tree()
 	if tree == null:
 		return
 
 	# 1. Sprawdzamy aktywną kamerę 2D w Viewporcie
-	var viewport: Viewport = context_node.get_viewport()
+	var viewport: Viewport = node.get_viewport()
 	if viewport != null:
 		var active_cam: Camera2D = viewport.get_camera_2d()
 		if is_instance_valid(active_cam) and active_cam.has_method("add_trauma"):
